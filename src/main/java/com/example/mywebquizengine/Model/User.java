@@ -63,6 +63,7 @@ public class User implements UserDetails {
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
+        this.enabled = false;
     }
 
     @Enumerated(EnumType.STRING)
@@ -100,8 +101,6 @@ public class User implements UserDetails {
     public boolean isCredentialsNonExpired() {
         return credentialsNonExpired;
     }
-
-
 
     @Override
     public boolean isEnabled() {
@@ -168,4 +167,6 @@ public class User implements UserDetails {
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
+
+
 }

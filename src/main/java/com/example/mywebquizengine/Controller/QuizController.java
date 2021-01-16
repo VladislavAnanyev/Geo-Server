@@ -152,6 +152,7 @@ public class QuizController {
         if (user.getPassword().toCharArray().length >= 5 && user.getEmail()
         .contains("@") && user.getEmail().contains(".")) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
+            user.setEnabled(false);
             user.grantAuthority(Role.ROLE_USER);
             userService.saveUser(user);
             return "reg";
