@@ -80,8 +80,6 @@ public class User implements UserDetails {
         return authorities;
     }
 
-
-
     public String getActivationCode() {
         return activationCode;
     }
