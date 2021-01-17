@@ -48,13 +48,16 @@ public class User implements UserDetails {
     @Transient
     private boolean credentialsNonExpired;
 
+    @Transient
     private boolean enabled;
+
+    private boolean status;
 
     public User(){
         this.accountNonExpired = true;
         this.accountNonLocked = true;
         this.credentialsNonExpired = true;
-        this.enabled = false;
+        this.enabled = true;
     }
 
     public User(String username, String email, String firstName, String lastName, String password) {
@@ -63,7 +66,7 @@ public class User implements UserDetails {
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
-        this.enabled = false;
+        this.status = false;
     }
 
     @Enumerated(EnumType.STRING)
@@ -168,5 +171,11 @@ public class User implements UserDetails {
         this.lastName = lastName;
     }
 
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
 
+    public boolean isStatus() {
+        return status;
+    }
 }

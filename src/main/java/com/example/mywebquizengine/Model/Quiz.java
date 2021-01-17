@@ -10,7 +10,6 @@ import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @Entity(name = "QUIZZES")
 public class Quiz {
 
@@ -91,7 +90,6 @@ public class Quiz {
     public void setAnswer(List<Integer> answer) {
         this.answer = answer;
     }
-
 
     public void setUser(User author) {
         this.user = author;

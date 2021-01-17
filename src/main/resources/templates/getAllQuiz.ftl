@@ -17,7 +17,7 @@
                 </#list>
             </div>
             <div class="card-footer text-muted">
-                ${quiz.user.username}
+                <a href="/about/${quiz.user.username}">${quiz.user.username}</a>
             </div>
             <form method="get" action="/api/quizzes/${quiz.id?c}/solve" class="form-inline">
 

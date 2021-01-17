@@ -35,9 +35,6 @@ public class QuizController {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
     ArrayList<Quiz> quizzes = new ArrayList<>();
 
     @GetMapping(path = "/api/quizzes")
@@ -60,14 +57,6 @@ public class QuizController {
         model.addAttribute("myquiz", page1.getContent());
         return "myquiz";
     }
-
-    @GetMapping(path = "/profile")
-    public String getProfile(Model model) {
-        Optional<User> nowUser = userService.reloadUser(userService.getThisUser().getUsername());
-        model.addAttribute("user", nowUser.get());
-        return "profile";
-    }
-
 
     @GetMapping(path = "/api/quizzes/completed")
     public String getCompleted (Model model,
@@ -124,7 +113,6 @@ public class QuizController {
 
         model.addAttribute("answer", thisServerAnswer);
 
-
         return userAnswer.getStatus().toString();
     }
 
@@ -135,7 +123,6 @@ public class QuizController {
         return "answer";
     }
 
-
     public void reloadQuizzes() {
         quizzes = quizService.reloadQuiz();
     }
@@ -144,21 +131,6 @@ public class QuizController {
     public Quiz getQuizViaId(@PathVariable Integer id) {
         reloadQuizzes();
         return quizService.findQuiz(id);
-    }
-
-
-    @PostMapping(path = "/api/register")
-    public String checkIn(User user) {
-        if (user.getPassword().toCharArray().length >= 5 && user.getEmail()
-        .contains("@") && user.getEmail().contains(".")) {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            user.setEnabled(false);
-            user.grantAuthority(Role.ROLE_USER);
-            userService.saveUser(user);
-            return "reg";
-        } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
     }
 
     @GetMapping("/reg")
@@ -222,25 +194,4 @@ public class QuizController {
         model.addAttribute("answersOnQuiz", userAnswerService.getAnswersById(id, page, pageSize, sortBy).getContent());
         return "info";
     }
-
-    @PutMapping(path = "/update/userinfo/password", consumes={"application/json"})
-    @ResponseBody
-    public void changePassword(Model model, @RequestBody User user) {
-        user.setUsername(userService.getThisUser().getUsername());
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userService.updatePassword(user);
-    }
-
-    @PutMapping(path = "/update/user/{username}", consumes={"application/json"})
-    public void changeUser(Model model, @PathVariable String username, @RequestBody User user) {
-        userService.updateUser(user.getLastName(),user.getFirstName(),username);
-    }
-
-
-    @GetMapping(path = "/activate/{activationCode}")
-    public String activate(@PathVariable String activationCode) {
-        userService.activateAccount(activationCode);
-        return "login";
-    }
-
 }

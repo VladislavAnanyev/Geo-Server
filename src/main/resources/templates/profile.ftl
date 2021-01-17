@@ -21,7 +21,7 @@
         </div>
         <div class="col-md-6 mb-3">
             <label for="validationDefault03">Статус аккаунта</label>
-            <input type="text" class="form-control" id="validationDefault04" disabled value="${user.enabled?c}" name="email" required>
+            <input type="text" class="form-control" id="validationDefault04" disabled value="${user.status?c}" name="email" required>
         </div>
     </div>
 

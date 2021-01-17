@@ -80,7 +80,7 @@ public class UserService implements UserDetailsService {
     public void activateAccount(String activationCode) {
         User user = userRepository.findByActivationCode(activationCode);
         if (user != null) {
-            user.setEnabled(true);
+            user.setStatus(true);
             userRepository.activateAccount(user.getUsername());
         }
 

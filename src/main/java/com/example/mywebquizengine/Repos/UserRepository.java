@@ -30,6 +30,6 @@ public interface UserRepository extends CrudRepository<User, String> {
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE USERS SET enabled = true WHERE USERNAME = :username", nativeQuery = true)
+    @Query(value = "UPDATE USERS SET status = true WHERE USERNAME = :username", nativeQuery = true)
     void activateAccount(String username);
 }
