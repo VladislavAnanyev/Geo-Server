@@ -2,19 +2,15 @@ package com.example.mywebquizengine.Controller;
 
 import com.example.mywebquizengine.Model.Quiz;
 import com.example.mywebquizengine.Model.ServerAnswer;
-import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Model.UserAnswer;
-import com.example.mywebquizengine.Role;
 import com.example.mywebquizengine.Service.QuizService;
 import com.example.mywebquizengine.Service.UserAnswerService;
 import com.example.mywebquizengine.Service.UserService;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
