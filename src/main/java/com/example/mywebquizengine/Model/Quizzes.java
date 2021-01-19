@@ -2,13 +2,13 @@ package com.example.mywebquizengine.Model;
 
 import java.util.List;
 
-public class Test {
+public class Quizzes {
 
     private Long id;
     private List<Quiz> quizzes;
     private User user;
 
-    public Test() {}
+    public Quizzes() {}
 
     public List<Quiz> getQuizzes() {
         return quizzes;

@@ -1,4 +1,4 @@
-package com.example.mywebquizengine;
+package com.example.mywebquizengine.Model;
 
 public enum Role {
     ROLE_USER,

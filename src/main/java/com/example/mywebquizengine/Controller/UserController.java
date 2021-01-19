@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.Controller;
 
 import com.example.mywebquizengine.Model.User;
-import com.example.mywebquizengine.Role;
+import com.example.mywebquizengine.Model.Role;
 import com.example.mywebquizengine.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

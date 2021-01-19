@@ -1,6 +1,5 @@
 package com.example.mywebquizengine.Model;
 
-import com.example.mywebquizengine.Role;
 import com.sun.istack.NotNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
