@@ -1,7 +1,6 @@
 package com.example.mywebquizengine.Service;
 
 import com.example.mywebquizengine.Model.Quiz;
-import com.example.mywebquizengine.Model.UserAnswer;
 import com.example.mywebquizengine.Repos.QuizRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
-import java.util.List;
 
 
 @Service
@@ -28,13 +26,9 @@ public class QuizService   {
         return (ArrayList<Quiz>) quizRepository.findAll();
     }
 
-    /*public Iterable<Quiz> reloadQuiz() {
-        return quizRepository.findAll();
-    }*/
 
     public void deleteQuiz(int id) {
         if (quizRepository.findById(id).isPresent()) {
-
             quizRepository.deleteById(id);
             throw new ResponseStatusException(HttpStatus.NO_CONTENT);
         } else {
@@ -42,35 +36,15 @@ public class QuizService   {
         }
     }
 
-    public void updateQuiz(int id, String title, String text, ArrayList<String> options, ArrayList<Integer> answer) {
-
-        Quiz oldQuiz = new Quiz();
-        if (quizRepository.findById(id).isPresent()){
-            oldQuiz = quizRepository.findById(id).get();
-        }
-
-        List<String> oldOpt = oldQuiz.getOptions();
+    public void updateQuiz(int id, String title, String text, ArrayList<String> options, ArrayList<Integer> answers) {
 
         quizRepository.updateQuizById(id, title, text);
-
         quizRepository.deleteAnswers(id);
-
-        for (int i = 0; i < answer.size(); i++) {
-            quizRepository.insertAnswers(id, answer.get(i));
-        }
-
         quizRepository.deleteOptions(id);
 
-        //quizRepository.updateQuizAnswerById(id, answer);
+        options.forEach(option -> quizRepository.insertOptions(id, option));
+        answers.forEach(answer -> quizRepository.insertAnswers(id, answer));
 
-        for (int i = 0; i < options.size(); i++) {
-            quizRepository.insertOptions(id, options.get(i));
-        }
-
-       /* quizRepository.updateQuizOptionsById(id, options.get(0), oldOpt.get(0));
-        quizRepository.updateQuizOptionsById(id, options.get(1), oldOpt.get(1));
-        quizRepository.updateQuizOptionsById(id, options.get(2), oldOpt.get(2));
-        quizRepository.updateQuizOptionsById(id, options.get(3), oldOpt.get(3));*/
     }
 
     public Quiz findQuiz(int id){
@@ -87,11 +61,8 @@ public class QuizService   {
 
     }
 
-    public Page<Quiz> getMyQuiz (String name, Integer page,
-                                          Integer pageSize, String sortBy) {
+    public Page<Quiz> getMyQuiz (String name, Integer page, Integer pageSize, String sortBy) {
         Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
-
         return quizRepository.getQuizForThis(name, paging);
-
     }
 }

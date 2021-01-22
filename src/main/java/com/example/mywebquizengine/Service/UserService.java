@@ -50,10 +50,6 @@ public class UserService implements UserDetailsService {
 
             mailSender.send(thisUser.getEmail(),"Активация аккаунта в Quizzes", mes);
 
-
-
-
-
         }
     }
 

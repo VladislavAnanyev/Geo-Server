@@ -158,7 +158,6 @@ public class QuizController {
                 .equals(quizService.findQuiz(id)
                         .getUser().getUsername())) {
             reloadQuizzes();
-
             quizService.updateQuiz(id, quiz.getTitle(), quiz.getText(), (ArrayList<String>) quiz.getOptions(), (ArrayList<Integer>) quiz.getAnswer());
             reloadQuizzes();
         } else {
