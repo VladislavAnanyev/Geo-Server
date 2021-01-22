@@ -36,7 +36,7 @@ public class User implements UserDetails {
     private String password;
 
     @OneToMany(mappedBy = "user")
-    private List<Quiz> quizzes = new ArrayList<>();
+    private List<Test> tests = new ArrayList<>();
     
     @Transient
     private boolean accountNonExpired;
@@ -114,12 +114,12 @@ public class User implements UserDetails {
     }
 
 
-    public List<Quiz> getQuizzes() {
-        return quizzes;
+    public List<Test> getQuizzes() {
+        return tests;
     }
 
-    public void setQuizzes(List<Quiz> quizzes) {
-        this.quizzes = quizzes;
+    public void setQuizzes(List<Test> quizzes) {
+        this.tests = quizzes;
     }
 
     public void setEnabled(boolean enabled) {

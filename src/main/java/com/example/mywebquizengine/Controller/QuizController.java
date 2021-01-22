@@ -1,14 +1,13 @@
 package com.example.mywebquizengine.Controller;
 
 import com.example.mywebquizengine.Model.Quiz;
-import com.example.mywebquizengine.Model.ServerAnswer;
-import com.example.mywebquizengine.Model.UserAnswer;
+import com.example.mywebquizengine.Model.Test;
 import com.example.mywebquizengine.Service.QuizService;
 import com.example.mywebquizengine.Service.UserAnswerService;
 import com.example.mywebquizengine.Service.UserService;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +32,7 @@ public class QuizController {
 
     ArrayList<Quiz> quizzes = new ArrayList<>();
 
-    @GetMapping(path = "/api/quizzes")
+    /*@GetMapping(path = "/api/quizzes")
     public String getQuizzes(Model model, @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
                                  @RequestParam(required = false,defaultValue = "10") @Min(1) @Max(10) Integer pageSize,
                                  @RequestParam(defaultValue = "id") String sortBy) {
@@ -47,7 +46,7 @@ public class QuizController {
     public String getMyQuizzes(Model model, @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
                                             @RequestParam(required = false,defaultValue = "10") @Min(1) @Max(10) Integer pageSize,
                                             @RequestParam(defaultValue = "id") String sortBy) {
-        reloadQuizzes();
+        //reloadQuizzes();
         String name = userService.getThisUser().getUsername();
         Page<Quiz> page1 = quizService.getMyQuiz(name, page, pageSize, sortBy);
         model.addAttribute("myquiz", page1.getContent());
@@ -65,7 +64,7 @@ public class QuizController {
                 .getCompleted(name, page, pageSize, sortBy).getContent());
         return "mycomplete";
     }
-
+*/
     @GetMapping(path = "/add")
     public String addQuiz(Model model) {
         return "addQuiz";
@@ -73,11 +72,12 @@ public class QuizController {
 
     @PostMapping(path = "/api/quizzes", consumes={"application/json"})
     //@ResponseBody
-    public String addQuiz(Model model, @RequestBody Quiz quiz) throws ResponseStatusException {
+    public String addQuiz(Model model, @RequestBody Test test) throws ResponseStatusException {
         try {
-            reloadQuizzes();
-            quiz.setUser(userService.getThisUser());
-            quizService.saveQuiz(quiz);
+            //reloadQuizzes();
+            test.getQuizzes().get(0).setTest(test);
+            test.setUser(userService.getThisUser());
+            quizService.saveTest(test);
             return "home";
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -89,6 +89,7 @@ public class QuizController {
         return "home";
     }
 
+    /*
     @PostMapping(path = "/api/quizzes/{id}/solve")
     @ResponseBody
     public String getAnswer(Model model, @PathVariable String id, @RequestBody UserAnswer userAnswer) {
@@ -128,12 +129,12 @@ public class QuizController {
         reloadQuizzes();
         return quizService.findQuiz(id);
     }
-
+*/
     @GetMapping("/reg")
     public String login(Map<String, Object> model) {
         return "reg";
     }
-
+/*
     @DeleteMapping(path = "/api/quizzes/{id}")
     public void deleteQuiz(@PathVariable Integer id) {
         reloadQuizzes();
@@ -188,5 +189,5 @@ public class QuizController {
 
         model.addAttribute("answersOnQuiz", userAnswerService.getAnswersById(id, page, pageSize, sortBy).getContent());
         return "info";
-    }
+    }*/
 }

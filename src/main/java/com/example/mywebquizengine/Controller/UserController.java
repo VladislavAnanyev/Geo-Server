@@ -21,7 +21,7 @@ public class UserController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-
+/*
     @GetMapping(path = "/profile")
     public String getProfile(Model model) {
         Optional<User> nowUser = userService.reloadUser(userService.getThisUser().getUsername());
@@ -67,5 +67,5 @@ public class UserController {
         Optional<User> user = userService.reloadUser(username);
         model.addAttribute("user", user.get());
         return "user";
-    }
+    }*/
 }

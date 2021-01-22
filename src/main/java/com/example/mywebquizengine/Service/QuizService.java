@@ -1,7 +1,9 @@
 package com.example.mywebquizengine.Service;
 
 import com.example.mywebquizengine.Model.Quiz;
+import com.example.mywebquizengine.Model.Test;
 import com.example.mywebquizengine.Repos.QuizRepository;
+import com.example.mywebquizengine.Repos.TestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
@@ -17,9 +19,14 @@ public class QuizService   {
     @Autowired
     private QuizRepository quizRepository;
 
-    public void saveQuiz(Quiz quiz) {
-        quiz.setTitle(quiz.getTitle().replace("<","|"));
-        quizRepository.save(quiz);
+    @Autowired
+    private TestRepository testRepository;
+
+    public void saveTest(Test test) {
+        //test.getQuizzes().get(0).setTitle(test.getQuizzes().get(0).getTitle().replace("<","|"));
+        //test.setTitle(test.getTitle().replace("<","|"));
+        testRepository.save(test);
+        quizRepository.save(test.getQuizzes().get(0));
     }
 
     public ArrayList<Quiz> reloadQuiz() {
@@ -58,7 +65,6 @@ public class QuizService   {
     public Page<Quiz> getAllQuizzes(Integer page, Integer pageSize, String sortBy) {
         Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy));
         return quizRepository.findAll(paging);
-
     }
 
     public Page<Quiz> getMyQuiz (String name, Integer page, Integer pageSize, String sortBy) {

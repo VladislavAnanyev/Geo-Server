@@ -3,6 +3,7 @@ function addQuiz() {
     let arr = [];
     let arr2 = [];
     let options = [];
+    let quizzes_mas = []
     
 
     let title = $('input[name=title]').val();
@@ -18,12 +19,19 @@ function addQuiz() {
         options.push(opt[i].value)
     }
 
+    let quizzes = {
+            title: title,
+            text: text,
+            options: options,
+            answer: arr2
+        }
+
+    quizzes_mas.push(quizzes)
+
+
 
     const json = {
-        title: title,
-        text: text,
-        options: options,
-        answer: arr2
+        quizzes: quizzes_mas
     }
     console.log("abcde")
 

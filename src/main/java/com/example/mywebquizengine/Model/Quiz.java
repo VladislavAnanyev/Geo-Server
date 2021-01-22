@@ -39,8 +39,8 @@ public class Quiz {
 
     @ManyToOne
     @JoinColumn
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private User user;
+    private Test test;
+
 
     public Quiz() {}
 
@@ -91,11 +91,11 @@ public class Quiz {
         this.answer = answer;
     }
 
-    public void setUser(User author) {
-        this.user = author;
+    public void setTest(Test test) {
+        this.test = test;
     }
 
-    public User getUser() {
-        return user;
+    public Test getTest() {
+        return test;
     }
 }

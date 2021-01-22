@@ -55,7 +55,8 @@
         <button onclick="addOptions()" class="btn btn-primary mt-2">Добавить вариант</button>
     </div>
 
-    <form method="get" action="/myquiz" >
+<#--    <form method="get" action="/myquiz" >-->
+        <form method="get" action="/" >
         <button onclick="addQuiz()" type="submit" class="btn btn-primary mt-2">Создать</button>
     </form>
 
