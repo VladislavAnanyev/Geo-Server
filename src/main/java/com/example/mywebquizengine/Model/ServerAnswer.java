@@ -1,6 +1,5 @@
 package com.example.mywebquizengine.Model;
 
-import com.example.mywebquizengine.Model.Quiz;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
