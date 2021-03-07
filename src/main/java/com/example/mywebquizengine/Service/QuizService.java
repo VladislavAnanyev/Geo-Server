@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 @Service
@@ -22,11 +23,14 @@ public class QuizService   {
     @Autowired
     private TestRepository testRepository;
 
-    public void saveTest(Test test) {
+    public void saveQuiz(List<Quiz> quizList) {
         //test.getQuizzes().get(0).setTitle(test.getQuizzes().get(0).getTitle().replace("<","|"));
         //test.setTitle(test.getTitle().replace("<","|"));
-        testRepository.save(test);
-        quizRepository.save(test.getQuizzes().get(0));
+       // testRepository.save(test);
+        for (int i = 0; i < quizList.size(); i++) {
+            quizRepository.save(quizList.get(i));
+        }
+
     }
 
     public ArrayList<Quiz> reloadQuiz() {
@@ -54,7 +58,7 @@ public class QuizService   {
 
     }
 
-    public Quiz findQuiz(int id){
+    public Quiz findQuiz(int id) {
         if (quizRepository.findById(id).isPresent()){
             return quizRepository.findById(id).get();
         } else {

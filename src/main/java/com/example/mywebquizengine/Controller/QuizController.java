@@ -1,8 +1,11 @@
 package com.example.mywebquizengine.Controller;
 
 import com.example.mywebquizengine.Model.Quiz;
+import com.example.mywebquizengine.Model.ServerAnswer;
 import com.example.mywebquizengine.Model.Test;
+import com.example.mywebquizengine.Model.UserAnswer;
 import com.example.mywebquizengine.Service.QuizService;
+import com.example.mywebquizengine.Service.TestService;
 import com.example.mywebquizengine.Service.UserAnswerService;
 import com.example.mywebquizengine.Service.UserService;
 import org.springframework.data.domain.Page;
@@ -30,14 +33,18 @@ public class QuizController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private TestService testService;
+
     ArrayList<Quiz> quizzes = new ArrayList<>();
 
-    /*@GetMapping(path = "/api/quizzes")
+    @GetMapping(path = "/api/quizzes")
     public String getQuizzes(Model model, @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
                                  @RequestParam(required = false,defaultValue = "10") @Min(1) @Max(10) Integer pageSize,
                                  @RequestParam(defaultValue = "id") String sortBy) {
-        reloadQuizzes();
-        Page<Quiz> page1 = quizService.getAllQuizzes(page, pageSize, sortBy);
+        //reloadQuizzes();
+        Page<Test> page1 = testService.getAllQuizzes(page, pageSize, sortBy);
+        //model.addAttribute("quiz", page1.getContent());
         model.addAttribute("test", page1.getContent());
         return "getAllQuiz";
     }
@@ -48,8 +55,9 @@ public class QuizController {
                                             @RequestParam(defaultValue = "id") String sortBy) {
         //reloadQuizzes();
         String name = userService.getThisUser().getUsername();
-        Page<Quiz> page1 = quizService.getMyQuiz(name, page, pageSize, sortBy);
-        model.addAttribute("myquiz", page1.getContent());
+        Page<Test> page1 = testService.getMyQuiz(name, page, pageSize, sortBy);
+        model.addAttribute("myquiz", page1.getContent()); // пока так, freemarker ругается на Test
+        //model.addAttribute("opti", page1.getContent().get(0).getQuizzes().get(0).getOptions());
         return "myquiz";
     }
 
@@ -58,13 +66,13 @@ public class QuizController {
                                           @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
                                           @RequestParam(required = false,defaultValue = "10") @Min(1) @Max(10) Integer pageSize,
                                           @RequestParam(defaultValue = "completed_At") String sortBy) {
-        reloadQuizzes();
+        //reloadQuizzes();
         String name = userService.getThisUser().getUsername();
         model.addAttribute("comp", userAnswerService
                 .getCompleted(name, page, pageSize, sortBy).getContent());
         return "mycomplete";
     }
-*/
+
     @GetMapping(path = "/add")
     public String addQuiz(Model model) {
         return "addQuiz";
@@ -75,9 +83,12 @@ public class QuizController {
     public String addQuiz(Model model, @RequestBody Test test) throws ResponseStatusException {
         try {
             //reloadQuizzes();
-            test.getQuizzes().get(0).setTest(test);
             test.setUser(userService.getThisUser());
-            quizService.saveTest(test);
+            for (int i = 0; i < test.getQuizzes().size(); i++) {
+                test.getQuizzes().get(i).setTest(test);
+            }
+            testService.saveTest(test);
+            quizService.saveQuiz(test.getQuizzes());
             return "home";
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -89,11 +100,11 @@ public class QuizController {
         return "home";
     }
 
-    /*
+
     @PostMapping(path = "/api/quizzes/{id}/solve")
     @ResponseBody
     public String getAnswer(Model model, @PathVariable String id, @RequestBody UserAnswer userAnswer) {
-        reloadQuizzes();
+        //reloadQuizzes();
 
         ServerAnswer thisServerAnswer = new ServerAnswer();
         thisServerAnswer.quiz = quizService.findQuiz(Integer.parseInt(id));
@@ -119,7 +130,7 @@ public class QuizController {
         model.addAttribute("quiz", quizService.findQuiz(Integer.parseInt(id)));
         return "answer";
     }
-
+/*
     public void reloadQuizzes() {
         quizzes = quizService.reloadQuiz();
     }
@@ -134,23 +145,23 @@ public class QuizController {
     public String login(Map<String, Object> model) {
         return "reg";
     }
-/*
+
     @DeleteMapping(path = "/api/quizzes/{id}")
     public void deleteQuiz(@PathVariable Integer id) {
-        reloadQuizzes();
-        quizService.findQuiz(id);
+        //reloadQuizzes();
+        //quizService.findQuiz(id);
         if (userService.getThisUser().getUsername()
-                .equals(quizService.findQuiz(id)
+                .equals(testService.findTest(id)
                         .getUser().getUsername())) {
-            userAnswerService.deleteAnswer(id);
-            quizService.deleteQuiz(id);
-            reloadQuizzes();
+            //userAnswerService.deleteAnswer(id);
+            testService.deleteTest(id);
+            //reloadQuizzes();
         } else {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
-        reloadQuizzes();
+       // reloadQuizzes();
     }
-
+/*
 
     @PutMapping(path = "/update/{id}", consumes={"application/json"})
     @ResponseBody

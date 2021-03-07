@@ -12,30 +12,47 @@ function addOptions() {
     opt.append(div);
 }
 
-function removeOptions(id) {
-    let name = id + "Id";
+function removeOptions(numTest, id) {
+    let name = numTest + "Id" + id;
+    //console.log(name);
+    //let name = id + "Id";
     let div = document.getElementById(name);
-    let check = document.getElementsByClassName("custom-control-label");
+    //console.log(div.id)
+    //let check = document.getElementsByClassName("custom-control-label");
+    let check = document.getElementsByClassName(numTest + "opt");
     div.remove();
-    let check2 = document.getElementsByClassName("custom-control-label");
-    let values = document.getElementsByClassName("custom-control-input");
-    let check3 = document.getElementsByName("options");
-    let button = document.getElementsByClassName("btn btn-primary mt-3");
-    console.log(button.length);
+    let check2 = document.getElementsByClassName(numTest + "opt");
+    let values = document.getElementsByClassName(numTest + "input");
+    let check3 = document.getElementsByName(numTest + "options");
+    let button = document.getElementsByClassName(numTest + "butt");
+
+    //console.log(button.length);
     let sum;
     for (i = 0; i < check2.length; i++) {
-        check3.item(i).id = "options" + (i + 1);
+        check3.item(i).id = numTest + "options" + (i + 1);
         sum = i + 1;
-        button.item(i).setAttribute('onclick',"removeOptions(" + sum + ")");
+        button.item(i).setAttribute('onclick',"removeOptions(" + numTest +"," + sum + ")");
         values.item(i).value = i;
+
     }
 
     while (id <= check.length) {
         let next = id + 1;
-        let text = document.getElementById("options" + id);
-        let optionsID = document.getElementById(next + "Id")
-        optionsID.id = id + "Id";
+        let text = document.getElementById(numTest + "options" + id);
+        let optionsID = document.getElementById( numTest + "Id" + next)
+        let customCheck = document.getElementById(numTest + "customCheck" + next);
+        let label = document.getElementById(numTest + "label" + next);
+        //console.log(numTest + "Id" + next);
+
+        optionsID.id = numTest + "Id" + id;
+
+
+
         text.placeholder = id + ")";
+        customCheck.id = numTest + "customCheck" + id;
+        label.id = numTest + "label" + id;
+        //label.for = numTest + "customCheck" + id;
+        label.setAttribute('for', numTest + "customCheck" + id);
         id++;
     }
 }

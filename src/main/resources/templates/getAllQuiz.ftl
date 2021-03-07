@@ -3,23 +3,23 @@
 
 <@e.page>
 <div xmlns="">
-    <#list test as quiz>
+    <#list test as testList>
         <div class="card my-3">
             <div class="m-2">
-                <span>${quiz.title}</span>
+                <span>${testList.user.username}</span>
             </div>
             <div class="card-footer text-muted">
-                <i>${quiz.text}</i>
+                <i>${testList.id?c}</i>
             </div>
-            <div class="card-footer text-muted">
-                <#list quiz.options as options>
-                ${options}
-                </#list>
-            </div>
-            <div class="card-footer text-muted">
-                <a href="/about/${quiz.user.username}">${quiz.user.username}</a>
-            </div>
-            <form method="get" action="/api/quizzes/${quiz.id?c}/solve" class="form-inline">
+<#--            <div class="card-footer text-muted">-->
+<#--                <#list quiz.options as options>-->
+<#--                ${options}-->
+<#--                </#list>-->
+<#--            </div>-->
+            <#--<div class="card-footer text-muted">
+                <a href="/about/${testList.user.username}">${testList.user.username}</a>
+            </div>-->
+            <form method="get" action="" class="form-inline">
 
                 <button type="submit" class="btn btn-primary ml-2">Ответить</button>
             </form>
@@ -27,6 +27,7 @@
     <#else>
         No message
     </#list>
+
 
     <script src="/static/page.js"></script>
     <script src="/static/pageSize.js"></script>

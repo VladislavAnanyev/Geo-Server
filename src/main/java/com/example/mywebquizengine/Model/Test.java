@@ -12,7 +12,7 @@ public class Test {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private int id;
 
-    @OneToMany(mappedBy = "test")
+    @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Quiz> quizzes;
 
     @ManyToOne

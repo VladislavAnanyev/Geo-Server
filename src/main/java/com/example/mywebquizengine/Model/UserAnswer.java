@@ -1,6 +1,9 @@
 package com.example.mywebquizengine.Model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -19,7 +22,10 @@ public class UserAnswer {
 
     private Boolean status;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER, optional = false, cascade = CascadeType.ALL)
+    @JoinColumn(nullable = false, name = "quiz_id")
+    //@Cascade(org.hibernate.annotations.CascadeType.DELETE)
+    //@OnDelete(action = OnDeleteAction.CASCADE)
     private Quiz quiz;
 
     @ManyToOne

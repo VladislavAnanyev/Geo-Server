@@ -3,8 +3,11 @@
 <@e.page>
 
     <div><#--${test}-->
-        <#list myquiz as quiz>
-            <div class="card my-3" id="${quiz.id}">
+        <#list myquiz as test>
+
+            <#list test.quizzes as quiz>
+
+            <div class="card my-3" id="${test.id}">
                 <div class="m-2">
                     <span>${quiz.title}</span>
                 </div>
@@ -17,10 +20,10 @@
                     </#list>
                 </div>
                 <div class="card-footer text-muted">
-                    ${quiz.user.username}
+                    ${quiz.text}
                 </div>
                 <div class="card-footer text-muted" id="thisid">
-                    ${quiz.id?c}
+                    ${test.id?c}
                 </div>
                 <div class="card-footer text-muted">
                     <#list quiz.answer as answers>
@@ -36,7 +39,7 @@
                 <script src="/static/deletereq.js"></script>
 
                 <form class="form-inline">
-                    <button onclick="deleteQuiz(${quiz.id?c})" type="submit" class="btn btn-primary ml-2 my-1">Удалить</button>
+                    <button onclick="deleteQuiz(${test.id?c})" type="submit" class="btn btn-primary ml-2 my-1">Удалить</button>
                 </form>
 
                 <form method="get" action="/update/${quiz.id?c}" class="form-inline">
@@ -49,6 +52,7 @@
             </div>
         <#else>
             No message
+        </#list>
         </#list>
     </div>
 </@e.page>

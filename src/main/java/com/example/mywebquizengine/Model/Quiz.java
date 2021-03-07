@@ -41,6 +41,9 @@ public class Quiz {
     @JoinColumn
     private Test test;
 
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserAnswer> answers;
+
 
     public Quiz() {}
 
@@ -97,5 +100,13 @@ public class Quiz {
 
     public Test getTest() {
         return test;
+    }
+
+    public List<UserAnswer> getAnswers() {
+        return answers;
+    }
+
+    public void setAnswers(List<UserAnswer> answers) {
+        this.answers = answers;
     }
 }
