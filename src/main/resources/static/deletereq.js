@@ -8,6 +8,4 @@ function deleteQuiz(id) {
     let div = document.getElementById(id);
     div.remove();
 
-
-
 }

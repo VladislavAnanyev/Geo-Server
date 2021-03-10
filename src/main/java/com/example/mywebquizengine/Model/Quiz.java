@@ -39,8 +39,11 @@ public class Quiz {
 
     @ManyToOne
     @JoinColumn
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private User user;
+    private Test test;
+
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserAnswer> answers;
+
 
     public Quiz() {}
 
@@ -91,11 +94,19 @@ public class Quiz {
         this.answer = answer;
     }
 
-    public void setUser(User author) {
-        this.user = author;
+    public void setTest(Test test) {
+        this.test = test;
     }
 
-    public User getUser() {
-        return user;
+    public Test getTest() {
+        return test;
+    }
+
+    public List<UserAnswer> getAnswers() {
+        return answers;
+    }
+
+    public void setAnswers(List<UserAnswer> answers) {
+        this.answers = answers;
     }
 }

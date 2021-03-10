@@ -1,14 +1,26 @@
 package com.example.mywebquizengine.Model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import javax.persistence.*;
 import java.util.List;
 
-public class Quizzes {
+@Entity
+public class Test {
 
-    private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private int id;
+
+    @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Quiz> quizzes;
+
+    @ManyToOne
+    @JoinColumn
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private User user;
 
-    public Quizzes() {}
+    public Test() {}
 
     public List<Quiz> getQuizzes() {
         return quizzes;
@@ -18,11 +30,11 @@ public class Quizzes {
         this.quizzes = quizzes;
     }
 
-    public Long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(int id) {
         this.id = id;
     }
 

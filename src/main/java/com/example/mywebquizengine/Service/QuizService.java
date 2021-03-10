@@ -1,7 +1,9 @@
 package com.example.mywebquizengine.Service;
 
 import com.example.mywebquizengine.Model.Quiz;
+import com.example.mywebquizengine.Model.Test;
 import com.example.mywebquizengine.Repos.QuizRepository;
+import com.example.mywebquizengine.Repos.TestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 @Service
@@ -17,9 +20,17 @@ public class QuizService   {
     @Autowired
     private QuizRepository quizRepository;
 
-    public void saveQuiz(Quiz quiz) {
-        quiz.setTitle(quiz.getTitle().replace("<","|"));
-        quizRepository.save(quiz);
+    @Autowired
+    private TestRepository testRepository;
+
+    public void saveQuiz(List<Quiz> quizList) {
+        //test.getQuizzes().get(0).setTitle(test.getQuizzes().get(0).getTitle().replace("<","|"));
+        //test.setTitle(test.getTitle().replace("<","|"));
+       // testRepository.save(test);
+        for (int i = 0; i < quizList.size(); i++) {
+            quizRepository.save(quizList.get(i));
+        }
+
     }
 
     public ArrayList<Quiz> reloadQuiz() {
@@ -47,7 +58,7 @@ public class QuizService   {
 
     }
 
-    public Quiz findQuiz(int id){
+    public Quiz findQuiz(int id) {
         if (quizRepository.findById(id).isPresent()){
             return quizRepository.findById(id).get();
         } else {
@@ -58,7 +69,6 @@ public class QuizService   {
     public Page<Quiz> getAllQuizzes(Integer page, Integer pageSize, String sortBy) {
         Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy));
         return quizRepository.findAll(paging);
-
     }
 
     public Page<Quiz> getMyQuiz (String name, Integer page, Integer pageSize, String sortBy) {
