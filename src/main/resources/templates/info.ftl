@@ -4,26 +4,35 @@
     <table class="table table-hover">
         <thead>
         <tr>
+            <th scope="col">Номер</th>
             <th scope="col">Имя</th>
             <th scope="col">Фамилия</th>
             <th scope="col">Username</th>
-            <th scope="col">Статус</th>
+            <th scope="col">Процент</th>
         </tr>
         </thead>
         <tbody>
 
-        <#list answersOnQuiz as answer >
+
+        <#list answersOnQuiz as answer>
 
         <tr>
-<#--            <th scope="row">1</th>-->
+            <th scope="row">${answer_index + 1}</th>
             <td>${answer.user.firstName}</td>
             <td>${answer.user.lastName}</td>
 <#--            <td>${answer.completedAt.time?datetime}</td>-->
-            <td>${answer.user.username}</td>
-            <td>${answer.status?c}</td>
-        </tr>
-        </#list>
+            <td><a href="/about/${answer.user.username}">${answer.user.username}</a></td>
+<#--            <td>${answer.status?c}</td>&ndash;&gt;-->
 
+
+
+            <td>${stat[answer_index]} </td>
+
+
+        </tr>
+
+
+        </#list>
 
         </tbody>
     </table>

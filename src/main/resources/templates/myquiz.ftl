@@ -5,10 +5,10 @@
     <div><#--${test}-->
         <#list myquiz as test>
 
-            <#list test.quizzes as quiz>
+<#--            <#list test.quizzes as quiz>-->
 
             <div class="card my-3" id="${test.id}">
-                <div class="m-2">
+                <#--<div class="m-2">
                     <span>${quiz.title}</span>
                 </div>
                 <div class="card-footer text-muted">
@@ -21,17 +21,17 @@
                 </div>
                 <div class="card-footer text-muted">
                     ${quiz.text}
-                </div>
+                </div>-->
                 <div class="card-footer text-muted" id="thisid">
                     ${test.id?c}
                 </div>
-                <div class="card-footer text-muted">
+                <#--<div class="card-footer text-muted">
                     <#list quiz.answer as answers>
                         ${answers}
                     </#list>
-                </div>
+                </div>-->
 
-                <form method="get" action="/api/quizzes/${quiz.id?c}/info/" class="form-inline">
+                <form method="get" action="/api/quizzes/${test.id?c}/info/" class="form-inline">
                     <button type="submit" class="btn btn-primary ml-2 my-1">Подробнее</button>
                 </form>
 
@@ -42,7 +42,7 @@
                     <button onclick="deleteQuiz(${test.id?c})" type="submit" class="btn btn-primary ml-2 my-1">Удалить</button>
                 </form>
 
-                <form method="get" action="/update/${quiz.id?c}" class="form-inline">
+                <form method="get" action="/update/${test.id?c}" class="form-inline">
                     <button type="submit" class="btn btn-primary ml-2 my-1">Изменить</button>
                 </form>
 
@@ -52,7 +52,7 @@
             </div>
         <#else>
             No message
-        </#list>
+<#--        </#list>-->
         </#list>
     </div>
 </@e.page>

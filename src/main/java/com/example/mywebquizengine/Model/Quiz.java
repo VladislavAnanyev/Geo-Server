@@ -2,8 +2,10 @@ package com.example.mywebquizengine.Model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sun.istack.NotNull;
+import org.springframework.validation.annotation.Validated;
 
 import javax.persistence.*;
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
@@ -30,7 +32,7 @@ public class Quiz {
     @NotNull
     @NotEmpty
     @Size(min = 2)
-    private List<String> options;
+    private List<@NotEmpty String> options;
 
     @ElementCollection
     @CollectionTable
@@ -42,7 +44,7 @@ public class Quiz {
     private Test test;
 
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserAnswer> answers;
+    private List<UserQuizAnswer> answers;
 
 
     public Quiz() {}
@@ -102,11 +104,11 @@ public class Quiz {
         return test;
     }
 
-    public List<UserAnswer> getAnswers() {
+    public List<UserQuizAnswer> getAnswers() {
         return answers;
     }
 
-    public void setAnswers(List<UserAnswer> answers) {
+    public void setAnswers(List<UserQuizAnswer> answers) {
         this.answers = answers;
     }
 }

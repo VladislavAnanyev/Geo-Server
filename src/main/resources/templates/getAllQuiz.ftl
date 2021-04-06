@@ -6,7 +6,7 @@
     <#list test as testList>
         <div class="card my-3">
             <div class="m-2">
-                <span>${testList.user.username}</span>
+                <span><a href="/about/${testList.user.username}">${testList.user.username}</a></span>
             </div>
             <div class="card-footer text-muted">
                 <i>${testList.id?c}</i>
@@ -19,7 +19,7 @@
             <#--<div class="card-footer text-muted">
                 <a href="/about/${testList.user.username}">${testList.user.username}</a>
             </div>-->
-            <form method="get" action="" class="form-inline">
+            <form method="get" action="/api/quizzes/${testList.id?c}/solve/" class="form-inline">
 
                 <button type="submit" class="btn btn-primary ml-2">Ответить</button>
             </form>

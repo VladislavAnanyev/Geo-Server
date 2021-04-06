@@ -1,19 +1,16 @@
 package com.example.mywebquizengine.Model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-@Entity(name = "USER_ANSWERS")
-public class UserAnswer {
+@Entity(name = "USER_QUIZ_ANSWERS")
+public class UserQuizAnswer {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int answerId;
+    private int quizAnswerId;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @ElementCollection
@@ -27,17 +24,19 @@ public class UserAnswer {
     //@Cascade(org.hibernate.annotations.CascadeType.DELETE)
     //@OnDelete(action = OnDeleteAction.CASCADE)
     private Quiz quiz;
+    //private Test test;
 
-    @ManyToOne
-    private User user;
+    @ManyToOne(fetch = FetchType.EAGER, optional = false, cascade = CascadeType.ALL)
+    @JoinColumn(nullable = false, name = "user_answer_id")
+    private UserTestAnswer userAnswerId;
 
     private Calendar completedAt;
 
-    UserAnswer(ArrayList<Integer> answer){
+    UserQuizAnswer(ArrayList<Integer> answer){
         this.answer = answer;
     }
 
-    public UserAnswer(){}
+    public UserQuizAnswer(){}
 
     public Boolean getStatus() {
         return status;
@@ -59,12 +58,13 @@ public class UserAnswer {
         return quiz;
     }
 
-    public void setAnswerId(int id) {
-        this.answerId = id;
+
+    public void setQuizAnswerId(int id) {
+        this.quizAnswerId = id;
     }
 
-    public int getAnswerId() {
-        return answerId;
+    public int getQuizAnswerId() {
+        return quizAnswerId;
     }
 
     public void setStatus(boolean status) {
@@ -83,11 +83,11 @@ public class UserAnswer {
         this.completedAt = data;
     }
 
-    public User getUser() {
-        return user;
+    public void setUserAnswerId(UserTestAnswer userTestAnswer) {
+        this.userAnswerId = userTestAnswer;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public UserTestAnswer getUserAnswerId() {
+        return userAnswerId;
     }
 }

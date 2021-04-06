@@ -52,10 +52,8 @@ public class QuizService   {
         quizRepository.updateQuizById(id, title, text);
         quizRepository.deleteAnswers(id);
         quizRepository.deleteOptions(id);
-
         options.forEach(option -> quizRepository.insertOptions(id, option));
         answers.forEach(answer -> quizRepository.insertAnswers(id, answer));
-
     }
 
     public Quiz findQuiz(int id) {

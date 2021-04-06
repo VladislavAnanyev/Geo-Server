@@ -1,7 +1,9 @@
 package com.example.mywebquizengine.Service;
 
-import com.example.mywebquizengine.Model.UserAnswer;
-import com.example.mywebquizengine.Repos.UserAnswerRepository;
+import com.example.mywebquizengine.Model.UserQuizAnswer;
+import com.example.mywebquizengine.Model.UserTestAnswer;
+import com.example.mywebquizengine.Repos.UserQuizAnswerRepository;
+import com.example.mywebquizengine.Repos.UserTestAnswerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,29 +18,40 @@ import java.util.List;
 public class UserAnswerService  {
 
     @Autowired
-    private UserAnswerRepository userAnswerRepository;
+    private UserQuizAnswerRepository userQuizAnswerRepository;
 
-    public void saveAnswer(UserAnswer userAnswer){
-        userAnswerRepository.save(userAnswer);
+    @Autowired
+    private UserTestAnswerRepository userTestAnswerRepository;
+
+    public void saveAnswer(UserQuizAnswer userQuizAnswer){
+        userQuizAnswerRepository.save(userQuizAnswer);
     }
 
-    public Page<UserAnswer> getCompleted (String name, Integer page,
-                                          Integer pageSize, String sortBy) {
+    public void saveAnswer(UserTestAnswer userTestAnswer){
+        userTestAnswerRepository.save(userTestAnswer);
+    }
+
+    /*public Page<UserQuizAnswer> getCompleted (String name, Integer page,
+                                              Integer pageSize, String sortBy) {
         Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
-        return userAnswerRepository.getCompleteAnswersForUser(name, paging);
-    }
+        return userQuizAnswerRepository.getCompleteAnswersForUser(name, paging);
+    }*/
 
-    public Page<UserAnswer> getAnswersById (int id, Integer page, Integer pageSize, String sortBy) {
+    public Page<UserTestAnswer> getAnswersById (int id, Integer page, Integer pageSize, String sortBy) {
         Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
-        return userAnswerRepository.getAnswersOnMyQuiz(id, paging);
+        return userTestAnswerRepository.getAnswersOnMyQuiz(id, paging);
     }
 
-    public Double getStatistics(Integer id) {
-        return ((double)userAnswerRepository.getTrueAnswers(id)/(double)userAnswerRepository.getCountById(id)) * 100;
+    public Double getStatistics(Integer id, Integer answer) {
+        return ((double) userQuizAnswerRepository.getTrueAnswers(id, answer)/(double) userQuizAnswerRepository.getCountById(id, answer)) * 100;
     }
 
-    public void deleteAnswer(Integer id) {
-        List<Integer> answers = userAnswerRepository.getAnswerIdForQuiz(id);
-        answers.forEach(answer -> userAnswerRepository.deleteById(answer));
+    public ArrayList<Integer> getAnswersByTestId(Integer id) {
+        return (ArrayList<Integer>) userTestAnswerRepository.getUserAnswersById(id);
     }
+
+   /* public void deleteAnswer(Integer id) {
+        List<Integer> answers = userQuizAnswerRepository.getAnswerIdForQuiz(id);
+        answers.forEach(answer -> userQuizAnswerRepository.deleteById(answer));
+    }*/
 }

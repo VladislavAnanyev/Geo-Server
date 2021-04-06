@@ -16,7 +16,7 @@
             <input type="text" class="form-control" id="questionID" placeholder="Напишите здесь ваш вопрос"  name="text">
         </div>
 
-        <div class="options" id="optionstest">
+        <div class="options" id="1optionstest">
             <label for="exampleFormControlInput1">Варианты ответа</label>
         <div class="custom-control custom-checkbox" id="1Id1">
             <input type="checkbox" class="custom-control-input 1input" id="1customCheck1" name="1check" value="0">
@@ -54,7 +54,7 @@
         </div>
 
         <div>
-            <button onclick="addOptions()" class="btn btn-primary mt-2">Добавить вариант</button>
+            <button onclick="addOptions(1)" class="btn btn-primary mt-2">Добавить вариант</button>
         </div>
 
 <#--    <form method="get" action="/myquiz" >-->

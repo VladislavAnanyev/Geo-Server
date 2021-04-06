@@ -1,15 +1,25 @@
-function addOptions() {
+function addOptions(numTest) {
     let div = document.createElement("div");
-    let count = document.getElementsByClassName("custom-control-label").length + 1;
+    //let count = document.getElementsByClassName("custom-control-label").length + 1;
+    console.log(numTest);
+    let id = document.getElementsByClassName(numTest + "input").length + 1;
     div.className = "custom-control custom-checkbox mt-2";
-    div.id = count + "Id";
-    div.innerHTML = "<input type=\"checkbox\" class=\"custom-control-input\" id=\"customCheck" + count + "\" name=\"check\" value=" + count + ">\n" +
-        "        <label class=\"custom-control-label\" for=\"customCheck" + count + "\">\n" +
-        "        <input type=\"text\" class=\"form-control\" id=\"options" + count + "\" placeholder=" + count  + ")\ name=\"options\">\n" +
+    div.id = numTest + "Id" + id;
+    div.innerHTML = "<input type=\"checkbox\" class=\"custom-control-input" + " " + numTest + "input\" id=" + numTest + "customCheck" + id + " name=\"" + numTest + "check\" value=" + (id-1) + ">\n" +
+        "        <label class=\"custom-control-label" + " " + numTest + "opt\" id=" + numTest + "label" + id + " for=" + numTest + "customCheck" + id + ">\n" +
+        "        <input type=\"text\" class=\"form-control\" id=" + numTest + "options" + id + " placeholder=" + id  + ")\ name=\"" + numTest + "options\">\n" +
         "        </label> " +
-        "        <button onclick=\"removeOptions(" + count + ")\" class=\"btn btn-primary mt-3\">Удалить вариант</button>";
-    let opt = document.getElementById("optionstest");
+        "        <button onclick=\"removeOptions(" + numTest + "," + id + ")\" class=\"btn btn-primary mt-3 " + numTest + "butt\">Удалить вариант</button>";
+    let opt = document.getElementById(numTest + "optionstest");
     opt.append(div);
+
+    /*<div class="custom-control custom-checkbox mt-2" id="${oldQuiz_index+1}Id${opt_index+1}">
+        <input type="checkbox" class="custom-control-input ${oldQuiz_index+1}input" id="${oldQuiz_index+1}customCheck${opt_index+1}" name="${oldQuiz_index+1}check"  value="${opt_index}" <#list oldQuiz.answer as ans> <#if ans == opt_index>checked</#if> </#list> >
+    <label class="custom-control-label ${oldQuiz_index+1}opt" id="${oldQuiz_index+1}label${opt_index+1}" for="${oldQuiz_index+1}customCheck${opt_index+1}">
+        <input type="text" class="form-control" value="${opt}" id="${oldQuiz_index+1}options${opt_index+1}" name="${oldQuiz_index+1}options">
+    </label>
+    <button onclick="removeOptions(${oldQuiz_index+1},${opt_index + 1})" class="btn btn-primary mt-3 ${oldQuiz_index+1}butt">Удалить вариант</button>
+</div>*/
 }
 
 function removeOptions(numTest, id) {

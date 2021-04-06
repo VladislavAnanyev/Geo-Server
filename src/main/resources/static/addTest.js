@@ -17,7 +17,7 @@ function addTest() {
         "        <input type=\"text\" class=\"form-control\" id=\"questionID\" placeholder=\"Напишите здесь ваш вопрос\"  name=\"text\">\n" +
         "    </div>\n" +
         "\n" +
-        "    <div class=\"options\" id=\"optionstest\">\n" +
+        "    <div class=\"options\" id=\"" + allTest + "optionstest\">\n" +
         "        <label for=\"exampleFormControlInput1\">Варианты ответа</label>\n" +
         "    <div class=\"custom-control custom-checkbox\" id=" + allTest +"Id" + count + "\>\n" +
         "<input type=\"checkbox\" class=\"custom-control-input " + allTest + "input\" id=" + Number(allTest) + "customCheck" + Number(count) + "\ name=" + allTest + "check\ value=" + Number(count-1) + ">\n" +
@@ -55,7 +55,7 @@ function addTest() {
         "    </div>\n" +
         "\n" +
         "    <div>\n" +
-        "        <button onclick=\"addOptions()\" class=\"btn btn-primary mt-2\">Добавить вариант</button>\n" +
+        "        <button onclick=\"addOptions(" + allTest + ")\" class=\"btn btn-primary mt-2\">Добавить вариант</button>\n" +
         "    </div>" +
         "<div id=\"addQuiz\">\n" +
         "        <button onclick=\"addTest()\" class=\"btn btn-primary mt-2\">Добавить викторину</button>\n" +

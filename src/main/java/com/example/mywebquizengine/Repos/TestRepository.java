@@ -13,6 +13,6 @@ import org.springframework.stereotype.Repository;
 public interface TestRepository extends CrudRepository<Test, Integer>,
         PagingAndSortingRepository<Test, Integer> {
 
-    @Query(value = "SELECT * FROM TEST u WHERE USER_USERNAME = :name", nativeQuery = true)
+    @Query(value = "SELECT * FROM TESTS u WHERE USER_USERNAME = :name", nativeQuery = true)
     Page<Test> getQuizForThis(String name, Pageable paging);
 }

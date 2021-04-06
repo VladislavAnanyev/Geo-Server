@@ -1,4 +1,4 @@
-
+/*
 create table quizzes (
     id integer not null,
     text varchar(255),
@@ -53,4 +53,4 @@ alter table quiz_options add constraint FKsx28j7orq6asg17veq9nblhw8 foreign key 
 alter table user_roles add constraint FK1misndtpfm9hx3ttvixdus8d1 foreign key (user_username) references user;
 alter table user_answer add constraint FKbmbh6qr5gwlgwh4ae4ddg4b1c foreign key (quiz_id) references quiz;
 alter table user_answer add constraint FKqi862rhltk0ufk964wjm7sam4 foreign key (user_username) references user;
-alter table user_answer_answer add constraint FKffc3dp19gknu785dp0oum7yys foreign key (user_answer_answer_id) references user_answer;
+alter table user_answer_answer add constraint FKffc3dp19gknu785dp0oum7yys foreign key (user_answer_answer_id) references user_answer;*/
