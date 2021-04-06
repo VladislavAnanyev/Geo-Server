@@ -1,5 +1,6 @@
 # WebQuiz
 Web Quiz Service // Spring, Hibernate, freemarker 
+
 In build.gradle:
 
 set database username & password (any)
