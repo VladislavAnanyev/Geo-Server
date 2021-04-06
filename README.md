@@ -1,6 +1,13 @@
 # WebQuiz
 Web Quiz Service // Spring, Hibernate, freemarker 
-IN src/resources/applications.properties:
-DATABASE USERNAME = sa
-DATABASE PASSWORD = password
-Email username & password - use yours to send registration messages from it to users
+In build.gradle:
+
+set database username & password (any)
+
+than:
+
+IN src/main/resources/applications.properties:
+
+set database username & password (from build.gradle)
+
+Email username & password - use yours (yandex) to send registration messages from it to users
