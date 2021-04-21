@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.Service;
 
-import com.example.mywebquizengine.Model.Quiz;
-import com.example.mywebquizengine.Model.Test;
+import com.example.mywebquizengine.Model.Test.Quiz ;
+import com.example.mywebquizengine.Model.Test.Test;
 import com.example.mywebquizengine.Repos.QuizRepository;
 import com.example.mywebquizengine.Repos.TestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +13,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.transaction.Transactional;
+import java.util.List;
+
+//@Transactional
 @Service
 public class TestService {
 
@@ -25,6 +29,10 @@ public class TestService {
     public Page<Test> getMyQuiz (String name, Integer page, Integer pageSize, String sortBy) {
         Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
         return testRepository.getQuizForThis(name, paging);
+    }
+
+    public List<Test> getMyQuizNoPaging (String name) {
+        return testRepository.getQuizForThisNoPaging(name);
     }
 
     public Page<Test> getAllQuizzes(Integer page, Integer pageSize, String sortBy) {

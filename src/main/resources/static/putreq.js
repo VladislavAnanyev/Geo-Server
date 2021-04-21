@@ -113,7 +113,6 @@ function updateQuiz(id) {
     xhr.send(JSON.stringify(json));
 
 
-
     /*let xhr_2 = new XMLHttpRequest();
     xhr_2.open('GET', '/api/quizzes/',true);
     xhr_2.setRequestHeader('Content-type','application/json; charset=utf-8');

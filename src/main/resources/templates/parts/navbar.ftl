@@ -24,10 +24,13 @@
             <li class="nav-item">
                 <a class="nav-link" href="/myquiz">Мои викторины</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/chat">Сообщения</a>
+            </li>
         </ul>
 
         <div class="dropdown">
-            <a class="btn btn-secondary dropdown-toggle mr-3" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <a class="btn btn-secondary dropdown-toggle mr-3" href="#" role="button" id="dropdownMenuLink autoUser" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 ${name}
             </a>
 

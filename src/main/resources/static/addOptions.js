@@ -9,7 +9,7 @@ function addOptions(numTest) {
         "        <label class=\"custom-control-label" + " " + numTest + "opt\" id=" + numTest + "label" + id + " for=" + numTest + "customCheck" + id + ">\n" +
         "        <input type=\"text\" class=\"form-control\" id=" + numTest + "options" + id + " placeholder=" + id  + ")\ name=\"" + numTest + "options\">\n" +
         "        </label> " +
-        "        <button onclick=\"removeOptions(" + numTest + "," + id + ")\" class=\"btn btn-primary mt-3 " + numTest + "butt\">Удалить вариант</button>";
+        "        <button onclick=\"removeOptions(" + numTest + "," + id + ")\" class=\"btn btn-primary " + numTest + "butt\">Удалить вариант</button>";
     let opt = document.getElementById(numTest + "optionstest");
     opt.append(div);
 

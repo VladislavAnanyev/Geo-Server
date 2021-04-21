@@ -2,6 +2,7 @@ package com.example.mywebquizengine.Service;
 
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.UserRepository;
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,6 +11,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.transaction.Transactional;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,12 +30,18 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> user = userRepository.findById(username);
 
+
+
         if (user.isPresent()) {
             setThisUser(user.get());
             return user.get();
         }else {
             throw new UsernameNotFoundException(String.format("Username[%s] not found",username));
         }
+    }
+
+    public void setAvatar(String avatar) {
+        userRepository.setAvatar(avatar, getThisUser().getUsername());
     }
 
     public void saveUser(User user){
@@ -48,7 +56,7 @@ public class UserService implements UserDetailsService {
             String mes = user.getFirstName() + " " + user.getLastName() + ", Добро пожаловать в Quizzes! "
                     + "Для активации аккаунта перейдите по ссылке: http://localhost:8080/activate/" + user.getActivationCode();
 
-            mailSender.send(thisUser.getEmail(),"Активация аккаунта в Quizzes", mes);
+            //mailSender.send(thisUser.getEmail(),"Активация аккаунта в Quizzes", mes);
 
         }
     }
@@ -65,6 +73,7 @@ public class UserService implements UserDetailsService {
         userRepository.updateUserInfo(firstName, lastName, username);
     }
 
+    //@Transactional
     public Optional<User> reloadUser(String username) {
         return userRepository.findById(username);
     }

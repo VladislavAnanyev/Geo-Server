@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.Model;
 
+import com.example.mywebquizengine.Model.Test.Test;
 import com.sun.istack.NotNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,6 +22,7 @@ public class User implements UserDetails {
 
     @NotBlank
     @NotNull
+    @Email
     private String email;
 
     private String activationCode;
@@ -36,8 +38,10 @@ public class User implements UserDetails {
     @Size(min = 5)
     private String password;
 
+    private String avatar;
+
     @OneToMany(mappedBy = "user")
-    private List<Test> tests = new ArrayList<>();
+    private List<Test> tests;
     
     @Transient
     private boolean accountNonExpired;
@@ -115,14 +119,6 @@ public class User implements UserDetails {
     }
 
 
-    public List<Test> getQuizzes() {
-        return tests;
-    }
-
-    public void setQuizzes(List<Test> quizzes) {
-        this.tests = quizzes;
-    }
-
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
@@ -176,4 +172,30 @@ public class User implements UserDetails {
     public boolean isStatus() {
         return status;
     }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatarName) {
+        this.avatar = avatarName;
+    }
+
+    public List<Role> getRoles() {
+        return roles;
+    }
+
+    public List<Test> getTests() {
+        return tests;
+    }
+
+    public void setRoles(List<Role> roles) {
+        this.roles = roles;
+    }
+
+
+    public void setTests(List<Test> tests) {
+        this.tests = tests;
+    }
+
 }

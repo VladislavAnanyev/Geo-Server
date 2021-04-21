@@ -4,7 +4,7 @@
 <@e.page>
 
     <#macro logout>
-    <#if user??>
+    <#if nowUser??>
         <form action="/logout" method="post">
             <button class="btn btn-primary" type = "submit">Выйти</button>
         </form>

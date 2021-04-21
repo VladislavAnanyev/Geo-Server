@@ -24,6 +24,11 @@ public interface UserRepository extends CrudRepository<User, String> {
     @Query(value = "UPDATE USERS SET PASSWORD = :password WHERE USERNAME = :username", nativeQuery = true)
     void changePassword(String password, String username);
 
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE USERS SET AVATAR = :avatarName WHERE USERNAME = :username", nativeQuery = true)
+    void setAvatar(String avatarName, String username);
+
 
     @Query(value = "SELECT * FROM USERS WHERE ACTIVATION_CODE = :activationCode",nativeQuery = true )
     User findByActivationCode(String activationCode);

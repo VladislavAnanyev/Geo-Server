@@ -50,11 +50,13 @@ buildscript {
 }
 
 plugins {
-    id 'org.springframework.boot' version '2.1.16.RELEASE'
-    id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+    id 'org.springframework.boot' version '2.1.17.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
     id "org.flywaydb.flyway" version "7.0.2"
 }
+
+
 
 apply plugin: 'io.spring.dependency-management'
 
@@ -73,12 +75,20 @@ repositories {
     mavenCentral()
 }
 
+dependencyManagement {
+    imports {
+        mavenBom 'org.springframework.session:spring-session-bom:2020.0.3'
+    }
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-freemarker'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework.session:spring-session-jdbc'
+    implementation 'org.springframework.session:spring-session-core'
 
     //compile group: 'org.freemarker', name: 'freemarker', version: '2.3.14'
     runtimeOnly 'com.h2database:h2'
@@ -91,7 +101,16 @@ dependencies {
     compile("org.springframework.boot:spring-boot-starter-security")
     compile("org.springframework.boot:spring-boot-starter-mail")
 
+    //compile('redis.clients:jedis:2.9.0')
+    //compile('org.springframework.session:spring-session-data-redis')
+    //compile 'io.lettuce:lettuce-core:5.0.5.RELEASE'
+    //compile 'redis.clients:jedis'
+    //compile 'org.apache.commons:commons-pool2'
+    compile 'org.springframework.session:spring-session-core:2.0.0.RELEASE'
+    compile 'org.springframework.session:spring-session-jdbc:2.0.0.RELEASE'
+
 }
+
 
 test {
     useJUnitPlatform()
@@ -100,7 +119,7 @@ test {
 
 flyway {
     url = 'jdbc:h2:file:C:\\Users\\avlad\\IdeaProjects\\quizdb'
-    user = 'INPUT USERNAME'
-    password = 'INPUT PASSWORD'
+    user = 'sa'
+    password = 'password'
 }
 

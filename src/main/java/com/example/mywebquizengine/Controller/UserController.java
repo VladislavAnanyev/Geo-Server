@@ -5,12 +5,14 @@ import com.example.mywebquizengine.Model.Role;
 import com.example.mywebquizengine.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.validation.Valid;
 import java.util.Optional;
 
 @Controller
@@ -24,8 +26,9 @@ public class UserController {
 
     @GetMapping(path = "/profile")
     public String getProfile(Model model) {
-        Optional<User> nowUser = userService.reloadUser(userService.getThisUser().getUsername());
-        model.addAttribute("user", nowUser.get());
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        //Optional<User> nowUser = userService.reloadUser(userService.getThisUser().getUsername());
+        model.addAttribute("user", user);
         return "profile";
     }
 
@@ -36,11 +39,11 @@ public class UserController {
     }
 
     @PostMapping(path = "/api/register")
-    public String checkIn(User user) {
-        if (user.getPassword().toCharArray().length >= 5 && user.getEmail()
-                .contains("@") && user.getEmail().contains(".")) {
+    public String checkIn(@Valid User user) {
+        if (user.getEmail().contains(".")) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             user.setEnabled(false);
+            user.setAvatar("default");
             user.grantAuthority(Role.ROLE_USER);
             userService.saveUser(user);
             return "reg";
@@ -58,7 +61,7 @@ public class UserController {
     }
 
     @PutMapping(path = "/update/user/{username}", consumes={"application/json"})
-    public void changeUser(Model model, @PathVariable String username, @RequestBody User user) {
+    public void changeUser(@PathVariable String username, @RequestBody User user) {
         userService.updateUser(user.getLastName(),user.getFirstName(),username);
     }
 

@@ -1,4 +1,6 @@
-package com.example.mywebquizengine.Model;
+package com.example.mywebquizengine.Model.Test;
+
+import com.example.mywebquizengine.Model.User;
 
 import javax.persistence.*;
 import java.util.List;
@@ -16,7 +18,7 @@ public class UserTestAnswer {
     @OneToMany(mappedBy = "userAnswerId", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserQuizAnswer> userQuizAnswers;
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false, cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(nullable = false, name = "test_id")
     private Test test;
 

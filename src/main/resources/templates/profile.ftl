@@ -1,4 +1,5 @@
 <#import "parts/common.ftl" as e>
+<#include "parts/security.ftl">
 
 <@e.page>
 <#--    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>-->
@@ -20,9 +21,26 @@
             <input type="text" class="form-control" id="validationDefault03" disabled value="${user.email}" name="email" required>
         </div>
         <div class="col-md-6 mb-3">
-            <label for="validationDefault03">Статус аккаунта</label>
+            <label for="validationDefault04">Статус аккаунта</label>
             <input type="text" class="form-control" id="validationDefault04" disabled value="${user.status?c}" name="email" required>
         </div>
+
+
+        <div class="col-md-6 mb-3">
+            <form method="post" enctype="multipart/form-data" action="/upload">
+                <label for="formFile" class="form-label">Фотография</label>
+                <input class="form-control" type="file" id="formFile" name="file">
+                <label for="test" class="mt-2">Нажмите чтобы загрузить</label>
+                <button type="submit"  class="btn btn-primary form-control" id="test">Отправить</button>
+            </form>
+        </div>
+
+        <div>
+
+        <img width="100px" height="100px" src="../../../../img/${user.avatar}.jpg" alt="../../../../img/${user.avatar}.jpg">
+
+        </div>
+
     </div>
 
     <div class="form-group">
@@ -37,9 +55,9 @@
     <#--<div class="modal-dialog modal-dialog-centered">
         <button onclick="" type="button" class="btn btn-primary ml-2 my-1">Изменить пароль</button>
     </div>-->
-<#--    </form>-->
+<#--    </form>&ndash;&gt;
 
-        <!-- Button trigger modal -->
+        <!-- Button trigger modal &ndash;&gt;
         <button type="button" class="btn btn-primary ml-2 my-1" data-toggle="modal" data-target="#staticBackdrop">
             Изменить пароль
         </button>
@@ -70,7 +88,6 @@
                 </div>
             </div>
         </div>
-
 
 
 

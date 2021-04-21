@@ -1,5 +1,6 @@
-package com.example.mywebquizengine.Model;
+package com.example.mywebquizengine.Model.Test;
 
+import com.example.mywebquizengine.Model.Test.UserTestAnswer;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;

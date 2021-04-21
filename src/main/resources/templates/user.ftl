@@ -33,6 +33,6 @@
         <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
     </div>
 
-
+    <button onclick="location.href = 'http://localhost:8080/chat/${user.username}'" id="confirm" type="submit" class="btn btn-primary ml-2 my-1">Написать сообщение</button>
 
 </@e.page>

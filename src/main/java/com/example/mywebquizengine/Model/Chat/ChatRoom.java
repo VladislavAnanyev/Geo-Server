@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.Model;
+package com.example.mywebquizengine.Model.Chat;
 
 public class ChatRoom {
     private Long id;

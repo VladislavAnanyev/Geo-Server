@@ -13,27 +13,35 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 import java.util.List;
 
+
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    /*
+
+/*
     Конфигурирует брокер сообщений в памяти с одним адресом с префиксом /user для отправки и получения сообщений.
     Адреса с префиксом /app предназначены для сообщений, обрабатываемых методами с аннотацией @MessageMapping
-     */
-    @Override
+     *//*
+
+    */
+@Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker( "/user");
+        config.enableSimpleBroker( "/topic");
         config.setApplicationDestinationPrefixes("/app");
-        config.setUserDestinationPrefix("/user");
+        //config.setUserDestinationPrefix("/topic");
     }
 
-    /*
+
+
+/*
     Регистрирация конечной точки STOMP /ws.
     Эта конечная точка будет использоваться клиентами для подключения к STOMP-серверу.
     Здесь также включается резервный SockJS, который будет использоваться, если WebSocket будет недоступен.
-     */
-    @Override
+     *//*
+
+    */
+@Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry
                 .addEndpoint("/ws")
@@ -41,10 +49,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .withSockJS();
     }
 
-    /*
+
+
+/*
     Конвертер JSON, который используется Spring для преобразования сообщений из/в JSON.
-     */
-    @Override
+     *//*
+
+    */
+@Override
     public boolean configureMessageConverters(List<MessageConverter> messageConverters) {
         DefaultContentTypeResolver resolver = new DefaultContentTypeResolver();
         resolver.setDefaultMimeType(MimeTypeUtils.APPLICATION_JSON);
@@ -54,4 +66,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         messageConverters.add(converter);
         return false;
     }
+
 }
+

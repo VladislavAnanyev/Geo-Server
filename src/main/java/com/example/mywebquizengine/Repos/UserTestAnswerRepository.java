@@ -1,7 +1,6 @@
 package com.example.mywebquizengine.Repos;
 
-import com.example.mywebquizengine.Model.UserQuizAnswer;
-import com.example.mywebquizengine.Model.UserTestAnswer;
+import com.example.mywebquizengine.Model.Test.UserTestAnswer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;

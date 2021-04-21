@@ -1,7 +1,6 @@
 package com.example.mywebquizengine.Service;
 
-import com.example.mywebquizengine.Model.Quiz;
-import com.example.mywebquizengine.Model.Test;
+import com.example.mywebquizengine.Model.Test.Quiz;
 import com.example.mywebquizengine.Repos.QuizRepository;
 import com.example.mywebquizengine.Repos.TestRepository;
 import org.springframework.beans.factory.annotation.Autowired;

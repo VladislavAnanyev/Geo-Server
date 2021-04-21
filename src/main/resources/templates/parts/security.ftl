@@ -4,8 +4,9 @@
 
 <#if known>
     <#assign
-        user = Session.SPRING_SECURITY_CONTEXT.authentication.principal
-        name = user.getUsername()
+        nowUser = Session.SPRING_SECURITY_CONTEXT.authentication.principal
+        name = nowUser.getUsername()
+
     >
     <#else>
     <#assign

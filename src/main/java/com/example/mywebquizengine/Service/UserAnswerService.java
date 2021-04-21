@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.Service;
 
-import com.example.mywebquizengine.Model.UserQuizAnswer;
-import com.example.mywebquizengine.Model.UserTestAnswer;
+import com.example.mywebquizengine.Model.Test.UserQuizAnswer;
+import com.example.mywebquizengine.Model.Test.UserTestAnswer;
 import com.example.mywebquizengine.Repos.UserQuizAnswerRepository;
 import com.example.mywebquizengine.Repos.UserTestAnswerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.List;
 
 @Service
 public class UserAnswerService  {

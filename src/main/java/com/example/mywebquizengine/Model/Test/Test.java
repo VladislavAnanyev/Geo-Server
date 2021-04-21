@@ -1,5 +1,6 @@
-package com.example.mywebquizengine.Model;
+package com.example.mywebquizengine.Model.Test;
 
+import com.example.mywebquizengine.Model.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
@@ -16,7 +17,7 @@ public class Test {
     @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<@Valid Quiz> quizzes;
 
-    @ManyToOne
+    @ManyToOne/*(fetch = FetchType.EAGER, optional = false, cascade = CascadeType.ALL)*/
     @JoinColumn
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private User user;
@@ -57,4 +58,5 @@ public class Test {
     public List<UserTestAnswer> getAnswers() {
         return answers;
     }
+
 }

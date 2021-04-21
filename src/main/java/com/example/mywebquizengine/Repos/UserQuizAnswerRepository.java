@@ -1,14 +1,10 @@
 package com.example.mywebquizengine.Repos;
 
-import com.example.mywebquizengine.Model.UserQuizAnswer;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.example.mywebquizengine.Model.Test.UserQuizAnswer;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 public interface UserQuizAnswerRepository extends CrudRepository<UserQuizAnswer, Integer>,

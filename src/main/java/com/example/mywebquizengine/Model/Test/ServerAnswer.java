@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.Model;
+package com.example.mywebquizengine.Model.Test;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
