@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.Optional;
 
@@ -27,8 +28,8 @@ public class UserController {
     @GetMapping(path = "/profile")
     public String getProfile(Model model) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        //Optional<User> nowUser = userService.reloadUser(userService.getThisUser().getUsername());
-        model.addAttribute("user", user);
+        Optional<User> nowUser = userService.reloadUser(user.getUsername());
+        model.addAttribute("user", nowUser.get());
         return "profile";
     }
 
@@ -52,17 +53,25 @@ public class UserController {
         }
     }
 
+    @Transactional
     @PutMapping(path = "/update/userinfo/password", consumes={"application/json"})
     @ResponseBody
     public void changePassword(Model model, @RequestBody User user) {
-        user.setUsername(userService.getThisUser().getUsername());
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userService.updatePassword(user);
+        User userLogin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (user.getUsername().equals(userLogin.getUsername())) {
+            user.setUsername(userLogin.getUsername());
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            userService.updatePassword(user);
+        }
     }
 
+    @Transactional
     @PutMapping(path = "/update/user/{username}", consumes={"application/json"})
     public void changeUser(@PathVariable String username, @RequestBody User user) {
-        userService.updateUser(user.getLastName(),user.getFirstName(),username);
+        User userLogin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (userLogin.getUsername().equals(username)) {
+            userService.updateUser(user.getLastName(), user.getFirstName(), username);
+        }
     }
 
     @GetMapping(path = "/about/{username}")

@@ -1,20 +1,51 @@
 function changePass() {
+    let username = $('input[name=username]').val();
+    let oldPass = $('input[name=password]').val();
+    let xhrPost = new XMLHttpRequest();
+    let jsonPost = {
+        username: username,
+        password: oldPass
+    }
+
+    console.log(username)
+
     let pass1 = $('input[name=password1]').val();
     let pass2 = $('input[name=password2]').val();
+
+    xhrPost.open('POST', '/login');
+    xhrPost.setRequestHeader('Content-type','application/x-www-form-urlencoded; charset=utf-8');
+    xhrPost.onreadystatechange = function () {
+        if(xhrPost.readyState === XMLHttpRequest.DONE && xhrPost.status === 200) {
+            console.log("dsfasdf")
+            f(pass1, pass2);
+        }
+    };
+    xhrPost.send(JSON.stringify(jsonPost));
+
+
+
+
+}
+
+function f(pass1, pass2) {
+    let username = $('input[name=username]').val();
     if (pass1 === pass2) {
-        let xhr = new XMLHttpRequest();
-        let json = {
+        let xhrPut = new XMLHttpRequest();
+        let jsonPut = {
+            username: username,
             password: pass1
         }
 
-        xhr.open('PUT', '/update/userinfo/password');
-        xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
-        xhr.onreadystatechange = function () {
-            if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+
+
+        xhrPut.open('PUT', '/update/userinfo/password');
+        xhrPut.setRequestHeader('Content-type','application/json; charset=utf-8');
+        xhrPut.onreadystatechange = function () {
+            if(xhrPut.readyState === XMLHttpRequest.DONE && xhrPut.status === 200) {
                 console.log("asdfg");
             }
         };
-        xhr.send(JSON.stringify(json));
+        xhrPut.send(JSON.stringify(jsonPut));
         console.log("Успех");
         document.getElementById("password1").style.background = 'MediumSpringGreen';
         document.getElementById("password2").style.background = 'MediumSpringGreen';
@@ -23,6 +54,4 @@ function changePass() {
         document.getElementById("password2").style.background = 'Salmon';
         console.log("Ошибка");
     }
-
-
 }

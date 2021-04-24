@@ -5,6 +5,7 @@ import com.example.mywebquizengine.Repos.UserRepository;
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -41,7 +42,8 @@ public class UserService implements UserDetailsService {
     }
 
     public void setAvatar(String avatar) {
-        userRepository.setAvatar(avatar, getThisUser().getUsername());
+        User userLogin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        userRepository.setAvatar(avatar, userLogin.getUsername());
     }
 
     public void saveUser(User user){

@@ -25,6 +25,8 @@
 <script src="../static/custom.js"></script>
 <script src="../static/activeChat.js"></script>
 <script>connect()</script>
+
+
 <div class="container">
     <div class="messaging">
         <div class="inbox_msg">
@@ -41,7 +43,7 @@
                 </span> </div>
                     </div>
                 </div>
-                <div class="inbox_chat">
+                <div class="inbox_chat" id="dialogs">
 
                         <#list lastDialogs as dialog>
                             <#if dialog.recipient.username == myUsername.username>
@@ -49,7 +51,7 @@
                                     <div class="chat_people">
                                         <div class="chat_img"> <img src="<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialog.sender.avatar}.jpg" alt="sunil"> </div>
                                         <div class="chat_ib">
-                                            <h5> ${dialog.sender.username} <span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
+                                            <h5 class="dialogsuser">${dialog.sender.username}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
                                             <p>${dialog.content}</p>
                                         </div>
                                     </div>
@@ -60,7 +62,7 @@
                                     <div class="chat_people">
                                         <div class="chat_img"> <img src="<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialog.recipient.avatar}.jpg" alt="sunil"> </div>
                                         <div class="chat_ib">
-                                            <h5> ${dialog.recipient.username} <span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
+                                            <h5 class="dialogsuser">${dialog.recipient.username}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
                                             <p>${dialog.content}</p>
                                         </div>
                                     </div>
@@ -100,7 +102,7 @@
 
 
                             <div class="incoming_msg">
-                                <div class="incoming_msg_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
+                                <div class="incoming_msg_img"> <img src="../../../../img/${msg.sender.avatar}.jpg" alt="sunil"> </div>
                                 <div class="received_msg">
                                     <div class="received_withd_msg">
                                         <p>${msg.content}</p>
@@ -133,9 +135,43 @@
 
 
 
-    </div></div>
+    </div>
+</div>
+
+<script>
+    let dialog = document.getElementById("dialogs")
+    let div2 = document.createElement("div")
+    let dialogsName = document.getElementsByClassName("dialogsuser")
+    let dialogsNameArr = []
 
 
+    div2.setAttribute('id', "${user.username}")
+    div2.setAttribute('class', "chat_list")
+
+
+
+    for (let i = 0; i < dialogsName.length; i++) {
+        dialogsNameArr.push(dialogsName[i].textContent)
+        console.log(dialogsName[i].textContent)
+    }
+    //div2.setAttribute('class', "inbox_chat")
+    div2.innerHTML =
+        "                                    <div class=\"chat_people\">\n" +
+        "                                        <div class=\"chat_img\"> <img src=\"<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${user.avatar}.jpg\" alt=\"sunil\"> </div>\n" +
+        "                                        <div class=\"chat_ib\">\n" +
+        "                                            <h5 class=\"dialogsuser\">${user.username}<span class=\"chat_date\"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>\n" +
+        "                                            <p></p>\n" +
+        "                                        </div>\n" +
+        "                                    </div>\n" +
+        "                                </div>"
+
+    console.log(dialogsNameArr.indexOf("${user.username}"))
+    if (dialogsNameArr.indexOf("${user.username}") == -1) {
+    dialog.prepend(div2)
+
+    }
+
+</script>
 </body>
 </html>
 </@e.page>

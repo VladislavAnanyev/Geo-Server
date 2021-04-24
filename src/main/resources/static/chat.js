@@ -55,7 +55,7 @@ function onError(error) {
     connectingElement.style.color = 'red';*/
     console.log("fail")
 
-    //connect()
+    connect()
     console.log("try")
 }
 
@@ -86,13 +86,40 @@ function sendMessage(sender, recipient) {
     let last = document.getElementById("msg");
 
     last.append(div)
+    messageInput.value = ' '
 }
 
 
 function onMessageReceived(payload) {
     console.log("receive")
     var message = JSON.parse(payload.body);
+    let dialog = document.getElementById("dialogs")
 
+    let dialogsName = document.getElementsByClassName("dialogsuser")
+    let dialogsNameArr = []
+
+    for (let i = 0; i < dialogsName.length; i++) {
+        dialogsNameArr.push(dialogsName[i].textContent)
+        console.log(dialogsName[i].textContent)
+    }
+
+
+
+    let div2 = document.createElement("div")
+
+    div2.innerHTML = "<div id="+ message.recipient.username + " onclick="  + message.recipient.username + "  class=\"chat_list <#--active_chat-->\">\n" +
+        "                                    <div class=\"chat_people\">\n" +
+        "                                        <div class=\"chat_img\"> <img src=\"<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialog.recipient.avatar}.jpg\" alt=\"sunil\"> </div>\n" +
+        "                                        <div class=\"chat_ib\">\n" +
+        "                                            <h5 class=\"dialogsuser\">${dialog.recipient.username}<span class=\"chat_date\"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>\n" +
+        "                                            <p>${dialog.content}</p>\n" +
+        "                                        </div>\n" +
+        "                                    </div>\n" +
+        "                                </div>"
+
+    //if (!dialogsNameArr.indexOf(message.recipient.username)) {
+        dialog.append(div2)
+    //}
 
     //var messageElement = document.createElement('li');
 

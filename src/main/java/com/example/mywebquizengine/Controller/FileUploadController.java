@@ -1,7 +1,9 @@
 package com.example.mywebquizengine.Controller;
 
+import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -35,11 +37,12 @@ public class FileUploadController {
         if (!file.isEmpty()) {
             //name = userService.getThisUser().getAvatar();
             try {
-
+                User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
                 String uuid = UUID.randomUUID().toString();
                 uuid = uuid.substring(0,8);
                 byte[] bytes = file.getBytes();
 
+                //System.out.println(file.getContentType().);
 
                 BufferedOutputStream stream =
                         new BufferedOutputStream(new FileOutputStream(new File("img/" +
@@ -51,8 +54,9 @@ public class FileUploadController {
 
                 //file.transferTo(new File("C:/Users/avlad/IdeaProjects/WebQuiz" + name));
 
-
-                model.addAttribute("user", userService.reloadUser("application").get());
+                User userLogin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                userLogin.setAvatar(uuid);
+                model.addAttribute("user", userLogin);
                 return "profile";
             } catch (Exception e) {
                 return "Вам не удалось загрузить " + name + " => " + e.getMessage();
