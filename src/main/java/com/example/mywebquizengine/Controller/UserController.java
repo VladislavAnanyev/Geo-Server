@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.Optional;
+import java.util.UUID;
 
 @Controller
 public class UserController {
@@ -53,17 +54,48 @@ public class UserController {
         }
     }
 
-    @Transactional
-    @PutMapping(path = "/update/userinfo/password", consumes={"application/json"})
-    @ResponseBody
-    public void changePassword(Model model, @RequestBody User user) {
-        User userLogin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (user.getUsername().equals(userLogin.getUsername())) {
-            user.setUsername(userLogin.getUsername());
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            userService.updatePassword(user);
-        }
+    @PostMapping(path = "/update/userinfo/password", consumes ={"application/json"} )
+    public void tryToChangePass(@RequestBody String host) {
+        //model.addAttribute("notification", "");
+        userService.sendCodeForChangePassword(host);
+        //return "";
     }
+
+    //@Transactional
+    @GetMapping(path = "/updatepass/{changePasswordCode}")
+    public String changePasswordPage(@PathVariable String changePasswordCode) {
+        //User userLogin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Optional<User> user = userService.getUserViaChangePasswordCode(changePasswordCode);
+
+        if (user.isPresent()) {
+            return "changePassword";
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
+        //user.setUsername(userLogin.getUsername());
+        //user.setPassword(passwordEncoder.encode(user.getPassword()));
+        //userService.updatePassword(user);
+
+
+    }
+
+
+    @Transactional
+    @PutMapping(path = "/pass", consumes ={"application/json"})
+    public String changePassword(@RequestBody User user) {
+        User userLogin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        user.setUsername(userLogin.getUsername());
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setChangePasswordCode(UUID.randomUUID().toString());
+        userService.updatePassword(user);
+
+        return "changePassword";
+    }
+
+
 
     @Transactional
     @PutMapping(path = "/update/user/{username}", consumes={"application/json"})

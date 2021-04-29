@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 @Component
 public class Demo implements CommandLineRunner {
@@ -34,6 +35,7 @@ public class Demo implements CommandLineRunner {
         user.setEnabled(true);
         user.setStatus(true);
         user.setAvatar("default");
+        user.setChangePasswordCode(UUID.randomUUID().toString());
         user.grantAuthority(Role.ROLE_ADMIN);
         userRepository.save(user);
 

@@ -51,6 +51,7 @@ public class UserService implements UserDetailsService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         } else {
             user.setActivationCode(UUID.randomUUID().toString());
+            user.setChangePasswordCode(UUID.randomUUID().toString());
             userRepository.save(user);
             loadUserByUsername(user.getUsername());
             setThisUser(user); //? проверить нужно это вообще или нет
@@ -75,13 +76,20 @@ public class UserService implements UserDetailsService {
         userRepository.updateUserInfo(firstName, lastName, username);
     }
 
+    public void sendCodeForChangePassword(String host) {
+        User userLogin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = reloadUser(userLogin.getUsername()).get();
+        String mes = user.getChangePasswordCode();
+        mailSender.send(user.getEmail(),"Смена пароля в Quizzes", "http://" + host + "/updatepass/" + mes);
+    }
+
     //@Transactional
     public Optional<User> reloadUser(String username) {
         return userRepository.findById(username);
     }
 
     public void updatePassword(User user) {
-        userRepository.changePassword(user.getPassword(), user.getUsername());
+        userRepository.changePassword(user.getPassword(), user.getUsername(), user.getChangePasswordCode());
     }
 
     public void activateAccount(String activationCode) {
@@ -91,5 +99,11 @@ public class UserService implements UserDetailsService {
             userRepository.activateAccount(user.getUsername());
         }
 
+    }
+
+    public Optional<User> getUserViaChangePasswordCode(String changePasswordCode) {
+
+
+        return userRepository.findByChangePasswordCode(changePasswordCode);
     }
 }

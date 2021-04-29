@@ -117,9 +117,9 @@ function onMessageReceived(payload) {
         "                                    </div>\n" +
         "                                </div>"
 
-    //if (!dialogsNameArr.indexOf(message.recipient.username)) {
+    if (!dialogsNameArr.indexOf(message.recipient.username)) {
         dialog.append(div2)
-    //}
+    }
 
     //var messageElement = document.createElement('li');
 

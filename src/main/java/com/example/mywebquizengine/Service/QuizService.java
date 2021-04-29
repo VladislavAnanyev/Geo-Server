@@ -23,10 +23,12 @@ public class QuizService   {
     private TestRepository testRepository;
 
     public void saveQuiz(List<Quiz> quizList) {
-        //test.getQuizzes().get(0).setTitle(test.getQuizzes().get(0).getTitle().replace("<","|"));
+       // test.getQuizzes().get(0).setTitle(test.getQuizzes().get(0).getTitle().replace("<","|"));
         //test.setTitle(test.getTitle().replace("<","|"));
-       // testRepository.save(test);
+        //testRepository.save(test);
         for (int i = 0; i < quizList.size(); i++) {
+            quizList.get(i).setTitle(quizList.get(i).getTitle().replace("<","|"));
+            quizList.get(i).setText(quizList.get(i).getTitle().replace("<","|"));
             quizRepository.save(quizList.get(i));
         }
 

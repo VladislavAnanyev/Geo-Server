@@ -16,7 +16,7 @@
                 <input type="text" class="form-control" id="validationDefault03" name="email" required>
             </div>
         </div>
-        <div class="form-row">
+        <#--<div class="form-row">
             <div class="col-md-6 mb-3">
                 <label for="validationDefault03">Город</label>
                 <input type="text" class="form-control" id="validationDefault03">
@@ -30,7 +30,7 @@
             </div>
 
 
-        </div>
+        </div>-->
         <div class="form-group">
             <div class="form-check">
                 <input class="form-check-input" type="checkbox" value="" id="invalidCheck3" aria-describedby="invalidCheck3Feedback" required>

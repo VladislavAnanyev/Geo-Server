@@ -5,6 +5,7 @@
 <#--    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>-->
     <script src="/static/changePersonalInfo.js"></script>
     <script src="/static/changePassword.js"></script>
+    <script src="/static/emailMessageForChangePassword.js"></script>
 
 <#--    <form>-->
     <div class="form-row mt-2" id="profile">
@@ -68,15 +69,16 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
-                        <input type="text" class="form-control" id="oldpassword" placeholder="Придумайте новый пароль"  aria-describedby="emailHelp" name="password">
-                        <input type="text" class="form-control" id="password1" placeholder="Придумайте новый пароль"  aria-describedby="emailHelp" name="password1">
-                        <input type="text" class="form-control mt-3" id="password2" placeholder="Введите новый пароль ещё раз" aria-describedby="emailHelp" name="password2">
+                    <div class="form-group"> Вы действительно хотите изменить пароль?
+
+<#--                        <input type="text" class="form-control" id="oldpassword" placeholder="Придумайте новый пароль"  aria-describedby="emailHelp" name="password">-->
+                        <#--<input type="text" class="form-control" id="password1" placeholder="Придумайте новый пароль"  aria-describedby="emailHelp" name="password1">
+                        <input type="text" class="form-control mt-3" id="password2" placeholder="Введите новый пароль ещё раз" aria-describedby="emailHelp" name="password2">-->
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Назад</button>
-                    <button type="button" onclick="changePass()" class="btn btn-primary">Изменить</button>
+                    <button type="button" onclick="sendEmailMessage()" data-dismiss="modal" class="btn btn-primary">Да</button>
                 </div>
 
             </div>

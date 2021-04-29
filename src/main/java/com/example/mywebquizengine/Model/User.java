@@ -27,6 +27,8 @@ public class User implements UserDetails {
 
     private String activationCode;
 
+    private String changePasswordCode;
+
     @NotBlank
     @NotNull
     private String firstName;
@@ -192,6 +194,15 @@ public class User implements UserDetails {
     public void setRoles(List<Role> roles) {
         this.roles = roles;
     }
+
+    public String getChangePasswordCode() {
+        return changePasswordCode;
+    }
+
+    public void setChangePasswordCode(String changePasswordCode) {
+        this.changePasswordCode = changePasswordCode;
+    }
+
 
 
     public void setTests(List<Test> tests) {

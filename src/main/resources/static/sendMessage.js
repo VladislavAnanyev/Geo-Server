@@ -1,6 +1,7 @@
 
 function sendMsg(username) {
 
+
     let content = document.getElementById("inputtext");
 
     let json = {

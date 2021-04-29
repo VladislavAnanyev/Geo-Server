@@ -14,6 +14,8 @@ public interface UserRepository extends CrudRepository<User, String> {
     @Override
     Optional<User> findById(String s);
 
+
+
     @Modifying
     @Transactional
     @Query(value = "UPDATE USERS SET FIRST_NAME = :firstname, LAST_NAME = :lastname WHERE USERNAME = :username", nativeQuery = true)
@@ -21,8 +23,8 @@ public interface UserRepository extends CrudRepository<User, String> {
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE USERS SET PASSWORD = :password WHERE USERNAME = :username", nativeQuery = true)
-    void changePassword(String password, String username);
+    @Query(value = "UPDATE USERS SET PASSWORD = :password, CHANGE_PASSWORD_CODE = :changePasswordCode WHERE USERNAME = :username", nativeQuery = true)
+    void changePassword(String password, String username, String changePasswordCode);
 
     @Modifying
     @Transactional
@@ -37,4 +39,8 @@ public interface UserRepository extends CrudRepository<User, String> {
     @Transactional
     @Query(value = "UPDATE USERS SET status = true WHERE USERNAME = :username", nativeQuery = true)
     void activateAccount(String username);
+
+
+    @Query(value = "SELECT * FROM USERS WHERE CHANGE_PASSWORD_CODE = :changePasswordCode", nativeQuery = true )
+    Optional<User> findByChangePasswordCode(String changePasswordCode);
 }
