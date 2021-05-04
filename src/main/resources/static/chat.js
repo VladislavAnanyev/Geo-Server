@@ -106,19 +106,29 @@ function onMessageReceived(payload) {
 
 
     let div2 = document.createElement("div")
+    div2.setAttribute('class', "chat_list")
+    div2.setAttribute('id', message.sender.username)
+    div2.setAttribute('onclick', "activeChat(" + message.sender.username + ")")
 
-    div2.innerHTML = "<div id="+ message.recipient.username + " onclick="  + message.recipient.username + "  class=\"chat_list <#--active_chat-->\">\n" +
+    div2.innerHTML =
         "                                    <div class=\"chat_people\">\n" +
-        "                                        <div class=\"chat_img\"> <img src=\"<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialog.recipient.avatar}.jpg\" alt=\"sunil\"> </div>\n" +
+        "                                        <div class=\"chat_img\"> <img src=\"../../../../img/" + message.sender.avatar + ".jpg" + "\" alt=\"sunil\"> </div>\n" +
         "                                        <div class=\"chat_ib\">\n" +
-        "                                            <h5 class=\"dialogsuser\">${dialog.recipient.username}<span class=\"chat_date\"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>\n" +
-        "                                            <p>${dialog.content}</p>\n" +
+        "                                            <h5 class=\"dialogsuser\">"+message.sender.username+"<span class=\"chat_date\"></span></h5>\n" +
+        "                                            <p>" + message.content + "</p>\n" +
         "                                        </div>\n" +
-        "                                    </div>\n" +
-        "                                </div>"
+        "                                    </div>"
 
-    if (!dialogsNameArr.indexOf(message.recipient.username)) {
-        dialog.append(div2)
+
+    console.log(message.sender.username)
+    console.log(dialogsNameArr.indexOf(message.sender.username))
+
+    if (dialogsNameArr.indexOf(message.sender.username) === -1) {
+        dialog.before(div2)
+    }
+
+    if (dialogsNameArr.indexOf(message.sender.username) === 0) {
+        document.getElementById("lastMsg" + message.sender.username).textContent = message.content
     }
 
     //var messageElement = document.createElement('li');
@@ -158,7 +168,7 @@ function onMessageReceived(payload) {
 
     let date = new Date(message.timestamp)
     div.innerHTML =
-        "<div class=\"incoming_msg_img\"> <img src=\"https://ptetutorials.com/images/user-profile.png\" alt=\"sunil\"> </div>" +
+        "<div class=\"incoming_msg_img\"> <img src=\"../../../../img/" + message.sender.avatar + ".jpg" + "\" alt=\"sunil\"> </div>" +
         "                        <div class=\"received_msg\">\n" +
         "                        <div class=\"received_withd_msg\">\n" +
         "                            <p>" + message.content + "</p>\n" +
@@ -171,14 +181,6 @@ function onMessageReceived(payload) {
 }
 
 
-function getAvatarColor(messageSender) {
-    var hash = 0;
-    for (var i = 0; i < messageSender.length; i++) {
-        hash = 31 * hash + messageSender.charCodeAt(i);
-    }
-    var index = Math.abs(hash % colors.length);
-    return colors[index];
-}
 
 //usernameForm.addEventListener('submit', connect, true)
 

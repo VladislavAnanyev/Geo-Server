@@ -52,7 +52,7 @@
                                         <div class="chat_img"> <img src="<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialog.sender.avatar}.jpg" alt="sunil"> </div>
                                         <div class="chat_ib">
                                             <h5 class="dialogsuser">${dialog.sender.username}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
-                                            <p>${dialog.content}</p>
+                                            <p id="lastMsg${dialog.sender.username}">${dialog.content}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -63,7 +63,7 @@
                                         <div class="chat_img"> <img src="<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialog.recipient.avatar}.jpg" alt="sunil"> </div>
                                         <div class="chat_ib">
                                             <h5 class="dialogsuser">${dialog.recipient.username}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
-                                            <p>${dialog.content}</p>
+                                            <p id="lastMsg${dialog.recipient.username}">${dialog.content}</p>
                                         </div>
                                     </div>
                                 </div>
