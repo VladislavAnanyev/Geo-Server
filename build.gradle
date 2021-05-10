@@ -89,6 +89,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.session:spring-session-jdbc'
     implementation 'org.springframework.session:spring-session-core'
+    // https://mvnrepository.com/artifact/com.paypal.sdk/rest-api-sdk
+    implementation group: 'com.paypal.sdk', name: 'rest-api-sdk', version: '1.14.0'
 
     //compile group: 'org.freemarker', name: 'freemarker', version: '2.3.14'
     runtimeOnly 'com.h2database:h2'
@@ -108,6 +110,11 @@ dependencies {
     //compile 'org.apache.commons:commons-pool2'
     compile 'org.springframework.session:spring-session-core:2.0.0.RELEASE'
     compile 'org.springframework.session:spring-session-jdbc:2.0.0.RELEASE'
+
+    // https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api
+/*    compileOnly group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1'
+    compileOnly group: 'javax.servlet', name: 'servlet-api', version: '3.0-alpha-1'
+    compileOnly group: 'javax.servlet', name: 'servlet-api', version: '2.5'*/
 
 }
 

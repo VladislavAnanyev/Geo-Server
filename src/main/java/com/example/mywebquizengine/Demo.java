@@ -9,6 +9,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -25,7 +27,7 @@ public class Demo implements CommandLineRunner {
     private UserService userService;
 
     @Override
-    public void run(String... args) {
+    public void run(String... args) throws UnknownHostException {
         User user = new User();
         user.setUsername("application");
         user.setPassword(passwordEncoder.encode("password"));
@@ -38,6 +40,7 @@ public class Demo implements CommandLineRunner {
         user.setChangePasswordCode(UUID.randomUUID().toString());
         user.grantAuthority(Role.ROLE_ADMIN);
         userRepository.save(user);
+
 
     }
 }

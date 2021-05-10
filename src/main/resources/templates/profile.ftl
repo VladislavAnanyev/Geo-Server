@@ -40,9 +40,17 @@
 
         <img width="100px" height="100px" src="../../../../img/${user.avatar}.jpg" alt="../../../../img/${user.avatar}.jpg">
 
+
+
         </div>
 
+
+
     </div>
+
+   <#-- <div>
+        <video controls width="400" height="300" src="../../../../video/drownedInst.mp4"></video>
+    </div>-->
 
     <div class="form-group">
         <label for="exampleInputEmail1">Логин</label>
@@ -83,6 +91,9 @@
 
             </div>
         </div>
+
+
+
     </div>
 
 

@@ -62,31 +62,34 @@ function onError(error) {
 
 function sendMessage(sender, recipient) {
     let messageInput = document.getElementById("inputtext");
-    var messageContent = messageInput.value.trim();
-    if(messageContent && stompClient) {
-        var chatMessage = {
-            sender: {username: sender},
-            content: messageInput.value,
-            recipient: {username: recipient}
-        };
-        stompClient.send("/app/user/" + recipient, {}, JSON.stringify(chatMessage));
+    if (messageInput.value.length !== 0) {
 
+        var messageContent = messageInput.value.trim();
+        if(messageContent && stompClient) {
+            var chatMessage = {
+                sender: {username: sender},
+                content: messageInput.value,
+                recipient: {username: recipient}
+            };
+            stompClient.send("/app/user/" + recipient, {}, JSON.stringify(chatMessage));
+
+        }
+
+        let date = new Date()
+        let div = document.createElement("div");
+        div.setAttribute('class', "outgoing_msg")
+
+        div.innerHTML =
+            "                        <div class=\"sent_msg\">\n" +
+            "                            <p>" + messageInput.value + "</p>\n" +
+            "                            <span class=\"time_date\">" +  date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div>\n"
+
+
+        let last = document.getElementById("msg");
+
+        last.append(div)
+        messageInput.value = ' '
     }
-
-    let date = new Date()
-    let div = document.createElement("div");
-    div.setAttribute('class', "outgoing_msg")
-
-    div.innerHTML =
-        "                        <div class=\"sent_msg\">\n" +
-        "                            <p>" + messageInput.value + "</p>\n" +
-        "                            <span class=\"time_date\">" +  date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div>\n"
-
-
-    let last = document.getElementById("msg");
-
-    last.append(div)
-    messageInput.value = ' '
 }
 
 

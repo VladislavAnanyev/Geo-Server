@@ -103,9 +103,9 @@ public class ChatController {
         return message;
     }
 
-    @GetMapping(path = "/testch")
-    public String getChat(){
-        return "testchat";
+    @GetMapping(path = "/error")
+    public String handleError(){
+        return "error";
     }
 
 

@@ -18,8 +18,9 @@ public class MvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/static/**", "/img/**")
-                .addResourceLocations("classpath:/static/", "file:C:\\Users\\avlad\\IdeaProjects\\WebQuiz\\img\\");
+        registry.addResourceHandler("/static/**", "/img/**", "/video/**")
+                .addResourceLocations("classpath:/static/", "file:C:\\Users\\avlad\\IdeaProjects\\WebQuiz\\img\\",
+                        "file:C:\\Users\\avlad\\IdeaProjects\\WebQuiz\\video\\");
     }
 
     @Bean

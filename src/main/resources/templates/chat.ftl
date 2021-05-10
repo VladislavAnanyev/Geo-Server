@@ -45,7 +45,7 @@
                 </div>
                 <div class="inbox_chat" id="dialogs">
 
-                        <#list lastDialogs as dialog>
+                        <#list lastDialogs?if_exists as dialog>
                             <#if dialog.recipient.username == myUsername.username>
                                 <div id="${dialog.sender.username}" onclick="activeChat(${dialog.sender.username})"  class="chat_list <#--active_chat-->">
                                     <div class="chat_people">
@@ -71,24 +71,28 @@
                             </#if>
                         </#list>
 
-                   <#-- </div>-->
+<#--                </div>-->
 
+                    <#if user??>
                     <script type="text/javascript">
                         function funonload() {
-                            if (location.href.includes('/chat/${user.username}')) {
-                                let id = document.getElementById("${user.username}");
-                                id.setAttribute('class',"chat_list active_chat")
-                            }
+
+                                if (location.href.includes('/chat/${user.username}')) {
+                                    let id = document.getElementById("${user.username}");
+                                    id.setAttribute('class', "chat_list active_chat")
+                                }
+
                         }
                         window.onload = funonload;
                     </script>
+                    </#if>
 
                 </div>
 
             </div>
             <div class="mesgs">
                 <div class="msg_history" id="msg">
-                    <#list messages as msg>
+                    <#list messages?if_exists as msg>
                         <#if msg.recipient.username == user.username>
 
 
@@ -123,13 +127,17 @@
 
 
                 </div>
+                <#if user??>
                 <div class="type_msg">
                     <div class="input_msg_write">
                         <input type="text" class="write_msg" id="inputtext" placeholder="Type a message" />
                         <#--<button onclick="sendMsg('${user.username}')" class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>-->
+
                         <button onclick="sendMessage('${name}', '${user.username}')" class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
+
                     </div>
                 </div>
+                </#if>
             </div>
         </div>
 
@@ -138,6 +146,7 @@
     </div>
 </div>
 
+<#if user??>
 <script>
     let dialog = document.getElementById("dialogs")
     let div2 = document.createElement("div")
@@ -172,6 +181,19 @@
     }
 
 </script>
+
+
+<script>
+    document.addEventListener("keypress", function(e) {
+        let messageInput = document.getElementById("inputtext");
+        if (e.key === "Enter" && messageInput.value !== ' '){
+            sendMessage('${name}', '${user.username}')
+        }
+    });
+
+</script>
+</#if>
+
 </body>
 </html>
 </@e.page>
