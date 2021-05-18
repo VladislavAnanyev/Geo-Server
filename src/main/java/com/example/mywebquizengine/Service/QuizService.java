@@ -34,10 +34,6 @@ public class QuizService   {
 
     }
 
-    public ArrayList<Quiz> reloadQuiz() {
-        return (ArrayList<Quiz>) quizRepository.findAll();
-    }
-
 
     public void deleteQuiz(int id) {
         if (quizRepository.findById(id).isPresent()) {

@@ -13,6 +13,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+
+
 @Configuration
 @EnableWebSecurity(debug=true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
@@ -36,19 +38,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http
                 .authorizeRequests()
-                    .antMatchers("/api/register", "/activate/*", "/api/quizzes", "/reg","/").permitAll()
+                    .antMatchers("/api/register", "/activate/*", "/api/quizzes", "/reg","/","/signin", "/checkyandex").permitAll()
                     .anyRequest().authenticated()
                 //.antMatchers("/api/quizzes/**").authenticated()
                 //.and().httpBasic();
                 .and()
                     .formLogin()
-                    .loginPage("/login")
+                    .loginPage("/signin")
+                .and().oauth2Login().defaultSuccessUrl("/loginSuccess")
                     .permitAll()
                 .and()
                     .logout()
                     .permitAll()
                 .and()
                 .rememberMe();
+                //.and().oauth2Login();
     }
 
     @Bean

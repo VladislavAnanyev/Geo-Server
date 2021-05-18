@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.Service;
 
+import com.example.mywebquizengine.Model.Role;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.UserRepository;
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
@@ -9,12 +10,15 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
 import java.util.Optional;
 import java.util.UUID;
+
+import static com.example.mywebquizengine.Controller.QuizController.getAuthUser;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -25,25 +29,20 @@ public class UserService implements UserDetailsService {
     @Autowired
     private MailSender mailSender;
 
-    private User thisUser;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> user = userRepository.findById(username);
 
-
-
         if (user.isPresent()) {
-            setThisUser(user.get());
             return user.get();
         }else {
             throw new UsernameNotFoundException(String.format("Username[%s] not found",username));
         }
     }
 
-    public void setAvatar(String avatar) {
-        User userLogin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        userRepository.setAvatar(avatar, userLogin.getUsername());
+    public void setAvatar(String avatar, User user) {
+        userRepository.setAvatar(avatar, user.getUsername());
     }
 
     public void saveUser(User user){
@@ -54,7 +53,6 @@ public class UserService implements UserDetailsService {
             user.setChangePasswordCode(UUID.randomUUID().toString());
             userRepository.save(user);
             loadUserByUsername(user.getUsername());
-            setThisUser(user); //? проверить нужно это вообще или нет
 
             String mes = user.getFirstName() + " " + user.getLastName() + ", Добро пожаловать в Quizzes! "
                     + "Для активации аккаунта перейдите по ссылке: http://localhost:8080/activate/" + user.getActivationCode();
@@ -64,21 +62,16 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public void setThisUser(User thisUser) {
-        this.thisUser = thisUser;
-    }
 
-    public User getThisUser() {
-        return thisUser;
-    }
+
 
     public void updateUser(String lastName, String firstName, String username) {
         userRepository.updateUserInfo(firstName, lastName, username);
     }
 
-    public void sendCodeForChangePassword(String host) {
-        User userLogin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = reloadUser(userLogin.getUsername()).get();
+    public void sendCodeForChangePassword(String host, User user) {
+        //User userLogin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        //User user = reloadUser(userLogin.getUsername()).get();
         String mes = user.getChangePasswordCode();
         mailSender.send(user.getEmail(),"Смена пароля в Quizzes", "http://" + host + "/updatepass/" + mes);
     }
@@ -106,4 +99,63 @@ public class UserService implements UserDetailsService {
 
         return userRepository.findByChangePasswordCode(changePasswordCode);
     }
+
+    public void tryToSaveUser(User user) {
+
+        if (!userRepository.findById(user.getUsername()).isPresent()) {
+            userRepository.save(user);
+        }
+
+    }
+
+    public User castToUser(OAuth2AuthenticationToken authentication) {
+
+        User user = new User();
+
+        if (authentication.getAuthorizedClientRegistrationId().equals("google")) {
+
+
+
+            String username = ((String) authentication.getPrincipal().getAttributes()
+                    .get("email")).replace("@gmail.com", "");
+
+            if (userRepository.findById(username).isPresent()) {
+                user = userRepository.findById(username).get();
+            } else {
+
+            user.setEmail((String) authentication.getPrincipal().getAttributes().get("email"));
+            user.setFirstName((String) authentication.getPrincipal().getAttributes().get("given_name"));
+            user.setLastName((String) authentication.getPrincipal().getAttributes().get("family_name"));
+
+            user.setStatus(true);
+            user.setUsername(((String) authentication.getPrincipal().getAttributes()
+                    .get("email")).replace("@gmail.com", ""));
+
+        }
+
+
+    } else if (authentication.getAuthorizedClientRegistrationId().equals("github")) {
+            user.setUsername(authentication.getPrincipal().getAttributes().get("login").toString());
+            user.setStatus(false);
+            user.setFirstName(authentication.getPrincipal().getAttributes().get("name").toString());
+            user.setLastName(authentication.getPrincipal().getAttributes().get("name").toString());
+
+            if (authentication.getPrincipal().getAttributes().get("email") != null) {
+                user.setEmail(authentication.getPrincipal().getAttributes().get("email").toString());
+            } else {
+                user.setEmail("default@default.com");
+            }
+
+        }
+
+        user.setAvatar("default");
+        user.setEnabled(true);
+        user.grantAuthority(Role.ROLE_USER);
+        user.setChangePasswordCode(UUID.randomUUID().toString());
+
+        return user;
+    }
+
+
+
 }

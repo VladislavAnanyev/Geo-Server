@@ -11,9 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PaymentServices {
-    private static final String CLIENT_ID = "AR7eaOvk-DB91tOIqsG8oFzYBNNZj9e1hYJHie46kDOkzSSI5zofEdMas6f27jUPFzZoROeTVoOgROV1";
-    private static final String CLIENT_SECRET = "EJs6o0Mpp_kPGgNQfkTWHKtf7q9ML7QWTHWaYdIc_YEhH0O5lWtJFtsrO0e1oaOB7UtFF5fsVfzWwC8L";
-    private static final String MODE = "sandbox";
+    private static final String CLIENT_ID = "AZhcxVtP4Zd8xT9YsigI82RHCoT3TgR-15KbWBKgODth8tEBAKirS40yYRN_RnZD-2I7q9I-UGT-23nS";
+    private static final String CLIENT_SECRET = "EIIuBSiMIrEcN8B9YWGzm6Okyn34-MDhP1_AM-DNQ-NM2U-g6v8rN4PQLQtMEPT7WhnmACDqrifFrw33";
+    private static final String MODE = "live";
 
 
 
@@ -28,7 +28,7 @@ public class PaymentServices {
         requestPayment.setTransactions(listTransaction);
         requestPayment.setRedirectUrls(redirectUrls);
         requestPayment.setPayer(payer);
-        requestPayment.setIntent("authorize");
+        requestPayment.setIntent("sale");
 
         APIContext apiContext = new APIContext(CLIENT_ID, CLIENT_SECRET, MODE);
 
@@ -43,9 +43,9 @@ public class PaymentServices {
         payer.setPaymentMethod("paypal");
 
         PayerInfo payerInfo = new PayerInfo();
-        payerInfo.setFirstName("William")
-                .setLastName("Peterson")
-                .setEmail("william.peterson@company.com");
+        payerInfo.setFirstName("Владислав")
+                .setLastName("Ананьев")
+                .setEmail("a.vlad.v@yandex.ru");
 
         payer.setPayerInfo(payerInfo);
 
@@ -84,6 +84,7 @@ public class PaymentServices {
         transaction.setAmount(amount);
         transaction.setDescription(orderDetail.getProductName());
 
+
         ItemList itemList = new ItemList();
         List<Item> items = new ArrayList<>();
 
@@ -93,10 +94,28 @@ public class PaymentServices {
         item.setPrice(orderDetail.getSubtotal());
         item.setTax(orderDetail.getTax());
         item.setQuantity("1");
+        item.setSku("1");
+
 
         items.add(item);
         itemList.setItems(items);
+
+        /*ShippingAddress shippingAddress = new ShippingAddress();
+        shippingAddress.setCountryCode("US");
+        shippingAddress.setRecipientName("Александр");
+        shippingAddress.setLine1("Первая линия");
+        shippingAddress.setCity("Москва");
+        shippingAddress.setState("Москва");
+        shippingAddress.setPostalCode("345654");
+        itemList.setShippingAddress(shippingAddress);*/
+
         transaction.setItemList(itemList);
+
+        //
+
+        //shippingAddress.setCountryCode("RU");
+
+        //transaction.getItemList().setShippingAddress(shippingAddress);
 
         List<Transaction> listTransaction = new ArrayList<>();
         listTransaction.add(transaction);

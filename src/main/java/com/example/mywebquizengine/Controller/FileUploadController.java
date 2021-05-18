@@ -3,7 +3,9 @@ package com.example.mywebquizengine.Controller;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -15,34 +17,29 @@ import java.io.FileOutputStream;
 import java.util.Random;
 import java.util.UUID;
 
+import static com.example.mywebquizengine.Controller.QuizController.getAuthUser;
+
 @Controller
 public class FileUploadController {
 
     @Autowired
     private UserService userService;
 
-    //@RequestMapping(value="/upload", method= RequestMethod.GET)
     @GetMapping(path = "/upload")
     @ResponseBody
     public String provideUploadInfo() {
         return "profile";
     }
 
-    //@RequestMapping(value="/upload", method=RequestMethod.POST)
     @PostMapping(path = "/upload")
-    public String handleFileUpload(Model model, @RequestParam("file") MultipartFile file) {
+    public String handleFileUpload(Model model, @RequestParam("file") MultipartFile file, Authentication authentication) {
         String name = file.getOriginalFilename();
-        //File file1 = new File("C:\\Users\\avlad\\IdeaProjects\\WebQuiz\\src\\main\\resources\\static\\img\\" + userService.getThisUser().getAvatar() + ".jpg");
 
         if (!file.isEmpty()) {
-            //name = userService.getThisUser().getAvatar();
             try {
-                User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
                 String uuid = UUID.randomUUID().toString();
                 uuid = uuid.substring(0,8);
                 byte[] bytes = file.getBytes();
-
-                //System.out.println(file.getContentType().);
 
                 BufferedOutputStream stream =
                         new BufferedOutputStream(new FileOutputStream(new File("img/" +
@@ -50,11 +47,13 @@ public class FileUploadController {
                 stream.write(bytes);
                 stream.close();
 
-                userService.setAvatar(uuid);
+                User user = getAuthUser(authentication, userService);
+
+                userService.setAvatar(uuid, user);
 
                 //file.transferTo(new File("C:/Users/avlad/IdeaProjects/WebQuiz" + name));
 
-                User userLogin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                User userLogin = getAuthUser(authentication, userService);
                 userLogin.setAvatar(uuid);
                 model.addAttribute("user", userLogin);
                 return "profile";

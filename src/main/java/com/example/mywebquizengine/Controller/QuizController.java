@@ -10,9 +10,16 @@ import com.example.mywebquizengine.Service.QuizService;
 import com.example.mywebquizengine.Service.TestService;
 import com.example.mywebquizengine.Service.UserAnswerService;
 import com.example.mywebquizengine.Service.UserService;
-import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.http.HttpStatus;
@@ -22,10 +29,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 
-import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import java.security.Principal;
 import java.util.*;
 
 @Validated
@@ -39,10 +46,13 @@ public class QuizController {
     private UserAnswerService userAnswerService;
 
     @Autowired
-    private UserService userService;
+    public UserService userService;
 
     @Autowired
     private TestService testService;
+
+    @Autowired
+    private OAuth2AuthorizedClientService authorizedClientService;
 
 
     @GetMapping(path = "/api/quizzes")
@@ -57,14 +67,15 @@ public class QuizController {
     }
 
     @GetMapping(path = "/myquiz")
-    public String getMyQuizzes(Model model, @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
+    public String getMyQuizzes(Authentication authentication, Model model, @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
                                             @RequestParam(required = false,defaultValue = "10") @Min(1) @Max(10) Integer pageSize,
                                             @RequestParam(defaultValue = "id") String sortBy) {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        //String name = userService.getThisUser().getUsername();
+        //User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        User user = getAuthUser(authentication, userService);
         Page<Test> page1 = testService.getMyQuiz(user.getUsername(), page, pageSize, sortBy);
         model.addAttribute("myquiz", page1.getContent());
-        //model.addAttribute("opti", page1.getContent().get(0).getQuizzes().get(0).getOptions());
+
         return "myquiz";
     }
 
@@ -89,10 +100,13 @@ public class QuizController {
 
 
     @PostMapping(path = "/api/quizzes", consumes={"application/json"})
-    public String addQuiz(Model model, @RequestBody @Valid Test test) throws ResponseStatusException {
+    public String addQuiz(Model model, @RequestBody @Valid Test test, Authentication authentication) throws ResponseStatusException {
         try {
 
-            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            //User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+            User user = getAuthUser(authentication, userService);
+
             user.setTests(new ArrayList<>());
             user.setRoles(new ArrayList<>());
             test.setUser(user);
@@ -109,41 +123,22 @@ public class QuizController {
 
     @GetMapping(path = "/")
     public String home() {
+        Authentication authentication1 = SecurityContextHolder.getContext().getAuthentication();
         return "home";
     }
 
 
-    /*@PostMapping(path = "/api/quizzes/{id}/solve")
-    @ResponseBody
-    public String getAnswer(Model model, @PathVariable String id, @RequestBody QuizAnswer quizAnswer) {
-        //reloadQuizzes();
-
-        ServerAnswer thisServerAnswer = new ServerAnswer();
-        thisServerAnswer.quiz = quizService.findQuiz(Integer.parseInt(id));
-
-        quizAnswer.setUser(userService.getThisUser());
-        quizAnswer.setQuiz(thisServerAnswer.quiz);
-
-        thisServerAnswer.checkAnswer(quizAnswer.getAnswer());
-
-        quizAnswer.setStatus(thisServerAnswer.isSuccess());
-        quizAnswer.setCompletedAt(new GregorianCalendar());
-        quizAnswer.setQuiz(thisServerAnswer.quiz);
-        userAnswerService.saveAnswer(quizAnswer);
-
-        model.addAttribute("answer", thisServerAnswer);
-
-        return quizAnswer.getStatus().toString();
-    }*/
-
-
     @PostMapping(path = "/api/quizzes/{id}/solve")
     @ResponseBody
-    public String getAnswerOnTest(Model model, @PathVariable String id, @RequestBody UserTestAnswer userTestAnswer) {
+    public String getAnswerOnTest(Authentication authentication, Model model, @PathVariable String id, @RequestBody UserTestAnswer userTestAnswer) {
 
         StringBuilder result = new StringBuilder();
         List<UserQuizAnswer> userQuizAnswers = new ArrayList<>();
-        userTestAnswer.setUser((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+
+
+        User user = getAuthUser(authentication, userService);
+
+        userTestAnswer.setUser(user);
         userTestAnswer.setTest(testService.findTest(Integer.parseInt(id)));
         //for (int i = 0; i < userTestAnswer.getUserQuizAnswers().size(); i++) {
 
@@ -206,8 +201,11 @@ public class QuizController {
     }
 
     @DeleteMapping(path = "/api/quizzes/{id}")
-    public void deleteTest(@PathVariable Integer id) {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public void deleteTest(@PathVariable Integer id, Authentication authentication) {
+
+        User user = getAuthUser(authentication, userService);
+
+
         if (user.getUsername()
                 .equals(testService.findTest(id)
                         .getUser().getUsername())) {
@@ -221,8 +219,9 @@ public class QuizController {
 
     @PutMapping(path = "/update/{id}", consumes={"application/json"})
     @ResponseBody
-    public void changeTest(Model model, @PathVariable Integer id, @Valid @RequestBody Test test) throws ResponseStatusException {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public void changeTest(Model model, @PathVariable Integer id, @Valid @RequestBody Test test,
+                           Authentication authentication) throws ResponseStatusException {
+        User user = getAuthUser(authentication, userService);
         if (user.getUsername()
                 .equals(testService.findTest(id)
                         .getUser().getUsername())) {
@@ -241,8 +240,9 @@ public class QuizController {
 
 
     @GetMapping(path = "/update/{id}")
-    public String update(@PathVariable Integer id,   Model model) {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public String update(@PathVariable Integer id, Model model, Authentication authentication) {
+        User user = getAuthUser(authentication, userService);
+
         if (user.getUsername()
                 .equals(testService.findTest(id)
                         .getUser().getUsername())) {
@@ -252,6 +252,27 @@ public class QuizController {
         } else {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
+    }
+
+    public static User getAuthUser(Authentication authentication, UserService userService) {
+        String name = "";
+        if (authentication instanceof OAuth2AuthenticationToken) {
+
+            if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("google")) {
+
+                name = ((DefaultOidcUser) authentication.getPrincipal()).getAttributes().get("email")
+                        .toString().replace("@gmail.com", "");
+            } else if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("github")) {
+                name = ((DefaultOAuth2User) authentication.getPrincipal()).getAttributes().get("name")
+                        .toString();
+            }
+
+        } else {
+            User user = (User) authentication.getPrincipal();
+            name = user.getUsername();
+        }
+
+        return userService.reloadUser(name).get();
     }
 
     @GetMapping(path = "/api/quizzes/{id}/info/")

@@ -1,5 +1,5 @@
 <#include "security.ftl">
-<#import "../login.ftl" as e>
+<#import "../singin.ftl" as e>
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <a class="navbar-brand" href="/">Quizzes</a>
