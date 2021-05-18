@@ -38,7 +38,7 @@
 
         <div>
 
-        <img width="100px" height="100px" src="../../../../img/${user.avatar}.jpg" alt="../../../../img/${user.avatar}.jpg">
+        <img width="100px" height="100px" src="/../../../../img/${user.avatar}.jpg" alt="../../../../img/${user.avatar}.jpg">
 
 
 

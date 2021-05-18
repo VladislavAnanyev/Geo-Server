@@ -38,7 +38,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http
                 .authorizeRequests()
-                    .antMatchers("/api/register", "/activate/*", "/api/quizzes", "/reg","/","/signin", "/checkyandex").permitAll()
+                    .antMatchers("/api/register", "/activate/*",
+                            "/api/quizzes", "/reg",
+                            "/","/signin", "/checkyandex", "/h2-console/**").permitAll()
                     .anyRequest().authenticated()
                 //.antMatchers("/api/quizzes/**").authenticated()
                 //.and().httpBasic();
@@ -51,7 +53,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .logout()
                     .permitAll()
                 .and()
-                .rememberMe();
+                .rememberMe().and()
+                // for h2-console correct view
+                .headers()
+                .frameOptions()
+                .sameOrigin();
                 //.and().oauth2Login();
     }
 
