@@ -43,7 +43,7 @@ out/
 
 
 
-src/main/resources/*.properties
+src/main/resources/application.properties
 !/out/
 out/artifacts/
 out/production/resources/META-INF/
