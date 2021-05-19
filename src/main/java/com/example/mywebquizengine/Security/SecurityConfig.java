@@ -40,7 +40,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                     .antMatchers("/api/register", "/activate/*",
                             "/api/quizzes", "/reg",
-                            "/","/signin", "/checkyandex", "/h2-console/**").permitAll()
+                            "/","/signin", "/checkyandex", "/h2-console/**", "/.well-known/pki-validation/**").permitAll()
                     .anyRequest().authenticated()
                 //.antMatchers("/api/quizzes/**").authenticated()
                 //.and().httpBasic();
