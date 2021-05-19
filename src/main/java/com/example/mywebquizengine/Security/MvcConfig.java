@@ -19,11 +19,11 @@ public class MvcConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/static/**", "/img/**", "/video/**", "/.well-known/pki-validation/**")
-                /*.addResourceLocations("classpath:/static/", "file:/api/WebQuiz/img/",
-                        "file:/api/WebQuiz/video/");*/
+                .addResourceLocations("classpath:/static/", "file:/api/WebQuiz/img/",
+                        "file:/api/WebQuiz/video/", "file:/api/WebQuiz/.well-known/pki-validation/");
         // for Windows
-        .addResourceLocations("classpath:/static/", "file:C:\\Users\\avlad\\IdeaProjects\\WebQuiz\\img\\",
-                "file:C:\\Users\\avlad\\IdeaProjects\\WebQuiz\\video\\", "file:C:\\Users\\avlad\\IdeaProjects\\WebQuiz\\.well-known\\pki-validation\\");
+        /*.addResourceLocations("classpath:/static/", "file:C:\\Users\\avlad\\IdeaProjects\\WebQuiz\\img\\",
+                "file:C:\\Users\\avlad\\IdeaProjects\\WebQuiz\\video\\", "file:C:\\Users\\avlad\\IdeaProjects\\WebQuiz\\.well-known\\pki-validation\\");*/
     }
 
     @Bean
