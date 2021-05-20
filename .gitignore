@@ -41,8 +41,10 @@ out/
 .vscode/
 
 
-
-
+src/main/resources/keystore.p12
+src/main/resources/yourkeystore.jks
+*.p12
+*.jks
 src/main/resources/application.properties
 !/out/
 out/artifacts/
