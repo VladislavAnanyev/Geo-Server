@@ -55,9 +55,9 @@ public class UserService implements UserDetailsService {
             loadUserByUsername(user.getUsername());
 
             String mes = user.getFirstName() + " " + user.getLastName() + ", Добро пожаловать в Quizzes! "
-                    + "Для активации аккаунта перейдите по ссылке: http://localhost:8080/activate/" + user.getActivationCode();
+                    + "Для активации аккаунта перейдите по ссылке: https://webquizzes.me/activate/" + user.getActivationCode();
 
-            //mailSender.send(thisUser.getEmail(),"Активация аккаунта в Quizzes", mes);
+            mailSender.send(user.getEmail(),"Активация аккаунта в Quizzes", mes);
 
         }
     }
@@ -73,7 +73,7 @@ public class UserService implements UserDetailsService {
         //User userLogin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         //User user = reloadUser(userLogin.getUsername()).get();
         String mes = user.getChangePasswordCode();
-        mailSender.send(user.getEmail(),"Смена пароля в Quizzes", "http://" + host + "/updatepass/" + mes);
+        mailSender.send(user.getEmail(),"Смена пароля в Quizzes", "https://" + host + "/updatepass/" + mes);
     }
 
     //@Transactional

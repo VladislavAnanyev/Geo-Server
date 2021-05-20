@@ -15,9 +15,9 @@
             <li class="nav-item">
                 <a class="nav-link" href="/api/quizzes">Все викторины</a>
             </li>
-            <li class="nav-item">
+            <#--<li class="nav-item">
                 <a class="nav-link" href="">Завершённые</a>
-            </li>
+            </li>-->
             <li class="nav-item">
                 <a class="nav-link" href="/add">Добавить викторину</a>
             </li>
