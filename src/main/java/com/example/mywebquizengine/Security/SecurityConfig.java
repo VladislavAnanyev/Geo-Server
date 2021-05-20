@@ -37,6 +37,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable();
 
         http
+
                 .authorizeRequests()
                     .antMatchers("/api/register", "/activate/*",
                             "/api/quizzes", "/reg",
@@ -57,7 +58,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // for h2-console correct view
                 .headers()
                 .frameOptions()
-                .sameOrigin();
+                .sameOrigin().and()
+                .requiresChannel()
+                .anyRequest()
+                .requiresSecure();
                 //.and().oauth2Login();
     }
 
