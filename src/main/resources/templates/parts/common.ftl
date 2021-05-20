@@ -3,6 +3,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <head>
+    <meta name="yandex-verification" content="135f209071de02b1" />
+    </head>
     <meta charset="UTF-8">
     <title>Title</title>
 <#--    <link rel="stylesheet" type="text/css" href="/styles/style.css">-->
