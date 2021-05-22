@@ -87,7 +87,13 @@ function sendMessage(sender, recipient) {
 
         let last = document.getElementById("msg");
 
+
         last.append(div)
+        //window.scrollTo(0,document.querySelector("#msgcont").scroll);
+
+        var div2 = $("#msg");
+        div2.scrollTop(div2.prop('scrollHeight'));
+
         messageInput.value = ' '
     }
 }
@@ -181,6 +187,9 @@ function onMessageReceived(payload) {
     let last = document.getElementById("msg");
 
     last.append(div)
+
+    var div3 = $("#msg");
+    div3.scrollTop(div3.prop('scrollHeight'));
 }
 
 

@@ -42,3 +42,11 @@ spring.security.oauth2.client.registration.google.client-secret=INPUT
 
 spring.security.oauth2.client.registration.github.client-id=INPUT
 spring.security.oauth2.client.registration.github.client-secret=INPUT
+
+hostname=localhost
+server.port=443
+
+server.ssl.key-store-type=PKCS12
+server.ssl.key-store=
+server.ssl.key-store-password=
+server.ssl.key-alias=

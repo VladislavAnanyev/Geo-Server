@@ -90,7 +90,7 @@
                 </div>
 
             </div>
-            <div class="mesgs">
+            <div class="mesgs" id="msgcont">
                 <div class="msg_history" id="msg">
                     <#list messages?if_exists as msg>
                         <#if msg.recipient.username == user.username>
@@ -178,8 +178,11 @@
     if (dialogsNameArr.indexOf("${user.username}") == -1) {
     dialog.prepend(div2)
 
+
     }
 
+    var div3 = $("#msg");
+    div3.scrollTop(div3.prop('scrollHeight'));
 </script>
 
 

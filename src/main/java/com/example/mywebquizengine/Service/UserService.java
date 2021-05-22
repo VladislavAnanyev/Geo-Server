@@ -5,6 +5,7 @@ import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.UserRepository;
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,6 +30,8 @@ public class UserService implements UserDetailsService {
     @Autowired
     private MailSender mailSender;
 
+    @Value("${hostname}")
+    private String hostname;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -54,10 +57,10 @@ public class UserService implements UserDetailsService {
             userRepository.save(user);
             loadUserByUsername(user.getUsername());
 
-            String mes = user.getFirstName() + " " + user.getLastName() + ", Добро пожаловать в Quizzes! "
-                    + "Для активации аккаунта перейдите по ссылке: https://webquizzes.me/activate/" + user.getActivationCode();
+            String mes = user.getFirstName() + " " + user.getLastName() + ", Добро пожаловать в WebQuizzes! "
+                    + "Для активации аккаунта перейдите по ссылке: https://" + hostname + "/activate/" + user.getActivationCode();
 
-            mailSender.send(user.getEmail(),"Активация аккаунта в Quizzes", mes);
+            mailSender.send(user.getEmail(),"Активация аккаунта в WebQuizzes", mes);
 
         }
     }
@@ -73,7 +76,8 @@ public class UserService implements UserDetailsService {
         //User userLogin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         //User user = reloadUser(userLogin.getUsername()).get();
         String mes = user.getChangePasswordCode();
-        mailSender.send(user.getEmail(),"Смена пароля в Quizzes", "https://" + host + "/updatepass/" + mes);
+        mailSender.send(user.getEmail(),"Смена пароля в WebQuizzes", "Для смены пароля в WebQuizzes" +
+                " перейдите по ссылке: https://" + hostname + "/updatepass/" + mes);
     }
 
     //@Transactional

@@ -60,15 +60,16 @@ public class UserController {
 
     @PostMapping(path = "/api/register")
     public String checkIn(@Valid User user) {
-        if (user.getEmail().contains(".")) {
+        try {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             user.setEnabled(false);
             user.setAvatar("default");
             user.grantAuthority(Role.ROLE_USER);
             userService.saveUser(user);
             return "reg";
-        } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        } catch (Exception e){
+            return "error";
+            //throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
     }
 
