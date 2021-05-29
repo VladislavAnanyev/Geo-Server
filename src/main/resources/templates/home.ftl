@@ -9,7 +9,8 @@
         <p class="lead"> Добавляйте свои викторины, отвечайте на чужие, просматривайте статистику и многое другое.</p>
         <hr class="my-4">
         <p>Зарегистрируйтесь, чтобы получить возможность полноценно пользоваться сервисом.</p>
-        <a class="btn btn-primary btn-lg" href="/reg" role="button">Регистрация</a>
+        <a class="btn btn-primary" href="/reg" role="button">Регистрация</a>
+        <a class="btn btn-primary" href="/signin" role="button">Войти</a>
     </div>
 
 

@@ -58,14 +58,13 @@ public class UserService implements UserDetailsService {
             loadUserByUsername(user.getUsername());
 
             String mes = user.getFirstName() + " " + user.getLastName() + ", Добро пожаловать в WebQuizzes! "
-                    + "Для активации аккаунта перейдите по ссылке: https://" + hostname + "/activate/" + user.getActivationCode();
+                    + "Для активации аккаунта перейдите по ссылке: https://" + hostname + "/activate/" + user.getActivationCode()
+                    + "Если вы не регистрировались на данном ресурсе, то проигнорируйте это сообщение";
 
             mailSender.send(user.getEmail(),"Активация аккаунта в WebQuizzes", mes);
 
         }
     }
-
-
 
 
     public void updateUser(String lastName, String firstName, String username) {
@@ -77,7 +76,7 @@ public class UserService implements UserDetailsService {
         //User user = reloadUser(userLogin.getUsername()).get();
         String mes = user.getChangePasswordCode();
         mailSender.send(user.getEmail(),"Смена пароля в WebQuizzes", "Для смены пароля в WebQuizzes" +
-                " перейдите по ссылке: https://" + hostname + "/updatepass/" + mes);
+                " перейдите по ссылке: https://" + hostname + "/updatepass/" + mes + "Если вы не меняли пароль на данном ресурсе, то проигнорируйте это сообщение");
     }
 
     //@Transactional
