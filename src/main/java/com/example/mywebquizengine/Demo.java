@@ -41,6 +41,11 @@ public class Demo implements CommandLineRunner {
         user.grantAuthority(Role.ROLE_ADMIN);
         userRepository.save(user);
 
+        User user1 = userService.reloadUser("mad_maximuus").get();
+        User user2 = userService.reloadUser("salam_moleculam").get();
+
+        user1.setPassword(passwordEncoder.encode("12345"));
+        user2.setPassword(passwordEncoder.encode("12345"));
 
     }
 }
