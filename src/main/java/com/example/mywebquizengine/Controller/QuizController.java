@@ -32,8 +32,16 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.Principal;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.apache.logging.log4j.message.MapMessage.MapFormat.JSON;
 
 @Validated
 @Controller
@@ -58,9 +66,18 @@ public class QuizController {
     @GetMapping(path = "/api/quizzes")
     public String getQuizzes(Model model, @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
                                  @RequestParam(required = false,defaultValue = "10") @Min(1) @Max(10) Integer pageSize,
-                                 @RequestParam(defaultValue = "id") String sortBy) {
+                                 @RequestParam(defaultValue = "id") String sortBy) throws IOException {
 
         Page<Test> page1 = testService.getAllQuizzes(page, pageSize, sortBy);
+
+        //File dir = new File(System.getProperty("user.dir") + "/img/look.com.ua_2016.02-111-1920x1080"); //path указывает на директорию
+        //File[] arrFiles = dir.listFiles();
+        //List<File> files = Arrays.asList(arrFiles);
+
+        //Random random = new Random(System.currentTimeMillis());
+
+        //model.addAttribute("img", files);
+
         //model.addAttribute("quiz", page1.getContent());
         model.addAttribute("test", page1.getContent());
         return "getAllQuiz";
@@ -107,7 +124,7 @@ public class QuizController {
 
             User user = getAuthUser(authentication, userService);
 
-            user.setTests(new ArrayList<>());
+            user.setTests(new ArrayList<>()); // Handle Persistance bug
             user.setRoles(new ArrayList<>());
             test.setUser(user);
             for (int i = 0; i < test.getQuizzes().size(); i++) {
@@ -140,6 +157,7 @@ public class QuizController {
 
         userTestAnswer.setUser(user);
         userTestAnswer.setTest(testService.findTest(Integer.parseInt(id)));
+
         //for (int i = 0; i < userTestAnswer.getUserQuizAnswers().size(); i++) {
 
         for (int i = 0; i < testService.findTest(Integer.parseInt(id)).getQuizzes().size(); i++) {
@@ -153,7 +171,7 @@ public class QuizController {
             thisServerAnswer.checkAnswer(userTestAnswer.getUserQuizAnswers().get(i).getAnswer());
 
             quizAnswer.setStatus(thisServerAnswer.isSuccess());
-            quizAnswer.setCompletedAt(new GregorianCalendar());
+            //quizAnswer.setCompletedAt(new GregorianCalendar());
             quizAnswer.setQuiz(thisServerAnswer.quiz);
 
             quizAnswer.setUserAnswerId(userTestAnswer);
@@ -161,7 +179,6 @@ public class QuizController {
             quizAnswer.setAnswer(userTestAnswer.getUserQuizAnswers().get(i).getAnswer());
 
             //userAnswerService.saveAnswer(quizAnswer);
-
 
             userQuizAnswers.add(quizAnswer);
 
@@ -176,14 +193,27 @@ public class QuizController {
         }
 
 
+
+
         userTestAnswer.setUserQuizAnswers(userQuizAnswers);
 
+        userTestAnswer.setCompletedAt(new GregorianCalendar());
+
         userAnswerService.saveAnswer(userTestAnswer);
+
+
 
         return String.valueOf(result);
     }
 
 
+    /*@GetMapping(path = "/api/quizzes/{id}/solve/info")
+    @ResponseBody
+    public int getCurrentAnswer(Model model, @PathVariable String id) {
+        //model.addAttribute(id);
+        //model.addAttribute("quiz", quizService.findQuiz(Integer.parseInt(id)));
+        return userAnswerService.getStat(Integer.parseInt(id));
+    }*/
 
 
     @GetMapping(path = "/api/quizzes/{id}/solve")

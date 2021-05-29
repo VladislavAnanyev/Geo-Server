@@ -4,7 +4,7 @@ function addQuiz() {
 
 
     let quizzes_mas = [];
-    
+    let name = document.getElementById("description");
     let countOfQuiz = document.getElementsByClassName("quiz").length;
     let title = document.getElementsByName("title");
     let text = document.getElementsByName("text");
@@ -66,6 +66,7 @@ function addQuiz() {
 
 
     const json = {
+        description: name.value,
         quizzes: quizzes_mas
     }
     //console.log("abcde")

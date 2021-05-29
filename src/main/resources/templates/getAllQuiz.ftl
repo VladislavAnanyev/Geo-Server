@@ -3,14 +3,41 @@
 
 <@e.page>
 <div xmlns="">
+    <link href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css'>
+    <script src='https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+
     <#list test as testList>
-        <div class="card my-3">
-            <div class="m-2">
+
+        <#--<div class="card w-75">
+            <div class="card-body">
+                <h5 class="card-title">${testList.description}</h5>
+                <p class="card-text">Количество вопросов: </p>
+                <a href="#" class="btn btn-primary">Кнопка</a>
+            </div>
+        </div>-->
+
+<#--        <div class="card my-3">-->
+            <#--<div class="m-2">
                 <span><a href="/about/${testList.user.username}">${testList.user.username}</a></span>
             </div>
             <div class="card-footer text-muted">
-                <i>${testList.id?c}</i>
+                <i>${testList.description}</i>
+            </div>-->
+
+            <div class="card mb-3 shadow p-3 mb-5 bg-white rounded">
+<#--                <img src="/../../../../img/look.com.ua_2016.02-111-1920x1080/${img[testList?index].name}" height="100px" class="card-img-top" alt="...">-->
+                <div class="card-body">
+                    <h5 class="card-title">${testList.description}</h5>
+                    <p class="card-text">Количество вопросов: ${testList.quizzes?size}</p>
+                    <p class="card-text" ><small  class="text-muted">Автор: <a href="/about/${testList.user.username}">${testList.user.username}</a></small></p>
+                </div>
+                <form method="get" action="/api/quizzes/${testList.id?c}/solve/" class="form-inline">
+
+                    <button type="submit" class="btn btn-primary ml-3 mb-3">Приступить к выполнению</button>
+                </form>
             </div>
+
 <#--            <div class="card-footer text-muted">-->
 <#--                <#list quiz.options as options>-->
 <#--                ${options}-->
@@ -19,13 +46,11 @@
             <#--<div class="card-footer text-muted">
                 <a href="/about/${testList.user.username}">${testList.user.username}</a>
             </div>-->
-            <form method="get" action="/api/quizzes/${testList.id?c}/solve/" class="form-inline">
 
-                <button type="submit" class="btn btn-primary ml-2">Ответить</button>
-            </form>
-        </div>
+<#--        </div>-->
     <#else>
-        No message
+        Здесь пока ничего нет
+
     </#list>
 
 
@@ -49,20 +74,25 @@
                 </a>
             </li>
             <li>
+
+
+
                 <div class="form-row align-items-center ml-3">
-                    <div class="col-auto my-1">
+                    <div class="col-auto my-1 ">
                         <label class="mr-sm-2 sr-only" for="inlineFormCustomSelect">Preference</label>
-                        <select class="custom-select " onclick="paging()" name = "size" id="inlineFormCustomSelect">
-                            <option value="no" selected>no</option>
+                        <select class="custom-select" onclick="paging()" name = "size" id="inlineFormCustomSelect">
+                            <option value="no" selected>Все</option>
                             <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
+                            <option value="5">5</option>
                             <option value="10">10</option>
                         </select>
                     </div>
                 </div>
+
             </li>
         </ul>
+
+
 
     </nav>
     </form>

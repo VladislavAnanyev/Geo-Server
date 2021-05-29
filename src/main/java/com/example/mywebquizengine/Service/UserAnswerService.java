@@ -49,6 +49,10 @@ public class UserAnswerService  {
         return (ArrayList<Integer>) userTestAnswerRepository.getUserAnswersById(id);
     }
 
+    /*public Integer getStat(Integer id) {
+        return userTestAnswerRepository.getLastFalseById();
+    }*/
+
    /* public void deleteAnswer(Integer id) {
         List<Integer> answers = userQuizAnswerRepository.getAnswerIdForQuiz(id);
         answers.forEach(answer -> userQuizAnswerRepository.deleteById(answer));

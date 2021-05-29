@@ -26,7 +26,7 @@
 
 
 
-            <td>${stat[answer_index]} </td>
+            <td>${stat[answer_index]}</td>
 
 
         </tr>

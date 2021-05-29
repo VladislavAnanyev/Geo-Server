@@ -25,6 +25,8 @@ public class Test {
     @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserTestAnswer> answers;
 
+    private String description;
+
     public Test() {}
 
     public List<Quiz> getQuizzes() {
@@ -59,4 +61,11 @@ public class Test {
         return answers;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

@@ -3,6 +3,7 @@ package com.example.mywebquizengine.Model.Test;
 import com.example.mywebquizengine.Model.User;
 
 import javax.persistence.*;
+import java.util.Calendar;
 import java.util.List;
 
 @Entity(name = "USER_TEST_ANSWERS")
@@ -21,6 +22,10 @@ public class UserTestAnswer {
     @ManyToOne
     @JoinColumn(nullable = false, name = "test_id")
     private Test test;
+
+    private Calendar completedAt;
+
+    private Double percent;
 
     public User getUser() {
         return user;
@@ -52,5 +57,21 @@ public class UserTestAnswer {
 
     public Test getTest() {
         return test;
+    }
+
+    public Calendar getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(Calendar data) {
+        this.completedAt = data;
+    }
+
+    public Double getPercent() {
+        return percent;
+    }
+
+    public void setPercent(Double percent) {
+        this.percent = percent;
     }
 }

@@ -31,7 +31,7 @@ public class UserQuizAnswer {
     @JoinColumn(nullable = false, name = "user_answer_id")
     private UserTestAnswer userAnswerId;
 
-    private Calendar completedAt;
+
 
     UserQuizAnswer(ArrayList<Integer> answer){
         this.answer = answer;
@@ -76,13 +76,7 @@ public class UserQuizAnswer {
         return status;
     }
 
-    public Calendar getCompletedAt() {
-        return completedAt;
-    }
 
-    public void setCompletedAt(Calendar data) {
-        this.completedAt = data;
-    }
 
     public void setUserAnswerId(UserTestAnswer userTestAnswer) {
         this.userAnswerId = userTestAnswer;

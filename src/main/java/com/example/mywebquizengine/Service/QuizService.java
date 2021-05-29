@@ -28,7 +28,7 @@ public class QuizService   {
         //testRepository.save(test);
         for (int i = 0; i < quizList.size(); i++) {
             quizList.get(i).setTitle(quizList.get(i).getTitle().replace("<","|"));
-            quizList.get(i).setText(quizList.get(i).getTitle().replace("<","|"));
+            quizList.get(i).setText(quizList.get(i).getText().replace("<","|"));
             quizRepository.save(quizList.get(i));
         }
 

@@ -5,10 +5,17 @@
     <script src="/static/addOptions.js"></script>
     <script src="/static/addTest.js"></script>
 
-    <div id="1Id" class="quiz">
+    <div>
         <div class="form-group">
             <label for="exampleFormControlInput1">Название</label>
-            <input type="text" class="form-control" id="titleID" placeholder="Напишите здесь название викторины" name="title">
+            <input type="text" class="form-control" id="description" placeholder="Напишите здесь название викторины" name="description">
+        </div>
+    </div>
+
+    <div id="1Id" class="quiz">
+        <div class="form-group">
+            <label for="exampleFormControlInput1">Тема</label>
+            <input type="text" class="form-control" id="titleID" placeholder="Напишите здесь тему вопроса из викторины" name="title">
         </div>
 
         <div class="form-group">
@@ -23,7 +30,10 @@
             <label class="custom-control-label 1opt" id="1label1"  for="1customCheck1">
                 <input type="text" class="form-control" id="1options1" placeholder="1)" name="1options">
             </label>
-            <button onclick="removeOptions(1,1)" class="btn btn-primary 1butt">Удалить вариант</button>
+<#--            <button onclick="removeOptions(1,1)" class="btn btn-primary 1butt">Удалить вариант</button>-->
+            <svg  onclick="removeOptions(1,1)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-archive-fill ml-2 1butt" viewBox="0 0 16 16">
+                <path d="M12.643 15C13.979 15 15 13.845 15 12.5V5H1v7.5C1 13.845 2.021 15 3.357 15h9.286zM5.5 7h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1zM.8 1a.8.8 0 0 0-.8.8V3a.8.8 0 0 0 .8.8h14.4A.8.8 0 0 0 16 3V1.8a.8.8 0 0 0-.8-.8H.8z"/>
+            </svg>
 
         </div>
 
@@ -32,7 +42,10 @@
             <label class="custom-control-label 1opt"  id="1label2"  for="1customCheck2">
                 <input type="text" class="form-control" id="1options2" placeholder="2)" name="1options">
             </label>
-            <button onclick="removeOptions(1,2)" class="btn btn-primary 1butt">Удалить вариант</button>
+<#--            <button onclick="removeOptions(1,2)" class="btn btn-primary 1butt">Удалить вариант</button>-->
+            <svg  onclick="removeOptions(1,2)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-archive-fill ml-2 1butt" viewBox="0 0 16 16">
+                <path d="M12.643 15C13.979 15 15 13.845 15 12.5V5H1v7.5C1 13.845 2.021 15 3.357 15h9.286zM5.5 7h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1zM.8 1a.8.8 0 0 0-.8.8V3a.8.8 0 0 0 .8.8h14.4A.8.8 0 0 0 16 3V1.8a.8.8 0 0 0-.8-.8H.8z"/>
+            </svg>
         </div>
 
         <div class="custom-control custom-checkbox mt-2" id="1Id3">
@@ -40,7 +53,10 @@
             <label class="custom-control-label 1opt" id="1label3"  for="1customCheck3">
             <input type="text" class="form-control" id="1options3" placeholder="3)" name="1options">
             </label>
-            <button onclick="removeOptions(1,3)" class="btn btn-primary 1butt">Удалить вариант</button>
+<#--            <button onclick="removeOptions(1,3)" class="btn btn-primary 1butt">Удалить вариант</button>-->
+            <svg  onclick="removeOptions(1,3)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-archive-fill ml-2 1butt" viewBox="0 0 16 16">
+                <path d="M12.643 15C13.979 15 15 13.845 15 12.5V5H1v7.5C1 13.845 2.021 15 3.357 15h9.286zM5.5 7h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1zM.8 1a.8.8 0 0 0-.8.8V3a.8.8 0 0 0 .8.8h14.4A.8.8 0 0 0 16 3V1.8a.8.8 0 0 0-.8-.8H.8z"/>
+            </svg>
         </div>
 
         <div id="1Id4" class="custom-control custom-checkbox mt-2" >
@@ -48,7 +64,10 @@
             <label class="custom-control-label 1opt" id="1label4"  for="1customCheck4">
             <input type="text" class="form-control" id="1options4" placeholder="4)" name="1options">
             </label>
-            <button onclick="removeOptions(1,4)" class="btn btn-primary 1butt">Удалить вариант</button>
+<#--            <button onclick="removeOptions(1,4)" class="btn btn-primary 1butt">Удалить вариант</button>-->
+            <svg  onclick="removeOptions(1,4)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-archive-fill ml-2 1butt" viewBox="0 0 16 16">
+                <path d="M12.643 15C13.979 15 15 13.845 15 12.5V5H1v7.5C1 13.845 2.021 15 3.357 15h9.286zM5.5 7h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1zM.8 1a.8.8 0 0 0-.8.8V3a.8.8 0 0 0 .8.8h14.4A.8.8 0 0 0 16 3V1.8a.8.8 0 0 0-.8-.8H.8z"/>
+            </svg>
         </div>
 
         </div>

@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.transaction.Transactional;
 import java.util.List;
 
@@ -36,7 +37,7 @@ public class TestService {
     }
 
     public Page<Test> getAllQuizzes(Integer page, Integer pageSize, String sortBy) {
-        Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy));
+        Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
         return testRepository.findAll(paging);
     }
 
@@ -64,4 +65,6 @@ public class TestService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
     }
+
+
 }

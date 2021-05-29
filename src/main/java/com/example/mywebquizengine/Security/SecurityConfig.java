@@ -39,7 +39,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
 
                 .authorizeRequests()
-                    .antMatchers("/api/register", "/activate/*",
+                    .antMatchers("/api/register", "/activate/*", "/img/**",
                             "/api/quizzes", "/reg",
                             "/","/signin", "/checkyandex", "/h2-console/**", "/.well-known/pki-validation/**").permitAll()
                     .anyRequest().authenticated()
