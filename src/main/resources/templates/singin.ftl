@@ -38,7 +38,7 @@
             <input type="checkbox" class="form-check-input" id="exampleCheck1">
             <label class="form-check-label" for="exampleCheck1">Запомнить меня</label>
         </div>
-        <button type="submit" class="btn btn-primary"> Войти</button>
+        <button type="submit" class="btn btn-primary">Войти</button>
         <button disabled type="button" class="btn btn-primary ml-2 my-1" data-toggle="modal" data-target="#staticBackdrop">
             Забыли пароль?
         </button>

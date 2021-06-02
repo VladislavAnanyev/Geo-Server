@@ -53,7 +53,7 @@
         >-->
     <#else>
     <#assign
-    name = "unknown"
+    name = "Гость"
     >
 </#if>
 
