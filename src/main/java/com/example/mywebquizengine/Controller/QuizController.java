@@ -286,6 +286,9 @@ public class QuizController {
 
     public static User getAuthUser(Authentication authentication, UserService userService) {
         String name = "";
+
+
+
         if (authentication instanceof OAuth2AuthenticationToken) {
 
             if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("google")) {

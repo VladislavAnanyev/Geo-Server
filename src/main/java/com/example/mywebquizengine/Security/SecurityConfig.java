@@ -41,7 +41,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                     .antMatchers("/api/register", "/activate/*", "/img/**",
                             "/api/quizzes", "/reg",
-                            "/","/signin", "/checkyandex", "/h2-console/**", "/.well-known/pki-validation/**").permitAll()
+                            "/","/signin", "/checkyandex", "/h2-console/**", "/.well-known/pki-validation/**",
+                            "/static/forgotPassword.js","/static/changePassword.js", "/update/userinfo/pswrdwithoutauth",
+                    "/updatepass/**", "/pass/**", "/updatepassword/{activationCOde}").permitAll()
                     .anyRequest().authenticated()
                 //.antMatchers("/api/quizzes/**").authenticated()
                 //.and().httpBasic();

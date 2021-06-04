@@ -18,6 +18,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
@@ -74,10 +75,24 @@ public class UserController {
     }
 
     @PostMapping(path = "/update/userinfo/password", consumes ={"application/json"} )
-    public void tryToChangePass(@RequestBody String host, Authentication authentication) {
+    public void tryToChangePass(Authentication authentication) {
         //model.addAttribute("notification", "");
         User user = getAuthUser(authentication, userService);
-        userService.sendCodeForChangePassword(host, user);
+        userService.sendCodeForChangePassword(user);
+        //return "";
+    }
+
+    @PostMapping(path = "/update/userinfo/pswrdwithoutauth", consumes ={"application/json"} )
+    public void tryToChangePass(@RequestBody User in) {
+        //model.addAttribute("notification", "");
+        User user;
+        if (userService.reloadUser(in.getUsername()).isPresent()) {
+            user = userService.reloadUser(in.getUsername()).get();
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
+        userService.sendCodeForChangePassword(user);
         //return "";
     }
 
@@ -97,19 +112,13 @@ public class UserController {
     public String changePasswordPage(@PathVariable String changePasswordCode) {
         //User userLogin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Optional<User> user = userService.getUserViaChangePasswordCode(changePasswordCode);
+        User user = userService.getUserViaChangePasswordCode(changePasswordCode);
 
-        if (user.isPresent()) {
-            return "changePassword";
-        } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
+        return "changePassword";
 
         //user.setUsername(userLogin.getUsername());
         //user.setPassword(passwordEncoder.encode(user.getPassword()));
         //userService.updatePassword(user);
-
-
     }
 
     @RequestMapping(value = "/userss")
@@ -141,6 +150,24 @@ public class UserController {
         user.setChangePasswordCode(UUID.randomUUID().toString());
         userService.updatePassword(user);
 
+        return "changePassword";
+    }
+
+
+    @Transactional
+    @PutMapping(path = "/updatepass/{activationCode}", consumes ={"application/json"})
+    public String changePassword_2(@RequestBody User in, @PathVariable String activationCode) {
+
+        User user = userService.getUserViaChangePasswordCode(activationCode);
+
+        //User userLogin = getAuthUser(authentication, userService);
+
+        //in.setUsername(userLogin.getUsername());
+        user.setPassword(passwordEncoder.encode(in.getPassword()));
+        user.setChangePasswordCode(UUID.randomUUID().toString());
+        userService.updatePassword(user);
+
+       // User user = userService.reloadUser(in.getUsername()).get();
         return "changePassword";
     }
 

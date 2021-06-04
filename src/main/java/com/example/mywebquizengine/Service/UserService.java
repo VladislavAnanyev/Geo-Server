@@ -37,6 +37,7 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> user = userRepository.findById(username);
 
+
         if (user.isPresent()) {
             return user.get();
         }else {
@@ -59,7 +60,7 @@ public class UserService implements UserDetailsService {
 
             String mes = user.getFirstName() + " " + user.getLastName() + ", Добро пожаловать в WebQuizzes! "
                     + "Для активации аккаунта перейдите по ссылке: https://" + hostname + "/activate/" + user.getActivationCode()
-                    + "Если вы не регистрировались на данном ресурсе, то проигнорируйте это сообщение";
+                    + " Если вы не регистрировались на данном ресурсе, то проигнорируйте это сообщение";
 
             mailSender.send(user.getEmail(),"Активация аккаунта в WebQuizzes", mes);
 
@@ -71,12 +72,12 @@ public class UserService implements UserDetailsService {
         userRepository.updateUserInfo(firstName, lastName, username);
     }
 
-    public void sendCodeForChangePassword(String host, User user) {
+    public void sendCodeForChangePassword(User user) {
         //User userLogin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         //User user = reloadUser(userLogin.getUsername()).get();
         String mes = user.getChangePasswordCode();
         mailSender.send(user.getEmail(),"Смена пароля в WebQuizzes", "Для смены пароля в WebQuizzes" +
-                " перейдите по ссылке: https://" + hostname + "/updatepass/" + mes + "Если вы не меняли пароль на данном ресурсе, то проигнорируйте это сообщение");
+                " перейдите по ссылке: https://" + hostname + "/updatepass/" + mes + " Если вы не меняли пароль на данном ресурсе, то проигнорируйте это сообщение");
     }
 
     //@Transactional
@@ -97,10 +98,19 @@ public class UserService implements UserDetailsService {
 
     }
 
-    public Optional<User> getUserViaChangePasswordCode(String changePasswordCode) {
+    public User getUserViaChangePasswordCode(String changePasswordCode) {
 
 
-        return userRepository.findByChangePasswordCode(changePasswordCode);
+
+
+        if (userRepository.findByChangePasswordCode(changePasswordCode).isPresent()) {
+            return userRepository.findByChangePasswordCode(changePasswordCode).get();
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+       // return
+        //return userRepository.findByChangePasswordCode(changePasswordCode);
     }
 
     public void tryToSaveUser(User user) {

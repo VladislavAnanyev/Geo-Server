@@ -80,6 +80,8 @@
 
 
 
+
+
 <#--            <button onclick="removeOptions(1,4)" class="btn btn-primary 1butt">Удалить вариант</button>-->
 
         </div>
