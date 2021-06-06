@@ -1,6 +1,6 @@
 <#import "parts/common.ftl" as e>
 <@e.page>
-
+    <title>Ответить</title>
 <#--<form method="post" action="/api/quizzes/${id}/solve" class="form-inline">
 
     <div><label> Ответ : <input type="text" name="answer"/> </label></div>

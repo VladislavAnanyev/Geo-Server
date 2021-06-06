@@ -1,7 +1,7 @@
 
 <#macro page>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <!-- Yandex.Metrika counter -->
     <script type="text/javascript" >
@@ -24,7 +24,7 @@
     <meta name="yandex-verification" content="135f209071de02b1" />
 
     <meta charset="UTF-8">
-    <title>Title</title>
+<#--    <title>Title</title>-->
 <#--    <link rel="stylesheet" type="text/css" href="/styles/style.css">-->
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 

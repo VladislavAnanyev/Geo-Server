@@ -2,6 +2,7 @@
 
 <@e.page>
     <head>
+        <title>Главная</title>
     <meta name="yandex-verification" content="135f209071de02b1" /> 
     </head>	
     <div class="jumbotron shadow rounded">

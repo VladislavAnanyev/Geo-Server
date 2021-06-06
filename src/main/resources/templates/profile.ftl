@@ -1,7 +1,12 @@
 <#import "parts/common.ftl" as e>
 <#include "parts/security.ftl">
 
+    <#--<head>
+        <meta charset="UTF-8">
+        <title>Профиль</title>
+    </head>-->
 <@e.page>
+    <title>Профиль</title>
 <#--    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>-->
     <script src="/static/changePersonalInfo.js"></script>
     <script src="/static/changePassword.js"></script>

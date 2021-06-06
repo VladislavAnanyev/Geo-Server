@@ -1,6 +1,6 @@
 <#import "parts/common.ftl" as c>
 <@c.page>
-
+    <title>Изменить викторину</title>
     <script src="/static/putreq.js"></script>
     <script src="/static/addOptions.js"></script>
 

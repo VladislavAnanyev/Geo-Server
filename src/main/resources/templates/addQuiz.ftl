@@ -1,6 +1,6 @@
 <#import "parts/common.ftl" as c>
 <@c.page>
-
+    <title>Добавить викторину</title>
     <script src="/static/addQuiz.js"></script>
     <script src="/static/addOptions.js"></script>
     <script src="/static/addTest.js"></script>

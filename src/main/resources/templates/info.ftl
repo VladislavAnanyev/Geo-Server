@@ -1,5 +1,6 @@
 <#import "parts/common.ftl" as c>
 <@c.page>
+    <title>Статистика</title>
 <#--    <div>${stat}%</div>-->
     <table class="table table-hover">
         <thead>

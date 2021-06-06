@@ -1,5 +1,6 @@
 <#import "parts/common.ftl" as e>
 <@e.page>
+    <title>Изменить пароль</title>
     <script src="/static/changePassword.js"></script>
     <!-- Button trigger modal -->
     <button type="button" class="btn btn-primary ml-2 my-1" data-toggle="modal" data-target="#staticBackdrop">
