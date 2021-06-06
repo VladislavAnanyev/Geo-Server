@@ -9,6 +9,7 @@
             <th scope="col">Имя</th>
             <th scope="col">Фамилия</th>
             <th scope="col">Username</th>
+            <th scope="col">Время</th>
             <th scope="col">Процент</th>
         </tr>
         </thead>
@@ -23,6 +24,7 @@
             <td>${answer.user.lastName}</td>
 <#--            <td>${answer.completedAt.time?datetime}</td>-->
             <td><a href="/about/${answer.user.username}">${answer.user.username}</a></td>
+            <td>${answer.completedAt.time?datetime}</td>
 <#--            <td>${answer.status?c}</td>&ndash;&gt;-->
 
 

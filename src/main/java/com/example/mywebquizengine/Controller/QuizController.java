@@ -311,14 +311,17 @@ public class QuizController {
     @GetMapping(path = "/api/quizzes/{id}/info/")
     public String getInfo(@PathVariable Integer id, Model model,
                           @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
-                          @RequestParam(required = false,defaultValue = "10") @Min(1) @Max(10) Integer pageSize,
-                          @RequestParam(defaultValue = "user_username") String sortBy) {
+                          @RequestParam(required = false,defaultValue = "2000") @Min(1) @Max(2000) Integer pageSize,
+                          @RequestParam(defaultValue = "completed_at") String sortBy) {
 
         ArrayList<Integer> answers = userAnswerService.getAnswersByTestId(id);
         ArrayList<Double> result = new ArrayList<>();
         for (int i = 0; i < answers.size(); i++) {
             result.add(userAnswerService.getStatistics(id, answers.get(i)));
         }
+
+        result.sort(Collections.reverseOrder());
+
         model.addAttribute("stat", result.toArray());
         model.addAttribute("answersOnQuiz", userAnswerService.getAnswersById(id, page, pageSize, sortBy).getContent());
         return "info";

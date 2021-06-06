@@ -8,6 +8,9 @@
     <script src='https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js'></script>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
 
+
+
+
     <#list test as testList>
 
         <#--<div class="card w-75">
@@ -58,9 +61,25 @@
     <script src="/static/page.js"></script>
     <script src="/static/pageSize.js"></script>
 
-    <form>
-    <nav aria-label="Page navigation example">
-        <ul class="pagination">
+    <div class="row">
+
+        <#--<div class="col">
+            <div class="form-row align-items-center ml-3">Размер:
+                <div class="col-auto my-1 ">
+                    <label class="mr-sm-2 sr-only" for="inlineFormCustomSelect">Preference</label>
+                    <select class="custom-select"  name = "size" id="inlineFormCustomSelect">
+                        <option onclick="paging()" value="no" selected>Все</option>
+                        <option onclick="paging()" value="1">1</option>
+                        <option onclick="paging()" value="5">5</option>
+                        <option onclick="paging()" value="10">10</option>
+                    </select>
+                </div>
+            </div>
+        </div>-->
+
+        <div class="col">
+    <nav aria-label="Page navigation example" >
+        <ul class="pagination justify-content-end">
             <li class="page-item">
                 <a class="page-link"  aria-label="Previous">
                     <span aria-hidden="true" onclick="pagePrev()">&laquo;</span>
@@ -76,27 +95,18 @@
             </li>
             <li>
 
-
-
-                <div class="form-row align-items-center ml-3">
-                    <div class="col-auto my-1 ">
-                        <label class="mr-sm-2 sr-only" for="inlineFormCustomSelect">Preference</label>
-                        <select class="custom-select" onclick="paging()" name = "size" id="inlineFormCustomSelect">
-                            <option value="no" selected>Все</option>
-                            <option value="1">1</option>
-                            <option value="5">5</option>
-                            <option value="10">10</option>
-                        </select>
-                    </div>
-                </div>
-
             </li>
         </ul>
 
 
-
     </nav>
-    </form>
+        </div>
+
+    </div>
+
 
 </div>
+
+
+
 </@e.page>

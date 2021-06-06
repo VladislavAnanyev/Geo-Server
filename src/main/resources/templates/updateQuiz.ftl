@@ -3,6 +3,7 @@
     <title>Изменить викторину</title>
     <script src="/static/putreq.js"></script>
     <script src="/static/addOptions.js"></script>
+    <script src="/static/addTest.js"></script>
 
     <#list oldTest.quizzes as oldQuiz>
     <div id="${oldQuiz_index + 1}Id" class="quiz">
@@ -48,8 +49,11 @@
             <button onclick="addOptions(${oldQuiz_index+1})" class="btn btn-primary mt-2">Добавить вариант</button>
         </div>
 
+
+
     </div>
     </#list>
+
 
 <#--        <form method="get" action="/myquiz" >-->
         <button  onclick="updateQuiz(${oldTest.id?c})" type="submit" class="btn btn-primary mt-2">Изменить</button>
