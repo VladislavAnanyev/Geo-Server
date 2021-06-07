@@ -12,10 +12,7 @@ import com.example.mywebquizengine.Service.UserAnswerService;
 import com.example.mywebquizengine.Service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextImpl;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
@@ -32,16 +29,8 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.Principal;
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static org.apache.logging.log4j.message.MapMessage.MapFormat.JSON;
 
 @Validated
 @Controller
@@ -124,8 +113,11 @@ public class QuizController {
 
             User user = getAuthUser(authentication, userService);
 
+
+
             user.setTests(new ArrayList<>()); // Handle Persistance bug
             user.setRoles(new ArrayList<>());
+            test.setDuration(test.getDuration());
             test.setUser(user);
             for (int i = 0; i < test.getQuizzes().size(); i++) {
                 test.getQuizzes().get(i).setTest(test);

@@ -58,6 +58,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.session:spring-session-jdbc'
     implementation 'org.springframework.session:spring-session-core'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '2.5.0'
     //implementation 'com.vaadin:vaadin-spring-boot-starter'
     // https://mvnrepository.com/artifact/com.paypal.sdk/rest-api-sdk
     implementation group: 'com.paypal.sdk', name: 'rest-api-sdk', version: '1.14.0'

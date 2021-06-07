@@ -100,10 +100,15 @@
         <button onclick="addTest()" class="btn btn-primary mt-2">Добавить викторину</button>
     </div>
 
+    <div class="mt-2">
+            <label for="time">Укажите время на выполнение викторины (чч:мм)</label>
+            <input type="time" value="01:00" id="time">
+    </div>
+
 
     <div id="addTest">
 <#--    <form method="get" action="/" >-->
-        <button onclick="addQuiz()" type="submit" class="btn btn-primary mt-2">Создать</button>
+        <button onclick="addQuiz()" type="submit" class="btn btn-primary mb-2">Создать</button>
 <#--    </form>-->
     </div>
 

@@ -9,13 +9,13 @@ import java.util.List;
 
 @Repository
 public interface MessageRepository extends CrudRepository<Message, Integer> {
-    @Query(value = "SELECT * FROM MESSAGE WHERE (SENDER_USERNAME = :sent AND RECIPIENT_USERNAME = :received) OR (SENDER_USERNAME = :received AND RECIPIENT_USERNAME = :sent) ORDER BY TIMESTAMP", nativeQuery = true)
+    @Query(value = "SELECT * FROM MESSAGES WHERE (SENDER_USERNAME = :sent AND RECIPIENT_USERNAME = :received) OR (SENDER_USERNAME = :received AND RECIPIENT_USERNAME = :sent) ORDER BY TIMESTAMP", nativeQuery = true)
     List<Message> getMessagesByUsername(String sent, String received);
 
 
-    @Query(value = "SELECT * FROM MESSAGE WHERE TIMESTAMP = :time", nativeQuery = true)
+    @Query(value = "SELECT * FROM MESSAGES WHERE TIMESTAMP = :time", nativeQuery = true)
     Message getDialogsByTimestamp(String time);
 
-    @Query(value = "SELECT MAX(TIMESTAMP) FROM MESSAGE WHERE RECIPIENT_USERNAME = :username OR SENDER_USERNAME = :username GROUP BY RECIPIENT_USERNAME, SENDER_USERNAME ORDER BY (MAX(TIMESTAMP)) DESC", nativeQuery = true)
+    @Query(value = "SELECT MAX(TIMESTAMP) FROM MESSAGES WHERE RECIPIENT_USERNAME = :username OR SENDER_USERNAME = :username GROUP BY RECIPIENT_USERNAME, SENDER_USERNAME ORDER BY (MAX(TIMESTAMP)) DESC", nativeQuery = true)
     List<String> getTimeLastMessagesByUsername(String username);
 }

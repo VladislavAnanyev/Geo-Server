@@ -3,7 +3,7 @@
 <@e.page>
     <title>Мои викторины</title>
 
-    <div><#--${test}-->
+    <#--${test}-->
         <#list myquiz as test>
 
 <#--            <#list test.quizzes as quiz>-->
@@ -94,10 +94,6 @@
                 </div>-->
 
 
-                </div>
-                <script src="/static/deletereq.js"></script>
-
-
             </div>
 
 
@@ -105,6 +101,7 @@
             Здесь пока ничего нет
 <#--        </#list>-->
         </#list>
+    <script src="/static/deletereq.js"></script>
     <#--<script>let style = document.getElementById("test" + i).style;
         style.padding = '20px';</script>-->
 

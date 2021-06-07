@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import javax.validation.Valid;
+import java.time.LocalTime;
 import java.util.List;
 
 @Entity(name = "TESTS")
@@ -18,7 +19,7 @@ public class Test {
     private List<@Valid Quiz> quizzes;
 
     @ManyToOne/*(fetch = FetchType.EAGER, optional = false, cascade = CascadeType.ALL)*/
-    @JoinColumn
+    @JoinColumn(name = "username")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private User user;
 
@@ -26,6 +27,8 @@ public class Test {
     private List<UserTestAnswer> answers;
 
     private String description;
+
+    private LocalTime duration;
 
     public Test() {}
 
@@ -67,5 +70,13 @@ public class Test {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public void setDuration(LocalTime time) {
+        this.duration = time;
+    }
+
+    public LocalTime getDuration() {
+        return duration;
     }
 }

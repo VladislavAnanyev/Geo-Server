@@ -14,6 +14,7 @@ public class UserTestAnswer {
     private int userAnswerId;
 
     @ManyToOne
+    @JoinColumn(name = "username")
     private User user;
 
     @OneToMany(mappedBy = "userAnswerId", cascade = CascadeType.ALL, orphanRemoval = true)

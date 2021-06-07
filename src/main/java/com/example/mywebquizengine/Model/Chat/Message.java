@@ -9,7 +9,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
 import java.util.Calendar;
 
-@Entity
+@Entity(name = "MESSAGES")
 public class Message {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)

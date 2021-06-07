@@ -10,6 +10,9 @@ function addQuiz() {
     let text = document.getElementsByName("text");
 
 
+    let time = document.getElementById("time");
+
+    console.log(time.value)
 
     for (let i = 0; i < countOfQuiz; i++) {
         let options = document.getElementsByName(String(Number(i+1) + "options"));
@@ -32,6 +35,8 @@ function addQuiz() {
                 answer_values.push(answers[i].value)
             }
         }
+
+
 
 
         let quiz = {
@@ -67,7 +72,8 @@ function addQuiz() {
 
     const json = {
         description: name.value,
-        quizzes: quizzes_mas
+        quizzes: quizzes_mas,
+        time: time.value
     }
     //console.log("abcde")
 

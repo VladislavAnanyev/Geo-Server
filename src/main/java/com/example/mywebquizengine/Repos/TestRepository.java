@@ -15,9 +15,9 @@ import java.util.List;
 public interface TestRepository extends CrudRepository<Test, Integer>,
         PagingAndSortingRepository<Test, Integer> {
 
-    @Query(value = "SELECT * FROM TESTS u WHERE USER_USERNAME = :name", nativeQuery = true)
+    @Query(value = "SELECT * FROM TESTS u WHERE USERNAME = :name", nativeQuery = true)
     Page<Test> getQuizForThis(String name, Pageable paging);
 
-    @Query(value = "SELECT * FROM TESTS u WHERE USER_USERNAME = :name", nativeQuery = true)
+    @Query(value = "SELECT * FROM TESTS u WHERE USERNAME = :name", nativeQuery = true)
     List<Test> getQuizForThisNoPaging(String name);
 }
