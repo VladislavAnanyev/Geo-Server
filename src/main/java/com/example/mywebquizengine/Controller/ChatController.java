@@ -25,7 +25,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 import static com.example.mywebquizengine.Controller.QuizController.getAuthUser;
 
@@ -67,7 +69,13 @@ public class ChatController {
         User user = getAuthUser(authentication, userService);
         message.setSender(user);
         message.setRecipient(userService.reloadUser(userName).get());
-        message.setTimestamp(new GregorianCalendar());
+
+        TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
+
+        Calendar nowDate = new GregorianCalendar();
+
+        nowDate.setTimeZone(timeZone);
+        message.setTimestamp(nowDate);
         message.setStatus(MessageStatus.DELIVERED);
         messageService.saveMessage(message);
         //simpMessagingTemplate.convertAndSend("/topic/messages/" + userName, message);

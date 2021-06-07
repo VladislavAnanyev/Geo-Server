@@ -9,10 +9,15 @@ function addQuiz() {
     let title = document.getElementsByName("title");
     let text = document.getElementsByName("text");
 
+    let time = document.getElementById("time")
 
-    let time = document.getElementById("time");
+    if (!document.getElementById("flexRadioDefault2").checked) {
+        time = null
+    }
 
-    console.log(time.value)
+
+    console.log(time)
+
 
     for (let i = 0; i < countOfQuiz; i++) {
         let options = document.getElementsByName(String(Number(i+1) + "options"));
@@ -68,12 +73,21 @@ function addQuiz() {
 
     // quizzes_mas.push(quiz)
 
+    let json;
+
+    if (time != null) {
 
 
-    const json = {
-        description: name.value,
-        quizzes: quizzes_mas,
-        time: time.value
+        json = {
+            description: name.value,
+            quizzes: quizzes_mas,
+            duration: time.value
+        }
+    } else {
+        json = {
+            description: name.value,
+            quizzes: quizzes_mas,
+        }
     }
     //console.log("abcde")
 

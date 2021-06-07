@@ -23,9 +23,10 @@ function sendMsg(username) {
     last.append(div)
 
     let xhr = new XMLHttpRequest();
-    console.log(JSON.stringify(json));
+    //console.log(JSON.stringify(json));
     xhr.open('POST', '/chat/' + username);
     xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
     xhr.send(JSON.stringify(json));
+
 }
 

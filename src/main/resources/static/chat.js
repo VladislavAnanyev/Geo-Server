@@ -100,7 +100,7 @@ function sendMessage(sender, recipient) {
 
 
 function onMessageReceived(payload) {
-    console.log("receive")
+    //console.log("receive")
     var message = JSON.parse(payload.body);
     let dialog = document.getElementById("dialogs")
 
@@ -109,7 +109,7 @@ function onMessageReceived(payload) {
 
     for (let i = 0; i < dialogsName.length; i++) {
         dialogsNameArr.push(dialogsName[i].textContent)
-        console.log(dialogsName[i].textContent)
+      //  console.log(dialogsName[i].textContent)
     }
 
 
@@ -129,8 +129,8 @@ function onMessageReceived(payload) {
         "                                    </div>"
 
 
-    console.log(message.sender.username)
-    console.log(dialogsNameArr.indexOf(message.sender.username))
+    //console.log(message.sender.username)
+    //console.log(dialogsNameArr.indexOf(message.sender.username))
 
     if (dialogsNameArr.indexOf(message.sender.username) === -1) {
         dialog.before(div2)

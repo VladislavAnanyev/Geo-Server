@@ -184,16 +184,17 @@ public class QuizController {
             //results.add(quizAnswer.getStatus().toString());
         }
 
-
-
-
         userTestAnswer.setUserQuizAnswers(userQuizAnswers);
 
-        userTestAnswer.setCompletedAt(new GregorianCalendar());
+        TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
+
+        Calendar nowDate = new GregorianCalendar();
+
+        nowDate.setTimeZone(timeZone);
+
+        userTestAnswer.setCompletedAt(nowDate);
 
         userAnswerService.saveAnswer(userTestAnswer);
-
-
 
         return String.valueOf(result);
     }
@@ -209,7 +210,7 @@ public class QuizController {
 
 
     @GetMapping(path = "/api/quizzes/{id}/solve")
-    public String getAnswer(Model model, @PathVariable String id) {
+    public String passTest(Model model, @PathVariable String id) {
         model.addAttribute(id);
         //model.addAttribute("quiz", quizService.findQuiz(Integer.parseInt(id)));
         model.addAttribute("test_id", testService.findTest(Integer.parseInt(id)));

@@ -100,10 +100,26 @@
         <button onclick="addTest()" class="btn btn-primary mt-2">Добавить викторину</button>
     </div>
 
-    <div class="mt-2">
-            <label for="time">Укажите время на выполнение викторины (чч:мм)</label>
-            <input type="time" value="01:00" id="time">
+    <#--<div>Время на выполнение
+    <div class="form-check ml-4">
+        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" checked>
+        <label class="form-check-label" for="flexRadioDefault1">
+            Неограничено
+        </label>
     </div>
+    <div class="form-check ml-4">
+        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2">
+        <label class="form-check-label" for="flexRadioDefault2">
+            Ограничено
+        </label>
+        <label for="time"> (чч:мм)</label>
+        <input type="time" value="01:00" id="time">
+    </div>
+        <div>
+
+        </div>
+    </div>-->
+
 
 
     <div id="addTest">

@@ -24,6 +24,8 @@ public class UserTestAnswer {
     @JoinColumn(nullable = false, name = "test_id")
     private Test test;
 
+    private Calendar startAt;
+
     private Calendar completedAt;
 
     private Double percent;
@@ -75,4 +77,6 @@ public class UserTestAnswer {
     public void setPercent(Double percent) {
         this.percent = percent;
     }
+
+
 }
