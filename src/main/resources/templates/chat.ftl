@@ -99,7 +99,7 @@
                             <div class="outgoing_msg">
                                 <div class="sent_msg">
                                     <p>${msg.content}</p>
-                                    <span class="time_date"> ${msg.timestamp.time?datetime}</span> </div>
+                                    <span class="time_date">${msg.timestamp.time?datetime}</span> </div>
                             </div>
 
                         <#else>
