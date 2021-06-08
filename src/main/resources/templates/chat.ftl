@@ -99,7 +99,7 @@
                             <div class="outgoing_msg">
                                 <div class="sent_msg">
                                     <p>${msg.content}</p>
-                                    <span class="time_date">${msg.timestamp.time?datetime}</span> </div>
+                                    <span class="time_date">${msg.timestamp.time?datetime?string ["dd.MM.yyyy HH:mm:ss"]}</span> </div>
                             </div>
 
                         <#else>
@@ -110,7 +110,7 @@
                                 <div class="received_msg">
                                     <div class="received_withd_msg">
                                         <p>${msg.content}</p>
-                                        <span class="time_date">${msg.timestamp.time?datetime} </span>
+                                        <span class="time_date">${msg.timestamp.time?datetime?string ["dd.MM.yyyy HH:mm:ss"]} </span>
                                     </div>
                                 </div>
                             </div>
