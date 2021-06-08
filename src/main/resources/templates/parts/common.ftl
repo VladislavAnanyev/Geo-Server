@@ -1,7 +1,7 @@
 
 <#macro page>
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <!-- Yandex.Metrika counter -->
     <script type="text/javascript" >

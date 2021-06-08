@@ -76,6 +76,7 @@ function sendMessage(sender, recipient) {
         }
 
         let date = new Date()
+
         let div = document.createElement("div");
         div.setAttribute('class', "outgoing_msg")
 
