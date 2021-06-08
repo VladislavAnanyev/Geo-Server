@@ -79,9 +79,9 @@ public class ChatController {
 
         // Устанавливается часовой пояс для хранения времени в БД постоянно по Москве
         // В БД будет сохраняться Московское время независимо от местоположения сервера/пользователя
-        TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
+        //TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
         Calendar nowDate = new GregorianCalendar();
-        nowDate.setTimeZone(timeZone);
+        //nowDate.setTimeZone(timeZone);
         message.setTimestamp(nowDate);;
 
         message.setStatus(MessageStatus.DELIVERED);
