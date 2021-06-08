@@ -19,7 +19,6 @@ import javax.transaction.Transactional;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.example.mywebquizengine.Controller.QuizController.getAuthUser;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -73,14 +72,12 @@ public class UserService implements UserDetailsService {
     }
 
     public void sendCodeForChangePassword(User user) {
-        //User userLogin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        //User user = reloadUser(userLogin.getUsername()).get();
         String mes = user.getChangePasswordCode();
         mailSender.send(user.getEmail(),"Смена пароля в WebQuizzes", "Для смены пароля в WebQuizzes" +
                 " перейдите по ссылке: https://" + hostname + "/updatepass/" + mes + " Если вы не меняли пароль на данном ресурсе, то проигнорируйте это сообщение");
     }
 
-    //@Transactional
+
     public Optional<User> reloadUser(String username) {
         return userRepository.findById(username);
     }
@@ -109,8 +106,6 @@ public class UserService implements UserDetailsService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
-       // return
-        //return userRepository.findByChangePasswordCode(changePasswordCode);
     }
 
     public void tryToSaveUser(User user) {

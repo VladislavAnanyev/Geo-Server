@@ -21,7 +21,6 @@
 
 </head>
 <body>
-<script src="../static/sendMessage.js"></script>
 <script src="../static/chat.js"></script>
 <script src="../static/custom.js"></script>
 <script src="../static/activeChat.js"></script>

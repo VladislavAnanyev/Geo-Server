@@ -17,7 +17,7 @@ import java.io.FileOutputStream;
 import java.util.Random;
 import java.util.UUID;
 
-import static com.example.mywebquizengine.Controller.QuizController.getAuthUser;
+import static com.example.mywebquizengine.Controller.UserController.getAuthUser;
 
 @Controller
 public class FileUploadController {

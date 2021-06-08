@@ -4,24 +4,18 @@ import com.example.mywebquizengine.Model.Chat.Message;
 import com.example.mywebquizengine.Model.Chat.MessageStatus;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Service.MessageService;
-import com.example.mywebquizengine.Service.TestService;
 import com.example.mywebquizengine.Service.UserService;
-import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
@@ -29,7 +23,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-import static com.example.mywebquizengine.Controller.QuizController.getAuthUser;
+import static com.example.mywebquizengine.Controller.UserController.getAuthUser;
 
 @Validated
 @Controller
@@ -64,45 +58,34 @@ public class ChatController {
     }
 
 
-    @PostMapping("/chat/{userName}")
-    public void sendMessage(@PathVariable String userName, @RequestBody Message message, Authentication authentication) {
-        User user = getAuthUser(authentication, userService);
-        message.setSender(user);
-        message.setRecipient(userService.reloadUser(userName).get());
-
-        TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
-
-        Calendar nowDate = new GregorianCalendar();
-
-        nowDate.setTimeZone(timeZone);
-        message.setTimestamp(nowDate);
-        message.setStatus(MessageStatus.DELIVERED);
-        messageService.saveMessage(message);
-        //simpMessagingTemplate.convertAndSend("/topic/messages/" + userName, message);
-    }
-
     @Modifying
     @Transactional
     @MessageMapping("/user/{userId}")
     @SendTo("/topic/{userId}")
-    public Message sendTestMessage(@Payload Message message) {
-
+    public Message sendMessage(@Payload Message message) {
 
         User user = userService.reloadUser(message.getSender().getUsername()).get();
 
-        user.setTests(new ArrayList<>()); // костыль для корректного отображения (тесты не инициализируются автоматически)
-        message.setSender(user);
+        // Persistence Bag. Используется костыль
+        // для корректного отображения (тесты не инициализируются автоматически)
+        user.setTests(new ArrayList<>());
 
+        message.setSender(user);
 
         User recipient = userService.reloadUser(message.getRecipient().getUsername()).get();
         recipient.setTests(new ArrayList<>());
         message.setRecipient(recipient);
 
-        message.setTimestamp(new GregorianCalendar());
+
+        // Устанавливается часовой пояс для хранения времени в БД постоянно по Москве
+        // В БД будет сохраняться Московское время независимо от местоположения сервера/пользователя
+        TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
+        Calendar nowDate = new GregorianCalendar();
+        nowDate.setTimeZone(timeZone);
+        message.setTimestamp(nowDate);;
+
         message.setStatus(MessageStatus.DELIVERED);
         messageService.saveMessage(message);
-        //simpMessagingTemplate.convertAndSend("/topic/" + message.getRecipient().getUsername(), message);
-
 
         return message;
     }
@@ -111,8 +94,5 @@ public class ChatController {
     public String handleError(){
         return "error";
     }
-
-
-
 
 }

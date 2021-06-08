@@ -7,6 +7,7 @@ import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 
 @Entity(name = "MESSAGES")

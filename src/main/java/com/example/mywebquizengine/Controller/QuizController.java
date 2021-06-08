@@ -1,36 +1,30 @@
 package com.example.mywebquizengine.Controller;
 
-import com.example.mywebquizengine.Model.Test.Quiz;
-import com.example.mywebquizengine.Model.Test.ServerAnswer;
-import com.example.mywebquizengine.Model.Test.Test;
-import com.example.mywebquizengine.Model.Test.UserQuizAnswer;
-import com.example.mywebquizengine.Model.Test.UserTestAnswer;
+import com.example.mywebquizengine.Model.Test.*;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Service.QuizService;
 import com.example.mywebquizengine.Service.TestService;
 import com.example.mywebquizengine.Service.UserAnswerService;
 import com.example.mywebquizengine.Service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.http.HttpStatus;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
 
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.io.IOException;
 import java.util.*;
+
+import static com.example.mywebquizengine.Controller.UserController.getAuthUser;
 
 @Validated
 @Controller
@@ -144,33 +138,28 @@ public class QuizController {
         StringBuilder result = new StringBuilder();
         List<UserQuizAnswer> userQuizAnswers = new ArrayList<>();
 
-
         User user = getAuthUser(authentication, userService);
 
         userTestAnswer.setUser(user);
         userTestAnswer.setTest(testService.findTest(Integer.parseInt(id)));
 
-        //for (int i = 0; i < userTestAnswer.getUserQuizAnswers().size(); i++) {
 
         for (int i = 0; i < testService.findTest(Integer.parseInt(id)).getQuizzes().size(); i++) {
             UserQuizAnswer quizAnswer = new UserQuizAnswer();
             ServerAnswer thisServerAnswer = new ServerAnswer();
             thisServerAnswer.quiz = quizService.findQuiz(testService.findTest(Integer.parseInt(id)).getQuizzes().get(i).getId());
 
-            //quizAnswer.setUser(userService.getThisUser());
             quizAnswer.setQuiz(thisServerAnswer.quiz);
 
             thisServerAnswer.checkAnswer(userTestAnswer.getUserQuizAnswers().get(i).getAnswer());
 
             quizAnswer.setStatus(thisServerAnswer.isSuccess());
-            //quizAnswer.setCompletedAt(new GregorianCalendar());
+
             quizAnswer.setQuiz(thisServerAnswer.quiz);
 
             quizAnswer.setUserAnswerId(userTestAnswer);
 
             quizAnswer.setAnswer(userTestAnswer.getUserQuizAnswers().get(i).getAnswer());
-
-            //userAnswerService.saveAnswer(quizAnswer);
 
             userQuizAnswers.add(quizAnswer);
 
@@ -181,7 +170,7 @@ public class QuizController {
             } else {
                 result.append("0");
             }
-            //results.add(quizAnswer.getStatus().toString());
+
         }
 
         userTestAnswer.setUserQuizAnswers(userQuizAnswers);
@@ -277,29 +266,7 @@ public class QuizController {
         }
     }
 
-    public static User getAuthUser(Authentication authentication, UserService userService) {
-        String name = "";
 
-
-
-        if (authentication instanceof OAuth2AuthenticationToken) {
-
-            if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("google")) {
-
-                name = ((DefaultOidcUser) authentication.getPrincipal()).getAttributes().get("email")
-                        .toString().replace("@gmail.com", "");
-            } else if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("github")) {
-                name = ((DefaultOAuth2User) authentication.getPrincipal()).getAttributes().get("name")
-                        .toString();
-            }
-
-        } else {
-            User user = (User) authentication.getPrincipal();
-            name = user.getUsername();
-        }
-
-        return userService.reloadUser(name).get();
-    }
 
     @GetMapping(path = "/api/quizzes/{id}/info/")
     public String getInfo(@PathVariable Integer id, Model model,

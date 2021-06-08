@@ -1,34 +1,27 @@
 package com.example.mywebquizengine.Controller;
 
-import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Model.Role;
+import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.example.mywebquizengine.Controller.QuizController.getAuthUser;
 
 @Controller
 public class UserController {
@@ -70,21 +63,20 @@ public class UserController {
             return "reg";
         } catch (Exception e){
             return "error";
-            //throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
     }
 
     @PostMapping(path = "/update/userinfo/password", consumes ={"application/json"} )
-    public void tryToChangePass(Authentication authentication) {
-        //model.addAttribute("notification", "");
+    public void tryToChangePassWithAuth(Authentication authentication) {
+
         User user = getAuthUser(authentication, userService);
         userService.sendCodeForChangePassword(user);
-        //return "";
+
     }
 
     @PostMapping(path = "/update/userinfo/pswrdwithoutauth", consumes ={"application/json"} )
-    public void tryToChangePass(@RequestBody User in) {
-        //model.addAttribute("notification", "");
+    public void tryToChangePassWithoutAuth(@RequestBody User in) {
+
         User user;
         if (userService.reloadUser(in.getUsername()).isPresent()) {
             user = userService.reloadUser(in.getUsername()).get();
@@ -93,32 +85,23 @@ public class UserController {
         }
 
         userService.sendCodeForChangePassword(user);
-        //return "";
+
     }
 
     @GetMapping("/loginSuccess")
-    public String getLoginInfo(Model model, Authentication authentication) {
+    public String getLoginInfo(Authentication authentication) {
 
         User user = userService.castToUser((OAuth2AuthenticationToken) authentication);
 
-//        Authentication authentication1 = SecurityContextHolder.getContext().getAuthentication();
         userService.tryToSaveUser(user); // save if not exist (registration)
 
         return "home";
     }
 
-    //@Transactional
+
     @GetMapping(path = "/updatepass/{changePasswordCode}")
     public String changePasswordPage(@PathVariable String changePasswordCode) {
-        //User userLogin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        User user = userService.getUserViaChangePasswordCode(changePasswordCode);
-
         return "changePassword";
-
-        //user.setUsername(userLogin.getUsername());
-        //user.setPassword(passwordEncoder.encode(user.getPassword()));
-        //userService.updatePassword(user);
     }
 
     @RequestMapping(value = "/userss")
@@ -128,13 +111,6 @@ public class UserController {
 
     @GetMapping(path = "/signin")
     public String singin() {
-
-        /*OAuth2AuthorizedClient client = authorizedClientService
-                .loadAuthorizedClient(
-                        authentication.getAuthorizedClientRegistrationId(),
-                        authentication.getName());*/
-
-
         return "singin";
     }
 
@@ -155,19 +131,15 @@ public class UserController {
 
 
     @Transactional
-    @PutMapping(path = "/updatepass/{activationCode}", consumes ={"application/json"})
-    public String changePassword_2(@RequestBody User in, @PathVariable String activationCode) {
+    @PutMapping(path = "/updatepass/{changePasswordCode}", consumes ={"application/json"})
+    public String changePasswordUsingCode(@RequestBody User in, @PathVariable String changePasswordCode) {
 
-        User user = userService.getUserViaChangePasswordCode(activationCode);
+        User user = userService.getUserViaChangePasswordCode(changePasswordCode);
 
-        //User userLogin = getAuthUser(authentication, userService);
-
-        //in.setUsername(userLogin.getUsername());
         user.setPassword(passwordEncoder.encode(in.getPassword()));
         user.setChangePasswordCode(UUID.randomUUID().toString());
         userService.updatePassword(user);
 
-       // User user = userService.reloadUser(in.getUsername()).get();
         return "changePassword";
     }
 
@@ -195,5 +167,30 @@ public class UserController {
         System.out.println("Пришло уведомление");
     }
 
+
+    // UserService is required because this method is static, but UserService non-static
+    public static User getAuthUser(Authentication authentication, UserService userService) {
+        String name = "";
+
+
+
+        if (authentication instanceof OAuth2AuthenticationToken) {
+
+            if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("google")) {
+
+                name = ((DefaultOidcUser) authentication.getPrincipal()).getAttributes().get("email")
+                        .toString().replace("@gmail.com", "");
+            } else if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("github")) {
+                name = ((DefaultOAuth2User) authentication.getPrincipal()).getAttributes().get("name")
+                        .toString();
+            }
+
+        } else {
+            User user = (User) authentication.getPrincipal();
+            name = user.getUsername();
+        }
+
+        return userService.reloadUser(name).get();
+    }
 
 }

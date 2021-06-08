@@ -22,6 +22,7 @@ build/
 *.iws
 *.iml
 *.ipr
+*.gz
 
 out/
 !**/src/main/**/out/
@@ -54,4 +55,5 @@ out/production/resources/static/
 out/production/resources/templates/
 out/production/resources/application.properties
 logging.log
+
 
