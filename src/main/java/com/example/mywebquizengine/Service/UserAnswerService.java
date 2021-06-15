@@ -1,6 +1,5 @@
 package com.example.mywebquizengine.Service;
 
-import com.example.mywebquizengine.Model.Test.UserQuizAnswer;
 import com.example.mywebquizengine.Model.Test.UserTestAnswer;
 import com.example.mywebquizengine.Repos.UserQuizAnswerRepository;
 import com.example.mywebquizengine.Repos.UserTestAnswerRepository;
@@ -22,12 +21,27 @@ public class UserAnswerService  {
     @Autowired
     private UserTestAnswerRepository userTestAnswerRepository;
 
-    public void saveAnswer(UserQuizAnswer userQuizAnswer){
+    /*public void saveAnswer(UserQuizAnswer userQuizAnswer){
         userQuizAnswerRepository.save(userQuizAnswer);
-    }
+    }*/
 
-    public void saveAnswer(UserTestAnswer userTestAnswer){
-        userTestAnswerRepository.save(userTestAnswer);
+    public void saveAnswer(UserTestAnswer userTestAnswer) {
+        UserTestAnswer lastUserAnswer = userTestAnswerRepository.findLastUserAnswer(userTestAnswer.getUser().getUsername());
+        lastUserAnswer.setCompletedAt(userTestAnswer.getCompletedAt());
+        lastUserAnswer.setPercent(userTestAnswer.getPercent());
+
+        /*
+         Используется для того чтобы установить "Пользовательскому ответу на вопрос"
+         экземпляр(ID) ответа, который создаётся при входе на страницу для прохождения
+         теста. Это необходимо для того чтобы новая запись о прохождении теста в БД не
+         создавалась, а обновлялась старая (созданная при заходе на страницу для прохождения теста)
+         */
+        for (int i = 0; i < userTestAnswer.getUserQuizAnswers().size(); i++) {
+            userTestAnswer.getUserQuizAnswers().get(i).setUserAnswer(lastUserAnswer);
+        }
+
+        lastUserAnswer.setUserQuizAnswers(userTestAnswer.getUserQuizAnswers());
+        //userTestAnswerRepository.save(lastUserAnswer);
     }
 
     /*public Page<UserQuizAnswer> getCompleted (String name, Integer page,
@@ -47,6 +61,10 @@ public class UserAnswerService  {
 
     public ArrayList<Integer> getAnswersByTestId(Integer id) {
         return (ArrayList<Integer>) userTestAnswerRepository.getUserAnswersById(id);
+    }
+
+    public void saveStartAnswer(UserTestAnswer userTestAnswer) {
+        userTestAnswerRepository.save(userTestAnswer);
     }
 
     /*public Integer getStat(Integer id) {

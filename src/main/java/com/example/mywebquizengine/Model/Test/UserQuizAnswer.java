@@ -29,7 +29,7 @@ public class UserQuizAnswer {
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false, cascade = CascadeType.ALL)
     @JoinColumn(nullable = false, name = "user_answer_id")
-    private UserTestAnswer userAnswerId;
+    private UserTestAnswer userAnswer;
 
 
 
@@ -76,13 +76,16 @@ public class UserQuizAnswer {
         return status;
     }
 
-
-
-    public void setUserAnswerId(UserTestAnswer userTestAnswer) {
-        this.userAnswerId = userTestAnswer;
+    public void setStatus(Boolean status) {
+        this.status = status;
     }
 
-    public UserTestAnswer getUserAnswerId() {
-        return userAnswerId;
+
+    public void setUserAnswer(UserTestAnswer userTestAnswer) {
+        this.userAnswer = userTestAnswer;
+    }
+
+    public UserTestAnswer getUserAnswer() {
+        return userAnswer;
     }
 }

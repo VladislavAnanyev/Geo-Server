@@ -17,14 +17,36 @@ public class UserTestAnswer {
     @JoinColumn(name = "username")
     private User user;
 
-    @OneToMany(mappedBy = "userAnswerId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "userAnswer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserQuizAnswer> userQuizAnswers;
 
     @ManyToOne
     @JoinColumn(nullable = false, name = "test_id")
     private Test test;
 
+
+
+    private Double percent;
+
+    public Double getPercent() {
+        return percent;
+    }
+
+    private Calendar startAt;
+
     private Calendar completedAt;
+
+    public Calendar getStartAt() {
+        return startAt;
+    }
+
+    public void setStartAt(Calendar startAt) {
+        this.startAt = startAt;
+    }
+
+    public void setPercent(Double percent) {
+        this.percent = percent;
+    }
 
     public User getUser() {
         return user;
@@ -47,7 +69,22 @@ public class UserTestAnswer {
     }
 
     public void setUserQuizAnswers(List<UserQuizAnswer> userQuizAnswers) {
-        this.userQuizAnswers = userQuizAnswers;
+        /*
+        Для корректной работы с orphanRemoval и обновлением строк в БД
+        (Обработка ошибки: A collection with cascade=”all-delete-orphan”
+         was no longer referenced by the owning entity instance)
+         */
+        if (this.userQuizAnswers == null) {
+            this.userQuizAnswers = userQuizAnswers;
+            return;
+        } else {
+            this.userQuizAnswers.clear();
+        }
+        if (userQuizAnswers != null) {
+            this.userQuizAnswers.addAll(userQuizAnswers);
+            this.userQuizAnswers.forEach((userQuizAnswer) -> userQuizAnswer.setUserAnswer(this));
+        }
+
     }
 
     public void setTest(Test test) {

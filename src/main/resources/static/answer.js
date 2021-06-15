@@ -11,12 +11,9 @@ function f(id) {
     let size = document.getElementsByClassName("quiz");
     let name = "check";
 
-   // console.log(1);
-
     for (let i = 0; i < size.length; i++) {
         answer = document.getElementsByName("" + name + i);
 
-        //console.log(answer.length)
         for (j = 0; j < answer.length; j++) {
             if(answer[j].checked) {
                 //console.log(answer[j].value)
@@ -27,22 +24,8 @@ function f(id) {
         answers.push(test)
         answer_values = []
 
-
-
-
     }
 
-    /*for (i = 0; i < size; i++) {
-        name = "check" + size;
-    }
-
-    for (i = 0; i < answer.length; i++) {
-        arr2.push(answer[i].value)
-    }
-
-    for (i = 0; i < arr2.length; i++) {
-        answer.push(arr2);
-    }*/
 
     const json = {
         //userQuizAnswers: answers

@@ -5,6 +5,7 @@ import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -147,12 +148,9 @@ public class UserController {
 
     @Transactional
     @PutMapping(path = "/update/user/{username}", consumes={"application/json"})
+    @PreAuthorize(value = "@userController.getAuthUser(authentication,@userService).username.equals(#username)")
     public void changeUser(@PathVariable String username, @RequestBody User user, Authentication authentication) {
-
-        User userLogin = getAuthUser(authentication, userService);
-        if (userLogin.getUsername().equals(username)) {
-            userService.updateUser(user.getLastName(), user.getFirstName(), username);
-        }
+        userService.updateUser(user.getLastName(), user.getFirstName(), username);
     }
 
     @GetMapping(path = "/about/{username}")

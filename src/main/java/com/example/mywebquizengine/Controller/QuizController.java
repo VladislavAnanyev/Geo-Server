@@ -9,6 +9,7 @@ import com.example.mywebquizengine.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -37,7 +38,7 @@ public class QuizController {
     private UserAnswerService userAnswerService;
 
     @Autowired
-    public UserService userService;
+    private UserService userService;
 
     @Autowired
     private TestService testService;
@@ -48,8 +49,8 @@ public class QuizController {
 
     @GetMapping(path = "/api/quizzes")
     public String getQuizzes(Model model, @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
-                                 @RequestParam(required = false,defaultValue = "10") @Min(1) @Max(10) Integer pageSize,
-                                 @RequestParam(defaultValue = "id") String sortBy) throws IOException {
+                             @RequestParam(required = false,defaultValue = "10") @Min(1) @Max(10) Integer pageSize,
+                             @RequestParam(defaultValue = "id") String sortBy) throws IOException {
 
         Page<Test> page1 = testService.getAllQuizzes(page, pageSize, sortBy);
 
@@ -68,8 +69,8 @@ public class QuizController {
 
     @GetMapping(path = "/myquiz")
     public String getMyQuizzes(Authentication authentication, Model model, @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
-                                            @RequestParam(required = false,defaultValue = "10") @Min(1) @Max(10) Integer pageSize,
-                                            @RequestParam(defaultValue = "id") String sortBy) {
+                               @RequestParam(required = false,defaultValue = "10") @Min(1) @Max(10) Integer pageSize,
+                               @RequestParam(defaultValue = "id") String sortBy) {
         //User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         User user = getAuthUser(authentication, userService);
@@ -107,8 +108,6 @@ public class QuizController {
 
             User user = getAuthUser(authentication, userService);
 
-
-
             user.setTests(new ArrayList<>()); // Handle Persistance bug
             user.setRoles(new ArrayList<>());
             test.setDuration(test.getDuration());
@@ -117,7 +116,7 @@ public class QuizController {
                 test.getQuizzes().get(i).setTest(test);
             }
             testService.saveTest(test);
-            quizService.saveQuiz(test.getQuizzes());
+            //quizService.saveQuiz(test.getQuizzes());
             return "home";
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -126,18 +125,19 @@ public class QuizController {
 
     @GetMapping(path = "/")
     public String home() {
-        Authentication authentication1 = SecurityContextHolder.getContext().getAuthentication();
+        //Authentication authentication1 = SecurityContextHolder.getContext().getAuthentication();
         return "home";
     }
 
 
     @PostMapping(path = "/api/quizzes/{id}/solve")
     @ResponseBody
-    public String getAnswerOnTest(Authentication authentication, Model model, @PathVariable String id, @RequestBody UserTestAnswer userTestAnswer) {
+    public String getAnswerOnTest(Authentication authentication, @PathVariable String id,
+                                  @RequestBody UserTestAnswer userTestAnswer) {
 
         StringBuilder result = new StringBuilder();
         List<UserQuizAnswer> userQuizAnswers = new ArrayList<>();
-
+        int trueAnswers = 0;
         User user = getAuthUser(authentication, userService);
 
         userTestAnswer.setUser(user);
@@ -146,39 +146,32 @@ public class QuizController {
 
         for (int i = 0; i < testService.findTest(Integer.parseInt(id)).getQuizzes().size(); i++) {
             UserQuizAnswer quizAnswer = new UserQuizAnswer();
-            ServerAnswer thisServerAnswer = new ServerAnswer();
-            thisServerAnswer.quiz = quizService.findQuiz(testService.findTest(Integer.parseInt(id)).getQuizzes().get(i).getId());
+            AnswerChecker answerChecker = new AnswerChecker();
 
-            quizAnswer.setQuiz(thisServerAnswer.quiz);
+            answerChecker.quiz = quizService.findQuiz(testService.findTest(Integer.parseInt(id)).getQuizzes().get(i).getId());
+            quizAnswer.setQuiz(answerChecker.quiz);
 
-            thisServerAnswer.checkAnswer(userTestAnswer.getUserQuizAnswers().get(i).getAnswer());
-
-            quizAnswer.setStatus(thisServerAnswer.isSuccess());
-
-            quizAnswer.setQuiz(thisServerAnswer.quiz);
-
-            quizAnswer.setUserAnswerId(userTestAnswer);
+            answerChecker.checkAnswer(userTestAnswer.getUserQuizAnswers().get(i).getAnswer());
+            quizAnswer.setStatus(answerChecker.isSuccess());
 
             quizAnswer.setAnswer(userTestAnswer.getUserQuizAnswers().get(i).getAnswer());
 
             userQuizAnswers.add(quizAnswer);
 
-            model.addAttribute("answer", thisServerAnswer);
-
             if (quizAnswer.getStatus().toString().equals("true")) {
                 result.append("1");
+                trueAnswers++;
             } else {
                 result.append("0");
             }
-
         }
 
         userTestAnswer.setUserQuizAnswers(userQuizAnswers);
 
+        userTestAnswer.setPercent(((double) trueAnswers/(double)result.length()) * 100.0);
+
         TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
-
         Calendar nowDate = new GregorianCalendar();
-
         nowDate.setTimeZone(timeZone);
 
         userTestAnswer.setCompletedAt(nowDate);
@@ -199,11 +192,18 @@ public class QuizController {
 
 
     @GetMapping(path = "/api/quizzes/{id}/solve")
-    public String passTest(Model model, @PathVariable String id) {
+    public String passTest(Model model, @PathVariable String id, Authentication authentication) {
         model.addAttribute(id);
-        //model.addAttribute("quiz", quizService.findQuiz(Integer.parseInt(id)));
         model.addAttribute("test_id", testService.findTest(Integer.parseInt(id)));
         model.addAttribute("test", testService.findTest(Integer.parseInt(id)).getQuizzes());
+
+        UserTestAnswer userTestAnswer = new UserTestAnswer();
+
+        userTestAnswer.setStartAt(new GregorianCalendar());
+        userTestAnswer.setTest(testService.findTest(Integer.parseInt(id)));
+        userTestAnswer.setUser(UserController.getAuthUser(authentication, userService));
+        userAnswerService.saveStartAnswer(userTestAnswer);
+
         return "answer";
     }
 
@@ -213,76 +213,47 @@ public class QuizController {
     }
 
     @DeleteMapping(path = "/api/quizzes/{id}")
+    @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(@userController.getAuthUser(authentication,@userService).username)")
     public void deleteTest(@PathVariable Integer id, Authentication authentication) {
-
-        User user = getAuthUser(authentication, userService);
-
-
-        if (user.getUsername()
-                .equals(testService.findTest(id)
-                        .getUser().getUsername())) {
-            //userAnswerService.deleteAnswer(id);
-            testService.deleteTest(id);
-        } else {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
+        testService.deleteTest(id);
     }
 
 
     @PutMapping(path = "/update/{id}", consumes={"application/json"})
     @ResponseBody
-    public void changeTest(Model model, @PathVariable Integer id, @Valid @RequestBody Test test,
+    @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(@userController.getAuthUser(authentication,@userService).username)")
+    public void changeTest(@PathVariable Integer id, @Valid @RequestBody Test test,
                            Authentication authentication) throws ResponseStatusException {
-        User user = getAuthUser(authentication, userService);
-        if (user.getUsername()
-                .equals(testService.findTest(id)
-                        .getUser().getUsername())) {
 
-            for (int i = 0; i < test.getQuizzes().size(); i++) {
-                Quiz oldQuiz = testService.findTest(id).getQuizzes().get(i);
-                Quiz quiz = test.getQuizzes().get(i);
-                quizService.updateQuiz(oldQuiz.getId(), quiz.getTitle(), quiz.getText(), (ArrayList<String>) quiz.getOptions(), (ArrayList<Integer>) quiz.getAnswer());
-            }
-
-        } else {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        for (int i = 0; i < test.getQuizzes().size(); i++) {
+            Quiz oldQuiz = testService.findTest(id).getQuizzes().get(i);
+            Quiz quiz = test.getQuizzes().get(i);
+            quizService.updateQuiz(oldQuiz.getId(), quiz.getTitle(), quiz.getText(), (ArrayList<String>) quiz.getOptions(), (ArrayList<Integer>) quiz.getAnswer());
         }
 
     }
 
 
-    @GetMapping(path = "/update/{id}")
-    public String update(@PathVariable Integer id, Model model, Authentication authentication) {
-        User user = getAuthUser(authentication, userService);
 
-        if (user.getUsername()
-                .equals(testService.findTest(id)
-                        .getUser().getUsername())) {
-            Test tempTest = testService.findTest(id);
-            model.addAttribute("oldTest", tempTest);
-            return "updateQuiz";
-        } else {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
+    @GetMapping(path = "/update/{id}")
+    @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(@userController.getAuthUser(authentication,@userService).username)")
+    public String update(@PathVariable Integer id, Model model, Authentication authentication) {
+
+        Test tempTest = testService.findTest(id);
+        model.addAttribute("oldTest", tempTest);
+        return "updateQuiz";
+
     }
 
 
 
     @GetMapping(path = "/api/quizzes/{id}/info/")
+    @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(@userController.getAuthUser(authentication,@userService).username)")
     public String getInfo(@PathVariable Integer id, Model model,
                           @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
                           @RequestParam(required = false,defaultValue = "2000") @Min(1) @Max(2000) Integer pageSize,
                           @RequestParam(defaultValue = "completed_at") String sortBy) {
 
-        ArrayList<Integer> answers = userAnswerService.getAnswersByTestId(id);
-        ArrayList<Double> result = new ArrayList<>();
-        for (int i = 0; i < answers.size(); i++) {
-            result.add(userAnswerService.getStatistics(id, answers.get(i)));
-        }
-
-        result.sort(Collections.reverseOrder());
-
-        model.addAttribute("stat", result.toArray());
         model.addAttribute("answersOnQuiz", userAnswerService.getAnswersById(id, page, pageSize, sortBy).getContent());
         return "info";
     }

@@ -4,13 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
-public class ServerAnswer {
+public class AnswerChecker {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     public Quiz quiz;
     private boolean success;
     private String feedback;
 
-    public ServerAnswer() {}
+    public AnswerChecker() {}
 
     public void checkAnswer(List<Integer> answer){
         if (answer.equals(quiz.getAnswer())) {

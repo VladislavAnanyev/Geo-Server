@@ -49,7 +49,7 @@ public class TestService {
         //quizRepository.save(test.getQuizzes().get(0));
     }
 
-    public Test findTest(int id) {
+    public Test findTest(Integer id) {
         if (testRepository.findById(id).isPresent()){
             return testRepository.findById(id).get();
         } else {
