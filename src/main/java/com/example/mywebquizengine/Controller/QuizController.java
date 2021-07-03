@@ -286,6 +286,7 @@ public class QuizController {
     public void getAnswerSession(Authentication authentication,@RequestBody UserTestAnswer userTestAnswer, @PathVariable String id) {
         User user = getAuthUser(authentication, userService);
 
+
         userTestAnswer.setUser(user);
         userTestAnswer.setTest(testService.findTest(Integer.parseInt(id)));
         userAnswerService.saveAnswer_2(userTestAnswer);

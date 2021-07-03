@@ -1,5 +1,6 @@
 
 <#import "parts/common.ftl" as e>
+<#include "parts/security.ftl">
 
 <@e.page>
 
@@ -53,7 +54,14 @@
                 </button>-->
 
 
-                <button onclick="checkAnswerSession(${testList.id?c})" type="submit" class="btn btn-primary ml-3 mb-3">Приступить к выполнению</button>
+                <#if known>
+                    <button onclick="checkAnswerSession(${testList.id?c})" type="submit" class="btn btn-primary ml-3 mb-3">Приступить к выполнению</button>
+
+                <#else>
+                    <form method="get" action="/api/quizzes/${testList.id?c}/solve/" class="form-inline">
+                        <button type="submit" class="btn btn-primary ml-3 mb-3">Приступить к выполнению</button>
+                    </form>
+                </#if>
 
 
                 <div class="modal fade" id="staticBackdrop" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
