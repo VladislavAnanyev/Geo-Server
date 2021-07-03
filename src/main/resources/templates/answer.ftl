@@ -4,14 +4,19 @@
 
 
     <script src="/static/answer.js"></script>
-    <script src="../static/session.js"></script>
+    <script src="/static/session.js"></script>
     <link href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css'>
     <script src='https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js'></script>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
 
+    <#--<div class="progress">
+        <div class="progress-bar progress-bar-striped" role="progressbar" style="width: 15%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
+        <div class="progress-bar bg-success progress-bar-striped" role="progressbar" style="width: 30%" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"></div>
+        <div class="progress-bar bg-info progress-bar-striped" role="progressbar" style="width: 20%" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>-->
 
     <div>
-        <#list test as quiz>
+        <#list test_id.quizzes as quiz>
             <div class = "card quiz mt-2 card mb-3 shadow p-3 mb-5 bg-white rounded">
                 <b class="mr-4">${quiz_index + 1}.</b>
                 <div class="card-body">
@@ -20,7 +25,24 @@
                         <div>${quiz.text}</div>
                         <#list quiz.options as options>
                             <div class="custom-control custom-checkbox mt-2">
-                                <input type="checkbox" onclick="session(${test_id.id?c})" class="custom-control-input answers${options_index}" id="${options_index}_${quiz.id}" name="check${quiz?index}" value="${options_index}">
+                                <input type="checkbox" onclick="session(${test_id.id?c})" class="custom-control-input answers${options_index}" id="${options_index}_${quiz.id}" name="check${quiz?index}" value="${options_index}"
+                                        <#if lastAnswer??>
+                                            <#if lastAnswer.userQuizAnswers??>
+                                                <#if lastAnswer.userQuizAnswers[quiz_index]??>
+                                                    <#if lastAnswer.userQuizAnswers[quiz_index].answer??>
+                                                        <#list lastAnswer.userQuizAnswers[quiz_index].answer as ans>
+                                                            <#if ans == options_index>
+                                                                checked
+                                                            </#if>
+                                                        </#list>
+
+                                                    </#if>
+
+                                                </#if>
+
+                                            </#if>
+
+                                        </#if>>
                                 <label class="custom-control-label" for="${options_index}_${quiz.id}">
                                     ${options}
                                 </label>

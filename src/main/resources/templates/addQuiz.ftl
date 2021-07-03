@@ -1,34 +1,40 @@
 <#import "parts/common.ftl" as c>
 <@c.page>
     <title>Добавить викторину</title>
-    <script src="/static/addQuiz.js"></script>
-    <script src="/static/addOptions.js"></script>
     <script src="/static/addTest.js"></script>
+    <script src="/static/addOptions.js"></script>
+    <script src="/static/addQuiz.js"></script>
+    <script src="/static/deletereq.js"></script>
 
-    <div>
+    <div id="TestTittle">
+        <form id="checkForm0" class="checkFormCl">
         <div class="form-group">
-            <label for="exampleFormControlInput1">Название</label>
-            <input type="text" class="form-control" id="description" placeholder="Напишите здесь название викторины" name="description">
+            <label for="exampleFormControlInput1 validationDefault01">Название</label>
+            <input required type="text" class="form-control" id="description validationDefault01" placeholder="Напишите здесь название викторины" name="description">
         </div>
+        </form>
     </div>
 
-    <div id="1Id" class="quiz">
+<div id="1Id" class="quiz">
+<form id="checkForm1" class="checkFormCl">
+
+
         <div class="form-group">
-            <label for="exampleFormControlInput1">Тема</label>
-            <input type="text" class="form-control" id="titleID" placeholder="Напишите здесь тему вопроса из викторины" name="title">
+            <label for="exampleFormControlInput1 validationDefault01">Тема</label>
+            <input required type="text" class="form-control" id="titleID validationDefault01" placeholder="Напишите здесь тему вопроса из викторины" name="title">
         </div>
 
         <div class="form-group">
-            <label for="exampleFormControlInput1">Вопрос</label>
-            <input type="text" class="form-control" id="questionID" placeholder="Напишите здесь ваш вопрос"  name="text">
+            <label for="exampleFormControlInput1 validationDefault01">Вопрос</label>
+            <input required type="text" class="form-control" id="questionID validationDefault01" placeholder="Напишите здесь ваш вопрос"  name="text">
         </div>
 
         <div class="options" id="1optionstest">
-            <label for="exampleFormControlInput1">Варианты ответа</label>
+            <label for="exampleFormControlInput1 validationDefault01">Варианты ответа</label>
             <div class="custom-control custom-checkbox" id="1Id1">
                 <input type="checkbox" class="custom-control-input 1input" id="1customCheck1" name="1check" value="0">
-                <label class="custom-control-label 1opt" id="1label1"  for="1customCheck1">
-                    <input type="text" class="form-control" id="1options1" placeholder="1)" name="1options">
+                <label class="custom-control-label 1opt validationDefault01" id="1label1"  for="1customCheck1">
+                    <input required type="text" class="form-control" id="1options1 validationDefault01" placeholder="1)" name="1options">
                 </label>
                 <#--            <button onclick="removeOptions(1,1)" class="btn btn-primary 1butt">Удалить вариант</button>-->
                 <a href="#" style="color: black"  data-bs-toggle="tooltip" data-bs-placement="right" title="Удалить вариант">
@@ -41,8 +47,8 @@
 
             <div class="custom-control custom-checkbox mt-2" id="1Id2" >
                 <input type="checkbox" class="custom-control-input 1input" id="1customCheck2" name="1check" value="1">
-                <label class="custom-control-label 1opt"  id="1label2"  for="1customCheck2">
-                    <input type="text" class="form-control" id="1options2" placeholder="2)" name="1options">
+                <label class="custom-control-label 1opt "  id="1label2"  for="1customCheck2">
+                    <input required type="text" class="form-control" id="1options2 validationDefault01" placeholder="2)" name="1options">
                 </label>
                 <#--            <button onclick="removeOptions(1,2)" class="btn btn-primary 1butt">Удалить вариант</button>-->
                 <a href="#" style="color: black"  data-bs-toggle="tooltip" data-bs-placement="right" title="Удалить вариант">
@@ -55,7 +61,7 @@
             <div class="custom-control custom-checkbox mt-2" id="1Id3">
                 <input type="checkbox" class="custom-control-input 1input" id="1customCheck3" name="1check" value="2">
                 <label class="custom-control-label 1opt" id="1label3"  for="1customCheck3">
-                    <input type="text" class="form-control" id="1options3" placeholder="3)" name="1options">
+                    <input required type="text" class="form-control" id="1options3 validationDefault01" placeholder="3)" name="1options">
                 </label>
                 <#--            <button onclick="removeOptions(1,3)" class="btn btn-primary 1butt">Удалить вариант</button>-->
                 <a href="#" style="color: black"  data-bs-toggle="tooltip" data-bs-placement="right" title="Удалить вариант">
@@ -68,7 +74,7 @@
             <div id="1Id4" class="custom-control custom-checkbox mt-2" >
                 <input type="checkbox" class="custom-control-input 1input" id="1customCheck4" name="1check" value="3">
                 <label class="custom-control-label 1opt" id="1label4"  for="1customCheck4">
-                    <input type="text" class="form-control" id="1options4" placeholder="4)" name="1options">
+                    <input required type="text" class="form-control" id="1options4 validationDefault01" placeholder="4)" name="1options">
                 </label>
 
 
@@ -87,18 +93,19 @@
             </div>
 
 
-
-        </div>
-
+    </div>
+</form>
         <div>
             <button onclick="addOptions(1)" class="btn btn-primary mt-2">Добавить вариант</button>
         </div>
 
         <#--    <form method="get" action="/myquiz" >-->
-    </div>
-    <div id="addQuiz">
-        <button onclick="addTest()" class="btn btn-primary mt-2">Добавить викторину</button>
-    </div>
+<#--    </div>-->
+
+    <#--<div id="deleteQuiz">
+        <button onclick="deleteTempQuiz(1)" class="btn btn-primary mt-2">Удалить вопрос</button>
+    </div>-->
+</div>
 
 <#--<div>Время на выполнение
 <div class="form-check ml-4">
@@ -123,9 +130,14 @@
 
 
     <div id="addTest">
+        <div id="addQuiz">
+            <button onclick="addQuiz()" class="btn btn-primary mt-2">Добавить вопрос</button>
+        </div>
         <#--    <form method="get" action="/" >-->
-        <button onclick="addQuiz()" type="submit" class="btn btn-primary mb-2 mt-2">Создать</button>
+        <button onclick="addTest()" type="submit" class="btn btn-primary mb-2 mt-2">Создать викторину</button>
         <#--    </form>-->
     </div>
+
+
 
 </@c.page>

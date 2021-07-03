@@ -42,6 +42,7 @@ function updateQuiz(id) {
     let countOfQuiz = document.getElementsByClassName("quiz").length;
     let title = document.getElementsByName("title");
     let text = document.getElementsByName("text");
+    let description = document.getElementById("exampleFormControlInput0");
 
     console.log(countOfQuiz)
 
@@ -100,8 +101,10 @@ function updateQuiz(id) {
     // quizzes_mas.push(quiz)
 
 
+    console.log(description.value)
 
     const json = {
+        description: description.value,
         quizzes: quizzes_mas
     }
     //console.log("abcde")
@@ -110,6 +113,28 @@ function updateQuiz(id) {
     console.log(JSON.stringify(json));
     xhr.open('PUT', '/update/' + id);
     xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            document.location.href = "#"
+            let div = document.createElement("div");
+            div.setAttribute('class', 'alert alert-success');
+            div.setAttribute('role', 'alert');
+
+            div.innerText = 'Успешно!';
+
+            let div2 = document.getElementById("checkForm0");
+            //document.body.append(div);
+            div2.before(div);
+
+            setTimeout(() => $(div).slideUp('slow', function () {
+                    //button.disabled = false;
+                    $(this).remove();
+                    //button.disabled = false;
+
+                }
+            ), 3000);
+        }
+    }
     xhr.send(JSON.stringify(json));
 
 

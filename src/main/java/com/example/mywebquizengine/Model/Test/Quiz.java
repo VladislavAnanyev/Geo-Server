@@ -37,7 +37,7 @@ public class Quiz {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private List<Integer> answer;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn
     private Test test;
 

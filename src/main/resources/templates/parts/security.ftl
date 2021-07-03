@@ -4,6 +4,7 @@
         known = Session.SPRING_SECURITY_CONTEXT??
 <#--    knownoauth = Session.SPRING_SECURITY_CONTEXT.authentication.principal.attributes??-->
 <#--    knownhttp = Session.SPRING_SECURITY_CONTEXT??-->
+
     >
 
 
@@ -13,6 +14,8 @@
 <#--        nowUser = Session.SPRING_SECURITY_CONTEXT.authentication.principal.attributes-->
 <#--        <#if nowUser??> -->
         nowUser = Session.SPRING_SECURITY_CONTEXT.authentication
+        isAdmin = nowUser.principal.isAdmin()
+
 <#--        name = nowUser.email?replace("@gmail.com","")-->
 <#--    name = nowUser.toString()-->
 
@@ -54,6 +57,7 @@
     <#else>
     <#assign
     name = "Гость"
+    isAdmin = false
     >
 </#if>
 

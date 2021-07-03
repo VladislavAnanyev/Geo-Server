@@ -19,6 +19,7 @@ function f(id) {
                 //console.log(answer[j].value)
                 answer_values.push(answer[j].value)
             }
+            answer[j].disabled = true;
         }
         let test = {answer: answer_values}
         answers.push(test)

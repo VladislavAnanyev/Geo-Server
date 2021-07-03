@@ -3,12 +3,25 @@
     <title>Изменить викторину</title>
     <script src="/static/putreq.js"></script>
     <script src="/static/addOptions.js"></script>
-    <script src="/static/addTest.js"></script>
+    <script src="/static/addQuiz.js"></script>
+
+    <div id="TestTittle">
+        <form id="checkForm0" class="checkFormCl">
+    <div class="form-group mt-4">
+        <label for="exampleFormControlInput0">Название</label>
+        <input type="text" class="form-control" id="exampleFormControlInput0" value="${oldTest.description}" name="description">
+    </div>
+        </form>
+    </div>
 
     <#list oldTest.quizzes as oldQuiz>
+
     <div id="${oldQuiz_index + 1}Id" class="quiz">
+
+
+
         <div class="form-group mt-4">
-            <label for="exampleFormControlInput1">Название</label>
+            <label for="exampleFormControlInput1">Тема</label>
             <input type="text" class="form-control" id="exampleFormControlInput1" value="${oldQuiz.title}" name="title">
         </div>
 

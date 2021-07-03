@@ -20,7 +20,7 @@ public class UserQuizAnswer {
 
     private Boolean status;
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false/*, cascade = CascadeType.ALL*/)
     @JoinColumn(nullable = false, name = "quiz_id")
     //@Cascade(org.hibernate.annotations.CascadeType.DELETE)
     //@OnDelete(action = OnDeleteAction.CASCADE)

@@ -66,5 +66,20 @@ public class TestService {
         }
     }
 
+    public void updateTest(Integer id, Test test) {
+        Test oldTest = testRepository.findById(id).get();
+        //oldTest.setDescription(test.getDescription());
+
+        /*for (int i = 0; i < test.getQuizzes().size(); i++) {
+            test.getQuizzes().get(i).setId(oldTest.getQuizzes().get(i).getId());
+        }*/
+
+        oldTest.setDescription(test.getDescription());
+
+        oldTest.setQuizzes(test.getQuizzes());
+        //oldTest.setAnswers(test.getAnswers());
+
+        testRepository.save(oldTest);
+    }
 
 }

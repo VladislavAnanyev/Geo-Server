@@ -49,7 +49,7 @@
                             <#if dialog.recipient.username == myUsername.username>
                                 <div id="${dialog.sender.username}" onclick="activeChat(${dialog.sender.username})"  class="chat_list <#--active_chat-->">
                                     <div class="chat_people">
-                                        <div class="chat_img"> <img src="<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialog.sender.avatar}.jpg" alt="sunil"> </div>
+                                        <div class="chat_img"> <img class="rounded-circle" src="<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialog.sender.avatar}.jpg" alt="sunil"> </div>
                                         <div class="chat_ib">
                                             <h5 class="dialogsuser">${dialog.sender.username}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
                                             <p id="lastMsg${dialog.sender.username}">${dialog.content}</p>
@@ -60,7 +60,7 @@
 
                                 <div id="${dialog.recipient.username}" onclick="activeChat(${dialog.recipient.username})"  class="chat_list <#--active_chat-->">
                                     <div class="chat_people">
-                                        <div class="chat_img"> <img src="<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialog.recipient.avatar}.jpg" alt="sunil"> </div>
+                                        <div class="chat_img"> <img class="rounded-circle" src="<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialog.recipient.avatar}.jpg" alt="sunil"> </div>
                                         <div class="chat_ib">
                                             <h5 class="dialogsuser">${dialog.recipient.username}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
                                             <p id="lastMsg${dialog.recipient.username}">${dialog.content}</p>
@@ -106,7 +106,7 @@
 
 
                             <div class="incoming_msg">
-                                <div class="incoming_msg_img"> <img src="../../../../img/${msg.sender.avatar}.jpg" alt="sunil"> </div>
+                                <div class="incoming_msg_img"> <img class="rounded-circle" src="../../../../img/${msg.sender.avatar}.jpg" alt="sunil"> </div>
                                 <div class="received_msg">
                                     <div class="received_withd_msg">
                                         <p>${msg.content}</p>
@@ -162,7 +162,7 @@
     //div2.setAttribute('class', "inbox_chat")
     div2.innerHTML =
         "                                    <div class=\"chat_people\">\n" +
-        "                                        <div class=\"chat_img\"> <img src=\"<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${user.avatar}.jpg\" alt=\"sunil\"> </div>\n" +
+        "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" src=\"<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${user.avatar}.jpg\" alt=\"sunil\"> </div>\n" +
         "                                        <div class=\"chat_ib\">\n" +
         "                                            <h5 class=\"dialogsuser\">${user.username}<span class=\"chat_date\"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>\n" +
         "                                            <p></p>\n" +

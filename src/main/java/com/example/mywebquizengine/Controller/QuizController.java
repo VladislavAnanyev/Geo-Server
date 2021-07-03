@@ -6,6 +6,7 @@ import com.example.mywebquizengine.Service.QuizService;
 import com.example.mywebquizengine.Service.TestService;
 import com.example.mywebquizengine.Service.UserAnswerService;
 import com.example.mywebquizengine.Service.UserService;
+import net.minidev.json.JSONValue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -80,6 +81,17 @@ public class QuizController {
         return "myquiz";
     }
 
+    // Проверка наличия неотправленных ответов
+    @GetMapping(path = "/checklastanswer/{id}")
+    @ResponseBody
+    public Boolean checkLastAnswer(@PathVariable String id, Authentication authentication) {
+        if (userAnswerService.checkLastComplete(getAuthUser(authentication, userService), id) != null) {
+            return userAnswerService.checkLastComplete(getAuthUser(authentication, userService), id).getCompletedAt() == null;
+        } else {
+            return false;
+        }
+    }
+
 
 
     /*@GetMapping(path = "/api/quizzes/completed")
@@ -117,7 +129,7 @@ public class QuizController {
             }
             testService.saveTest(test);
             //quizService.saveQuiz(test.getQuizzes());
-            return "home";
+            return "redirect:/";
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
@@ -192,18 +204,28 @@ public class QuizController {
 
 
     @GetMapping(path = "/api/quizzes/{id}/solve")
-    public String passTest(Model model, @PathVariable String id, Authentication authentication) {
-        model.addAttribute(id);
+    public String passTest(Model model, @PathVariable String id,
+                           @RequestParam(required = false, defaultValue = "false") String restore,
+                           Authentication authentication) {
+
+        UserTestAnswer lastUserTestAnswer = userAnswerService.checkLastComplete(UserController.getAuthUser(authentication, userService), id);
+
+        if (Boolean.parseBoolean(restore) && lastUserTestAnswer != null && lastUserTestAnswer.getCompletedAt() == null) {
+
+            model.addAttribute("lastAnswer", lastUserTestAnswer);
+
+        } else {
+
+            UserTestAnswer userTestAnswer = new UserTestAnswer();
+
+            userTestAnswer.setStartAt(new GregorianCalendar());
+            userTestAnswer.setTest(testService.findTest(Integer.parseInt(id)));
+            userTestAnswer.setUser(UserController.getAuthUser(authentication, userService));
+            userAnswerService.saveStartAnswer(userTestAnswer);
+
+        }
+
         model.addAttribute("test_id", testService.findTest(Integer.parseInt(id)));
-        model.addAttribute("test", testService.findTest(Integer.parseInt(id)).getQuizzes());
-
-        UserTestAnswer userTestAnswer = new UserTestAnswer();
-
-        userTestAnswer.setStartAt(new GregorianCalendar());
-        userTestAnswer.setTest(testService.findTest(Integer.parseInt(id)));
-        userTestAnswer.setUser(UserController.getAuthUser(authentication, userService));
-        userAnswerService.saveStartAnswer(userTestAnswer);
-
         return "answer";
     }
 
@@ -225,11 +247,13 @@ public class QuizController {
     public void changeTest(@PathVariable Integer id, @Valid @RequestBody Test test,
                            Authentication authentication) throws ResponseStatusException {
 
-        for (int i = 0; i < test.getQuizzes().size(); i++) {
+        /*for (int i = 0; i < test.getQuizzes().size(); i++) {
             Quiz oldQuiz = testService.findTest(id).getQuizzes().get(i);
             Quiz quiz = test.getQuizzes().get(i);
             quizService.updateQuiz(oldQuiz.getId(), quiz.getTitle(), quiz.getText(), (ArrayList<String>) quiz.getOptions(), (ArrayList<Integer>) quiz.getAnswer());
-        }
+        }*/
+
+        testService.updateTest(id, test);
 
     }
 
@@ -256,5 +280,15 @@ public class QuizController {
 
         model.addAttribute("answersOnQuiz", userAnswerService.getAnswersById(id, page, pageSize, sortBy).getContent());
         return "info";
+    }
+
+    @PostMapping(value = "/answersession/{id}")
+    public void getAnswerSession(Authentication authentication,@RequestBody UserTestAnswer userTestAnswer, @PathVariable String id) {
+        User user = getAuthUser(authentication, userService);
+
+        userTestAnswer.setUser(user);
+        userTestAnswer.setTest(testService.findTest(Integer.parseInt(id)));
+        userAnswerService.saveAnswer_2(userTestAnswer);
+        throw new ResponseStatusException(HttpStatus.OK);
     }
 }

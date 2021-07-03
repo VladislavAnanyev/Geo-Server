@@ -2,11 +2,17 @@
 <#import "parts/common.ftl" as e>
 
 <@e.page>
+
+
 <div xmlns="">
     <title>Все викторины</title>
     <link href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css'>
     <script src='https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js'></script>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+    <script src='/static/checkAnswerSession.js'></script>
+    <script src='/static/restoreSession.js'></script>
+
+
 
 
 
@@ -30,16 +36,64 @@
             </div>-->
 
             <div class="card mb-3 shadow p-3 mb-5 bg-white rounded">
+                <script src='/static/checkAnswerSession.js'></script>
+
 <#--                <img src="/../../../../img/look.com.ua_2016.02-111-1920x1080/${img[testList?index].name}" height="100px" class="card-img-top" alt="...">-->
                 <div class="card-body">
                     <h5 class="card-title">${testList.description}</h5>
                     <p class="card-text">Количество вопросов: ${testList.quizzes?size}</p>
                     <p class="card-text" ><small  class="text-muted">Автор: <a href="/about/${testList.user.username}">${testList.user.username}</a></small></p>
                 </div>
-                <form method="get" action="/api/quizzes/${testList.id?c}/solve/" class="form-inline">
-
+                <#--<form method="get" action="/api/quizzes/${testList.id?c}/solve/" class="form-inline">
                     <button type="submit" class="btn btn-primary ml-3 mb-3">Приступить к выполнению</button>
-                </form>
+                </form>-->
+
+                <#--<button type="button" class="btn btn-primary ml-2 my-1" data-toggle="modal" data-target="#staticBackdrop">
+                    Приступить к выполнению
+                </button>-->
+
+
+                <button onclick="checkAnswerSession(${testList.id?c})" type="submit" class="btn btn-primary ml-3 mb-3">Приступить к выполнению</button>
+
+
+                <div class="modal fade" id="staticBackdrop" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="staticBackdropLabel">Предупреждение</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+
+                                    <#--                        <input type="text" class="form-control" id="oldpassword" placeholder="Придумайте новый пароль"  aria-describedby="emailHelp" name="password">-->
+<#--                                    <input type="password" class="form-control" id="password1" placeholder="Придумайте новый пароль"  aria-describedby="emailHelp" name="password1">-->
+<#--                                    <input type="password" class="form-control mt-3" id="password2" placeholder="Введите новый пароль ещё раз" aria-describedby="emailHelp" name="password2">-->
+                                    У вас есть незаконченная сессия. Восстановить её?
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <form method="get" action="/api/quizzes/${testList.id?c}/solve">
+<#--                                    <input type="hidden" name="restore" value="false"/>-->
+                                    <button type="submit"  <#--onclick="restoreSession(false, ${testList.id?c})"--> class="btn btn-secondary" <#--data-dismiss="modal"-->>Нет</button>
+
+                                </form>
+
+                                <form method="get" action="/api/quizzes/${testList.id?c}/solve">
+
+                                    <input type="hidden" name="restore" value="true"/>
+                                    <button type="submit" <#--onclick="restoreSession(true, ${testList.id?c})"--> class="btn btn-primary">Да</button>
+
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+
             </div>
 
 <#--            <div class="card-footer text-muted">-->
@@ -60,6 +114,9 @@
 
     <script src="/static/page.js"></script>
     <script src="/static/pageSize.js"></script>
+
+
+
 
     <div class="row">
 
@@ -103,7 +160,6 @@
         </div>
 
     </div>
-
 
 </div>
 

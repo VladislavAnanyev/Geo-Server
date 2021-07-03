@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -26,6 +27,7 @@ public class Test {
     @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserTestAnswer> answers;
 
+
     private String description;
 
     private LocalTime duration;
@@ -37,7 +39,22 @@ public class Test {
     }
 
     public void setQuizzes(List<Quiz> quizzes) {
-        this.quizzes = quizzes;
+        /*
+        Для корректной работы с orphanRemoval и обновлением строк в БД
+        (Обработка ошибки: A collection with cascade=”all-delete-orphan”
+         was no longer referenced by the owning entity instance)
+         */
+        if (this.quizzes == null) {
+            this.quizzes = quizzes;
+            return;
+        } else {
+            this.quizzes.clear();
+        }
+        if (quizzes != null) {
+            this.quizzes.addAll(quizzes);
+            this.quizzes.forEach((quiz) -> quiz.setTest(this));
+        }
+        //this.quizzes = quizzes;
     }
 
     public int getId() {
@@ -57,7 +74,22 @@ public class Test {
     }
 
     public void setAnswers(List<UserTestAnswer> answers) {
-        this.answers = answers;
+        //this.answers = answers;
+        /*
+        Для корректной работы с orphanRemoval и обновлением строк в БД
+        (Обработка ошибки: A collection with cascade=”all-delete-orphan”
+         was no longer referenced by the owning entity instance)
+         */
+        if (this.answers == null) {
+            this.answers = answers;
+            return;
+        } else {
+            this.answers.clear();
+        }
+        if (answers != null) {
+            this.answers.addAll(answers);
+            //this.answers.forEach((userQuizAnswer) -> userQuizAnswer.setUserAnswer(this));
+        }
     }
 
     public List<UserTestAnswer> getAnswers() {

@@ -26,7 +26,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Назад</button>
-                    <button type="button" onclick="changePass()" class="btn btn-primary">Да</button>
+                    <button type="button" onclick="changePass()" class="btn btn-primary">Сменить</button>
                 </div>
 
             </div>

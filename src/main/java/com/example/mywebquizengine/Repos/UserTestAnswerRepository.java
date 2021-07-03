@@ -8,6 +8,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserTestAnswerRepository extends CrudRepository<UserTestAnswer, Integer>,
         PagingAndSortingRepository<UserTestAnswer,Integer> {
@@ -20,7 +21,10 @@ public interface UserTestAnswerRepository extends CrudRepository<UserTestAnswer,
     List<Integer> getUserAnswersById(int id);
 
     @Query(value = "SELECT TOP 1 * FROM USER_TEST_ANSWERS WHERE USERNAME = :username ORDER BY START_AT DESC", nativeQuery = true)
-    UserTestAnswer findLastUserAnswer(String username);
+    Optional<UserTestAnswer> findLastUserAnswer(String username);
+
+    @Query(value = "SELECT TOP 1 * FROM USER_TEST_ANSWERS WHERE USERNAME = :username AND TEST_ID = :test_id ORDER BY START_AT DESC", nativeQuery = true)
+    Optional<UserTestAnswer> findLastUserTestAnswer(String username, Integer test_id);
 
 
 

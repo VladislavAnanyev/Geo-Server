@@ -59,6 +59,8 @@ public class User implements UserDetails {
 
     private boolean status;
 
+    private static final long serialVersionUID = -7422293274841574951L;
+
     public User(){
         this.accountNonExpired = true;
         this.accountNonLocked = true;
@@ -78,6 +80,7 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     @ElementCollection(fetch = FetchType.EAGER)
     private List<Role> roles;
+
 
     @Override
     public List<GrantedAuthority> getAuthorities(){
@@ -112,6 +115,10 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public boolean isAdmin() {
+        return roles.contains(Role.ROLE_ADMIN);
     }
 
 
