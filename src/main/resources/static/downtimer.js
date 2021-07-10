@@ -37,7 +37,7 @@ function initializeClock(id, endtime) {
     updateClock();
     var timeinterval = setInterval(updateClock, 1000);
 }
-let deadline = document.getElementById("time").value
+let deadline = document.getElementById("time").value + " GMT+0300"
 
 
 //let deadline = new Date() + new Date(test)
