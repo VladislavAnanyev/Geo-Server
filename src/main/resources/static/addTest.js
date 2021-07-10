@@ -30,11 +30,11 @@ function addTest() {
         let title = document.getElementsByName("title");
         let text = document.getElementsByName("text");
 
-        /*let time = document.getElementById("time")
+        let time = document.getElementById("time")
 
         if (!document.getElementById("flexRadioDefault2").checked) {
             time = null
-        }*/
+        }
 
 
         //console.log(time)
@@ -96,20 +96,20 @@ function addTest() {
 
         let json;
 
-        /*if (time != null) {
+        if (time != null) {
 
 
             json = {
                 description: name.value,
                 quizzes: quizzes_mas,
-                //duration: time.value
+                duration: time.value
             }
-        } else {*/
-        json = {
-            description: name.value,
-            quizzes: quizzes_mas,
+        } else {
+            json = {
+                description: name.value,
+                quizzes: quizzes_mas,
+            }
         }
-        //}
         //console.log("abcde")
 
         let xhr = new XMLHttpRequest();

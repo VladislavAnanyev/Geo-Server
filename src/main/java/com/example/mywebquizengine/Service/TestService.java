@@ -55,6 +55,16 @@ public class TestService {
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
+
+
+    }
+
+    public Test findTestProxy(Integer id) {
+
+        return testRepository.getOne(id);
+
+
+
     }
 
     public void deleteTest(int id) {

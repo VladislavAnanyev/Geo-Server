@@ -1,8 +1,26 @@
 <#import "parts/common.ftl" as e>
+<#include "parts/security.ftl">
+
 <@e.page>
     <title>Ответить</title>
 
+    <input type="hidden" id="username" value="${name}">
+    <input type="hidden" id="testid" value="${test_id.id?c}">
+    <input type="hidden" id="useranswerid" value="${lastAnswer.userAnswerId?c}">
 
+    <#if test_id.duration??>
+    <input type="hidden" id="time" value="${timeout?datetime?string ["MM.dd.yyyy HH:mm:ss"]}">
+    </#if>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.4.0/sockjs.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" type="text/css" rel="stylesheet">
+
+    <link href="/static/timer.css" type="text/css" rel="stylesheet">
+
+
+    <script src="/static/timeover.js"></script>
+    <script>connect()</script>
     <script src="/static/answer.js"></script>
     <script src="/static/session.js"></script>
     <link href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css'>
@@ -15,7 +33,34 @@
         <div class="progress-bar bg-info progress-bar-striped" role="progressbar" style="width: 20%" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
     </div>-->
 
+
+
+    <#if test_id.duration??>
+        <div class="alltime mb-3">
+            <h1 class="countdown-title">Осталось времени</h1>
+            <div id="countdown" class="countdown">
+                <div class="countdown-number">
+                    <span class="days countdown-time"></span>
+                    <span class="countdown-text">Дни</span>
+                </div>
+                <div class="countdown-number">
+                    <span class="hours countdown-time"></span>
+                    <span class="countdown-text">Часы</span>
+                </div>
+                <div class="countdown-number">
+                    <span class="minutes countdown-time"></span>
+                    <span class="countdown-text">Минуты</span>
+                </div>
+                <div class="countdown-number">
+                    <span class="seconds countdown-time"></span>
+                    <span class="countdown-text">Секунды</span>
+                </div>
+            </div>
+        </div>
+    </#if>
+
     <div>
+
         <#list test_id.quizzes as quiz>
             <div class = "card quiz mt-2 card mb-3 shadow p-3 mb-5 bg-white rounded">
                 <b class="mr-4">${quiz_index + 1}.</b>
@@ -115,6 +160,14 @@
         </div>
     </div>
 
+
+    <!--
+    https://denis-creative.com/jstimer/
+    https://www.sitepoint.com/build-javascript-countdown-timer-no-dependencies/
+    -->
+
+
+    <script src="/static/downtimer.js"></script>
 
 
 </@e.page>

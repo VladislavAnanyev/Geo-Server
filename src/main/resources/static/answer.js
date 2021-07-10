@@ -4,6 +4,7 @@ function f(id) {
     //let answer = $('input[name=check]:checked')
     let arr2 = [];
 
+    let answerId = document.getElementById("useranswerid");
 
     let answer = [];
     let answers = [];
@@ -30,7 +31,8 @@ function f(id) {
 
     const json = {
         //userQuizAnswers: answers
-        userQuizAnswers: answers
+        //userQuizAnswers: answers,
+        userAnswerId: answerId.value
         //userQuizAnswers: [{answer: [0,1]}, {answer: [1,2]}]
     }
 
@@ -42,7 +44,7 @@ function f(id) {
     xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
     xhr.onreadystatechange = function () {
         if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-            for (let i = 0; i < size.length; i++){
+            /*for (let i = 0; i < size.length; i++) {
                 let style = document.getElementById("test" + i).style;
                 style.padding = '20px';
                 style.borderRadius = '10px';
@@ -60,7 +62,7 @@ function f(id) {
 
             chartpie(xhr.response)
             let btn = document.getElementById("btnAns")
-            btn.disabled = true
+            btn.disabled = true*/
         }
     };
     xhr.send(JSON.stringify(json));

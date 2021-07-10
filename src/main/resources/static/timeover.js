@@ -18,17 +18,22 @@ var colors = [
 ];
 
 function connect(/*event*/) {
-    //username = document.querySelector('#name').value.trim();
+    username = document.getElementById("username").value.trim();
 
     //if(username) {
-        //usernamePage.classList.add('hidden');
-        //chatPage.classList.remove('hidden');
+    //usernamePage.classList.add('hidden');
+    //chatPage.classList.remove('hidden');
 
     console.log("Go")
-        var socket = new SockJS('/ws');
-        stompClient = Stomp.over(socket);
+    var socket = new SockJS('/ws');
+    stompClient = Stomp.over(socket);
 
-        stompClient.connect({}, onConnected, onError);
+
+
+    stompClient.connect({}, onConnected, onError);
+
+
+
     //}
     //event.preventDefault();
 }
@@ -37,16 +42,20 @@ function connect(/*event*/) {
 function onConnected() {
 
     // Subscribe to the Public Topic
-    console.log('/topic/' + document.getElementById("autoUs").textContent);
-    stompClient.subscribe('/topic/' + document.getElementById("autoUs").textContent, onMessageReceived);
+
+    let id = document.getElementById("testid").value
+
+    console.log('/topic/' + username);
+    stompClient.subscribe('/topic/' + username + '/' + id, onMessageReceived);
+
 
     // Tell your username to the server
-   /*stompClient.send("/app/testchat",
-        {},
-        JSON.stringify({sender: username, type: 'JOIN'})
-    )
+    /*stompClient.send("/app/testchat",
+         {},
+         JSON.stringify({sender: username, type: 'JOIN'})
+     )
 
-    connectingElement.classList.add('hidden');*/
+     connectingElement.classList.add('hidden');*/
 }
 
 
@@ -60,7 +69,7 @@ function onError(error) {
 }
 
 
-function sendMessage(sender, recipient) {
+/*function sendMessage(sender, recipient) {
     let messageInput = document.getElementById("inputtext");
     if (messageInput.value.length !== 0) {
 
@@ -97,17 +106,65 @@ function sendMessage(sender, recipient) {
 
         messageInput.value = ' '
     }
-}
+}*/
 
 
 function onMessageReceived(payload) {
-    //f(21623)
-   /* var myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'), {
+    let id = document.getElementById("testid").value
+    //console.log(payload.body.replaceAll("\"", ""))
+    let result = payload.body.replaceAll("\"", "")
+    //f(id)
+     /**/
+
+    let size = document.getElementsByClassName("quiz");
+
+    for (let i = 0; i < size.length; i++) {
+        let style = document.getElementById("test" + i).style;
+        style.padding = '20px';
+        style.borderRadius = '10px';
+        style.opacity = '0.9';
+
+
+        if (result[i] == 1) {
+            style.background = 'MediumSpringGreen';
+        } else {
+            style.background = 'Salmon';
+        }
+
+
+    }
+
+    chartpie(result)
+    let btn = document.getElementById("btnAns")
+
+    let name = "check";
+
+    for (let i = 0; i < size.length; i++) {
+        let answer = document.getElementsByName("" + name + i);
+
+        for (let j = 0; j < answer.length; j++) {
+            if(answer[j].checked) {
+                //console.log(answer[j].value)
+                //answer_values.push(answer[j].value)
+            }
+            answer[j].disabled = true;
+        }
+       // let test = {answer: answer_values}
+        //answers.push(test)
+       // answer_values = []
+
+    }
+
+    btn.disabled = true
+
+    var myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'), {
         keyboard: false
     })
-    myModal.toggle()*/
+    myModal.toggle()
+
+
     //console.log("receive")
-    var message = JSON.parse(payload.body);
+    /*var message = JSON.parse(payload.body);
     console.log(message)
     let dialog = document.getElementById("dialogs")
 
@@ -116,7 +173,7 @@ function onMessageReceived(payload) {
 
     for (let i = 0; i < dialogsName.length; i++) {
         dialogsNameArr.push(dialogsName[i].textContent)
-      //  console.log(dialogsName[i].textContent)
+        //  console.log(dialogsName[i].textContent)
     }
 
 
@@ -149,7 +206,7 @@ function onMessageReceived(payload) {
 
     //var messageElement = document.createElement('li');
 
-    /*if(message.type === 'JOIN') {
+    /!*if(message.type === 'JOIN') {
         messageElement.classList.add('event-message');
         message.content = message.sender + ' joined!';
     } else if (message.type === 'LEAVE') {
@@ -169,16 +226,16 @@ function onMessageReceived(payload) {
         var usernameText = document.createTextNode(message.sender);
         usernameElement.appendChild(usernameText);
         messageElement.appendChild(usernameElement);
-    }*/
+    }*!/
 
-    /*var textElement = document.createElement('p');
+    /!*var textElement = document.createElement('p');
     var messageText = document.createTextNode(message.content);
     textElement.appendChild(messageText);
 
     messageElement.appendChild(textElement);
 
     messageArea.appendChild(messageElement);
-    messageArea.scrollTop = messageArea.scrollHeight;*/
+    messageArea.scrollTop = messageArea.scrollHeight;*!/
     let div = document.createElement("div");
     div.setAttribute('class', "incoming_msg")
 
@@ -196,7 +253,7 @@ function onMessageReceived(payload) {
     last.append(div)
 
     var div3 = $("#msg");
-    div3.scrollTop(div3.prop('scrollHeight'));
+    div3.scrollTop(div3.prop('scrollHeight'));*/
 }
 
 

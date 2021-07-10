@@ -2,6 +2,8 @@ package com.example.mywebquizengine.Model;
 
 import com.example.mywebquizengine.Model.Test.Test;
 import com.sun.istack.NotNull;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -42,8 +44,8 @@ public class User implements UserDetails {
 
     private String avatar;
 
-    @OneToMany(mappedBy = "user")
-    private List<Test> tests;
+    /*@OneToMany(mappedBy = "user")
+    private List<Test> tests;*/
     
     @Transient
     private boolean accountNonExpired;
@@ -79,6 +81,7 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     @ElementCollection(fetch = FetchType.EAGER)
+    //@Fetch(value = FetchMode.JOIN)
     private List<Role> roles;
 
 
@@ -194,9 +197,9 @@ public class User implements UserDetails {
         return roles;
     }
 
-    public List<Test> getTests() {
+    /*public List<Test> getTests() {
         return tests;
-    }
+    }*/
 
     public void setRoles(List<Role> roles) {
         this.roles = roles;
@@ -212,8 +215,8 @@ public class User implements UserDetails {
 
 
 
-    public void setTests(List<Test> tests) {
+    /*public void setTests(List<Test> tests) {
         this.tests = tests;
-    }
+    }*/
 
 }

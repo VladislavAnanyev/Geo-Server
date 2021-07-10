@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -35,6 +36,9 @@ public class ChatController {
     @Autowired
     private MessageService messageService;
 
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
+
 
     @GetMapping(path = "/chat")
     public String chat(Model model, Authentication authentication) {
@@ -47,7 +51,7 @@ public class ChatController {
     @GetMapping(path = "/chat/{username}")
     public String chatWithUser(Model model, @PathVariable String username, Authentication authentication) {
         User user = getAuthUser(authentication, userService);
-        model.addAttribute("user", userService.reloadUser(username).get());
+        model.addAttribute("user", userService.reloadUser(username));
         model.addAttribute("myUsername", user);
         model.addAttribute("lastDialogs", messageService.getDialogs(user.getUsername()));
         model.addAttribute("messages", messageService.
@@ -64,16 +68,16 @@ public class ChatController {
     @SendTo("/topic/{userId}")
     public Message sendMessage(@Payload Message message) {
 
-        User user = userService.reloadUser(message.getSender().getUsername()).get();
+        User user = userService.reloadUser(message.getSender().getUsername());
 
         // Persistence Bag. Используется костыль
         // для корректного отображения (тесты не инициализируются автоматически)
-        user.setTests(new ArrayList<>());
+        //.setTests(new ArrayList<>());
 
         message.setSender(user);
 
-        User recipient = userService.reloadUser(message.getRecipient().getUsername()).get();
-        recipient.setTests(new ArrayList<>());
+        User recipient = userService.reloadUser(message.getRecipient().getUsername());
+        //recipient.setTests(new ArrayList<>());
         message.setRecipient(recipient);
 
 
@@ -86,6 +90,8 @@ public class ChatController {
 
         message.setStatus(MessageStatus.DELIVERED);
         messageService.saveMessage(message);
+
+        //simpMessagingTemplate.convertAndSend("/topic/application", message);
 
         return message;
     }

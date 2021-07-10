@@ -78,8 +78,19 @@ public class UserService implements UserDetailsService {
     }
 
 
-    public Optional<User> reloadUser(String username) {
-        return userRepository.findById(username);
+    public User reloadUser(String username) {
+        Optional<User> user = userRepository.findById(username);
+
+        if (user.isPresent()) {
+            return user.get();
+        } else {
+            throw new UsernameNotFoundException(String.format("Username[%s] not found",username));
+        }
+
+    }
+
+    public User getUserProxy(String username) {
+        return userRepository.getOne(username);
     }
 
     public void updatePassword(User user) {
@@ -158,6 +169,8 @@ public class UserService implements UserDetailsService {
 
         user.setAvatar("default");
         user.setEnabled(true);
+
+
         user.grantAuthority(Role.ROLE_USER);
         user.setChangePasswordCode(UUID.randomUUID().toString());
 

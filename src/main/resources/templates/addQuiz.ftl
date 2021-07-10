@@ -107,25 +107,7 @@
     </div>-->
 </div>
 
-<#--<div>Время на выполнение
-<div class="form-check ml-4">
-    <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" checked>
-    <label class="form-check-label" for="flexRadioDefault1">
-        Неограничено
-    </label>
-</div>
-<div class="form-check ml-4">
-    <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2">
-    <label class="form-check-label" for="flexRadioDefault2">
-        Ограничено
-    </label>
-    <label for="time"> (чч:мм)</label>
-    <input type="time" value="01:00" id="time">
-</div>
-    <div>
 
-    </div>
-</div>-->
 
 
 
@@ -133,6 +115,29 @@
         <div id="addQuiz">
             <button onclick="addQuiz()" class="btn btn-primary mt-2">Добавить вопрос</button>
         </div>
+
+
+        <div class="mt-2">Время на выполнение
+            <div class="form-check ml-4">
+                <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" checked>
+                <label class="form-check-label" for="flexRadioDefault1">
+                    Неограничено
+                </label>
+            </div>
+            <div class="form-check ml-4">
+                <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2">
+                <label class="form-check-label" for="flexRadioDefault2">
+                    Ограничено
+                </label>
+                <label for="time"> (чч:мм)</label>
+                <input type="time" value="01:00" id="time">
+            </div>
+            <div>
+
+            </div>
+        </div>
+
+
         <#--    <form method="get" action="/" >-->
         <button onclick="addTest()" type="submit" class="btn btn-primary mb-2 mt-2">Создать викторину</button>
         <#--    </form>-->

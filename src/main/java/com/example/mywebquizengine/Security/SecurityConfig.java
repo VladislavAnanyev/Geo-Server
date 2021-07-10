@@ -68,6 +68,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .requiresChannel()
                 .anyRequest()
                 .requiresSecure();
+
+        http
+                .headers()
+                .xssProtection();
+
                 //.and().oauth2Login();
     }
 

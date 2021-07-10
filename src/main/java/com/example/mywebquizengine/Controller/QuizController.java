@@ -1,39 +1,53 @@
 package com.example.mywebquizengine.Controller;
 
+import com.example.mywebquizengine.Model.SimpleJob;
 import com.example.mywebquizengine.Model.Test.*;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Service.QuizService;
 import com.example.mywebquizengine.Service.TestService;
 import com.example.mywebquizengine.Service.UserAnswerService;
 import com.example.mywebquizengine.Service.UserService;
-import net.minidev.json.JSONValue;
+import org.quartz.*;
+import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.io.IOException;
 import java.util.*;
+import java.util.Calendar;
 
 import static com.example.mywebquizengine.Controller.UserController.getAuthUser;
+import static org.quartz.CronScheduleBuilder.cronSchedule;
+import static org.quartz.JobBuilder.newJob;
+import static org.quartz.TriggerBuilder.newTrigger;
 
 @Validated
 @Controller
+@Service
 public class QuizController {
 
     @Autowired
     private QuizService quizService;
+
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
 
     @Autowired
     private UserAnswerService userAnswerService;
@@ -47,6 +61,15 @@ public class QuizController {
     @Autowired
     private OAuth2AuthorizedClientService authorizedClientService;
 
+    /*@Modifying
+    //@Transactional
+    @MessageMapping("/user/application")
+    //@SendTo("/topic/application")
+    public static String sendNotification() {
+        System.out.println("Абоба");
+        simpMessagingTemplate.convertAndSend("/topic/application", "OK");
+        return "OK";
+    }*/
 
     @GetMapping(path = "/api/quizzes")
     public String getQuizzes(Model model, @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
@@ -72,7 +95,6 @@ public class QuizController {
     public String getMyQuizzes(Authentication authentication, Model model, @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
                                @RequestParam(required = false,defaultValue = "10") @Min(1) @Max(10) Integer pageSize,
                                @RequestParam(defaultValue = "id") String sortBy) {
-        //User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         User user = getAuthUser(authentication, userService);
         Page<Test> page1 = testService.getMyQuiz(user.getUsername(), page, pageSize, sortBy);
@@ -120,7 +142,7 @@ public class QuizController {
 
             User user = getAuthUser(authentication, userService);
 
-            user.setTests(new ArrayList<>()); // Handle Persistance bug
+            //user.setTests(new ArrayList<>()); // Handle Persistance bug
             user.setRoles(new ArrayList<>());
             test.setDuration(test.getDuration());
             test.setUser(user);
@@ -142,10 +164,17 @@ public class QuizController {
     }
 
 
-    @PostMapping(path = "/api/quizzes/{id}/solve")
+    /*@PostMapping(path = "/api/quizzes/{id}/solve")
     @ResponseBody
-    public String getAnswerOnTest(Authentication authentication, @PathVariable String id,
+    public String getAnswerOnTest(@PathVariable String id,
                                   @RequestBody UserTestAnswer userTestAnswer) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+
+        UserTestAnswer userTestAnswer1 = userAnswerService.findByUserAnswerId(25911);
+
+        //userTestAnswer1.getUserQuizAnswers();
 
         StringBuilder result = new StringBuilder();
         List<UserQuizAnswer> userQuizAnswers = new ArrayList<>();
@@ -153,7 +182,7 @@ public class QuizController {
         User user = getAuthUser(authentication, userService);
 
         userTestAnswer.setUser(user);
-        userTestAnswer.setTest(testService.findTest(Integer.parseInt(id)));
+        userTestAnswer.setTest(testService.findTestProxy(Integer.parseInt(id)));
 
 
         for (int i = 0; i < testService.findTest(Integer.parseInt(id)).getQuizzes().size(); i++) {
@@ -191,7 +220,77 @@ public class QuizController {
         userAnswerService.saveAnswer(userTestAnswer);
 
         return String.valueOf(result);
+    }*/
+
+
+
+    @PostMapping(path = "/api/quizzes/{id}/solve")
+    @ResponseBody
+    @Transactional
+    public String getAnswerOnTest(@PathVariable String id,
+                                  @RequestBody UserTestAnswer userAnswerId) {
+
+        UserTestAnswer userTestAnswer = userAnswerService.findByUserAnswerId(userAnswerId.getUserAnswerId());
+
+
+        StringBuilder result = new StringBuilder();
+        List<UserQuizAnswer> userQuizAnswers = new ArrayList<>();
+        int trueAnswers = 0;
+
+        for (int i = 0; i < userTestAnswer.getTest().getQuizzes().size(); i++) {
+            UserQuizAnswer quizAnswer = new UserQuizAnswer();
+            AnswerChecker answerChecker = new AnswerChecker();
+
+            /*if (userTestAnswer.getTest().getQuizzes() == null) {
+                userTestAnswer.getTest().setQuizzes(new ArrayList<>());
+            }*/
+
+            answerChecker.quiz = quizService.findQuiz(userTestAnswer.getTest().getQuizzes().get(i).getId());
+
+            quizAnswer.setQuiz(answerChecker.quiz);
+
+            if (userTestAnswer.getUserQuizAnswers().size() == 0) {
+                answerChecker.checkAnswer(new ArrayList<>()); // из за Persistence bag (нельзя сделать get(i))
+                quizAnswer.setAnswer(new ArrayList<>());
+            } else {
+                answerChecker.checkAnswer(userTestAnswer.getUserQuizAnswers().get(i).getAnswer());
+                quizAnswer.setAnswer(userTestAnswer.getUserQuizAnswers().get(i).getAnswer());
+            }
+
+            quizAnswer.setStatus(answerChecker.isSuccess());
+
+
+
+            userQuizAnswers.add(quizAnswer);
+
+
+
+            if (quizAnswer.getStatus().toString().equals("true")) {
+                result.append("1");
+                trueAnswers++;
+            } else {
+                result.append("0");
+            }
+        }
+
+        userTestAnswer.setUserQuizAnswers(userQuizAnswers);
+
+        userTestAnswer.setPercent(((double) trueAnswers/(double)result.length()) * 100.0);
+
+        TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
+        Calendar nowDate = new GregorianCalendar();
+        nowDate.setTimeZone(timeZone);
+
+        userTestAnswer.setCompletedAt(nowDate);
+
+        userAnswerService.saveAnswer(userTestAnswer);
+
+        simpMessagingTemplate.convertAndSend("/topic/" +
+                userTestAnswer.getUser().getUsername() + "/" + userTestAnswer.getTest().getId(), result.toString().toCharArray());
+
+        return String.valueOf(result);
     }
+
 
 
     /*@GetMapping(path = "/api/quizzes/{id}/solve/info")
@@ -206,7 +305,10 @@ public class QuizController {
     @GetMapping(path = "/api/quizzes/{id}/solve")
     public String passTest(Model model, @PathVariable String id,
                            @RequestParam(required = false, defaultValue = "false") String restore,
-                           Authentication authentication) {
+                           Authentication authentication) throws SchedulerException {
+
+        Test test = testService.findTest(Integer.parseInt(id));
+        UserTestAnswer userTestAnswer;
 
         UserTestAnswer lastUserTestAnswer = userAnswerService.checkLastComplete(UserController.getAuthUser(authentication, userService), id);
 
@@ -215,19 +317,64 @@ public class QuizController {
             model.addAttribute("lastAnswer", lastUserTestAnswer);
 
         } else {
-
-            UserTestAnswer userTestAnswer = new UserTestAnswer();
-
-            userTestAnswer.setStartAt(new GregorianCalendar());
+            userTestAnswer = new UserTestAnswer();
+            Calendar calendar = new GregorianCalendar();
+            userTestAnswer.setStartAt(calendar);
             userTestAnswer.setTest(testService.findTest(Integer.parseInt(id)));
             userTestAnswer.setUser(UserController.getAuthUser(authentication, userService));
             userAnswerService.saveStartAnswer(userTestAnswer);
 
+            model.addAttribute("lastAnswer", userTestAnswer);
+
+
+            if (test.getDuration() != null) {
+                Calendar jobCalendar = new GregorianCalendar();
+                jobCalendar.set(Calendar.SECOND, jobCalendar.get(Calendar.SECOND) + test.getDuration().getSecond());
+                jobCalendar.set(Calendar.MINUTE, jobCalendar.get(Calendar.MINUTE) + test.getDuration().getMinute());
+                jobCalendar.set(Calendar.HOUR, jobCalendar.get(Calendar.HOUR) + test.getDuration().getHour());
+
+
+                SchedulerFactory sf = new StdSchedulerFactory();
+                Scheduler scheduler = sf.getScheduler();
+
+                JobDetail job = newJob(SimpleJob.class)
+                        .withIdentity(UUID.randomUUID().toString(), "group1")
+                        .usingJobData("username", UserController.getAuthUser(authentication, userService).getUsername())
+                        .usingJobData("test", test.getId())
+                        .usingJobData("answer", userTestAnswer.getUserAnswerId())
+                        .build();
+
+
+                CronTrigger trigger = newTrigger()
+                        .withIdentity(UUID.randomUUID().toString(), "group1")
+                        .withSchedule(cronSchedule(jobCalendar.get(Calendar.SECOND) + " " +
+                                jobCalendar.get(Calendar.MINUTE) + " " +
+                                jobCalendar.get(Calendar.HOUR_OF_DAY) + " " +
+                                jobCalendar.get(Calendar.DAY_OF_MONTH) + " " +
+                                (jobCalendar.get(Calendar.MONTH) + 1) + " ? "+
+                                jobCalendar.get(Calendar.YEAR)))
+                        .build();
+
+                scheduler.scheduleJob(job, trigger);
+
+                System.out.println("Задание выполнится в: " + jobCalendar.getTime());
+
+                model.addAttribute("timeout", jobCalendar.getTime());
+
+                scheduler.start();
+
+            }
+
+
         }
 
-        model.addAttribute("test_id", testService.findTest(Integer.parseInt(id)));
+
+
+        model.addAttribute("test_id", test);
         return "answer";
     }
+
+
 
     @GetMapping("/reg")
     public String login(Map<String, Object> model) {
@@ -271,6 +418,8 @@ public class QuizController {
 
 
 
+
+
     @GetMapping(path = "/api/quizzes/{id}/info/")
     @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(@userController.getAuthUser(authentication,@userService).username)")
     public String getInfo(@PathVariable Integer id, Model model,
@@ -278,7 +427,11 @@ public class QuizController {
                           @RequestParam(required = false,defaultValue = "2000") @Min(1) @Max(2000) Integer pageSize,
                           @RequestParam(defaultValue = "completed_at") String sortBy) {
 
-        model.addAttribute("answersOnQuiz", userAnswerService.getAnswersById(id, page, pageSize, sortBy).getContent());
+        Test test = testService.findTest(id);
+        model.addAttribute("quizzes", test.getQuizzes());
+        model.addAttribute("chart", userAnswerService.getAnswerStats(id));
+        System.out.println(userAnswerService.getAnswerStats(id));
+        model.addAttribute("answersOnQuiz", userAnswerService.getPageAnswersById(id, page, pageSize, sortBy).getContent());
         return "info";
     }
 
@@ -289,7 +442,7 @@ public class QuizController {
 
         userTestAnswer.setUser(user);
         userTestAnswer.setTest(testService.findTest(Integer.parseInt(id)));
-        userAnswerService.saveAnswer_2(userTestAnswer);
+        userAnswerService.saveTempAnswer(userTestAnswer);
         throw new ResponseStatusException(HttpStatus.OK);
     }
 }

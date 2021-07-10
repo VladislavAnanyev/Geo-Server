@@ -2,6 +2,9 @@ package com.example.mywebquizengine.Model.Test;
 
 import com.example.mywebquizengine.Model.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.Hibernate;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import javax.validation.Valid;
@@ -17,6 +20,8 @@ public class Test {
     private int id;
 
     @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
+    //@Fetch(FetchMode.SUBSELECT)
+    //@Fetch(value = FetchMode)
     private List<@Valid Quiz> quizzes;
 
     @ManyToOne/*(fetch = FetchType.EAGER, optional = false, cascade = CascadeType.ALL)*/
@@ -25,6 +30,7 @@ public class Test {
     private User user;
 
     @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
+    //@Fetch(FetchMode.SUBSELECT)
     private List<UserTestAnswer> answers;
 
 
@@ -35,6 +41,7 @@ public class Test {
     public Test() {}
 
     public List<Quiz> getQuizzes() {
+        //Hibernate.initialize(this);
         return quizzes;
     }
 

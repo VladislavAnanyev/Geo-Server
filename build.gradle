@@ -59,13 +59,21 @@ dependencies {
     implementation 'org.springframework.session:spring-session-jdbc'
     implementation 'org.springframework.session:spring-session-core'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '2.5.0'
+
+    // https://mvnrepository.com/artifact/javax.inject/javax.inject
+    implementation group: 'javax.inject', name: 'javax.inject', version: '1'
+
     //implementation 'com.vaadin:vaadin-spring-boot-starter'
     // https://mvnrepository.com/artifact/com.paypal.sdk/rest-api-sdk
     implementation group: 'com.paypal.sdk', name: 'rest-api-sdk', version: '1.14.0'
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-oauth2-client
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-client', version: '2.3.3.RELEASE'
 
+// https://mvnrepository.com/artifact/org.quartz-scheduler/quartz
+    //implementation group: 'org.quartz-scheduler', name: 'quartz', version: '2.3.2'
 
+// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-quartz
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-quartz', version: '2.5.2'
 
     // https://mvnrepository.com/artifact/org.springframework.security.oauth/spring-security-oauth2
     //implementation group: 'org.springframework.security.oauth', name: 'spring-security-oauth2', version: '2.5.1.RELEASE'

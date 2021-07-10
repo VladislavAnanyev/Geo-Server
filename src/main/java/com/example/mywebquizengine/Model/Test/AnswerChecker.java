@@ -2,6 +2,7 @@ package com.example.mywebquizengine.Model.Test;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AnswerChecker {
@@ -13,7 +14,14 @@ public class AnswerChecker {
     public AnswerChecker() {}
 
     public void checkAnswer(List<Integer> answer){
-        if (answer.equals(quiz.getAnswer())) {
+
+        /*List<Integer> list1 = new ArrayList<>();
+        list1 = answer;
+
+        List<Integer> list2 = new ArrayList<>();
+        list2 = quiz.getAnswer();*/
+
+        if (answer.toString().equals(quiz.getAnswer().toString())) {
             this.feedback = "Congratulations, you're right!";
             this.success = true;
         } else {

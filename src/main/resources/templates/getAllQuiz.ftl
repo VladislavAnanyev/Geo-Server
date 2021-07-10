@@ -12,6 +12,8 @@
     <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
     <script src='/static/checkAnswerSession.js'></script>
     <script src='/static/restoreSession.js'></script>
+    <script src="/static/page.js"></script>
+    <script src="/static/pageSize.js"></script>
 
 
 
@@ -64,7 +66,7 @@
                 </#if>
 
 
-                <div class="modal fade" id="staticBackdrop" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal fade" id="staticBackdrop${testList.id?c}" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -120,8 +122,7 @@
     </#list>
 
 
-    <script src="/static/page.js"></script>
-    <script src="/static/pageSize.js"></script>
+
 
 
 
@@ -141,6 +142,8 @@
                 </div>
             </div>
         </div>-->
+
+
 
         <div class="col">
     <nav aria-label="Page navigation example" >

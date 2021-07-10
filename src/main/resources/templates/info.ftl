@@ -1,8 +1,63 @@
 <#import "parts/common.ftl" as c>
 <@c.page>
+
+
+
+
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <div id="top_x_div" style="height: 278px" class="table-responsive"></div>
+
+
+
+    <script type="text/javascript">
+        google.charts.load('current', {'packages':['bar']});
+        google.charts.setOnLoadCallback(drawStuff);
+
+        //console.log("")
+        function drawStuff() {
+            var data = new google.visualization.arrayToDataTable([
+                ['Тема', 'Процент'],
+                <#if chart??>
+                <#list chart?values as chartd>
+                ['${quizzes[chartd_index].title}' + "", ${chartd?c}],
+                </#list>
+                </#if>
+                /*["Knight to King 3 (Nf3)", 12],
+                ["Queen's bishop pawn (c4)", 10],
+                ['Other', 3]*/
+            ]);
+
+            var options = {
+                width: 300,
+                legend: { position: 'none' },
+                chart: {
+                    title: 'Средний процент выполнения',
+                    subtitle: 'По каждому из вопросов' },
+                axes: {
+                    x: {
+                        0: { side: 'top', label: 'Вопросы'} // Top x-axis.
+                    }
+                },
+                bar: { groupWidth: "90%" }
+            };
+
+            var chart = new google.charts.Bar(document.getElementById('top_x_div'));
+            // Convert the Classic options to Material options.
+            chart.draw(data, google.charts.Bar.convertOptions(options));
+        };
+
+    </script>
+
+
+        <!-- Content here -->
+
+
     <title>Статистика</title>
 <#--    <div>${stat}%</div>-->
-    <table class="table table-hover">
+
+    <div class="table-responsive-md">
+    <table class="table table-hover mr-5">
         <thead>
         <tr>
             <th scope="col">№</th>
@@ -52,4 +107,10 @@
 
         </tbody>
     </table>
+    </div>
+
+
+
+
+
 </@c.page>

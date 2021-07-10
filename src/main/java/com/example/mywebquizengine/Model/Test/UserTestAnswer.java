@@ -1,6 +1,8 @@
 package com.example.mywebquizengine.Model.Test;
 
 import com.example.mywebquizengine.Model.User;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.util.Calendar;
@@ -17,14 +19,13 @@ public class UserTestAnswer {
     @JoinColumn(name = "username")
     private User user;
 
-    @OneToMany(mappedBy = "userAnswer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "userAnswer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    //@Fetch(FetchMode.SUBSELECT)
     private List<UserQuizAnswer> userQuizAnswers;
 
     @ManyToOne
     @JoinColumn(nullable = false, name = "test_id")
     private Test test;
-
-
 
     private Double percent;
 

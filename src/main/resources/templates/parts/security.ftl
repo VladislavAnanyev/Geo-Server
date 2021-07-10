@@ -14,7 +14,7 @@
 <#--        nowUser = Session.SPRING_SECURITY_CONTEXT.authentication.principal.attributes-->
 <#--        <#if nowUser??> -->
         nowUser = Session.SPRING_SECURITY_CONTEXT.authentication
-        isAdmin = nowUser.principal.isAdmin()
+<#--        isAdmin = nowUser.principal.isAdmin()-->
 
 <#--        name = nowUser.email?replace("@gmail.com","")-->
 <#--    name = nowUser.toString()-->
@@ -57,7 +57,7 @@
     <#else>
     <#assign
     name = "Гость"
-    isAdmin = false
+<#--    isAdmin = false-->
     >
 </#if>
 

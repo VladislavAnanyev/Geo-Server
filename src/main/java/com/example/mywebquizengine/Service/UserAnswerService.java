@@ -1,10 +1,16 @@
 package com.example.mywebquizengine.Service;
 
+
+import com.example.mywebquizengine.Controller.QuizController;
 import com.example.mywebquizengine.Controller.UserController;
+import com.example.mywebquizengine.Model.Test.Quiz;
+import com.example.mywebquizengine.Model.Test.Test;
 import com.example.mywebquizengine.Model.Test.UserTestAnswer;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.UserQuizAnswerRepository;
 import com.example.mywebquizengine.Repos.UserTestAnswerRepository;
+import org.hibernate.Hibernate;
+import org.quartz.JobDataMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,14 +20,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.Optional;
+import javax.transaction.Transactional;
+import java.util.*;
 
 @Service
 public class UserAnswerService  {
 
     @Autowired
     private UserQuizAnswerRepository userQuizAnswerRepository;
+
 
     @Autowired
     private UserTestAnswerRepository userTestAnswerRepository;
@@ -33,10 +40,40 @@ public class UserAnswerService  {
         userQuizAnswerRepository.save(userQuizAnswer);
     }*/
 
-    public void saveAnswer(UserTestAnswer userTestAnswer) {
-        UserTestAnswer lastUserAnswer = userTestAnswerRepository.findLastUserAnswer(userTestAnswer.getUser().getUsername()).get();
+    //@Transactional
+    public UserTestAnswer findLastUserTestAnswer(JobDataMap jobDataMap) {
+        return userTestAnswerRepository.findLastUserAnswerEager(jobDataMap.getString("username")).get();
+    }
 
-        userTestAnswerRepository.delete(lastUserAnswer);
+    public UserTestAnswer findByUserAnswerId(Integer userAnswerId) {
+
+        Optional<UserTestAnswer> userTestAnswer = userTestAnswerRepository.findByUserAnswerId(userAnswerId);
+        if (userTestAnswer.isPresent()) {
+            return userTestAnswer.get();
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+
+    }
+
+    public UserTestAnswer findByUserAnswerIdProxy(Integer userAnswerId) {
+        return userTestAnswerRepository.getOne(userAnswerId);
+
+
+    }
+
+    // хз вообще как это теперь работает, но работает
+    public void saveAnswer(UserTestAnswer userTestAnswer) {
+        //UserTestAnswer lastUserAnswer = userTestAnswerRepository.findLastUserAnswer(userTestAnswer.getUser().getUsername()).get();
+        UserTestAnswer lastUserAnswer = userTestAnswerRepository.findById(userTestAnswer.getUserAnswerId()).get();
+        int id = lastUserAnswer.getUserAnswerId();
+        //userTestAnswerRepository.delete(lastUserAnswer);
+
+        /*for (int i = 0; i < lastUserAnswer.getUserQuizAnswers().size(); i++) {
+            userQuizAnswerRepository.delete(lastUserAnswer.getUserQuizAnswers().get(i));
+        }*/
+
+
+
+        //userTestAnswer.setCompletedAt(nowDate);
 
         lastUserAnswer.setCompletedAt(userTestAnswer.getCompletedAt());
         lastUserAnswer.setPercent(userTestAnswer.getPercent());
@@ -47,22 +84,32 @@ public class UserAnswerService  {
          теста. Это необходимо для того чтобы новая запись о прохождении теста в БД не
          создавалась, а обновлялась старая (созданная при заходе на страницу для прохождения теста)
          */
-        for (int i = 0; i < userTestAnswer.getUserQuizAnswers().size(); i++) {
+        /*for (int i = 0; i < userTestAnswer.getUserQuizAnswers().size(); i++) {
             userTestAnswer.getUserQuizAnswers().get(i).setUserAnswer(lastUserAnswer);
-        }
+        }*/
 
-        lastUserAnswer.setUserQuizAnswers(userTestAnswer.getUserQuizAnswers());
-        userTestAnswerRepository.save(lastUserAnswer);
+        lastUserAnswer.setUserAnswerId(id);
+
+        //lastUserAnswer.setUserQuizAnswers(userTestAnswer.getUserQuizAnswers());
+        //userTestAnswerRepository.save(lastUserAnswer);
+
+
     }
 
-    public void saveAnswer_2(UserTestAnswer userTestAnswer) {
+    public void saveTempAnswer(UserTestAnswer userTestAnswer) {
         UserTestAnswer lastUserAnswer = userTestAnswerRepository
                 .findLastUserAnswer(userTestAnswer.getUser().getUsername()).get();
 
         //testService.findTest(Integer.parseInt(id))
 
-        userTestAnswerRepository.delete(lastUserAnswer);
+        //int id = lastUserAnswer.getUserAnswerId();
 
+        //userTestAnswerRepository.delete(lastUserAnswer);
+
+
+        for (int i = 0; i < lastUserAnswer.getUserQuizAnswers().size(); i++) {
+            userQuizAnswerRepository.delete(lastUserAnswer.getUserQuizAnswers().get(i));
+        }
 
 
 
@@ -71,12 +118,16 @@ public class UserAnswerService  {
             userTestAnswer.getUserQuizAnswers().get(i).setUserAnswer(lastUserAnswer);
         }
 
+
+
         lastUserAnswer.setUserQuizAnswers(userTestAnswer.getUserQuizAnswers());
+        //lastUserAnswer.setUserAnswerId(id);
 
         //userTestAnswer.setUserAnswerId(lastUserAnswer.getUserAnswerId());
         //userTestAnswer.setCompletedAt(lastUserAnswer.getCompletedAt());
 
-        userTestAnswerRepository.save(lastUserAnswer);
+        //userTestAnswerRepository.save(lastUserAnswer);
+
     }
 
     /*public Page<UserQuizAnswer> getCompleted (String name, Integer page,
@@ -85,9 +136,44 @@ public class UserAnswerService  {
         return userQuizAnswerRepository.getCompleteAnswersForUser(name, paging);
     }*/
 
-    public Page<UserTestAnswer> getAnswersById (int id, Integer page, Integer pageSize, String sortBy) {
+    public Page<UserTestAnswer> getPageAnswersById(int id, Integer page, Integer pageSize, String sortBy) {
         Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
         return userTestAnswerRepository.getAnswersOnMyQuiz(id, paging);
+    }
+
+    @Transactional
+    public UserTestAnswer getUserTestAnswerById(int id) {
+
+        return userTestAnswerRepository.findById(id).get();
+    }
+
+    @Transactional
+    public Map<Integer, Double> getAnswerStats(Integer id) {
+
+        Test test = testService.findTest(id);
+
+        ArrayList<Integer> list = new ArrayList<>();
+
+        //Hibernate.initialize(test.getQuizzes());
+
+        for (Quiz quiz: test.getQuizzes()) {
+            list.add(quiz.getId());
+        }
+
+
+
+
+        List<Object[]> result = userQuizAnswerRepository.getAnswerStat(list);
+        Map<Integer, Double> map = null;
+        if(result != null && !result.isEmpty()){
+            map = new HashMap<>();
+            for (Object[] object : result) {
+                map.put(((Integer)object[0]), (Double) object[1]);
+            }
+        }
+        return map;
+
+
     }
 
     public Double getStatistics(Integer id, Integer answer) {

@@ -15,9 +15,9 @@ public class Message {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Integer id;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private User sender;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private User recipient;
     @Size(min = 1)
     private String content;

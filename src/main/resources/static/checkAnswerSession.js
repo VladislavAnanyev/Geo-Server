@@ -9,7 +9,7 @@ function checkAnswerSession(id) {
 
             //console.log(xhr.responseText)
             if (xhr.responseText === 'true') {
-                var myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'), {
+                var myModal = new bootstrap.Modal(document.getElementById('staticBackdrop' + id), {
                     keyboard: false
                 })
                 myModal.toggle()

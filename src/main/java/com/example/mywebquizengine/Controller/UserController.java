@@ -78,12 +78,8 @@ public class UserController {
     @PostMapping(path = "/update/userinfo/pswrdwithoutauth", consumes ={"application/json"} )
     public void tryToChangePassWithoutAuth(@RequestBody User in) {
 
-        User user;
-        if (userService.reloadUser(in.getUsername()).isPresent()) {
-            user = userService.reloadUser(in.getUsername()).get();
-        } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
+        User user = userService.reloadUser(in.getUsername());
+
 
         userService.sendCodeForChangePassword(user);
 
@@ -102,6 +98,7 @@ public class UserController {
 
     @GetMapping(path = "/updatepass/{changePasswordCode}")
     public String changePasswordPage(@PathVariable String changePasswordCode) {
+        User user = userService.getUserViaChangePasswordCode(changePasswordCode);
         return "changePassword";
     }
 
@@ -155,8 +152,8 @@ public class UserController {
 
     @GetMapping(path = "/about/{username}")
     public String getInfoAboutUser(Model model, @PathVariable String username) {
-        Optional<User> user = userService.reloadUser(username);
-        model.addAttribute("user", user.get());
+        User user = userService.reloadUser(username);
+        model.addAttribute("user", user);
         return "user";
     }
 
@@ -188,7 +185,7 @@ public class UserController {
             name = user.getUsername();
         }
 
-        return userService.reloadUser(name).get();
+        return userService.getUserProxy(name);
     }
 
 }

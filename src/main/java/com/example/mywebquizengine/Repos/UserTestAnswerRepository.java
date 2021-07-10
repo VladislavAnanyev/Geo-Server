@@ -1,17 +1,22 @@
 package com.example.mywebquizengine.Repos;
 
+import com.example.mywebquizengine.Model.Test.Test;
 import com.example.mywebquizengine.Model.Test.UserTestAnswer;
+import com.example.mywebquizengine.Model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
 public interface UserTestAnswerRepository extends CrudRepository<UserTestAnswer, Integer>,
-        PagingAndSortingRepository<UserTestAnswer,Integer> {
+        PagingAndSortingRepository<UserTestAnswer,Integer>, JpaRepository<UserTestAnswer, Integer> {
 
 
     @Query(value = "SELECT * FROM USER_TEST_ANSWERS u WHERE TEST_ID = :id", nativeQuery = true)
@@ -23,8 +28,13 @@ public interface UserTestAnswerRepository extends CrudRepository<UserTestAnswer,
     @Query(value = "SELECT TOP 1 * FROM USER_TEST_ANSWERS WHERE USERNAME = :username ORDER BY START_AT DESC", nativeQuery = true)
     Optional<UserTestAnswer> findLastUserAnswer(String username);
 
+    @Query(value = "SELECT TOP 1 * FROM USER_TEST_ANSWERS WHERE USERNAME = :username ORDER BY START_AT DESC", nativeQuery = true)
+    Optional<UserTestAnswer> findLastUserAnswerEager(String username);
+
     @Query(value = "SELECT TOP 1 * FROM USER_TEST_ANSWERS WHERE USERNAME = :username AND TEST_ID = :test_id ORDER BY START_AT DESC", nativeQuery = true)
     Optional<UserTestAnswer> findLastUserTestAnswer(String username, Integer test_id);
+
+    Optional<UserTestAnswer> findByUserAnswerId(int userAnswerId);
 
 
 

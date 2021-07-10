@@ -2,6 +2,7 @@ package com.example.mywebquizengine.Model.Test;
 
 import com.example.mywebquizengine.Model.Test.UserTestAnswer;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ public class UserQuizAnswer {
     private int quizAnswerId;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable
     private List<Integer> answer;
 
@@ -27,7 +28,7 @@ public class UserQuizAnswer {
     private Quiz quiz;
     //private Test test;
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false/*, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.DETACH, CascadeType.REFRESH}*/)
     @JoinColumn(nullable = false, name = "user_answer_id")
     private UserTestAnswer userAnswer;
 
