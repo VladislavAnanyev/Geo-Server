@@ -158,8 +158,14 @@ public class UserController {
     }
 
     @PostMapping(path = "/checkyandex")
-    public void checkyandex(){
+    public void checkyandex(String notification_type, String operation_id, Number amount, Number withdraw_amount,
+                            String currency, String datetime, String sender, Boolean codepro, String label,
+                            String sha1_hash, Boolean test_notification, Boolean unaccepted, String lastname,
+                            String firstname, String fathersname, String email, String phone, String city,
+                            String street, String building, String suite, String flat, String zip
+                            ){
         System.out.println("Пришло уведомление");
+        System.out.println(operation_id);
     }
 
 
