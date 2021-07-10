@@ -69,9 +69,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest()
                 .requiresSecure();
 
-        http
+        /*http
                 .headers()
-                .xssProtection();
+                .xssProtection();*/
 
                 //.and().oauth2Login();
     }
