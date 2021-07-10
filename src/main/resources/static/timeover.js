@@ -43,7 +43,7 @@ function onConnected() {
 
     // Subscribe to the Public Topic
 
-    let id = document.getElementById("testid").value
+    let id = document.getElementById("useranswerid").value
 
     console.log('/topic/' + username);
     stompClient.subscribe('/topic/' + username + '/' + id, onMessageReceived);

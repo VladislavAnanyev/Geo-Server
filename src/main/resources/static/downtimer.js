@@ -2,7 +2,7 @@ function getTimeRemaining(endtime) {
     var t = Date.parse(endtime) - Date.parse(new Date());
     var seconds = Math.floor((t / 1000) % 60);
     var minutes = Math.floor((t / 1000 / 60) % 60);
-    var hours = Math.floor((t / (1000 * 60 * 60)) % 24)+3;
+    var hours = Math.floor((t / (1000 * 60 * 60)) % 24);
     var days = Math.floor(t / (1000 * 60 * 60 * 24));
     return {
         'total': t,
@@ -37,7 +37,7 @@ function initializeClock(id, endtime) {
     updateClock();
     var timeinterval = setInterval(updateClock, 1000);
 }
-let deadline = document.getElementById("time").value + " GMT+0300"
+let deadline = document.getElementById("time").value
 
 
 //let deadline = new Date() + new Date(test)

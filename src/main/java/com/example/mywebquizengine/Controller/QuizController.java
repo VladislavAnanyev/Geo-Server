@@ -286,7 +286,7 @@ public class QuizController {
         userAnswerService.saveAnswer(userTestAnswer);
 
         simpMessagingTemplate.convertAndSend("/topic/" +
-                userTestAnswer.getUser().getUsername() + "/" + userTestAnswer.getTest().getId(), result.toString().toCharArray());
+                userTestAnswer.getUser().getUsername() + "/" + userTestAnswer.getUserAnswerId(), result.toString().toCharArray());
 
         return String.valueOf(result);
     }
@@ -315,6 +315,15 @@ public class QuizController {
         if (Boolean.parseBoolean(restore) && lastUserTestAnswer != null && lastUserTestAnswer.getCompletedAt() == null) {
 
             model.addAttribute("lastAnswer", lastUserTestAnswer);
+
+            Calendar calendar2 = lastUserTestAnswer.getStartAt();
+            Calendar calendar = new GregorianCalendar();
+            calendar.setTime(calendar2.getTime());
+            calendar.set(Calendar.SECOND, calendar.get(Calendar.SECOND) + test.getDuration().getSecond());
+            calendar.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE) + test.getDuration().getMinute());
+            calendar.set(Calendar.HOUR, calendar.get(Calendar.HOUR) + test.getDuration().getHour());
+
+            model.addAttribute("timeout", calendar.getTime());
 
         } else {
             userTestAnswer = new UserTestAnswer();
