@@ -158,6 +158,7 @@ public class UserController {
     }
 
     @PostMapping(path = "/checkyandex")
+    @ResponseBody
     public void checkyandex(String notification_type, String operation_id, Number amount, Number withdraw_amount,
                             String currency, String datetime, String sender, Boolean codepro, String label,
                             String sha1_hash, Boolean test_notification, Boolean unaccepted, String lastname,
@@ -165,7 +166,8 @@ public class UserController {
                             String street, String building, String suite, String flat, String zip
                             ){
         System.out.println("Пришло уведомление");
-        System.out.println(operation_id);
+        System.out.println("notification_type = " + notification_type + ", operation_id = " + operation_id + ", amount = " + amount + ", withdraw_amount = " + withdraw_amount + ", currency = " + currency + ", datetime = " + datetime + ", sender = " + sender + ", codepro = " + codepro + ", label = " + label + ", sha1_hash = " + sha1_hash + ", test_notification = " + test_notification + ", unaccepted = " + unaccepted + ", lastname = " + lastname + ", firstname = " + firstname + ", fathersname = " + fathersname + ", email = " + email + ", phone = " + phone + ", city = " + city + ", street = " + street + ", building = " + building + ", suite = " + suite + ", flat = " + flat + ", zip = " + zip);
+        System.out.println();
     }
 
 
