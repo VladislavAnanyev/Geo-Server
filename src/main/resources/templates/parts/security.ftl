@@ -25,7 +25,9 @@
     <#if nowUser.principal.username??>
         <#assign
         name = nowUser.principal.username
+        balance = nowUser.principal.balance
             >
+
 
         <#elseif nowUser.authorizedClientRegistrationId = "github">
             <#assign

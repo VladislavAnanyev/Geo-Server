@@ -1,20 +1,44 @@
 package com.example.mywebquizengine.Service;
 
+import com.example.mywebquizengine.Model.Order;
 import com.example.mywebquizengine.Model.OrderDetail;
+import com.example.mywebquizengine.Repos.OrderRepository;
 import com.paypal.api.payments.*;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class PaymentServices {
     private static final String CLIENT_ID = "AZhcxVtP4Zd8xT9YsigI82RHCoT3TgR-15KbWBKgODth8tEBAKirS40yYRN_RnZD-2I7q9I-UGT-23nS";
     private static final String CLIENT_SECRET = "EIIuBSiMIrEcN8B9YWGzm6Okyn34-MDhP1_AM-DNQ-NM2U-g6v8rN4PQLQtMEPT7WhnmACDqrifFrw33";
     private static final String MODE = "live";
 
+    @Autowired
+    private OrderRepository orderRepository;
+
+    public void saveFinalOrder(Order order) {
+
+
+
+        Order finalOrder = orderRepository.findById(order.getOrder_id()).get();
+        finalOrder.setCoins(order.getCoins());
+        finalOrder.setAmount(order.getAmount());
+        finalOrder.setOperation_id(order.getOperation_id());
+
+        orderRepository.save(finalOrder);
+    }
+
+    public void saveStartOrder(Order order) {
+
+        orderRepository.save(order);
+    }
 
 
     public String authorizePayment(OrderDetail orderDetail)
@@ -152,5 +176,9 @@ public class PaymentServices {
         APIContext apiContext = new APIContext(CLIENT_ID, CLIENT_SECRET, MODE);
 
         return payment.execute(apiContext, paymentExecution);
+    }
+
+    public Order findById(String label) {
+        return orderRepository.findById(Integer.valueOf(label)).get();
     }
 }

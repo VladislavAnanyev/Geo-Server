@@ -1,13 +1,17 @@
 package com.example.mywebquizengine.Controller;
 
+import com.example.mywebquizengine.Model.Order;
 import com.example.mywebquizengine.Model.OrderDetail;
 //import com.example.mywebquizengine.Service.PaymentServices;
 import com.example.mywebquizengine.Service.PaymentServices;
+import com.example.mywebquizengine.Service.UserService;
 import com.paypal.api.payments.PayerInfo;
 import com.paypal.api.payments.Payment;
 import com.paypal.api.payments.ShippingAddress;
 import com.paypal.api.payments.Transaction;
 import com.paypal.base.rest.PayPalRESTException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,8 +21,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class PayPalController {
 
+    @Autowired
+    private PaymentServices paymentServices;
+
+    @Autowired
+    private UserService userService;
+
     @GetMapping(path = "/checkout")
-    public String getCheckOut() {
+    public String getCheckOut(Model model) {
+
+        Order order = new Order();
+
+        order.setUser(UserController.getAuthUser(SecurityContextHolder.getContext().getAuthentication(), userService));
+
+        paymentServices.saveStartOrder(order);
+
+        model.addAttribute("order", order);
+
         return "checkout";
     }
 

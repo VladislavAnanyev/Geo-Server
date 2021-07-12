@@ -61,6 +61,8 @@ public class User implements UserDetails {
 
     private boolean status;
 
+    private Integer balance;
+
     private static final long serialVersionUID = -7422293274841574951L;
 
     public User(){
@@ -213,7 +215,13 @@ public class User implements UserDetails {
         this.changePasswordCode = changePasswordCode;
     }
 
+    public void setBalance(Integer balance) {
+        this.balance = balance;
+    }
 
+    public Integer getBalance() {
+        return balance;
+    }
 
     /*public void setTests(List<Test> tests) {
         this.tests = tests;

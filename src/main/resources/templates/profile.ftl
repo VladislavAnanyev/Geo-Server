@@ -35,7 +35,7 @@
         <div class="col-md-6 mb-3">
             <form method="post" enctype="multipart/form-data" action="/upload">
                 <label for="formFile" class="form-label">Фотография</label>
-                <input class="form-control" type="file" id="formFile" name="file">
+                <input class="form-control" type="file" id="formFile" name="file" required>
                 <label for="test" class="mt-2">Нажмите чтобы загрузить</label>
                 <button type="submit"  class="btn btn-primary form-control" id="test">Отправить</button>
             </form>

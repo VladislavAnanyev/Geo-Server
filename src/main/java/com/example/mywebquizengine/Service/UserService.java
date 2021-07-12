@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.Service;
 
+import com.example.mywebquizengine.Controller.UserController;
 import com.example.mywebquizengine.Model.Role;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.UserRepository;
@@ -178,5 +179,8 @@ public class UserService implements UserDetailsService {
     }
 
 
-
+    public void updateBalance(Integer coins) {
+        User user = UserController.getAuthUser(SecurityContextHolder.getContext().getAuthentication(), this);
+        user.setBalance(user.getBalance() + coins);
+    }
 }

@@ -1,11 +1,12 @@
 package com.example.mywebquizengine.Controller;
 
+import com.example.mywebquizengine.Model.Order;
 import com.example.mywebquizengine.Model.Role;
 import com.example.mywebquizengine.Model.User;
+import com.example.mywebquizengine.Service.PaymentServices;
 import com.example.mywebquizengine.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,14 +17,12 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
-import java.util.Optional;
 import java.util.UUID;
 
 
@@ -39,7 +38,10 @@ public class UserController {
     @Autowired
     private OAuth2AuthorizedClientService authorizedClientService;
 
-    @Value("notification_secret")
+    @Autowired
+    private PaymentServices paymentServices;
+
+    @Value("${notification-secret}")
     String notification_secret;
 
 
@@ -48,6 +50,7 @@ public class UserController {
 
         User user = getAuthUser(authentication, userService);
         model.addAttribute("user", user);
+
         return "profile";
     }
 
@@ -165,6 +168,7 @@ public class UserController {
 
     @PostMapping(path = "/checkyandex")
     @ResponseBody
+    @Transactional
     public void checkyandex(String notification_type, String operation_id, Number amount, Number withdraw_amount,
                             String currency, String datetime, String sender, Boolean codepro, String label,
                             String sha1_hash, Boolean test_notification, Boolean unaccepted, String lastname,
@@ -174,6 +178,8 @@ public class UserController {
         String mySha = notification_type + "&" + operation_id + "&" + amount + "&" + currency + "&" +
                 datetime + "&" + sender + "&" + codepro + "&" + notification_secret + "&" + label;
 
+        System.out.println(mySha);
+
         MessageDigest mDigest = MessageDigest.getInstance("SHA1");
         byte[] result = mDigest.digest(mySha.getBytes());
         StringBuffer sb = new StringBuffer();
@@ -181,8 +187,6 @@ public class UserController {
             sb.append(Integer.toString((result[i] & 0xff) + 0x100, 16).substring(1));
         }
 
-        System.out.println(sb.toString());
-        System.out.println(sha1_hash);
 
         if (sb.toString().equals(sha1_hash)) {
             System.out.println("Пришло уведомление");
@@ -191,6 +195,16 @@ public class UserController {
                     ", datetime = " + datetime + ", sender = " + sender + ", codepro = " + codepro + ", label = " + label +
                     ", sha1_hash = " + sha1_hash + ", test_notification = " + test_notification + ", unaccepted = " + unaccepted + ", lastname = " + lastname + ", firstname = " + firstname + ", fathersname = " + fathersname + ", email = " + email + ", phone = " + phone + ", city = " + city + ", street = " + street + ", building = " + building + ", suite = " + suite + ", flat = " + flat + ", zip = " + zip);
             System.out.println();
+
+            Order order = new Order();
+
+            order.setAmount((Double) amount);
+            order.setCoins((int) ((Double) amount * 100.0));
+            order.setOperation_id(operation_id);
+            order.setOrder_id(Integer.valueOf(label));
+
+            paymentServices.saveFinalOrder(order);
+            userService.updateBalance(order.getCoins());
 
         } else {
             System.out.println("Неправильный хэш");
