@@ -113,7 +113,7 @@
     </div>
 
 
-    <input class="form-control" type="hidden" name="label" value="${order.order_id}">
+    <input class="form-control" type="hidden" name="label" value="${order.order_id?c}">
 
 
     <input class="form-control" type="hidden" name="quickpay-form" value="donate">
@@ -121,7 +121,7 @@
 
     <div class="form-group">
         <label class="form-label">Сумма</label>
-        <input class="form-control" type="text" name="sum" value="4568.25" data-type="number">
+        <input class="form-control" type="text" name="sum" value="2" data-type="number">
 
     </div>
 
