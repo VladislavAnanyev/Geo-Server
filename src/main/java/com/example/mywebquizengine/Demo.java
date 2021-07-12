@@ -13,9 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.DigestUtils;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
@@ -38,8 +41,17 @@ public class Demo implements CommandLineRunner {
     private UserService userService;
 
     @Override
-    public void run(String... args) throws UnknownHostException, SchedulerException, InterruptedException {
+    public void run(String... args) throws UnknownHostException, SchedulerException, InterruptedException, NoSuchAlgorithmException {
 
+        String input = "p2p-incoming&1234567&300.00&643&2011-07-01T09:00:00.000+04:00&41001XXXXXXXX&false&01234567890ABCDEF01234567890&";
+        MessageDigest mDigest = MessageDigest.getInstance("SHA1");
+        byte[] result = mDigest.digest(input.getBytes());
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < result.length; i++) {
+            sb.append(Integer.toString((result[i] & 0xff) + 0x100, 16).substring(1));
+        }
+
+        System.out.println(sb.toString());
 
         //Thread.sleep(5000L);
 

@@ -59,6 +59,9 @@ dependencies {
     implementation 'org.springframework.session:spring-session-jdbc'
     implementation 'org.springframework.session:spring-session-core'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '2.5.0'
+// https://mvnrepository.com/artifact/commons-codec/commons-codec
+    implementation group: 'commons-codec', name: 'commons-codec', version: '1.7'
+
 
     // https://mvnrepository.com/artifact/javax.inject/javax.inject
     implementation group: 'javax.inject', name: 'javax.inject', version: '1'
