@@ -181,6 +181,6 @@ public class UserService implements UserDetailsService {
 
     public void updateBalance(Integer coins, User user) {
         User user2 = userRepository.findById(user.getUsername()).get();
-        user.setBalance(user2.getBalance() + coins);
+        user2.setBalance(user2.getBalance() + coins);
     }
 }

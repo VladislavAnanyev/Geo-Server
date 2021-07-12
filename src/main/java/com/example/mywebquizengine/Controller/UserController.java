@@ -204,8 +204,8 @@ public class UserController {
             order.setOperation_id(operation_id);
             order.setOrder_id(Integer.valueOf(label));
 
-            paymentServices.saveFinalOrder(order);
-            userService.updateBalance(order.getCoins(), getAuthUser(SecurityContextHolder.getContext().getAuthentication(), userService));
+            order = paymentServices.saveFinalOrder(order);
+            userService.updateBalance(order.getCoins(), order.getUser());
 
         } else {
             System.out.println("Неправильный хэш");
