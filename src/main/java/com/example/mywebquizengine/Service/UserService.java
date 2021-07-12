@@ -179,8 +179,8 @@ public class UserService implements UserDetailsService {
     }
 
 
-    public void updateBalance(Integer coins) {
-        User user = UserController.getAuthUser(SecurityContextHolder.getContext().getAuthentication(), this);
-        user.setBalance(user.getBalance() + coins);
+    public void updateBalance(Integer coins, User user) {
+        User user2 = userRepository.findById(user.getUsername()).get();
+        user.setBalance(user2.getBalance() + coins);
     }
 }

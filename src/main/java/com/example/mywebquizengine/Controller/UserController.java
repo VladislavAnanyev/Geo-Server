@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -204,7 +205,7 @@ public class UserController {
             order.setOrder_id(Integer.valueOf(label));
 
             paymentServices.saveFinalOrder(order);
-            userService.updateBalance(order.getCoins());
+            userService.updateBalance(order.getCoins(), getAuthUser(SecurityContextHolder.getContext().getAuthentication(), userService));
 
         } else {
             System.out.println("Неправильный хэш");
