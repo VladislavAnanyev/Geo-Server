@@ -198,8 +198,8 @@ public class UserController {
 
             Order order = new Order();
 
-            order.setAmount((Double) amount);
-            order.setCoins((int) ((Double) amount * 100.0));
+            order.setAmount(String.valueOf(amount));
+            order.setCoins((int) (Double.parseDouble(String.valueOf(amount)) * 100.0));
             order.setOperation_id(operation_id);
             order.setOrder_id(Integer.valueOf(label));
 

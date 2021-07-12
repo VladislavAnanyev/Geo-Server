@@ -16,7 +16,7 @@ public class Order {
 
     private Integer coins;
 
-    private Double amount;
+    private String amount;
 
 
 
@@ -24,7 +24,7 @@ public class Order {
 
     }
 
-    public Double getAmount() {
+    public String getAmount() {
         return amount;
     }
 
@@ -56,7 +56,7 @@ public class Order {
         this.operation_id = operation_id;
     }
 
-    public void setAmount(Double amount) {
+    public void setAmount(String amount) {
         this.amount = amount;
     }
 
