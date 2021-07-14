@@ -165,12 +165,10 @@ public class UserService implements UserDetailsService {
             } else {
                 user.setEmail("default@default.com");
             }
-
         }
 
         user.setAvatar("default");
         user.setEnabled(true);
-
 
         user.grantAuthority(Role.ROLE_USER);
         user.setChangePasswordCode(UUID.randomUUID().toString());

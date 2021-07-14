@@ -25,7 +25,7 @@
     <#if nowUser.principal.username??>
         <#assign
         name = nowUser.principal.username
-        balance = nowUser.principal.balance
+<#--        balance = nowUser.principal.balance-->
             >
 
 
@@ -33,6 +33,7 @@
             <#assign
     <#--        name = nowUser.username-->
             name = nowUser.principal.attributes.login
+
             >
         <#elseif nowUser.authorizedClientRegistrationId = "google">
             <#assign

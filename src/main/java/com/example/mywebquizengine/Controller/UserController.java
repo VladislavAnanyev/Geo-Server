@@ -5,6 +5,10 @@ import com.example.mywebquizengine.Model.Role;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Service.PaymentServices;
 import com.example.mywebquizengine.Service.UserService;
+import freemarker.template.Configuration;
+import freemarker.template.TemplateExceptionHandler;
+import freemarker.template.TemplateModelException;
+import org.aspectj.lang.annotation.After;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +25,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import java.io.File;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
@@ -46,13 +52,27 @@ public class UserController {
     String notification_secret;
 
 
+    @Autowired
+    private QuizController quizController;
+
+
     @GetMapping(path = "/profile")
     public String getProfile(Model model , Authentication authentication) {
 
         User user = getAuthUser(authentication, userService);
         model.addAttribute("user", user);
 
+        model.addAttribute("balance", user.getBalance());
+
         return "profile";
+    }
+
+
+    @GetMapping(path = "/getbalance")
+    @ResponseBody
+    public Integer getBalance() {
+        User user = getAuthUser(SecurityContextHolder.getContext().getAuthentication(), userService);
+        return user.getBalance();
     }
 
 
@@ -96,7 +116,8 @@ public class UserController {
     }
 
     @GetMapping("/loginSuccess")
-    public String getLoginInfo(Authentication authentication) {
+    @After("signin()")
+    public String getLoginInfo(Authentication authentication, Model model) throws TemplateModelException, IOException {
 
         User user = userService.castToUser((OAuth2AuthenticationToken) authentication);
 

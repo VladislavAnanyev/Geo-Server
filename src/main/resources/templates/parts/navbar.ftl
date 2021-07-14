@@ -3,6 +3,10 @@
 
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light shadow p-3 mb-5 rounded">
+
+
+
+
     <a class="navbar-brand" href="/">
         WebQuizzes</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,8 +41,21 @@
             </#if>-->
         </ul>
 
+
+        <#--<#global balance>
+            ${balance2}
+        </#global>-->
+
+
+
+
         <#if known>
-        <div class="mt-2 mr-4"><i class="bi bi-cash-coin mr-1">${balance}</i>
+
+
+
+        <div class="mt-2 mr-4"><i class="bi bi-cash-coin mr-1" id="balance"></i>
+
+
 
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-cash-coin mt-1" viewBox="0 0 16 16">
             <path fill-rule="evenodd" d="M11 15a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm5-4a5 5 0 1 1-10 0 5 5 0 0 1 10 0z"/>
@@ -66,4 +83,21 @@
         <@e.logout />
 
     </div>
+
+    <#if known>
+    <script>
+
+        let xhr = new XMLHttpRequest();
+
+        xhr.open('GET', '/getbalance',true);
+        xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
+        xhr.onreadystatechange = function () {
+            if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                document.getElementById("balance").textContent = xhr.response
+            }
+        };
+        xhr.send();
+
+    </script>
+    </#if>
 </nav>

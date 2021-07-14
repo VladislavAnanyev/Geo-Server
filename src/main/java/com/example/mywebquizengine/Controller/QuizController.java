@@ -7,6 +7,9 @@ import com.example.mywebquizengine.Service.QuizService;
 import com.example.mywebquizengine.Service.TestService;
 import com.example.mywebquizengine.Service.UserAnswerService;
 import com.example.mywebquizengine.Service.UserService;
+import freemarker.template.Configuration;
+import freemarker.template.TemplateExceptionHandler;
+import freemarker.template.TemplateModelException;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +32,7 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.Calendar;
@@ -158,8 +162,8 @@ public class QuizController {
     }
 
     @GetMapping(path = "/")
-    public String home() {
-        //Authentication authentication1 = SecurityContextHolder.getContext().getAuthentication();
+    public String home(Model model) throws TemplateModelException, IOException {
+
         return "home";
     }
 
