@@ -1,15 +1,12 @@
 package com.example.mywebquizengine.Service;
 
 
-import com.example.mywebquizengine.Controller.QuizController;
-import com.example.mywebquizengine.Controller.UserController;
 import com.example.mywebquizengine.Model.Test.Quiz;
 import com.example.mywebquizengine.Model.Test.Test;
 import com.example.mywebquizengine.Model.Test.UserTestAnswer;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.UserQuizAnswerRepository;
 import com.example.mywebquizengine.Repos.UserTestAnswerRepository;
-import org.hibernate.Hibernate;
 import org.quartz.JobDataMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

@@ -100,15 +100,15 @@
         <small id="emailHelp" class="form-text text-muted">Мы никогда никому не передадим Вашу электронную почту.</small>
     </div>-->
 
-    <div class="form-group">
+   <#-- <div class="form-group">
         <label for="exampleInputEmail1">Описание</label>
         <input class="form-control" type="text" name="formcomment" id="exampleInputEmail1" value="Проект «Железный человек»: реактор холодного ядерного синтеза">
 
-    </div>
+    </div>-->
 
     <div class="form-group">
         <label class="form-label">Назначение</label>
-        <input class="form-control" type="text" name="short-dest" value="Проект «Железный человек»: реактор холодного ядерного синтеза">
+        <input class="form-control" type="text" name="short-dest" value="Покупка Coins" disabled>
 
     </div>
 
@@ -117,25 +117,25 @@
 
 
     <input class="form-control" type="hidden" name="quickpay-form" value="donate">
-    <input class="form-control" type="hidden" name="targets" value="Покупка coins">
+    <input class="form-control" type="hidden" name="targets" value="Покупка coins" disabled>
 
     <div class="form-group">
-        <label class="form-label">Сумма</label>
+        <label class="form-label">Сумма в рублях (1 руб. = 100 coins)</label>
         <input class="form-control" type="text" name="sum" value="2" data-type="number">
 
     </div>
 
-    <div class="form-group">
+    <#--<div class="form-group">
         <label class="form-label">Комментарий</label>
         <input class="form-control" type="text" name="comment" value="Хотелось бы получить дистанционное управление.">
-    </div>
+    </div>-->
 
     <input class="form-control" type="hidden" name="need-fio" value="false">
     <input class="form-control" type="hidden" name="need-email" value="false">
     <input class="form-control" type="hidden" name="need-phone" value="false">
     <input class="form-control" type="hidden" name="need-address" value="false">
     <input class="form-control" type="hidden" name="need-address" value="false">
-    <input class="form-control" type="hidden" name="successURL" value="https://webquizzes.me/">
+    <input class="form-control" type="hidden" name="successURL" value="https://webquizzes.me/checkout">
     <div>
     <input type="radio" name="paymentType" checked value="PC"> ЮMoney
     </div>

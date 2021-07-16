@@ -37,7 +37,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.Calendar;
 
-import static com.example.mywebquizengine.Controller.UserController.getAuthUser;
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
@@ -100,7 +99,7 @@ public class QuizController {
                                @RequestParam(required = false,defaultValue = "10") @Min(1) @Max(10) Integer pageSize,
                                @RequestParam(defaultValue = "id") String sortBy) {
 
-        User user = getAuthUser(authentication, userService);
+        User user = userService.getAuthUser(authentication);
         Page<Test> page1 = testService.getMyQuiz(user.getUsername(), page, pageSize, sortBy);
         model.addAttribute("myquiz", page1.getContent());
 
@@ -111,8 +110,8 @@ public class QuizController {
     @GetMapping(path = "/checklastanswer/{id}")
     @ResponseBody
     public Boolean checkLastAnswer(@PathVariable String id, Authentication authentication) {
-        if (userAnswerService.checkLastComplete(getAuthUser(authentication, userService), id) != null) {
-            return userAnswerService.checkLastComplete(getAuthUser(authentication, userService), id).getCompletedAt() == null;
+        if (userAnswerService.checkLastComplete(userService.getAuthUser(authentication), id) != null) {
+            return userAnswerService.checkLastComplete(userService.getAuthUser(authentication), id).getCompletedAt() == null;
         } else {
             return false;
         }
@@ -144,7 +143,7 @@ public class QuizController {
 
             //User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-            User user = getAuthUser(authentication, userService);
+            User user = userService.getAuthUser(authentication);
 
             //user.setTests(new ArrayList<>()); // Handle Persistance bug
             user.setRoles(new ArrayList<>());
@@ -314,7 +313,7 @@ public class QuizController {
         Test test = testService.findTest(Integer.parseInt(id));
         UserTestAnswer userTestAnswer;
 
-        UserTestAnswer lastUserTestAnswer = userAnswerService.checkLastComplete(UserController.getAuthUser(authentication, userService), id);
+        UserTestAnswer lastUserTestAnswer = userAnswerService.checkLastComplete(userService.getAuthUser(authentication), id);
 
         if (Boolean.parseBoolean(restore) && lastUserTestAnswer != null && lastUserTestAnswer.getCompletedAt() == null) {
 
@@ -334,7 +333,7 @@ public class QuizController {
             Calendar calendar = new GregorianCalendar();
             userTestAnswer.setStartAt(calendar);
             userTestAnswer.setTest(testService.findTest(Integer.parseInt(id)));
-            userTestAnswer.setUser(UserController.getAuthUser(authentication, userService));
+            userTestAnswer.setUser(userService.getAuthUser(authentication));
             userAnswerService.saveStartAnswer(userTestAnswer);
 
             model.addAttribute("lastAnswer", userTestAnswer);
@@ -352,7 +351,7 @@ public class QuizController {
 
                 JobDetail job = newJob(SimpleJob.class)
                         .withIdentity(UUID.randomUUID().toString(), "group1")
-                        .usingJobData("username", UserController.getAuthUser(authentication, userService).getUsername())
+                        .usingJobData("username", userService.getAuthUser(authentication).getUsername())
                         .usingJobData("test", test.getId())
                         .usingJobData("answer", userTestAnswer.getUserAnswerId())
                         .build();
@@ -395,7 +394,7 @@ public class QuizController {
     }
 
     @DeleteMapping(path = "/api/quizzes/{id}")
-    @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(@userController.getAuthUser(authentication,@userService).username)")
+    @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(@userService.getAuthUser(authentication).username)")
     public void deleteTest(@PathVariable Integer id, Authentication authentication) {
         testService.deleteTest(id);
     }
@@ -403,7 +402,7 @@ public class QuizController {
 
     @PutMapping(path = "/update/{id}", consumes={"application/json"})
     @ResponseBody
-    @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(@userController.getAuthUser(authentication,@userService).username)")
+    @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(@userService.getAuthUser(authentication).username)")
     public void changeTest(@PathVariable Integer id, @Valid @RequestBody Test test,
                            Authentication authentication) throws ResponseStatusException {
 
@@ -420,7 +419,7 @@ public class QuizController {
 
 
     @GetMapping(path = "/update/{id}")
-    @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(@userController.getAuthUser(authentication,@userService).username)")
+    @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(@userService.getAuthUser(authentication).username)")
     public String update(@PathVariable Integer id, Model model, Authentication authentication) {
 
         Test tempTest = testService.findTest(id);
@@ -434,7 +433,7 @@ public class QuizController {
 
 
     @GetMapping(path = "/api/quizzes/{id}/info/")
-    @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(@userController.getAuthUser(authentication,@userService).username)")
+    @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(@userService.getAuthUser(authentication).username)")
     public String getInfo(@PathVariable Integer id, Model model,
                           @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
                           @RequestParam(required = false,defaultValue = "2000") @Min(1) @Max(2000) Integer pageSize,
@@ -450,7 +449,7 @@ public class QuizController {
 
     @PostMapping(value = "/answersession/{id}")
     public void getAnswerSession(Authentication authentication,@RequestBody UserTestAnswer userTestAnswer, @PathVariable String id) {
-        User user = getAuthUser(authentication, userService);
+        User user = userService.getAuthUser(authentication);
 
 
         userTestAnswer.setUser(user);

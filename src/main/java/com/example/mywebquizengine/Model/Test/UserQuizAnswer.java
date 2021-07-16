@@ -1,12 +1,9 @@
 package com.example.mywebquizengine.Model.Test;
 
-import com.example.mywebquizengine.Model.Test.UserTestAnswer;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 @Entity(name = "USER_QUIZ_ANSWERS")
 public class UserQuizAnswer {

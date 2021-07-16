@@ -24,7 +24,6 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-import static com.example.mywebquizengine.Controller.UserController.getAuthUser;
 
 @Validated
 @Controller
@@ -42,7 +41,7 @@ public class ChatController {
 
     @GetMapping(path = "/chat")
     public String chat(Model model, Authentication authentication) {
-        User user = getAuthUser(authentication, userService);
+        User user = userService.getAuthUser(authentication);
         model.addAttribute("myUsername", user);
         model.addAttribute("lastDialogs", messageService.getDialogs(user.getUsername()));
         return "chat";
@@ -50,7 +49,7 @@ public class ChatController {
 
     @GetMapping(path = "/chat/{username}")
     public String chatWithUser(Model model, @PathVariable String username, Authentication authentication) {
-        User user = getAuthUser(authentication, userService);
+        User user = userService.getAuthUser(authentication);
         model.addAttribute("user", userService.reloadUser(username));
         model.addAttribute("myUsername", user);
         model.addAttribute("lastDialogs", messageService.getDialogs(user.getUsername()));

@@ -137,7 +137,7 @@ function addTest() {
                     }
                 ), 3000);
 
-            } else if (xhr.status === 400) {
+            } else if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 400) {
                 let div = document.createElement("div");
                 div.setAttribute('class', 'alert alert-danger');
                 div.setAttribute('role', 'alert');

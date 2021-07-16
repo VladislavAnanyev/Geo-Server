@@ -4,15 +4,17 @@ import com.example.mywebquizengine.Controller.UserController;
 import com.example.mywebquizengine.Model.Role;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.UserRepository;
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -181,4 +183,33 @@ public class UserService implements UserDetailsService {
         User user2 = userRepository.findById(user.getUsername()).get();
         user2.setBalance(user2.getBalance() + coins);
     }
+
+    public User getAuthUser(Authentication authentication) {
+        String name = "";
+
+
+
+        if (authentication instanceof OAuth2AuthenticationToken) {
+
+            if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("google")) {
+
+                name = ((DefaultOidcUser) authentication.getPrincipal()).getAttributes().get("email")
+                        .toString().replace("@gmail.com", "");
+            } else if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("github")) {
+                name = ((DefaultOAuth2User) authentication.getPrincipal()).getAttributes().get("name")
+                        .toString();
+            }
+
+        } else {
+            User user = (User) authentication.getPrincipal();
+            name = user.getUsername();
+        }
+
+        return getUserProxy(name);
+    }
+
+
+
+
+
 }

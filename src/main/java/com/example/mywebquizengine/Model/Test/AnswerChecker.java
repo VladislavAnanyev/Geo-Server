@@ -2,7 +2,6 @@ package com.example.mywebquizengine.Model.Test;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class AnswerChecker {

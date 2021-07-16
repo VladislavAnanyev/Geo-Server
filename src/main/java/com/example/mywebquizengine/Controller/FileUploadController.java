@@ -17,7 +17,6 @@ import java.io.FileOutputStream;
 import java.util.Random;
 import java.util.UUID;
 
-import static com.example.mywebquizengine.Controller.UserController.getAuthUser;
 
 @Controller
 public class FileUploadController {
@@ -47,13 +46,13 @@ public class FileUploadController {
                 stream.write(bytes);
                 stream.close();
 
-                User user = getAuthUser(authentication, userService);
+                User user = userService.getAuthUser(authentication);
 
                 userService.setAvatar(uuid, user);
 
                 //file.transferTo(new File("C:/Users/avlad/IdeaProjects/WebQuiz" + name));
 
-                User userLogin = getAuthUser(authentication, userService);
+                User userLogin = userService.getAuthUser(authentication);
                 userLogin.setAvatar(uuid);
                 model.addAttribute("user", userLogin);
                 return "profile";

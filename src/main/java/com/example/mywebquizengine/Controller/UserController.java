@@ -59,7 +59,7 @@ public class UserController {
     @GetMapping(path = "/profile")
     public String getProfile(Model model , Authentication authentication) {
 
-        User user = getAuthUser(authentication, userService);
+        User user = userService.getAuthUser(authentication);
         model.addAttribute("user", user);
 
         model.addAttribute("balance", user.getBalance());
@@ -71,10 +71,9 @@ public class UserController {
     @GetMapping(path = "/getbalance")
     @ResponseBody
     public Integer getBalance() {
-        User user = getAuthUser(SecurityContextHolder.getContext().getAuthentication(), userService);
+        User user = userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication());
         return user.getBalance();
     }
-
 
 
     @GetMapping(path = "/activate/{activationCode}")
@@ -100,7 +99,7 @@ public class UserController {
     @PostMapping(path = "/update/userinfo/password", consumes ={"application/json"} )
     public void tryToChangePassWithAuth(Authentication authentication) {
 
-        User user = getAuthUser(authentication, userService);
+        User user = userService.getAuthUser(authentication);
         userService.sendCodeForChangePassword(user);
 
     }
@@ -148,7 +147,7 @@ public class UserController {
     @PutMapping(path = "/pass", consumes ={"application/json"})
     public String changePassword(@RequestBody User user, Authentication authentication) {
 
-        User userLogin = getAuthUser(authentication, userService);
+        User userLogin = userService.getAuthUser(authentication);
 
         user.setUsername(userLogin.getUsername());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -176,7 +175,7 @@ public class UserController {
 
     @Transactional
     @PutMapping(path = "/update/user/{username}", consumes={"application/json"})
-    @PreAuthorize(value = "@userController.getAuthUser(authentication,@userService).username.equals(#username)")
+    @PreAuthorize(value = "@userService.getAuthUser(authentication).username.equals(#username)")
     public void changeUser(@PathVariable String username, @RequestBody User user, Authentication authentication) {
         userService.updateUser(user.getLastName(), user.getFirstName(), username);
     }
@@ -200,7 +199,7 @@ public class UserController {
         String mySha = notification_type + "&" + operation_id + "&" + amount + "&" + currency + "&" +
                 datetime + "&" + sender + "&" + codepro + "&" + notification_secret + "&" + label;
 
-        System.out.println(mySha);
+        //System.out.println(mySha);
 
         MessageDigest mDigest = MessageDigest.getInstance("SHA1");
         byte[] result = mDigest.digest(mySha.getBytes());
@@ -221,7 +220,7 @@ public class UserController {
             Order order = new Order();
 
             order.setAmount(String.valueOf(amount));
-            order.setCoins((int) (Double.parseDouble(String.valueOf(amount)) * 100.0));
+            order.setCoins((int) (Double.parseDouble(String.valueOf(withdraw_amount)) * 100.0));
             order.setOperation_id(operation_id);
             order.setOrder_id(Integer.valueOf(label));
 
@@ -236,28 +235,6 @@ public class UserController {
 
 
     // UserService is required because this method is static, but UserService non-static
-    public static User getAuthUser(Authentication authentication, UserService userService) {
-        String name = "";
 
-
-
-        if (authentication instanceof OAuth2AuthenticationToken) {
-
-            if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("google")) {
-
-                name = ((DefaultOidcUser) authentication.getPrincipal()).getAttributes().get("email")
-                        .toString().replace("@gmail.com", "");
-            } else if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("github")) {
-                name = ((DefaultOAuth2User) authentication.getPrincipal()).getAttributes().get("name")
-                        .toString();
-            }
-
-        } else {
-            User user = (User) authentication.getPrincipal();
-            name = user.getUsername();
-        }
-
-        return userService.getUserProxy(name);
-    }
 
 }

@@ -1,6 +1,5 @@
 package com.example.mywebquizengine.Service;
 
-import com.example.mywebquizengine.Model.Test.Quiz ;
 import com.example.mywebquizengine.Model.Test.Test;
 import com.example.mywebquizengine.Repos.QuizRepository;
 import com.example.mywebquizengine.Repos.TestRepository;
@@ -13,8 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.transaction.Transactional;
 import java.util.List;
 
 //@Transactional

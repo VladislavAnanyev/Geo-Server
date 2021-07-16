@@ -32,7 +32,7 @@ public class PayPalController {
 
         Order order = new Order();
 
-        order.setUser(UserController.getAuthUser(SecurityContextHolder.getContext().getAuthentication(), userService));
+        order.setUser(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()));
 
         paymentServices.saveStartOrder(order);
 

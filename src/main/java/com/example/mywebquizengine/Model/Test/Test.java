@@ -2,13 +2,9 @@ package com.example.mywebquizengine.Model.Test;
 
 import com.example.mywebquizengine.Model.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.hibernate.Hibernate;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.time.LocalTime;
 import java.util.List;
 
