@@ -180,7 +180,7 @@ public class QuizController {
     @GetMapping(path = "/")
     public String home(Model model, HttpServletRequest request) throws TemplateModelException, IOException, GeoIp2Exception {
 
-        System.out.println(request.getRemoteAddr());
+   /*     System.out.println(request.getRemoteAddr());
 
         // A File object pointing to your GeoLite2 database
         //File dbFile = new File(MyConstants.DATABASE_CITY_PATH);
@@ -189,22 +189,22 @@ public class QuizController {
         // which should be reused across lookups.
 
         // A File object pointing to your GeoIP2 or GeoLite2 database
-        File database = new File("C:\\My\\GeoIP\\GeoLite2-City.mmdb");
+        //File database = new File("C:\\My\\GeoIP\\GeoLite2-City.mmdb");
 
 // This creates the DatabaseReader object. To improve performance, reuse
 // the object across lookups. The object is thread-safe.
-        DatabaseReader reader = new DatabaseReader.Builder(database).build();
+        //DatabaseReader reader = new DatabaseReader.Builder(database).build();
 
         //DatabaseReader reader = new DatabaseReader.Builder(dbFile).build();
 
 
         // A IP Address
-        InetAddress ipAddress = InetAddress.getByName("109.252.36.242");
+        //InetAddress ipAddress = InetAddress.getByName("109.252.36.242");
 
 
 
         // Get City info
-        CityResponse response = reader.city(ipAddress);
+        //CityResponse response = reader.city(ipAddress);
 
         // Country Info
         Country country = response.getCountry();
@@ -232,7 +232,7 @@ public class QuizController {
 
         System.out.println(location.getAccuracyRadius());
         // Longitude
-        System.out.println("Longitude: "+ location.getLongitude()); // -93.2323
+        System.out.println("Longitude: "+ location.getLongitude()); // -93.2323*/
 
         return "home";
     }
