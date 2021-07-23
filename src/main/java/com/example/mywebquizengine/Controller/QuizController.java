@@ -1,12 +1,18 @@
 package com.example.mywebquizengine.Controller;
 
+import com.example.mywebquizengine.Model.Geolocation;
 import com.example.mywebquizengine.Model.SimpleJob;
 import com.example.mywebquizengine.Model.Test.*;
 import com.example.mywebquizengine.Model.User;
+import com.example.mywebquizengine.MyConstants;
 import com.example.mywebquizengine.Service.QuizService;
 import com.example.mywebquizengine.Service.TestService;
 import com.example.mywebquizengine.Service.UserAnswerService;
 import com.example.mywebquizengine.Service.UserService;
+import com.maxmind.geoip2.DatabaseReader;
+import com.maxmind.geoip2.exception.GeoIp2Exception;
+import com.maxmind.geoip2.model.CityResponse;
+import com.maxmind.geoip2.record.*;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateExceptionHandler;
 import freemarker.template.TemplateModelException;
@@ -28,12 +34,14 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.*;
 import java.util.Calendar;
 
@@ -63,6 +71,7 @@ public class QuizController {
 
     @Autowired
     private OAuth2AuthorizedClientService authorizedClientService;
+
 
     /*@Modifying
     //@Transactional
@@ -131,6 +140,9 @@ public class QuizController {
         return "mycomplete";
     }*/
 
+
+
+
     @GetMapping(path = "/add")
     public String addQuiz(Model model) {
         return "addQuiz";
@@ -160,8 +172,67 @@ public class QuizController {
         }
     }
 
+    @GetMapping("/geo")
+    public String geo() {
+        return "geo";
+    }
+
     @GetMapping(path = "/")
-    public String home(Model model) throws TemplateModelException, IOException {
+    public String home(Model model, HttpServletRequest request) throws TemplateModelException, IOException, GeoIp2Exception {
+
+        System.out.println(request.getRemoteAddr());
+
+        // A File object pointing to your GeoLite2 database
+        //File dbFile = new File(MyConstants.DATABASE_CITY_PATH);
+
+        // This creates the DatabaseReader object,
+        // which should be reused across lookups.
+
+        // A File object pointing to your GeoIP2 or GeoLite2 database
+        File database = new File("C:\\My\\GeoIP\\GeoLite2-City.mmdb");
+
+// This creates the DatabaseReader object. To improve performance, reuse
+// the object across lookups. The object is thread-safe.
+        DatabaseReader reader = new DatabaseReader.Builder(database).build();
+
+        //DatabaseReader reader = new DatabaseReader.Builder(dbFile).build();
+
+
+        // A IP Address
+        InetAddress ipAddress = InetAddress.getByName("109.252.36.242");
+
+
+
+        // Get City info
+        CityResponse response = reader.city(ipAddress);
+
+        // Country Info
+        Country country = response.getCountry();
+        System.out.println("Country IsoCode: "+ country.getIsoCode()); // 'US'
+        System.out.println("Country Name: "+ country.getName()); // 'United States'
+        System.out.println(country.getNames().get("ru-CN")); // '美国'
+
+        Subdivision subdivision = response.getMostSpecificSubdivision();
+        System.out.println("Subdivision Name: " +subdivision.getName()); // 'Minnesota'
+        System.out.println("Subdivision IsoCode: "+subdivision.getIsoCode()); // 'MN'
+
+        // City Info.
+        City city = response.getCity();
+        System.out.println("City Name: "+ city.getName()); // 'Minneapolis'
+
+        // Postal info
+        Postal postal = response.getPostal();
+        System.out.println(postal.getCode()); // '55455'
+
+        // Geo Location info.
+        Location location = response.getLocation();
+
+        // Latitude
+        System.out.println("Latitude: "+ location.getLatitude()); // 44.9733
+
+        System.out.println(location.getAccuracyRadius());
+        // Longitude
+        System.out.println("Longitude: "+ location.getLongitude()); // -93.2323
 
         return "home";
     }
@@ -224,6 +295,7 @@ public class QuizController {
 
         return String.valueOf(result);
     }*/
+
 
 
 

@@ -1,7 +1,9 @@
 package com.example.mywebquizengine.Service;
 
+import com.example.mywebquizengine.Model.Chat.Group;
 import com.example.mywebquizengine.Model.Chat.Message;
 import com.example.mywebquizengine.Model.User;
+import com.example.mywebquizengine.Repos.GroupRepository;
 import com.example.mywebquizengine.Repos.MessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,10 +19,21 @@ public class MessageService {
     MessageRepository messageRepository;
 
     @Autowired
+    GroupRepository groupRepository;
+
+    @Autowired
     private UserService userService;
 
     public ArrayList<Message> getMessages(String sent, String received) {
         return (ArrayList<Message>) messageRepository.getMessagesByUsername(sent, received);
+    }
+
+    public ArrayList<Message> getMessagesInGroup(String group) {
+        return (ArrayList<Message>) messageRepository.getMessagesByGroup(group);
+    }
+
+    public void saveGroup(Group group) {
+        groupRepository.save(group);
     }
 
     public void saveMessage(Message message) {

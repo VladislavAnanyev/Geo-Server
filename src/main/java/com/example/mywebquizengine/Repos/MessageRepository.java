@@ -12,6 +12,9 @@ public interface MessageRepository extends CrudRepository<Message, Integer> {
     @Query(value = "SELECT * FROM MESSAGES WHERE (SENDER_USERNAME = :sent AND RECIPIENT_USERNAME = :received) OR (SENDER_USERNAME = :received AND RECIPIENT_USERNAME = :sent) ORDER BY TIMESTAMP", nativeQuery = true)
     List<Message> getMessagesByUsername(String sent, String received);
 
+    @Query(value = "SELECT * FROM MESSAGES WHERE GROUP_ID = :group ORDER BY TIMESTAMP", nativeQuery = true)
+    List<Message> getMessagesByGroup(String group);
+
 
     @Query(value = "SELECT * FROM MESSAGES WHERE TIMESTAMP = :time", nativeQuery = true)
     Message getDialogsByTimestamp(String time);

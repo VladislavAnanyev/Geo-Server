@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.Controller;
 
+import com.example.mywebquizengine.Model.Geolocation;
 import com.example.mywebquizengine.Model.Order;
 import com.example.mywebquizengine.Model.Role;
 import com.example.mywebquizengine.Model.User;
@@ -30,6 +31,8 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.UUID;
 
 
@@ -115,7 +118,7 @@ public class UserController {
     }
 
     @GetMapping("/loginSuccess")
-    @After("signin()")
+    //@After("signin()")
     public String getLoginInfo(Authentication authentication, Model model) throws TemplateModelException, IOException {
 
         User user = userService.castToUser((OAuth2AuthenticationToken) authentication);
@@ -142,6 +145,11 @@ public class UserController {
         return "singin";
     }
 
+    @GetMapping(path = "/testsign")
+    @ResponseBody
+    public User test() {
+        return userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication());
+    }
 
     @Transactional
     @PutMapping(path = "/pass", consumes ={"application/json"})
@@ -233,8 +241,22 @@ public class UserController {
 
     }
 
+    @GetMapping(path = "/getUserList")
+    @ResponseBody
+    public ArrayList<User> getUserList() {
+        return userService.getUserList();
+    }
+
 
     // UserService is required because this method is static, but UserService non-static
 
-
+    @PostMapping(path = "/sendGeolocation")
+    @ResponseBody
+    public ArrayList<Geolocation> sendGeolocation(@RequestBody Geolocation geolocation) {
+        geolocation.setUser(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()));
+        //geolocation.setId(geolocation.getUser().getUsername());
+        userService.saveGeo(geolocation);
+        ArrayList<Geolocation> arrayList = userService.getAllGeo();
+        return arrayList;
+    }
 }

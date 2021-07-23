@@ -94,7 +94,10 @@ dependencies {
     compile("org.springframework.boot:spring-boot-starter-mail")
     //compile 'com.paypal.sdk:rest-api-sdk:+'
     //compile('org.springframework.security.oauth:spring-security-oauth2')
+// https://mvnrepository.com/artifact/com.maxmind.geoip2/geoip2
+    //implementation group: 'com.maxmind.geoip2', name: 'geoip2', version: '2.15.0'
 
+    compile 'com.maxmind.geoip2:geoip2:2.15.0'
     //compile('redis.clients:jedis:2.9.0')
     //compile('org.springframework.session:spring-session-data-redis')
     //compile 'io.lettuce:lettuce-core:5.0.5.RELEASE'

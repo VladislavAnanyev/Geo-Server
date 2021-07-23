@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.Model;
 
+import com.example.mywebquizengine.Model.Chat.Group;
 import com.example.mywebquizengine.Model.Test.Test;
 import com.sun.istack.NotNull;
 import org.hibernate.annotations.Fetch;
@@ -15,6 +16,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity(name = "USERS")
 public class User implements UserDetails {
@@ -43,6 +45,16 @@ public class User implements UserDetails {
     private String password;
 
     private String avatar;
+
+    @ManyToMany (cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE
+    })
+    @JoinTable(name = "users_groups",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "group_id")
+    )
+    private List<Group> groups;
 
     /*@OneToMany(mappedBy = "user")
     private List<Test> tests;*/
@@ -221,6 +233,14 @@ public class User implements UserDetails {
 
     public Integer getBalance() {
         return balance;
+    }
+
+    public List<Group> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(List<Group> groups) {
+        this.groups = groups;
     }
 
     /*public void setTests(List<Test> tests) {

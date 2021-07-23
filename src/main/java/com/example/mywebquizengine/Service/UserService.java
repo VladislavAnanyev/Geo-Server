@@ -1,8 +1,10 @@
 package com.example.mywebquizengine.Service;
 
 import com.example.mywebquizengine.Controller.UserController;
+import com.example.mywebquizengine.Model.Geolocation;
 import com.example.mywebquizengine.Model.Role;
 import com.example.mywebquizengine.Model.User;
+import com.example.mywebquizengine.Repos.GeolocationRepository;
 import com.example.mywebquizengine.Repos.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -34,6 +38,9 @@ public class UserService implements UserDetailsService {
 
     @Value("${hostname}")
     private String hostname;
+
+    @Autowired
+    private GeolocationRepository geolocationRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -68,6 +75,25 @@ public class UserService implements UserDetailsService {
 
         }
     }
+
+    public void saveGeo(Geolocation geolocation) {
+        Optional<Geolocation> geolocation1 = geolocationRepository.findById(geolocation.getUser().getUsername());
+        if (geolocation1.isPresent()) {
+            Geolocation geolocation2 = geolocation1.get();
+            geolocation2.setLat(geolocation.getLat());
+            geolocation2.setLng(geolocation.getLng());
+            geolocationRepository.save(geolocation2);
+        } else {
+            geolocationRepository.save(geolocation);
+        }
+    }
+
+
+    public ArrayList<Geolocation> getAllGeo() {
+        return (ArrayList<Geolocation>) geolocationRepository.getAll();
+    }
+
+
 
 
     public void updateUser(String lastName, String firstName, String username) {
@@ -208,8 +234,32 @@ public class UserService implements UserDetailsService {
         return getUserProxy(name);
     }
 
+    public User getAuthUserNoProxy(Authentication authentication) {
+        String name = "";
 
 
 
+        if (authentication instanceof OAuth2AuthenticationToken) {
 
+            if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("google")) {
+
+                name = ((DefaultOidcUser) authentication.getPrincipal()).getAttributes().get("email")
+                        .toString().replace("@gmail.com", "");
+            } else if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("github")) {
+                name = ((DefaultOAuth2User) authentication.getPrincipal()).getAttributes().get("name")
+                        .toString();
+            }
+
+        } else {
+            User user = (User) authentication.getPrincipal();
+            name = user.getUsername();
+        }
+
+        return reloadUser(name);
+    }
+
+
+    public ArrayList<User> getUserList() {
+        return (ArrayList<User>) userRepository.findAll();
+    }
 }

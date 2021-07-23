@@ -24,6 +24,11 @@ public class Message {
     private Calendar timestamp;
     private MessageStatus status;
 
+
+    @ManyToOne
+    @JoinColumn(name = "group_id")
+    private Group group;
+
     public Message() {}
 
     public User getSender() {
@@ -74,5 +79,12 @@ public class Message {
         this.id = id;
     }
 
+    public void setGroup(Group group) {
+        this.group = group;
+    }
+
+    public Group getGroup() {
+        return group;
+    }
 }
 
