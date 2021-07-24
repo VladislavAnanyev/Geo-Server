@@ -40,7 +40,7 @@ function f(id) {
 
     let xhr = new XMLHttpRequest();
 
-    xhr.open('POST', '/api/quizzes/' + id + '/solve/',true);
+    xhr.open('POST', '/quizzes/' + id + '/solve/',true);
     xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
     xhr.onreadystatechange = function () {
         if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {

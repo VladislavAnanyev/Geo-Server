@@ -5,6 +5,8 @@ function geo() {
 // Check if the browser has support for the Geolocation API
     if (!navigator.geolocation) {
 
+
+        
         findMeButton.addClass("disabled");
         $('.no-browser-support').addClass("visible");
 
@@ -15,6 +17,7 @@ function geo() {
                 // Get the coordinates of the current possition.
                 let lat = position.coords.latitude;
                 let lng = position.coords.longitude;
+
 
                 $('.latitude').text(lat);
                 $('.longitude').text(lng);

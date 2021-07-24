@@ -15,12 +15,12 @@ function checkAnswerSession(id) {
                 myModal.toggle()
                 console.log(xhr.response)
             } else {
-                document.location.href = "/api/quizzes/" + id + "/solve/";
+                document.location.href = "/quizzes/" + id + "/solve/";
                 console.log(xhr.response)
             }
 
         } else if (xhr.status === 404) {
-            location.href = "/api/quizzes/" + id + "/solve";
+            location.href = "/quizzes/" + id + "/solve";
             console.log("Идите нахуй")
         }
     };

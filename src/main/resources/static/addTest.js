@@ -113,7 +113,7 @@ function addTest() {
         //console.log("abcde")
 
         let xhr = new XMLHttpRequest();
-        xhr.open('POST', '/api/quizzes/',true);
+        xhr.open('POST', '/quizzes/',true);
         xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
         xhr.onreadystatechange = function () {
             if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {

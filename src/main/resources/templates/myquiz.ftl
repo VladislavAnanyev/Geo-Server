@@ -41,7 +41,7 @@
                         <div class="col">
 
                             <div class="row">
-                        <form method="get" action="/api/quizzes/${test.id?c}/info/" class="mt-2">
+                        <form method="get" action="/quizzes/${test.id?c}/info/" class="mt-2">
                             <#--                        <button type="submit" class="btn btn-primary ml-2 my-1">Подробнее</button>-->
                             <#--<svg  type="submit" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bar-chart-fill" viewBox="0 0 16 16">
 

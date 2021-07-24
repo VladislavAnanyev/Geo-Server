@@ -83,7 +83,7 @@ public class QuizController {
         return "OK";
     }*/
 
-    @GetMapping(path = "/api/quizzes")
+    @GetMapping(path = "/quizzes")
     public String getQuizzes(Model model, @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
                              @RequestParam(required = false,defaultValue = "10") @Min(1) @Max(10) Integer pageSize,
                              @RequestParam(defaultValue = "id") String sortBy) throws IOException {
@@ -149,7 +149,7 @@ public class QuizController {
     }
 
 
-    @PostMapping(path = "/api/quizzes", consumes={"application/json"})
+    @PostMapping(path = "/quizzes", consumes={"application/json"})
     public String addQuiz(Model model, @RequestBody @Valid Test test, Authentication authentication) throws ResponseStatusException {
         try {
 
@@ -299,7 +299,7 @@ public class QuizController {
 
 
 
-    @PostMapping(path = "/api/quizzes/{id}/solve")
+    @PostMapping(path = "/quizzes/{id}/solve")
     @ResponseBody
     @Transactional
     public String getAnswerOnTest(@PathVariable String id,
@@ -377,7 +377,7 @@ public class QuizController {
     }*/
 
 
-    @GetMapping(path = "/api/quizzes/{id}/solve")
+    @GetMapping(path = "/quizzes/{id}/solve")
     public String passTest(Model model, @PathVariable String id,
                            @RequestParam(required = false, defaultValue = "false") String restore,
                            Authentication authentication) throws SchedulerException {
@@ -465,7 +465,7 @@ public class QuizController {
         return "reg";
     }
 
-    @DeleteMapping(path = "/api/quizzes/{id}")
+    @DeleteMapping(path = "/quizzes/{id}")
     @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(@userService.getAuthUser(authentication).username)")
     public void deleteTest(@PathVariable Integer id, Authentication authentication) {
         testService.deleteTest(id);
@@ -504,7 +504,7 @@ public class QuizController {
 
 
 
-    @GetMapping(path = "/api/quizzes/{id}/info/")
+    @GetMapping(path = "/quizzes/{id}/info/")
     @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(@userService.getAuthUser(authentication).username)")
     public String getInfo(@PathVariable Integer id, Model model,
                           @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,

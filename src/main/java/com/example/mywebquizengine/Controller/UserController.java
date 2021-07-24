@@ -12,6 +12,7 @@ import freemarker.template.TemplateModelException;
 import org.aspectj.lang.annotation.After;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,6 +24,7 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
@@ -85,7 +87,7 @@ public class UserController {
         return "singin";
     }
 
-    @PostMapping(path = "/api/register")
+    @PostMapping(path = "/register")
     public String checkIn(@Valid User user) {
         try {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -145,11 +147,21 @@ public class UserController {
         return "singin";
     }
 
-    @GetMapping(path = "/testsign")
+    /*@GetMapping(path = "/android")
+    public String singin2() {
+        return "singin";
+    }*/
+
+    @GetMapping(path = "/api/testsign")
     @ResponseBody
     public User test() {
         return userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication());
     }
+
+    /*@PostMapping(path = "/api/error")
+    public String error() {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+    }*/
 
     @Transactional
     @PutMapping(path = "/pass", consumes ={"application/json"})

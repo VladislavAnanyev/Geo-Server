@@ -1,7 +1,7 @@
 <#import "parts/common.ftl" as c>
 <@c.page>
 
-    <form action="/api/register" method="post">
+    <form action="/register" method="post">
         <title>Регистрация</title>
         <div class="form-row">
             <div class="col-md-6 mb-3">

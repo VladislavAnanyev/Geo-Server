@@ -60,7 +60,7 @@
                     <button onclick="checkAnswerSession(${testList.id?c})" type="submit" class="btn btn-primary ml-3 mb-3">Приступить к выполнению</button>
 
                 <#else>
-                    <form method="get" action="/api/quizzes/${testList.id?c}/solve/" class="form-inline">
+                    <form method="get" action="/quizzes/${testList.id?c}/solve/" class="form-inline">
                         <button type="submit" class="btn btn-primary ml-3 mb-3">Приступить к выполнению</button>
                     </form>
                 </#if>
@@ -85,13 +85,13 @@
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <form method="get" action="/api/quizzes/${testList.id?c}/solve">
+                                <form method="get" action="/quizzes/${testList.id?c}/solve">
 <#--                                    <input type="hidden" name="restore" value="false"/>-->
                                     <button type="submit"  <#--onclick="restoreSession(false, ${testList.id?c})"--> class="btn btn-secondary" <#--data-dismiss="modal"-->>Нет</button>
 
                                 </form>
 
-                                <form method="get" action="/api/quizzes/${testList.id?c}/solve">
+                                <form method="get" action="/quizzes/${testList.id?c}/solve">
 
                                     <input type="hidden" name="restore" value="true"/>
                                     <button type="submit" <#--onclick="restoreSession(true, ${testList.id?c})"--> class="btn btn-primary">Да</button>

@@ -19,7 +19,7 @@
                 <a class="nav-link" href="/reg">Регистрация</a>
             </li>-->
             <li class="nav-item mt-1">
-                <a class="nav-link" href="/api/quizzes">Все викторины</a>
+                <a class="nav-link" href="/quizzes">Все викторины</a>
             </li>
             <#--<li class="nav-item">
                 <a class="nav-link" href="">Завершённые</a>
