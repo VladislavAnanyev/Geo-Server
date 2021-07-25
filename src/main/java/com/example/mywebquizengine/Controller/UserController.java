@@ -12,6 +12,7 @@ import freemarker.template.TemplateModelException;
 import org.aspectj.lang.annotation.After;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -24,8 +25,11 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.util.WebUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.io.File;
@@ -152,9 +156,11 @@ public class UserController {
         return "singin";
     }*/
 
-    @GetMapping(path = "/api/testsign")
+    @PostMapping(path = "/api/testsign")
     @ResponseBody
-    public User test() {
+    public User test(/*HttpServletRequest httpServletRequest*/) {
+
+        //System.out.println(WebUtils.getCookie(httpServletRequest, "SESSION").getValue());
         return userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication());
     }
 
@@ -269,6 +275,7 @@ public class UserController {
         //geolocation.setId(geolocation.getUser().getUsername());
         userService.saveGeo(geolocation);
         ArrayList<Geolocation> arrayList = userService.getAllGeo();
+
         return arrayList;
     }
 }

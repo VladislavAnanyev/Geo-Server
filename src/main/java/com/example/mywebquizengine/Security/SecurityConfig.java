@@ -73,7 +73,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .and()
                     .formLogin()
 
-                    .loginPage("/api/signin").defaultSuccessUrl("/api/testsign").and().logout().logoutUrl("/api/logout").permitAll()
+                    .loginPage("/api/signin").successForwardUrl("/api/testsign").and().logout().logoutUrl("/api/logout").permitAll()
 
                     .and().oauth2Login().defaultSuccessUrl("/loginSuccess")
                     .permitAll()
