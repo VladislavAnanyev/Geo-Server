@@ -4,13 +4,9 @@ import com.example.mywebquizengine.Model.*;
 import com.example.mywebquizengine.Service.JWTUtil;
 import com.example.mywebquizengine.Service.PaymentServices;
 import com.example.mywebquizengine.Service.UserService;
-import freemarker.template.Configuration;
-import freemarker.template.TemplateExceptionHandler;
 import freemarker.template.TemplateModelException;
-import org.aspectj.lang.annotation.After;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,25 +18,20 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.util.WebUtils;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
-import java.io.File;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.UUID;
 
 
@@ -164,11 +155,26 @@ public class UserController {
 
     @PostMapping(path = "/api/authuser")
     @ResponseBody
-    public String test(/*HttpServletRequest httpServletRequest*/) {
+    public User test() {
+
+
+        final String authorizationHeader = ((ServletRequestAttributes)RequestContextHolder.getRequestAttributes())
+                .getRequest().getHeader("Authorization");
+        String username = null;
+        String jwt = null;
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            jwt = authorizationHeader.substring(7);
+            //если подпись не совпадает с вычисленной, то SignatureException
+            //если подпись некорректная (не парсится), то MalformedJwtException
+            //если время подписи истекло, то ExpiredJwtException
+            username = jwtTokenUtil.extractUsername(jwt);
+        }
+
+
 
         //System.out.println(WebUtils.getCookie(httpServletRequest, "SESSION").getValue());
         //return userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication());
-        return "Успех";
+        return userService.reloadUser(username);
         /*Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getName(), authRequest.getPassword()));
@@ -181,6 +187,14 @@ public class UserController {
         return new AuthResponse(jwt);*/
     }
 
+    @PostMapping(path = "/api/testauthuser")
+    @ResponseBody
+    public String test2() {
+
+
+        return "Успех";
+    }
+
     @PostMapping(path = "/api/signin")
     @ResponseBody
     public AuthResponse jwt(/*HttpServletRequest httpServletRequest*/@RequestBody AuthRequest authRequest) {
@@ -189,7 +203,7 @@ public class UserController {
         //return userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication());
         Authentication authentication;
         try {
-            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getName(), authRequest.getPassword()));
+            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
             System.out.println(authentication);
         } catch (BadCredentialsException e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Имя или пароль неправильны", e);
