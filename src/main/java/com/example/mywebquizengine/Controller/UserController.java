@@ -1,9 +1,7 @@
 package com.example.mywebquizengine.Controller;
 
-import com.example.mywebquizengine.Model.Geolocation;
-import com.example.mywebquizengine.Model.Order;
-import com.example.mywebquizengine.Model.Role;
-import com.example.mywebquizengine.Model.User;
+import com.example.mywebquizengine.Model.*;
+import com.example.mywebquizengine.Service.JWTUtil;
 import com.example.mywebquizengine.Service.PaymentServices;
 import com.example.mywebquizengine.Service.UserService;
 import freemarker.template.Configuration;
@@ -15,8 +13,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -60,6 +62,10 @@ public class UserController {
     @Value("${notification-secret}")
     String notification_secret;
 
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+    private JWTUtil jwtTokenUtil;
 
     @Autowired
     private QuizController quizController;
@@ -156,12 +162,41 @@ public class UserController {
         return "singin";
     }*/
 
-    @PostMapping(path = "/api/testsign")
+    @PostMapping(path = "/api/authuser")
     @ResponseBody
-    public User test(/*HttpServletRequest httpServletRequest*/) {
+    public String test(/*HttpServletRequest httpServletRequest*/) {
 
         //System.out.println(WebUtils.getCookie(httpServletRequest, "SESSION").getValue());
-        return userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication());
+        //return userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication());
+        return "Успех";
+        /*Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getName(), authRequest.getPassword()));
+            System.out.println(authentication);
+        } catch (BadCredentialsException e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Имя или пароль неправильны", e);
+        }
+        // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
+        String jwt = jwtTokenUtil.generateToken((UserDetails) authentication.getPrincipal());
+        return new AuthResponse(jwt);*/
+    }
+
+    @PostMapping(path = "/api/signin")
+    @ResponseBody
+    public AuthResponse jwt(/*HttpServletRequest httpServletRequest*/@RequestBody AuthRequest authRequest) {
+
+        //System.out.println(WebUtils.getCookie(httpServletRequest, "SESSION").getValue());
+        //return userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication());
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getName(), authRequest.getPassword()));
+            System.out.println(authentication);
+        } catch (BadCredentialsException e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Имя или пароль неправильны", e);
+        }
+        // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
+        String jwt = jwtTokenUtil.generateToken((UserDetails) authentication.getPrincipal());
+        return new AuthResponse(jwt);
     }
 
     /*@PostMapping(path = "/api/error")

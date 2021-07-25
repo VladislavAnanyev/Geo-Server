@@ -61,6 +61,9 @@ dependencies {
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '2.5.0'
 // https://mvnrepository.com/artifact/commons-codec/commons-codec
     implementation group: 'commons-codec', name: 'commons-codec', version: '1.7'
+    // https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt
+    implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
+
 
 
     // https://mvnrepository.com/artifact/javax.inject/javax.inject
