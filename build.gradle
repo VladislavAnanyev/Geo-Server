@@ -7,16 +7,12 @@ buildscript {
 
 plugins {
 
-    //id 'com.vaadin' version '0.14.3.7'
     id 'org.springframework.boot' version '2.1.17.RELEASE'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
     id "org.flywaydb.flyway" version "7.0.2"
 
-
 }
-
-
 
 apply plugin: 'io.spring.dependency-management'
 
@@ -31,13 +27,8 @@ configurations {
     }
 }
 
-/*ext {
-    set('vaadinVersion', "14.6.1")
-}*/
-
 repositories {
     mavenCentral()
-    //maven { url "https://maven.vaadin.com/vaadin-addons" }
 }
 
 dependencyManagement {
@@ -86,7 +77,7 @@ dependencies {
 
 // https://mvnrepository.com/artifact/org.freemarker/freemarker
     implementation group: 'org.freemarker', name: 'freemarker', version: '2.3.31'
-    runtimeOnly 'com.h2database:h2'
+    implementation 'com.h2database:h2'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     testImplementation('org.springframework.boot:spring-boot-starter-test') {

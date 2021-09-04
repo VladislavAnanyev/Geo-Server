@@ -172,10 +172,7 @@ public class QuizController {
         }
     }
 
-    @GetMapping("/geo")
-    public String geo() {
-        return "geo";
-    }
+
 
     @GetMapping(path = "/")
     public String home(Model model, HttpServletRequest request) throws TemplateModelException, IOException, GeoIp2Exception {

@@ -89,8 +89,8 @@ public class UserService implements UserDetailsService {
     }
 
 
-    public ArrayList<Geolocation> getAllGeo() {
-        return (ArrayList<Geolocation>) geolocationRepository.getAll();
+    public ArrayList<Geolocation> getAllGeo(String username) {
+        return (ArrayList<Geolocation>) geolocationRepository.getAll(username);
     }
 
 

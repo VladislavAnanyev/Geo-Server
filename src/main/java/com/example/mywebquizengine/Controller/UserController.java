@@ -1,6 +1,7 @@
 package com.example.mywebquizengine.Controller;
 
 import com.example.mywebquizengine.Model.*;
+import com.example.mywebquizengine.Repos.GeolocationRepository;
 import com.example.mywebquizengine.Service.JWTUtil;
 import com.example.mywebquizengine.Service.PaymentServices;
 import com.example.mywebquizengine.Service.UserService;
@@ -54,9 +55,8 @@ public class UserController {
     String notification_secret;
 
     @Autowired
-    private AuthenticationManager authenticationManager;
-    @Autowired
-    private JWTUtil jwtTokenUtil;
+    private GeolocationRepository geolocationRepository;
+
 
     @Autowired
     private QuizController quizController;
@@ -153,65 +153,7 @@ public class UserController {
         return "singin";
     }*/
 
-    @PostMapping(path = "/api/authuser")
-    @ResponseBody
-    public User test() {
 
-
-        final String authorizationHeader = ((ServletRequestAttributes)RequestContextHolder.getRequestAttributes())
-                .getRequest().getHeader("Authorization");
-        String username = null;
-        String jwt = null;
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            jwt = authorizationHeader.substring(7);
-            //если подпись не совпадает с вычисленной, то SignatureException
-            //если подпись некорректная (не парсится), то MalformedJwtException
-            //если время подписи истекло, то ExpiredJwtException
-            username = jwtTokenUtil.extractUsername(jwt);
-        }
-
-
-
-        //System.out.println(WebUtils.getCookie(httpServletRequest, "SESSION").getValue());
-        //return userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication());
-        return userService.reloadUser(username);
-        /*Authentication authentication;
-        try {
-            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getName(), authRequest.getPassword()));
-            System.out.println(authentication);
-        } catch (BadCredentialsException e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Имя или пароль неправильны", e);
-        }
-        // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
-        String jwt = jwtTokenUtil.generateToken((UserDetails) authentication.getPrincipal());
-        return new AuthResponse(jwt);*/
-    }
-
-    @PostMapping(path = "/api/testauthuser")
-    @ResponseBody
-    public String test2() {
-
-
-        return "Успех";
-    }
-
-    @PostMapping(path = "/api/signin")
-    @ResponseBody
-    public AuthResponse jwt(/*HttpServletRequest httpServletRequest*/@RequestBody AuthRequest authRequest) {
-
-        //System.out.println(WebUtils.getCookie(httpServletRequest, "SESSION").getValue());
-        //return userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication());
-        Authentication authentication;
-        try {
-            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
-            System.out.println(authentication);
-        } catch (BadCredentialsException e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Имя или пароль неправильны", e);
-        }
-        // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
-        String jwt = jwtTokenUtil.generateToken((UserDetails) authentication.getPrincipal());
-        return new AuthResponse(jwt);
-    }
 
     /*@PostMapping(path = "/api/error")
     public String error() {
@@ -317,14 +259,5 @@ public class UserController {
 
     // UserService is required because this method is static, but UserService non-static
 
-    @PostMapping(path = "/sendGeolocation")
-    @ResponseBody
-    public ArrayList<Geolocation> sendGeolocation(@RequestBody Geolocation geolocation) {
-        geolocation.setUser(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()));
-        //geolocation.setId(geolocation.getUser().getUsername());
-        userService.saveGeo(geolocation);
-        ArrayList<Geolocation> arrayList = userService.getAllGeo();
 
-        return arrayList;
-    }
 }

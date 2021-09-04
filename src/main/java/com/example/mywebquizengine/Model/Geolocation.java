@@ -16,24 +16,24 @@ public class Geolocation {
     @JoinColumn(name = "username")
     private User user;
 
-    private String lat;
-    private String lng;
+    private Double lat;
+    private Double lng;
 
     public Geolocation() {}
 
-    public String getLat() {
+    public Double getLat() {
         return lat;
     }
 
-    public String getLng() {
+    public Double getLng() {
         return lng;
     }
 
-    public void setLat(String lat) {
+    public void setLat(Double lat) {
         this.lat = lat;
     }
 
-    public void setLng(String lng) {
+    public void setLng(Double lng) {
         this.lng = lng;
     }
 
