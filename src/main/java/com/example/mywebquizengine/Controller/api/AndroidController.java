@@ -12,9 +12,10 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -22,6 +23,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 public class AndroidController {
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -47,7 +51,7 @@ public class AndroidController {
             username = jwtTokenUtil.extractUsername(jwt);
         }
 
-        return userService.reloadUser(username);
+        return userService.loadUserByUsername(username);
     }
 
 
@@ -57,7 +61,7 @@ public class AndroidController {
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
-            System.out.println(authentication);
+            //System.out.println(authentication);
         } catch (BadCredentialsException e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Имя или пароль неправильны", e);
         }
@@ -65,4 +69,53 @@ public class AndroidController {
         String jwt = jwtTokenUtil.generateToken((UserDetails) authentication.getPrincipal());
         return new AuthResponse(jwt);
     }
+
+    /*@PostMapping(path = "/api/googleauth")
+    public AuthResponse googleJwt(@RequestBody User user) {
+
+        *//*try {
+            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+            System.out.println(authentication);
+        } catch (BadCredentialsException e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Имя или пароль неправильны", e);
+        }*//*
+
+        userService.tryToSaveUser(user);
+
+        // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
+        String jwt = jwtTokenUtil.generateToken(userService.reloadUser(user.getUsername()));
+        return new AuthResponse(jwt);
+    }*/
+
+
+    @PostMapping(path = "/api/signup")
+    public AuthResponse signup(@RequestBody User user) {
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        userService.saveUser(user);
+
+        // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
+        String jwt = jwtTokenUtil.generateToken(userService.loadUserByUsername(user.getUsername()));
+        return new AuthResponse(jwt);
+    }
+
+
+    @PostMapping(path = "/api/googleauth")
+    public AuthResponse googleJwt(@RequestBody Authentication authentication) {
+
+        /*try {
+            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+            System.out.println(authentication);
+        } catch (BadCredentialsException e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Имя или пароль неправильны", e);
+        }*/
+        User user = userService.castToUser((OAuth2AuthenticationToken) authentication);
+
+        userService.tryToSaveUser(user);
+
+        // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
+        String jwt = jwtTokenUtil.generateToken(userService.loadUserByUsername(user.getUsername()));
+        return new AuthResponse(jwt);
+    }
+
 }

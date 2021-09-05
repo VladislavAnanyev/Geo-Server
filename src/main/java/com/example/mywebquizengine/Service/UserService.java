@@ -1,6 +1,5 @@
 package com.example.mywebquizengine.Service;
 
-import com.example.mywebquizengine.Controller.UserController;
 import com.example.mywebquizengine.Model.Geolocation;
 import com.example.mywebquizengine.Model.Role;
 import com.example.mywebquizengine.Model.User;
@@ -10,8 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -20,9 +17,7 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.transaction.Transactional;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -43,7 +38,7 @@ public class UserService implements UserDetailsService {
     private GeolocationRepository geolocationRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public User /*UserDetails*/ loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> user = userRepository.findById(username);
 
 
@@ -107,16 +102,7 @@ public class UserService implements UserDetailsService {
     }
 
 
-    public User reloadUser(String username) {
-        Optional<User> user = userRepository.findById(username);
 
-        if (user.isPresent()) {
-            return user.get();
-        } else {
-            throw new UsernameNotFoundException(String.format("Username[%s] not found",username));
-        }
-
-    }
 
     public User getUserProxy(String username) {
         return userRepository.getOne(username);
@@ -137,9 +123,6 @@ public class UserService implements UserDetailsService {
 
     public User getUserViaChangePasswordCode(String changePasswordCode) {
 
-
-
-
         if (userRepository.findByChangePasswordCode(changePasswordCode).isPresent()) {
             return userRepository.findByChangePasswordCode(changePasswordCode).get();
         } else {
@@ -151,6 +134,7 @@ public class UserService implements UserDetailsService {
     public void tryToSaveUser(User user) {
 
         if (!userRepository.findById(user.getUsername()).isPresent()) {
+            doInitialize(user);
             userRepository.save(user);
         }
 
@@ -161,8 +145,6 @@ public class UserService implements UserDetailsService {
         User user = new User();
 
         if (authentication.getAuthorizedClientRegistrationId().equals("google")) {
-
-
 
             String username = ((String) authentication.getPrincipal().getAttributes()
                     .get("email")).replace("@gmail.com", "");
@@ -175,7 +157,6 @@ public class UserService implements UserDetailsService {
             user.setFirstName((String) authentication.getPrincipal().getAttributes().get("given_name"));
             user.setLastName((String) authentication.getPrincipal().getAttributes().get("family_name"));
 
-            user.setStatus(true);
             user.setUsername(((String) authentication.getPrincipal().getAttributes()
                     .get("email")).replace("@gmail.com", ""));
 
@@ -184,7 +165,6 @@ public class UserService implements UserDetailsService {
 
     } else if (authentication.getAuthorizedClientRegistrationId().equals("github")) {
             user.setUsername(authentication.getPrincipal().getAttributes().get("login").toString());
-            user.setStatus(false);
             user.setFirstName(authentication.getPrincipal().getAttributes().get("name").toString());
             user.setLastName(authentication.getPrincipal().getAttributes().get("name").toString());
 
@@ -195,13 +175,22 @@ public class UserService implements UserDetailsService {
             }
         }
 
-        user.setAvatar("default");
+        //doInitialize(user);
+
+        return user;
+    }
+
+    public void doInitialize(User user) {
+        if (user.getAvatar() == null) {
+            user.setAvatar("default");
+        }
+
         user.setEnabled(true);
+        user.setStatus(true);
+        user.setBalance(0);
 
         user.grantAuthority(Role.ROLE_USER);
         user.setChangePasswordCode(UUID.randomUUID().toString());
-
-        return user;
     }
 
 
@@ -255,7 +244,7 @@ public class UserService implements UserDetailsService {
             name = user.getUsername();
         }
 
-        return reloadUser(name);
+        return loadUserByUsername(name);
     }
 
 

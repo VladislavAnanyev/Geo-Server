@@ -2,6 +2,7 @@ package com.example.mywebquizengine.Controller;
 
 import com.example.mywebquizengine.Model.Geolocation;
 import com.example.mywebquizengine.Model.Meeting;
+import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.GeolocationRepository;
 import com.example.mywebquizengine.Repos.MeetingRepository;
 import com.example.mywebquizengine.Service.UserService;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
@@ -115,18 +117,24 @@ public class GeoController {
 
 
     @GetMapping(path = "/meetings")
-    @ResponseBody
-    public ArrayList<Meeting> getMyMeetings() {
+    public String getMyMeetings(Model model) {
 
+        User authUser = userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication());
+
+        model.addAttribute("myUsername", authUser.getUsername());
         Calendar calendar = new GregorianCalendar();
         Timestamp date = Timestamp.from(calendar.toInstant());
 
         //ArrayList<Geolocation> peopleNearMe = findInSquare(SecurityContextHolder.getContext().getAuthentication(),"20");
 
-        return (ArrayList<Meeting>) meetingRepository.getMyMeetingsToday(userService.getAuthUserNoProxy
+        model.addAttribute("meetings", meetingRepository.getMyMeetingsToday(authUser.getUsername(),
+                date.toString().substring(0,10) + " 00:00:00",
+                date.toString().substring(0,10) + " 23:59:59"));
+        /*return (ArrayList<Meeting>) meetingRepository.getMyMeetingsToday(userService.getAuthUserNoProxy
                 (SecurityContextHolder.getContext().getAuthentication()).getUsername(),
                         date.toString().substring(0,10) + " 00:00:00",
-                date.toString().substring(0,10) + " 23:59:59");
+                date.toString().substring(0,10) + " 23:59:59");*/
+        return "meetings";
     }
 
 }

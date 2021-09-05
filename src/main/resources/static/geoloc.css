@@ -1,6 +1,5 @@
 .container {
     max-width: 980px;
-    text-align: center;
     margin: 20px auto;
 }
 
@@ -42,15 +41,15 @@ h1 {
 
 .map-overlay {
     max-width: 600px;
-    height: 400px;
+    height: 200px;
     margin: 0 auto;
     background-color: #fff;
     position: relative;
     border-radius: 2px;
 }
 
-#map {
+.map {
     max-width: 550px;
-    height: 400px;
+    height: 200px;
     margin: 0 auto;
 }

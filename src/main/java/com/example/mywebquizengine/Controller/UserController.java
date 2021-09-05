@@ -2,29 +2,20 @@ package com.example.mywebquizengine.Controller;
 
 import com.example.mywebquizengine.Model.*;
 import com.example.mywebquizengine.Repos.GeolocationRepository;
-import com.example.mywebquizengine.Service.JWTUtil;
 import com.example.mywebquizengine.Service.PaymentServices;
 import com.example.mywebquizengine.Service.UserService;
 import freemarker.template.TemplateModelException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
@@ -113,7 +104,7 @@ public class UserController {
     @PostMapping(path = "/update/userinfo/pswrdwithoutauth", consumes ={"application/json"} )
     public void tryToChangePassWithoutAuth(@RequestBody User in) {
 
-        User user = userService.reloadUser(in.getUsername());
+        User user = userService.loadUserByUsername(in.getUsername());
 
 
         userService.sendCodeForChangePassword(user);
@@ -199,7 +190,7 @@ public class UserController {
 
     @GetMapping(path = "/about/{username}")
     public String getInfoAboutUser(Model model, @PathVariable String username) {
-        User user = userService.reloadUser(username);
+        User user = userService.loadUserByUsername(username);
         model.addAttribute("user", user);
         return "user";
     }

@@ -15,7 +15,6 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -65,7 +64,7 @@ public class ChatController {
 
         if (userRepository.findById(username).isPresent()) {
 
-            model.addAttribute("user", userService.reloadUser(username));
+            model.addAttribute("user", userService.loadUserByUsername(username));
             model.addAttribute("messages", messageService.
                     getMessages(user.getUsername(), username));
 
@@ -99,7 +98,7 @@ public class ChatController {
     @SendTo("/topic/{userId}")
     public Message sendMessage(@Payload Message message) {
 
-        User user = userService.reloadUser(message.getSender().getUsername());
+        User user = userService.loadUserByUsername(message.getSender().getUsername());
 
         // Persistence Bag. Используется костыль
         // для корректного отображения (тесты не инициализируются автоматически)
@@ -107,7 +106,7 @@ public class ChatController {
 
         message.setSender(user);
 
-        User recipient = userService.reloadUser(message.getRecipient().getUsername());
+        User recipient = userService.loadUserByUsername(message.getRecipient().getUsername());
         //recipient.setTests(new ArrayList<>());
         message.setRecipient(recipient);
 

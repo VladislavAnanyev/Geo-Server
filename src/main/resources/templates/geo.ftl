@@ -25,7 +25,7 @@
     <p class="coordinates">Latitude: <b class="latitude">42</b> Longitude: <b class="longitude">32</b></p>
 
     <div class="map-overlay">
-        <div id="map"></div>
+        <div class="map" id="map"></div>
     </div>
 
 </div>
