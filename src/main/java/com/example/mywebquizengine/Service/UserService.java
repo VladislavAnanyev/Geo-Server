@@ -59,6 +59,7 @@ public class UserService implements UserDetailsService {
         } else {
             user.setActivationCode(UUID.randomUUID().toString());
             user.setChangePasswordCode(UUID.randomUUID().toString());
+            doInitialize(user);
             userRepository.save(user);
             loadUserByUsername(user.getUsername());
 
@@ -175,6 +176,7 @@ public class UserService implements UserDetailsService {
             }
         }
 
+        user.setStatus(true);
         //doInitialize(user);
 
         return user;
@@ -186,7 +188,7 @@ public class UserService implements UserDetailsService {
         }
 
         user.setEnabled(true);
-        user.setStatus(true);
+        user.setStatus(false);
         user.setBalance(0);
 
         user.grantAuthority(Role.ROLE_USER);
