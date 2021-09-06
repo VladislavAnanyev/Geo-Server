@@ -99,6 +99,11 @@ dependencies {
     //compile 'org.apache.commons:commons-pool2'
     compile 'org.springframework.session:spring-session-core:2.0.0.RELEASE'
     compile 'org.springframework.session:spring-session-jdbc:2.0.0.RELEASE'
+    compile 'com.google.api-client:google-api-client:1.31.5'
+
+    // https://mvnrepository.com/artifact/com.google.api-client/google-api-client-jackson2
+    implementation group: 'com.google.api-client', name: 'google-api-client-jackson2', version: '1.32.1'
+    compile 'com.google.http-client:google-http-client-jackson:1.15.0-rc'
 
     // https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api
 /*    compileOnly group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1'

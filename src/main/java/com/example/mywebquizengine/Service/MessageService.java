@@ -1,11 +1,14 @@
 package com.example.mywebquizengine.Service;
 
-import com.example.mywebquizengine.Model.Chat.Group;
+
+import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Chat.Message;
 import com.example.mywebquizengine.Model.User;
-import com.example.mywebquizengine.Repos.GroupRepository;
+
+import com.example.mywebquizengine.Repos.DialogRepository;
 import com.example.mywebquizengine.Repos.MessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,11 +21,16 @@ public class MessageService {
     @Autowired
     MessageRepository messageRepository;
 
+
     @Autowired
-    GroupRepository groupRepository;
+    private DialogRepository dialogRepository;
 
     @Autowired
     private UserService userService;
+
+
+
+
 
     public ArrayList<Message> getMessages(String sent, String received) {
         return (ArrayList<Message>) messageRepository.getMessagesByUsername(sent, received);
@@ -32,15 +40,38 @@ public class MessageService {
         return (ArrayList<Message>) messageRepository.getMessagesByGroup(group);
     }
 
-    public void saveGroup(Group group) {
+/*    public void saveGroup(Group group) {
         groupRepository.save(group);
-    }
+    }*/
 
     public void saveMessage(Message message) {
         messageRepository.save(message);
     }
 
+    public Dialog tryToSaveDialog(Dialog dialog) {
+        if (!dialogRepository.findById(dialog.getDialog_id()).isPresent()) {
+            dialogRepository.save(dialog);
+        }
+        return dialogRepository.findById(dialog.getDialog_id()).get();
+
+    }
+
+    public Long checkDialog(User user) {
+        return dialogRepository.findDialogByName(user.getUsername(),
+                userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()).getUsername());
+    }
+
+    public void checkDialog(Dialog dialog) {
+        if (!dialogRepository.findById(dialog.getDialog_id()).isPresent()) {
+            dialogRepository.save(dialog);
+        }
+    }
+
     public List<Message> getDialogs(String username) {
+        return messageRepository.getDialogs(username);
+    }
+
+    /*public List<Message> getDialogs(String username) {
        List<String> lastTime = messageRepository.getTimeLastMessagesByUsername(username);
        List<Message> dialogs = new ArrayList<>();
        List<Message> dialogsTemp = new ArrayList<>();
@@ -84,5 +115,5 @@ public class MessageService {
 
 
         return dialogs;
-    }
+    }*/
 }

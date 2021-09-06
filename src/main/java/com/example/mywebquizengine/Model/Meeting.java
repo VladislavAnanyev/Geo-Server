@@ -3,7 +3,7 @@ package com.example.mywebquizengine.Model;
 import javax.persistence.*;
 import java.util.Calendar;
 
-@Entity
+@Entity(name = "MEETINGS")
 public class Meeting {
 
     @Id

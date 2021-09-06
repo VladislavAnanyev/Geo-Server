@@ -26,6 +26,7 @@
 <script src="../static/custom.js"></script>
 <script src="../static/activeChat.js"></script>
 <script src="../static/createGroup.js"></script>
+<script src="../static/newActiveDialog.js"></script>
 <#--<script src="/static/getUserList.js"></script>-->
 <script>connect()</script>
 
@@ -98,11 +99,12 @@
                 <div class="inbox_chat" id="dialogs">
 
                         <#list lastDialogs?if_exists as dialog>
-                            <#if dialog.recipient.username == myUsername.username>
-                                <div id="${dialog.sender.username}" onclick="activeChat('${dialog.sender.username?string}')"  class="chat_list <#--active_chat-->">
+                            <#if dialog.sender.username != myUsername.username>
+
+                                <div id="${dialog.dialog.dialog_id?c}" <#--последнее сообщение не от меня--> onclick="writeMsgFromChat('${dialog.sender.username?string}')"  class="chat_list <#--active_chat-->">
                                     <div class="chat_people">
                                         <div class="chat_img"> <img class="rounded-circle" src="<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialog.sender.avatar}.jpg" alt="sunil"> </div>
-                                        <div class="chat_ib">
+                                        <div class="chat_ib последнее сообщение не от меня">
                                             <h5 class="dialogsuser">${dialog.sender.username}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
                                             <p id="lastMsg${dialog.sender.username}">${dialog.content}</p>
                                         </div>
@@ -110,12 +112,18 @@
                                 </div>
                             <#else>
 
-                                <div id="${dialog.recipient.username}" onclick="activeChat(${dialog.recipient.username})"  class="chat_list <#--active_chat-->">
+                                <#if dialog.dialog.users?first.username = myUsername.username >
+                                    <#assign o = dialog.dialog.users?last>
+                                <#else>
+                                    <#assign o = dialog.dialog.users?first>
+                                </#if>
+
+                                <div id="${dialog.dialog.dialog_id?c}" <#--последнее сообщение от меня--> onclick="writeMsgFromChat('${o.username}')"  class="chat_list <#--active_chat-->">
                                     <div class="chat_people">
-                                        <div class="chat_img"> <img class="rounded-circle" src="<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialog.recipient.avatar}.jpg" alt="sunil"> </div>
-                                        <div class="chat_ib">
-                                            <h5 class="dialogsuser">${dialog.recipient.username}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
-                                            <p id="lastMsg${dialog.recipient.username}">${dialog.content}</p>
+                                        <div class="chat_img"> <img class="rounded-circle" src="<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${o.avatar}.jpg" alt="sunil"> </div>
+                                        <div class="chat_ib последнее сообщение от меня">
+                                            <h5 class="dialogsuser">${o.username}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
+                                            <p id="lastMsg${o.username}">${dialog.content}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -125,12 +133,12 @@
 
 <#--                </div>-->
 
-                    <#if user??>
+                    <#if dialog??>
                     <script type="text/javascript">
                         function funonload() {
 
-                                if (location.href.includes('/chat/${user.username}')) {
-                                    let id = document.getElementById("${user.username}");
+                                if (location.href.includes('/chat/${dialog?c}')) {
+                                    let id = document.getElementById("${dialog?c}");
                                     id.setAttribute('class', "chat_list active_chat")
                                 }
 
@@ -175,26 +183,26 @@
 
 
                 </div>
-                <#if user??>
+                <#if dialog??>
                 <div class="type_msg">
                     <div class="input_msg_write">
                         <input type="text" class="write_msg" id="inputtext" placeholder="Type a message" />
                         <#--<button onclick="sendMsg('${user.username}')" class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>-->
 
-                        <button onclick="sendMessage('${name}', '${user.username}')" class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
+                        <button onclick="sendMessage('${name}', '${dialog?c}')" class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
 
                     </div>
                 </div>
 
-                    <#else>
+                    <#--<#else>
 
                     <div class="type_msg">
                         <div class="input_msg_write">
                             <input type="text" class="write_msg" id="inputtext" placeholder="Type a message" />
-                            <#--<button onclick="sendMsg('${user.username}')" class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>-->
+                            &lt;#&ndash;<button onclick="sendMsg('${user.username}')" class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>&ndash;&gt;
                             <button onclick="sendMessage('${name}', 'null')" class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
                         </div>
-                    </div>
+                    </div>-->
 
 
 
@@ -208,55 +216,76 @@
     </div>
 </div>
 
-<#if user??>
+
+
+<#if dialog?? >
+
+
+    <#if dialogObj.users?first.username = myUsername.username >
+        <#assign c = dialogObj.users?last>
+    <#else>
+        <#assign c = dialogObj.users?first>
+    </#if>
+
 <script>
     let dialog = document.getElementById("dialogs")
     let div2 = document.createElement("div")
-    let dialogsName = document.getElementsByClassName("dialogsuser")
+    let dialogsName = document.getElementsByClassName("chat_list")
+
     let dialogsNameArr = []
 
 
-    div2.setAttribute('id', "${user.username}")
+    div2.setAttribute('id', "${dialog?c}")
     div2.setAttribute('class', "chat_list")
 
 
 
     for (let i = 0; i < dialogsName.length; i++) {
-        dialogsNameArr.push(dialogsName[i].textContent)
-        console.log(dialogsName[i].textContent)
+        dialogsNameArr.push(dialogsName[i].id)
+        console.log(dialogsName[i].id)
     }
     //div2.setAttribute('class', "inbox_chat")
     div2.innerHTML =
         "                                    <div class=\"chat_people\">\n" +
-        "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" src=\"<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${user.avatar}.jpg\" alt=\"sunil\"> </div>\n" +
+        "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" src=\"<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${c.avatar}.jpg\" alt=\"sunil\"> </div>\n" +
         "                                        <div class=\"chat_ib\">\n" +
-        "                                            <h5 class=\"dialogsuser\">${user.username}<span class=\"chat_date\"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>\n" +
+        "                                            <h5 class=\"dialogsuser\">${c.username}<span class=\"chat_date\"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>\n" +
         "                                            <p></p>\n" +
         "                                        </div>\n" +
         "                                    </div>\n" +
         "                                </div>"
 
-    console.log(dialogsNameArr.indexOf("${user.username}"))
-    if (dialogsNameArr.indexOf("${user.username}") == -1) {
+    console.log(dialogsNameArr.indexOf("${dialog?c}"))
+    if (dialogsNameArr.indexOf("${dialog?c}") == -1) {
     dialog.prepend(div2)
 
 
     }
 
-    var div3 = $("#msg");
-    div3.scrollTop(div3.prop('scrollHeight'));
-</script>
-
-
-<script>
-    document.addEventListener("keypress", function(e) {
-        let messageInput = document.getElementById("inputtext");
-        if (e.key === "Enter" && messageInput.value !== ' '){
-            sendMessage('${name}', '${user.username}')
-        }
-    });
 
 </script>
+
+
+
+</#if>
+
+<#if dialog??>
+
+
+
+    <script>
+
+        var div3 = $("#msg");
+        div3.scrollTop(div3.prop('scrollHeight'));
+
+        document.addEventListener("keypress", function(e) {
+            let messageInput = document.getElementById("inputtext");
+            if (e.key === "Enter" && messageInput.value !== ' '){
+                sendMessage('${name}', '${dialog?c}')
+            }
+        });
+
+    </script>
 </#if>
 
 </body>

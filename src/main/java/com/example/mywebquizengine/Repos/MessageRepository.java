@@ -21,4 +21,15 @@ public interface MessageRepository extends CrudRepository<Message, Integer> {
 
     @Query(value = "SELECT MAX(TIMESTAMP) FROM MESSAGES WHERE RECIPIENT_USERNAME = :username OR SENDER_USERNAME = :username GROUP BY RECIPIENT_USERNAME, SENDER_USERNAME ORDER BY (MAX(TIMESTAMP)) DESC", nativeQuery = true)
     List<String> getTimeLastMessagesByUsername(String username);
+
+    @Query(value = "SELECT DIALOG_ID FROM USERS_DIALOGS WHERE USER_ID = :username", nativeQuery = true)
+    List<Long> getMyDialogsId(String username);
+
+    @Query(value = "SELECT * FROM MESSAGES WHERE TIMESTAMP IN (SELECT MAX(TIMESTAMP)\n" +
+            "                                          FROM MESSAGES\n" +
+            "                                          GROUP BY DIALOG_ID)\n" +
+            "                         and DIALOG_ID IN ( SELECT DIALOG_ID\n" +
+            "                                            FROM USERS_DIALOGS\n" +
+            "                                            WHERE USER_ID = :username) ORDER BY TIMESTAMP DESC ", nativeQuery = true)
+    List<Message> getDialogs(String username);
 }

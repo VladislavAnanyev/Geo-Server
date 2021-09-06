@@ -1,6 +1,7 @@
 <#import "parts/common.ftl" as e>
 
 <@e.page>
+    <script src="/static/newActiveDialog.js"></script>
 <#--    <script src="/static/meetgeo.js"></script>-->
     <script src='//cdn.jsdelivr.net/gmaps4rails/2.1.2/gmaps4rails.js'> </script>
     <script src='//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore.js'> </script>
@@ -20,7 +21,7 @@
         <div class="card-body">
             <h5 class="card-title">${meeting.secondUser.firstName} ${meeting.secondUser.lastName}</h5>
             <p class="card-text">${meeting.time.time?datetime?string ["dd.MM.yyyy HH:mm:ss"]}</p>
-            <a href="../chat/${meeting.secondUser.username}" class="btn btn-primary">Написать сообщение</a>
+            <a onclick="writeMsg('${meeting.secondUser.username}')" href="../chat/${meeting.secondUser.username}" class="btn btn-primary">Написать сообщение</a>
 
         </div>
 
@@ -34,7 +35,7 @@
                     <div class="card-body">
                         <h5 class="card-title">${meeting.firstUser.firstName} ${meeting.firstUser.lastName}</h5>
                         <p class="card-text">${meeting.time.time?datetime?string ["dd.MM.yyyy HH:mm:ss"]}</p>
-                        <a href="../chat/${meeting.firstUser.username}" class="btn btn-primary">Написать сообщение</a>
+                        <a onclick="writeMsg('${meeting.firstUser.username}')" <#--href="../chat/${meeting.firstUser.username}"--> class="btn btn-primary">Написать сообщение</a>
                     </div>
 <#--                </div>-->
 

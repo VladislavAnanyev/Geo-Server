@@ -2,10 +2,12 @@
 
 <@e.page>
 
+
     <title>Профиль</title>
 <#--    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>-->
     <script src="/static/changePersonalInfo.js"></script>
     <script src="/static/changePassword.js"></script>
+    <script src="/static/newActiveDialog.js"></script>
 
 <#--    <form>-->
     <div class="form-row mt-2" id="profile">
@@ -33,6 +35,6 @@
         <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
     </div>
 
-    <button onclick="location.href = '../chat/${user.username}'" id="confirm" type="submit" class="btn btn-primary ml-2 my-1">Написать сообщение</button>
+    <button onclick="writeMsg('${user.username}')" id="confirm" type="submit" class="btn btn-primary ml-2 my-1">Написать сообщение</button>
 
 </@e.page>

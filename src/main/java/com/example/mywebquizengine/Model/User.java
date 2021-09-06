@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.Model;
 
-import com.example.mywebquizengine.Model.Chat.Group;
+import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Test.Test;
 import com.sun.istack.NotNull;
 import org.hibernate.annotations.Fetch;
@@ -15,6 +15,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -46,7 +47,7 @@ public class User implements UserDetails {
 
     private String avatar;
 
-    @ManyToMany (cascade = {
+    /*@ManyToMany (cascade = {
             CascadeType.PERSIST,
             CascadeType.MERGE
     })
@@ -54,11 +55,27 @@ public class User implements UserDetails {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "group_id")
     )
-    private List<Group> groups;
+    private List<Group> groups;*/
+
+    @ManyToMany (cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "users_dialogs",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "dialog_id")
+    )
+    private List<Dialog> dialogs = new ArrayList<>();
 
     /*@OneToMany(mappedBy = "user")
     private List<Test> tests;*/
-    
+
+    public List<Dialog> getDialogs() {
+        return dialogs;
+    }
+
+    public void setDialogs(List<Dialog> dialogs) {
+        this.dialogs = dialogs;
+    }
+
+
     @Transient
     private boolean accountNonExpired;
 
@@ -235,13 +252,13 @@ public class User implements UserDetails {
         return balance;
     }
 
-    public List<Group> getGroups() {
+/*    public List<Group> getGroups() {
         return groups;
     }
 
     public void setGroups(List<Group> groups) {
         this.groups = groups;
-    }
+    }*/
 
     /*public void setTests(List<Test> tests) {
         this.tests = tests;

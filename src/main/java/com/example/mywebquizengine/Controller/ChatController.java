@@ -1,12 +1,15 @@
 package com.example.mywebquizengine.Controller;
 
-import com.example.mywebquizengine.Model.Chat.Group;
+
+import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Chat.Message;
 import com.example.mywebquizengine.Model.Chat.MessageStatus;
 import com.example.mywebquizengine.Model.User;
+import com.example.mywebquizengine.Repos.DialogRepository;
 import com.example.mywebquizengine.Repos.UserRepository;
 import com.example.mywebquizengine.Service.MessageService;
 import com.example.mywebquizengine.Service.UserService;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -40,6 +43,9 @@ public class ChatController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private DialogRepository dialogRepository;
+
 
     @GetMapping(path = "/chat")
     public String chat(Model model, Authentication authentication) {
@@ -50,33 +56,40 @@ public class ChatController {
         return "chat";
     }
 
-    @GetMapping(path = "/chat/{username}")
-    public String chatWithUser(Model model, @PathVariable String username, Authentication authentication) {
+    @PostMapping(path = "/checkdialog")
+    @ResponseBody
+    public Long checkDialog(@RequestBody User user) {
 
-        /*try {
-            User user = userService.reloadUser(username);
-        } catch (UsernameNotFoundException e) {
-            Group group = messageService.
-        }*/
+        Long dialog_id = messageService.checkDialog(user);
+
+        if (dialog_id == null) {
+            Dialog dialog = new Dialog();
+          //  Set<User> users = new HashSet<>();
+            dialog.addUser(userService.loadUserByUsername(user.getUsername()));
+            dialog.addUser(userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()));
+//            users.add(userService.loadUserByUsername(user.getUsername()));
+//            users.add(userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()));
+            //dialog.setUsers(users);
+            dialogRepository.save(dialog);
+            return dialog.getDialog_id();
+        } else {
+            return dialog_id;
+        }
+    }
+
+    @GetMapping(path = "/chat/{dialog_id}")
+    public String chatWithUser(Model model, @PathVariable String dialog_id, Authentication authentication) {
+
+        Dialog dialog = dialogRepository.findById(Long.valueOf(dialog_id)).get();
+
         User user = userService.getAuthUser(authentication);
         model.addAttribute("myUsername", user);
         model.addAttribute("lastDialogs", messageService.getDialogs(user.getUsername()));
 
-        if (userRepository.findById(username).isPresent()) {
+        model.addAttribute("dialog", dialog.getDialog_id());
+        model.addAttribute("messages", dialog.getMessages());
 
-            model.addAttribute("user", userService.loadUserByUsername(username));
-            model.addAttribute("messages", messageService.
-                    getMessages(user.getUsername(), username));
-
-        } else {
-            model.addAttribute("messages", messageService.
-                    getMessagesInGroup(username));
-            model.addAttribute("group", username);
-        }
-
-
-
-
+        model.addAttribute("dialogObj", dialog);
 
         model.addAttribute("userList", userService.getUserList());
         return "chat";
@@ -84,11 +97,15 @@ public class ChatController {
 
     @PostMapping(path = "/createGroup")
     @ResponseBody
-    public Integer createGroup(@RequestBody Group group) {
-        group.setCreator(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()));
-        group.setImage("default");
-        messageService.saveGroup(group);
-        return group.getGroup_id();
+    public Long createGroup(@RequestBody Dialog newDialog) {
+        Dialog dialog = new Dialog();
+        for (User user: newDialog.getUsers()) {
+            dialog.addUser(user);
+        }
+        //group.setCreator(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()));
+        dialog.setImage("default");
+        dialogRepository.save(dialog);
+        return dialog.getDialog_id();
     }
 
 
@@ -106,10 +123,11 @@ public class ChatController {
 
         message.setSender(user);
 
-        User recipient = userService.loadUserByUsername(message.getRecipient().getUsername());
+        //User recipient = userService.loadUserByUsername(message.getRecipient().getUsername());
         //recipient.setTests(new ArrayList<>());
-        message.setRecipient(recipient);
+        //message.setRecipient(recipient);
 
+        message.setDialog(dialogRepository.findById(message.getDialog().getDialog_id()).get());
 
         // Устанавливается часовой пояс для хранения времени в БД постоянно по Москве
         // В БД будет сохраняться Московское время независимо от местоположения сервера/пользователя

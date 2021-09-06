@@ -12,13 +12,14 @@ import java.util.Calendar;
 
 @Entity(name = "MESSAGES")
 public class Message {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Integer id;
+
     @ManyToOne(fetch = FetchType.LAZY)
     private User sender;
-    @ManyToOne(fetch = FetchType.LAZY)
-    private User recipient;
+
     @Size(min = 1)
     private String content;
     private Calendar timestamp;
@@ -26,8 +27,8 @@ public class Message {
 
 
     @ManyToOne
-    @JoinColumn(name = "group_id")
-    private Group group;
+    @JoinColumn(name = "dialog_id")
+    private Dialog dialog;
 
     public Message() {}
 
@@ -37,14 +38,6 @@ public class Message {
 
     public void setSender(User sender) {
         this.sender = sender;
-    }
-
-    public User getRecipient() {
-        return recipient;
-    }
-
-    public void setRecipient(User recipient) {
-        this.recipient = recipient;
     }
 
     public String getContent() {
@@ -79,12 +72,12 @@ public class Message {
         this.id = id;
     }
 
-    public void setGroup(Group group) {
-        this.group = group;
+    public void setDialog(Dialog dialog) {
+        this.dialog = dialog;
     }
 
-    public Group getGroup() {
-        return group;
+    public Dialog getDialog() {
+        return dialog;
     }
 }
 

@@ -60,7 +60,7 @@ function onError(error) {
 }
 
 
-function sendMessage(sender, recipient) {
+function sendMessage(sender, dialog) {
     let messageInput = document.getElementById("inputtext");
     if (messageInput.value.length !== 0) {
 
@@ -69,9 +69,9 @@ function sendMessage(sender, recipient) {
             var chatMessage = {
                 sender: {username: sender},
                 content: messageInput.value,
-                recipient: {username: recipient}
+                dialog: {dialog_id: dialog}
             };
-            stompClient.send("/app/user/" + recipient, {}, JSON.stringify(chatMessage));
+            stompClient.send("/app/user/" + dialog, {}, JSON.stringify(chatMessage));
 
         }
 
