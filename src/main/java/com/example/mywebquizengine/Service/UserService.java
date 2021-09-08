@@ -241,6 +241,8 @@ public class UserService implements UserDetailsService {
                         .toString();
             }
 
+            
+
         } else {
             User user = (User) authentication.getPrincipal();
             name = user.getUsername();

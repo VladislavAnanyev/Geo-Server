@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.Repos;
 
+import com.example.mywebquizengine.Model.Projection.UserView;
 import com.example.mywebquizengine.Model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -16,6 +17,7 @@ public interface UserRepository extends CrudRepository<User, String>, JpaReposit
     Optional<User> findById(String s);
 
 
+    UserView findByUsername(String username);
 
     @Modifying
     @Transactional

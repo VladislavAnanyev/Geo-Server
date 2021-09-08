@@ -3,7 +3,9 @@ package com.example.mywebquizengine.Controller.api;
 import com.example.mywebquizengine.Model.AuthRequest;
 import com.example.mywebquizengine.Model.AuthResponse;
 import com.example.mywebquizengine.Model.GoogleToken;
+import com.example.mywebquizengine.Model.Projection.UserView;
 import com.example.mywebquizengine.Model.User;
+import com.example.mywebquizengine.Repos.UserRepository;
 import com.example.mywebquizengine.Service.JWTUtil;
 import com.example.mywebquizengine.Service.UserService;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
@@ -51,6 +53,9 @@ public class AndroidController {
     private AuthenticationManager authenticationManager;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private JWTUtil jwtTokenUtil;
 
     @Autowired
@@ -72,6 +77,11 @@ public class AndroidController {
         }
 
         return userService.loadUserByUsername(username);
+    }
+
+    @GetMapping(path = "/api/findbyid")
+    public UserView getUserById(@RequestParam String username) {
+        return userRepository.findByUsername(username);
     }
 
 

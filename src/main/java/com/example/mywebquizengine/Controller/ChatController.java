@@ -102,6 +102,7 @@ public class ChatController {
         for (User user: newDialog.getUsers()) {
             dialog.addUser(user);
         }
+        dialog.setName(newDialog.getName());
         //group.setCreator(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()));
         dialog.setImage("default");
         dialogRepository.save(dialog);
