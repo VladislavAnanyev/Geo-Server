@@ -2,11 +2,16 @@ package com.example.mywebquizengine.Controller.api;
 
 import com.example.mywebquizengine.Model.AuthRequest;
 import com.example.mywebquizengine.Model.AuthResponse;
+import com.example.mywebquizengine.Model.Chat.Dialog;
+import com.example.mywebquizengine.Model.Chat.Message;
 import com.example.mywebquizengine.Model.GoogleToken;
+import com.example.mywebquizengine.Model.Projection.DialogView;
 import com.example.mywebquizengine.Model.Projection.UserView;
 import com.example.mywebquizengine.Model.User;
+import com.example.mywebquizengine.Repos.DialogRepository;
 import com.example.mywebquizengine.Repos.UserRepository;
 import com.example.mywebquizengine.Service.JWTUtil;
+import com.example.mywebquizengine.Service.MessageService;
 import com.example.mywebquizengine.Service.UserService;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.HttpResponseException;
@@ -36,6 +41,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
+import java.util.List;
 
 @RestController
 public class AndroidController {
@@ -59,7 +65,21 @@ public class AndroidController {
     private JWTUtil jwtTokenUtil;
 
     @Autowired
+    private MessageService messageService;
+
+    @Autowired
+    private DialogRepository dialogRepository;
+
+    @Autowired
     private UserService userService;
+
+    @GetMapping(path = "/api/getMessagesByDialogId")
+    public DialogView getMessages(@RequestParam Long id) {
+
+        //return dialog.getMessages();
+        return dialogRepository.findDialogById(id);
+    }
+
 
     @PostMapping(path = "/api/authuser")
     public User getAuthUser() {

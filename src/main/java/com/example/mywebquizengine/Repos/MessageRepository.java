@@ -1,6 +1,8 @@
 package com.example.mywebquizengine.Repos;
 
 import com.example.mywebquizengine.Model.Chat.Message;
+import com.example.mywebquizengine.Model.Projection.MessageForStompView;
+import com.example.mywebquizengine.Model.Projection.MessageView;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -32,4 +34,6 @@ public interface MessageRepository extends CrudRepository<Message, Integer> {
             "                                            FROM USERS_DIALOGS\n" +
             "                                            WHERE USER_ID = :username) ORDER BY TIMESTAMP DESC ", nativeQuery = true)
     List<Message> getDialogs(String username);
+
+    MessageForStompView getMessageById(Integer id);
 }

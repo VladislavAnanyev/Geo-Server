@@ -2,6 +2,9 @@ package com.example.mywebquizengine.Model.Chat;
 
 
 import com.example.mywebquizengine.Model.User;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -23,9 +26,11 @@ public class Message {
     @Size(min = 1)
     private String content;
     private Calendar timestamp;
+
     private MessageStatus status;
 
 
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "dialog_id")
     private Dialog dialog;

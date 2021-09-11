@@ -6,10 +6,10 @@ import com.example.mywebquizengine.Model.Chat.Message;
 import com.example.mywebquizengine.Model.Chat.MessageStatus;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.DialogRepository;
+import com.example.mywebquizengine.Repos.MessageRepository;
 import com.example.mywebquizengine.Repos.UserRepository;
 import com.example.mywebquizengine.Service.MessageService;
 import com.example.mywebquizengine.Service.UserService;
-import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -20,14 +20,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
 import java.util.*;
 
 
-@Validated
+
 @Controller
 public class ChatController {
 
@@ -45,6 +44,9 @@ public class ChatController {
 
     @Autowired
     private DialogRepository dialogRepository;
+
+    @Autowired
+    private MessageRepository messageRepository;
 
 
     @GetMapping(path = "/chat")
@@ -71,7 +73,7 @@ public class ChatController {
 //            users.add(userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()));
             //dialog.setUsers(users);
             dialogRepository.save(dialog);
-            return dialog.getDialog_id();
+            return dialog.getId();
         } else {
             return dialog_id;
         }
@@ -82,11 +84,14 @@ public class ChatController {
 
         Dialog dialog = dialogRepository.findById(Long.valueOf(dialog_id)).get();
 
+
+       
+
         User user = userService.getAuthUser(authentication);
         model.addAttribute("myUsername", user);
         model.addAttribute("lastDialogs", messageService.getDialogs(user.getUsername()));
 
-        model.addAttribute("dialog", dialog.getDialog_id());
+        model.addAttribute("dialog", dialog.getId());
         model.addAttribute("messages", dialog.getMessages());
 
         model.addAttribute("dialogObj", dialog);
@@ -100,35 +105,54 @@ public class ChatController {
     public Long createGroup(@RequestBody Dialog newDialog) {
         Dialog dialog = new Dialog();
         for (User user: newDialog.getUsers()) {
-            dialog.addUser(user);
+            dialog.addUser(userService.loadUserByUsername(user.getUsername()));
         }
-        dialog.setName(newDialog.getName());
+        dialog.addUser(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()));
+
+        /*if (newDialog.getName() == null || newDialog.getName().trim().equals("")) {
+            StringBuilder name = new StringBuilder();
+            for (User user : dialog.getUsers()) {
+                name.append(user.getUsername()).append(" ");
+            }
+            dialog.setName(name.toString());
+
+        } else {
+            dialog.setName(newDialog.getName());
+        }*/
+
+        if (newDialog.getName() == null) {
+            dialog.setName("Конференция");
+        } else {
+            dialog.setName(newDialog.getName());
+        }
         //group.setCreator(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()));
         dialog.setImage("default");
         dialogRepository.save(dialog);
-        return dialog.getDialog_id();
+        return dialog.getId();
     }
 
 
     @Modifying
     @Transactional
-    @MessageMapping("/user/{userId}")
-    @SendTo("/topic/{userId}")
-    public Message sendMessage(@Payload Message message) {
+    @MessageMapping("/user/{dialogId}")
+    @SendTo("/topic/{dialogId}")
+    public void sendMessage(@Payload Message message, Authentication authentication) {
 
-        User user = userService.loadUserByUsername(message.getSender().getUsername());
+
+        User sender = userService.loadUserByUsername(message.getSender().getUsername());
 
         // Persistence Bag. Используется костыль
         // для корректного отображения (тесты не инициализируются автоматически)
         //.setTests(new ArrayList<>());
 
-        message.setSender(user);
+        message.setSender(sender);
 
         //User recipient = userService.loadUserByUsername(message.getRecipient().getUsername());
         //recipient.setTests(new ArrayList<>());
         //message.setRecipient(recipient);
 
-        message.setDialog(dialogRepository.findById(message.getDialog().getDialog_id()).get());
+        message.setDialog(dialogRepository.findById(message.getDialog().getId()).get());
+
 
         // Устанавливается часовой пояс для хранения времени в БД постоянно по Москве
         // В БД будет сохраняться Московское время независимо от местоположения сервера/пользователя
@@ -140,9 +164,20 @@ public class ChatController {
         message.setStatus(MessageStatus.DELIVERED);
         messageService.saveMessage(message);
 
+        Dialog dialog = dialogRepository.findById(message.getDialog().getId()).get();
+
+        User authUser = userService.getAuthUserNoProxy(authentication);
+
+        for (User user :dialog.getUsers()) {
+            if (!user.getUsername().equals(authUser.getUsername())) {
+                simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
+                        messageRepository.getMessageById(message.getId()));
+            }
+        }
+
         //simpMessagingTemplate.convertAndSend("/topic/application", message);
 
-        return message;
+        //return messageRepository.getMessageById(message.getId());
     }
 
     @GetMapping(path = "/error")

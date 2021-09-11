@@ -1,10 +1,17 @@
 function createGroup() {
 
 
+
     let dialog = document.getElementById("dialogs")
-    let name = document.getElementById("chatName").value
+    let name = document.getElementById("chatName")
     let answer_values = [];
 
+    //document.forms['GroupName'].repo
+
+    //document.forms['GroupName'].reportValidity()
+    //document.forms['GroupName'].checkValidity()
+
+    //name.checkValidacity()
 
     let size = document.getElementsByClassName("users");
     let usersNames = document.getElementsByClassName("usersValue")
@@ -36,7 +43,7 @@ function createGroup() {
 
 
     let json = {
-        name: name,
+        name: name.value,
         users: users
     }
 
@@ -54,9 +61,9 @@ function createGroup() {
 
             div2.innerHTML =
                 "                                    <div class=\"chat_people\">\n" +
-                "                                        <div class=\"chat_img\"> <img src=\"../../../../img/default.jpg" + "\" alt=\"sunil\"> </div>\n" +
+                "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" src=\"../../../../img/default.jpg" + "\" alt=\"sunil\"> </div>\n" +
                 "                                        <div class=\"chat_ib\">\n" +
-                "                                            <h5 class=\"dialogsuser\">"+name+"<span class=\"chat_date\"></span></h5>\n" +
+                "                                            <h5 class=\"dialogsuser\">"+name.value+"<span class=\"chat_date\"></span></h5>\n" +
                 "                                            <p></p>\n" +
                 "                                        </div>\n" +
                 "                                    </div>"
@@ -66,8 +73,9 @@ function createGroup() {
             //console.log(dialogsNameArr.indexOf(message.sender.username))
 
             //if (dialogsNameArr.indexOf(message.sender.username) === -1) {
-            dialog.before(div2)
+            //dialog.before(div2)
             //}
+            document.location.href = '/chat/' + xhr.response
         }
     };
     xhr.send(JSON.stringify(json));

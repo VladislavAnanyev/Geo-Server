@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class MessageService {
@@ -27,9 +26,6 @@ public class MessageService {
 
     @Autowired
     private UserService userService;
-
-
-
 
 
     public ArrayList<Message> getMessages(String sent, String received) {
@@ -49,10 +45,10 @@ public class MessageService {
     }
 
     public Dialog tryToSaveDialog(Dialog dialog) {
-        if (!dialogRepository.findById(dialog.getDialog_id()).isPresent()) {
+        if (!dialogRepository.findById(dialog.getId()).isPresent()) {
             dialogRepository.save(dialog);
         }
-        return dialogRepository.findById(dialog.getDialog_id()).get();
+        return dialogRepository.findById(dialog.getId()).get();
 
     }
 
@@ -62,7 +58,7 @@ public class MessageService {
     }
 
     public void checkDialog(Dialog dialog) {
-        if (!dialogRepository.findById(dialog.getDialog_id()).isPresent()) {
+        if (!dialogRepository.findById(dialog.getId()).isPresent()) {
             dialogRepository.save(dialog);
         }
     }

@@ -1,7 +1,9 @@
 <#import "parts/common.ftl" as e>
 <#include "parts/security.ftl">
+
 <@e.page>
-<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <!------ Include the above in your HEAD tag ---------->
@@ -30,7 +32,9 @@
 <#--<script src="/static/getUserList.js"></script>-->
 <script>connect()</script>
 
-
+<#if dialog_id??>
+<input id="dialogId" type="hidden" value="${dialog_id?string}">
+</#if>
 <div class="container">
     <button type="button" <#--onclick="getUserList()"--> class="btn btn-primary mb-2" data-toggle="modal" data-target="#staticBackdrop">Создать группу</button>
 
@@ -45,7 +49,9 @@
                 </div>
                 <div class="modal-body">
 
-                    <input type="text" class="form-control mb-2" required placeholder="Напишите здесь название группы" id="chatName">
+                    <form id="GroupName">
+                        <input type="text" class="form-control mb-2" required placeholder="Напишите здесь название группы" id="chatName">
+                    </form>
                     <#list userList as user>
                         <#if user.username != name>
                     <div class="form-check ml-1">
@@ -99,36 +105,62 @@
                 <div class="inbox_chat" id="dialogs">
 
                         <#list lastDialogs?if_exists as dialog>
-                            <#if dialog.sender.username != myUsername.username>
 
-                                <div id="${dialog.dialog.dialog_id?c}" <#--последнее сообщение не от меня--> onclick="writeMsgFromChat('${dialog.sender.username?string}')"  class="chat_list <#--active_chat-->">
-                                    <div class="chat_people">
-                                        <div class="chat_img"> <img class="rounded-circle" src="<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialog.sender.avatar}.jpg" alt="sunil"> </div>
-                                        <div class="chat_ib последнее сообщение не от меня">
-                                            <h5 class="dialogsuser">${dialog.sender.username}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
-                                            <p id="lastMsg${dialog.sender.username}">${dialog.content}</p>
+
+                            <#if dialog.dialog.users?size = 2>
+
+
+                            <#--                            Переделать-->
+
+                                <#if dialog.sender.username != myUsername.username>
+
+                                    <div id="${dialog.dialog.id?c}" <#--последнее сообщение не от меня--> onclick="location.href='/chat/${dialog.dialog.id?c}'" class="chat_list <#--active_chat-->">
+                                        <div class="chat_people">
+                                            <div class="chat_img"> <img class="rounded-circle" src="<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialog.sender.avatar}.jpg" alt="sunil"> </div>
+                                            <div class="chat_ib последнее сообщение не от меня">
+                                                <h5 class="dialogsuser">${dialog.sender.username}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
+                                                <p id="lastMsg${dialog.dialog.id?c}">${dialog.content}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            <#else>
-
-                                <#if dialog.dialog.users?first.username = myUsername.username >
-                                    <#assign o = dialog.dialog.users?last>
                                 <#else>
-                                    <#assign o = dialog.dialog.users?first>
+
+
+    <#--                                Второй пользователь-->
+                                    <#if dialog.dialog.users?first.username = myUsername.username >
+                                        <#assign o = dialog.dialog.users?last>
+                                    <#else>
+                                        <#assign o = dialog.dialog.users?first>
+                                    </#if>
+
+                                    <div id="${dialog.dialog.id?c}" <#--последнее сообщение от меня--> onclick="location.href='/chat/${dialog.dialog.id?c}'" class="chat_list <#--active_chat-->">
+                                        <div class="chat_people">
+                                            <div class="chat_img"> <img class="rounded-circle" src="<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${o.avatar}.jpg" alt="sunil"> </div>
+                                            <div class="chat_ib последнее сообщение от меня">
+                                                <h5 class="dialogsuser">${o.username}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
+                                                <p id="lastMsg${dialog.dialog.id?c}">${dialog.content}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </#if>
 
-                                <div id="${dialog.dialog.dialog_id?c}" <#--последнее сообщение от меня--> onclick="writeMsgFromChat('${o.username}')"  class="chat_list <#--active_chat-->">
+                            <#else>
+
+                                <div id="${dialog.dialog.id?c}" onclick="location.href='/chat/${dialog.dialog.id?c}'" class="chat_list <#--active_chat-->">
                                     <div class="chat_people">
-                                        <div class="chat_img"> <img class="rounded-circle" src="<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${o.avatar}.jpg" alt="sunil"> </div>
-                                        <div class="chat_ib последнее сообщение от меня">
-                                            <h5 class="dialogsuser">${o.username}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
-                                            <p id="lastMsg${o.username}">${dialog.content}</p>
+                                        <div class="chat_img"> <img class="rounded-circle" src="<../../../../img/${dialog.dialog.image}.jpg" alt="sunil"> </div>
+                                        <div class="chat_ib группа">
+                                            <h5 class="dialogsuser">${dialog.dialog.name?string}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
+                                            <p id="lastMsg${dialog.dialog.id?c}">${dialog.content}</p>
                                         </div>
                                     </div>
                                 </div>
 
-                            </#if>
+                           </#if>
+
+
+
                         </#list>
 
 <#--                </div>-->
@@ -186,9 +218,7 @@
                 <#if dialog??>
                 <div class="type_msg">
                     <div class="input_msg_write">
-                        <input type="text" class="write_msg" id="inputtext" placeholder="Type a message" />
-                        <#--<button onclick="sendMsg('${user.username}')" class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>-->
-
+                        <input type="text" class="write_msg" id="inputtext" placeholder="Type a message"/>
                         <button onclick="sendMessage('${name}', '${dialog?c}')" class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
 
                     </div>
@@ -228,6 +258,9 @@
     </#if>
 
 <script>
+
+    <#if dialogObj.users?size = 2>
+
     let dialog = document.getElementById("dialogs")
     let div2 = document.createElement("div")
     let dialogsName = document.getElementsByClassName("chat_list")
@@ -261,6 +294,46 @@
 
 
     }
+
+
+    <#else>
+
+    let dialog = document.getElementById("dialogs")
+    let div2 = document.createElement("div")
+    let dialogsName = document.getElementsByClassName("chat_list")
+
+    let dialogsNameArr = []
+
+
+    div2.setAttribute('id', "${dialog?c}")
+    div2.setAttribute('class', "chat_list")
+
+
+
+    for (let i = 0; i < dialogsName.length; i++) {
+        dialogsNameArr.push(dialogsName[i].id)
+        console.log(dialogsName[i].id)
+    }
+    //div2.setAttribute('class', "inbox_chat")
+    div2.innerHTML =
+        "                                    <div class=\"chat_people\">\n" +
+        "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" src=\"<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialogObj.image}.jpg\" alt=\"sunil\"> </div>\n" +
+        "                                        <div class=\"chat_ib\">\n" +
+        "                                            <h5 class=\"dialogsuser\">${dialogObj.name}<span class=\"chat_date\"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>\n" +
+        "                                            <p id=\"lastMsg${dialog?c}\"></p>\n" +
+        "                                        </div>\n" +
+        "                                    </div>\n" +
+        "                                </div>"
+
+    console.log(dialogsNameArr.indexOf("${dialog?c}"))
+    if (dialogsNameArr.indexOf("${dialog?c}") == -1) {
+        dialog.prepend(div2)
+
+
+    }
+
+
+    </#if>
 
 
 </script>

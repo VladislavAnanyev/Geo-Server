@@ -37,7 +37,7 @@ function connect(/*event*/) {
 function onConnected() {
 
     // Subscribe to the Public Topic
-    console.log('/topic/' + document.getElementById("autoUs").textContent);
+    console.log('/topic/' + document.getElementById("dialogId").value);
     stompClient.subscribe('/topic/' + document.getElementById("autoUs").textContent, onMessageReceived);
 
     // Tell your username to the server
@@ -61,6 +61,7 @@ function onError(error) {
 
 
 function sendMessage(sender, dialog) {
+
     let messageInput = document.getElementById("inputtext");
     if (messageInput.value.length !== 0) {
 
@@ -95,7 +96,14 @@ function sendMessage(sender, dialog) {
         var div2 = $("#msg");
         div2.scrollTop(div2.prop('scrollHeight'));
 
+        let lastMsg = document.getElementById("lastMsg" + dialog)
+        console.log(lastMsg)
+        let msgInput = messageInput.value
         messageInput.value = ' '
+        lastMsg.textContent = msgInput
+
+
+
     }
 }
 
@@ -144,7 +152,7 @@ function onMessageReceived(payload) {
     }
 
     if (dialogsNameArr.indexOf(message.sender.username) === 0) {
-        document.getElementById("lastMsg" + message.sender.username).textContent = message.content
+        document.getElementById("lastMsg" + message.dialog.dialog_id).textContent = message.content
     }
 
     //var messageElement = document.createElement('li');
