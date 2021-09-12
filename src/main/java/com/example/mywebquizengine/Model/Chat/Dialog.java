@@ -1,6 +1,8 @@
 package com.example.mywebquizengine.Model.Chat;
 
 import com.example.mywebquizengine.Model.User;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
@@ -14,34 +16,34 @@ public class Dialog {
     @Id
     @Column(name = "DIALOG_ID")
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Long id;
+    private Long dialogId;
 
     private String name;
 
     private String image;
 
-    @JsonManagedReference
-    @ManyToMany(mappedBy = "dialogs", cascade = {CascadeType.PERSIST,CascadeType.MERGE}, fetch = FetchType.LAZY)
+
+    @ManyToMany(mappedBy = "dialogs", cascade = {CascadeType.PERSIST,CascadeType.MERGE})
     private Set<User> users = new HashSet<>();
 
-    @JsonManagedReference
-    @OneToMany(mappedBy = "dialog")
+
+    @OneToMany(mappedBy = "dialog", fetch = FetchType.LAZY)
     private List<Message> messages;
 
-    public Long getId() {
-        return id;
+    public Long getDialogId() {
+        return dialogId;
     }
 
     public List<Message> getMessages() {
-        return messages;
+            return messages;
     }
 
     public void setMessages(List<Message> messages) {
         this.messages = messages;
     }
 
-    public void setId(Long dialog_id) {
-        this.id = dialog_id;
+    public void setDialogId(Long dialog_id) {
+        this.dialogId = dialog_id;
     }
 
     public String getImage() {
@@ -62,7 +64,6 @@ public class Dialog {
     }
 
     public void setUsers(Set<User> users) {
-
         this.users = new HashSet<>();
         this.users.addAll(users);
         //this.users = users;

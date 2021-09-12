@@ -3,6 +3,11 @@ package com.example.mywebquizengine.Service;
 
 import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Chat.Message;
+
+import com.example.mywebquizengine.Model.Projection.DialogWithUsersView;
+import com.example.mywebquizengine.Model.Projection.MessageForApiView;
+import com.example.mywebquizengine.Model.Projection.MessageForStompView;
+import com.example.mywebquizengine.Model.Projection.MessageView;
 import com.example.mywebquizengine.Model.User;
 
 import com.example.mywebquizengine.Repos.DialogRepository;
@@ -45,10 +50,10 @@ public class MessageService {
     }
 
     public Dialog tryToSaveDialog(Dialog dialog) {
-        if (!dialogRepository.findById(dialog.getId()).isPresent()) {
+        if (!dialogRepository.findById(dialog.getDialogId()).isPresent()) {
             dialogRepository.save(dialog);
         }
-        return dialogRepository.findById(dialog.getId()).get();
+        return dialogRepository.findById(dialog.getDialogId()).get();
 
     }
 
@@ -58,13 +63,27 @@ public class MessageService {
     }
 
     public void checkDialog(Dialog dialog) {
-        if (!dialogRepository.findById(dialog.getId()).isPresent()) {
+        if (!dialogRepository.findById(dialog.getDialogId()).isPresent()) {
             dialogRepository.save(dialog);
         }
     }
 
     public List<Message> getDialogs(String username) {
         return messageRepository.getDialogs(username);
+    }
+
+    public ArrayList<MessageForApiView> getDialogsForApi(String username) {
+
+        List<Integer> messageViews = messageRepository.getDialogsIdForApi(username);
+
+        ArrayList<MessageForApiView> messageForStompViews = new ArrayList<>();
+
+        for (int i = 0; i < messageViews.size(); i++) {
+            messageForStompViews.add(messageRepository.findMessageById(messageViews.get(i)));
+        }
+
+        //return messageRepository.findAllById((ArrayList<Integer>) messageViews);
+        return messageForStompViews;
     }
 
     /*public List<Message> getDialogs(String username) {

@@ -73,7 +73,7 @@ public class ChatController {
 //            users.add(userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()));
             //dialog.setUsers(users);
             dialogRepository.save(dialog);
-            return dialog.getId();
+            return dialog.getDialogId();
         } else {
             return dialog_id;
         }
@@ -85,13 +85,12 @@ public class ChatController {
         Dialog dialog = dialogRepository.findById(Long.valueOf(dialog_id)).get();
 
 
-       
 
         User user = userService.getAuthUser(authentication);
         model.addAttribute("myUsername", user);
         model.addAttribute("lastDialogs", messageService.getDialogs(user.getUsername()));
 
-        model.addAttribute("dialog", dialog.getId());
+        model.addAttribute("dialog", dialog.getDialogId());
         model.addAttribute("messages", dialog.getMessages());
 
         model.addAttribute("dialogObj", dialog);
@@ -128,7 +127,7 @@ public class ChatController {
         //group.setCreator(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()));
         dialog.setImage("default");
         dialogRepository.save(dialog);
-        return dialog.getId();
+        return dialog.getDialogId();
     }
 
 
@@ -151,7 +150,7 @@ public class ChatController {
         //recipient.setTests(new ArrayList<>());
         //message.setRecipient(recipient);
 
-        message.setDialog(dialogRepository.findById(message.getDialog().getId()).get());
+        message.setDialog(dialogRepository.findById(message.getDialog().getDialogId()).get());
 
 
         // Устанавливается часовой пояс для хранения времени в БД постоянно по Москве
@@ -164,14 +163,14 @@ public class ChatController {
         message.setStatus(MessageStatus.DELIVERED);
         messageService.saveMessage(message);
 
-        Dialog dialog = dialogRepository.findById(message.getDialog().getId()).get();
+        Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
 
         User authUser = userService.getAuthUserNoProxy(authentication);
 
         for (User user :dialog.getUsers()) {
             if (!user.getUsername().equals(authUser.getUsername())) {
                 simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
-                        messageRepository.getMessageById(message.getId()));
+                        messageRepository.findMessageById(message.getId()));
             }
         }
 

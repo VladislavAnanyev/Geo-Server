@@ -114,12 +114,12 @@
 
                                 <#if dialog.sender.username != myUsername.username>
 
-                                    <div id="${dialog.dialog.id?c}" <#--последнее сообщение не от меня--> onclick="location.href='/chat/${dialog.dialog.id?c}'" class="chat_list <#--active_chat-->">
+                                    <div id="${dialog.dialog.dialogId?c}" <#--последнее сообщение не от меня--> onclick="location.href='/chat/${dialog.dialog.dialogId?c}'" class="chat_list <#--active_chat-->">
                                         <div class="chat_people">
                                             <div class="chat_img"> <img class="rounded-circle" src="<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialog.sender.avatar}.jpg" alt="sunil"> </div>
                                             <div class="chat_ib последнее сообщение не от меня">
                                                 <h5 class="dialogsuser">${dialog.sender.username}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
-                                                <p id="lastMsg${dialog.dialog.id?c}">${dialog.content}</p>
+                                                <p id="lastMsg${dialog.dialog.dialogId?c}">${dialog.content}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -133,12 +133,12 @@
                                         <#assign o = dialog.dialog.users?first>
                                     </#if>
 
-                                    <div id="${dialog.dialog.id?c}" <#--последнее сообщение от меня--> onclick="location.href='/chat/${dialog.dialog.id?c}'" class="chat_list <#--active_chat-->">
+                                    <div id="${dialog.dialog.dialogId?c}" <#--последнее сообщение от меня--> onclick="location.href='/chat/${dialog.dialog.dialogId?c}'" class="chat_list <#--active_chat-->">
                                         <div class="chat_people">
                                             <div class="chat_img"> <img class="rounded-circle" src="<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${o.avatar}.jpg" alt="sunil"> </div>
                                             <div class="chat_ib последнее сообщение от меня">
                                                 <h5 class="dialogsuser">${o.username}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
-                                                <p id="lastMsg${dialog.dialog.id?c}">${dialog.content}</p>
+                                                <p id="lastMsg${dialog.dialog.dialogId?c}">${dialog.content}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -147,12 +147,12 @@
 
                             <#else>
 
-                                <div id="${dialog.dialog.id?c}" onclick="location.href='/chat/${dialog.dialog.id?c}'" class="chat_list <#--active_chat-->">
+                                <div id="${dialog.dialog.dialogId?c}" onclick="location.href='/chat/${dialog.dialog.dialogId?c}'" class="chat_list <#--active_chat-->">
                                     <div class="chat_people">
                                         <div class="chat_img"> <img class="rounded-circle" src="<../../../../img/${dialog.dialog.image}.jpg" alt="sunil"> </div>
                                         <div class="chat_ib группа">
                                             <h5 class="dialogsuser">${dialog.dialog.name?string}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
-                                            <p id="lastMsg${dialog.dialog.id?c}">${dialog.content}</p>
+                                            <p id="lastMsg${dialog.dialog.dialogId?c}">${dialog.content}</p>
                                         </div>
                                     </div>
                                 </div>

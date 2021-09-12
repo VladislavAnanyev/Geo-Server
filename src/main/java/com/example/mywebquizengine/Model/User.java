@@ -5,18 +5,15 @@ import com.example.mywebquizengine.Model.Test.Test;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.sun.istack.NotNull;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
-
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -50,7 +47,6 @@ public class User implements UserDetails {
     private String password;
 
     private String avatar;
-
     /*@ManyToMany (cascade = {
             CascadeType.PERSIST,
             CascadeType.MERGE
@@ -62,7 +58,6 @@ public class User implements UserDetails {
     private List<Group> groups;*/
 
 
-    @JsonIgnore
     @ManyToMany (cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "users_dialogs",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -72,7 +67,7 @@ public class User implements UserDetails {
 
     /*@OneToMany(mappedBy = "user")
     private List<Test> tests;*/
-
+    //@JsonIgnore
     public List<Dialog> getDialogs() {
         return dialogs;
     }
@@ -80,7 +75,6 @@ public class User implements UserDetails {
     public void setDialogs(List<Dialog> dialogs) {
         this.dialogs = dialogs;
     }
-
 
     @Transient
     private boolean accountNonExpired;
@@ -121,7 +115,6 @@ public class User implements UserDetails {
     //@Fetch(value = FetchMode.JOIN)
     private List<Role> roles;
 
-
     @Override
     public List<GrantedAuthority> getAuthorities(){
         List<GrantedAuthority> authorities = new ArrayList<>();
@@ -161,12 +154,10 @@ public class User implements UserDetails {
         return roles.contains(Role.ROLE_ADMIN);
     }
 
-
     public void grantAuthority(Role authority) {
         if ( roles == null ) roles = new ArrayList<>();
         this.roles.add(authority);
     }
-
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
@@ -237,7 +228,6 @@ public class User implements UserDetails {
     /*public List<Test> getTests() {
         return tests;
     }*/
-
     public void setRoles(List<Role> roles) {
         this.roles = roles;
     }
@@ -249,7 +239,6 @@ public class User implements UserDetails {
     public void setChangePasswordCode(String changePasswordCode) {
         this.changePasswordCode = changePasswordCode;
     }
-
     public void setBalance(Integer balance) {
         this.balance = balance;
     }
@@ -261,13 +250,10 @@ public class User implements UserDetails {
 /*    public List<Group> getGroups() {
         return groups;
     }
-
     public void setGroups(List<Group> groups) {
         this.groups = groups;
     }*/
-
     /*public void setTests(List<Test> tests) {
         this.tests = tests;
     }*/
-
 }

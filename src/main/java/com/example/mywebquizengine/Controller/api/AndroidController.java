@@ -2,19 +2,21 @@ package com.example.mywebquizengine.Controller.api;
 
 import com.example.mywebquizengine.Model.AuthRequest;
 import com.example.mywebquizengine.Model.AuthResponse;
-import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Chat.Message;
 import com.example.mywebquizengine.Model.GoogleToken;
-import com.example.mywebquizengine.Model.Projection.DialogView;
+import com.example.mywebquizengine.Model.Projection.DialogWithUsersView;
+
+import com.example.mywebquizengine.Model.Projection.MessageForApiView;
+import com.example.mywebquizengine.Model.Projection.MessageForStompView;
 import com.example.mywebquizengine.Model.Projection.UserView;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.DialogRepository;
+import com.example.mywebquizengine.Repos.MessageRepository;
 import com.example.mywebquizengine.Repos.UserRepository;
 import com.example.mywebquizengine.Service.JWTUtil;
 import com.example.mywebquizengine.Service.MessageService;
 import com.example.mywebquizengine.Service.UserService;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.HttpResponseException;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -28,7 +30,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -36,10 +37,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -73,11 +74,32 @@ public class AndroidController {
     @Autowired
     private UserService userService;
 
-    @GetMapping(path = "/api/getMessagesByDialogId")
-    public DialogView getMessages(@RequestParam Long id) {
+    @Autowired
+    private MessageRepository messageRepository;
+
+    @GetMapping(path = "/api/messages")
+    public DialogWithUsersView getMessages(@RequestParam Long id) {
 
         //return dialog.getMessages();
-        return dialogRepository.findDialogById(id);
+        return dialogRepository.findDialogByDialogId(id);
+    }
+
+
+
+    /*
+        Найти нормальное решение!
+
+        Вложенные поля проекции не инициализируются при пользовательском нативном запросе
+
+        На данный момент работает следующим образом:
+            Пользовательским запросом получается список диалогов, где диалог представлен только id сообщения,
+            далее по всем этим id делается встроенный SELECT и выводятся диалоги
+
+        В идеале необходимо решить проблему с инициализацией вложенных полей
+     */
+    @GetMapping(path = "/api/dialogs")
+    public ArrayList<MessageForApiView> getMessage(@RequestParam String username) {
+        return messageService.getDialogsForApi(username);
     }
 
 

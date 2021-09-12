@@ -70,7 +70,7 @@ function sendMessage(sender, dialog) {
             var chatMessage = {
                 sender: {username: sender},
                 content: messageInput.value,
-                dialog: {dialog_id: dialog}
+                dialog: {dialogId: dialog}
             };
             stompClient.send("/app/user/" + dialog, {}, JSON.stringify(chatMessage));
 
@@ -152,7 +152,7 @@ function onMessageReceived(payload) {
     }
 
     if (dialogsNameArr.indexOf(message.sender.username) === 0) {
-        document.getElementById("lastMsg" + message.dialog.dialog_id).textContent = message.content
+        document.getElementById("lastMsg" + message.dialog.dialogId).textContent = message.content
     }
 
     //var messageElement = document.createElement('li');

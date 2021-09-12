@@ -1,14 +1,10 @@
 package com.example.mywebquizengine.Model.Projection;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import java.util.Calendar;
-
-public interface MessageForStompView {
+public interface MessageForApiView {
     Integer getId();
     String getContent();
     UserView getSender();
     //Calendar getTimestamp();
-    DialogForStomp getDialog();
+    DialogForApi getDialog();
     //Long getDialogId();
-
 }
