@@ -7,7 +7,7 @@ public interface MessageForStompView {
     Integer getId();
     String getContent();
     UserView getSender();
-    //Calendar getTimestamp();
+    Calendar getTimestamp();
     DialogForStomp getDialog();
     //Long getDialogId();
 
