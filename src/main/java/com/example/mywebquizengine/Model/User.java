@@ -58,6 +58,7 @@ public class User implements UserDetails {
     private List<Group> groups;*/
 
 
+    @JsonIgnore
     @ManyToMany (cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "users_dialogs",
             joinColumns = @JoinColumn(name = "user_id"),

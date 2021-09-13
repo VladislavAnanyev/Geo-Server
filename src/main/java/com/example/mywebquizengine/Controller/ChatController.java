@@ -179,10 +179,10 @@ public class ChatController {
         //return messageRepository.getMessageById(message.getId());
     }
 
-    @GetMapping(path = "/error")
+    /*@GetMapping(path = "/error")
     public String handleError(){
         return "error";
-    }
+    }*/
 
 
 

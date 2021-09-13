@@ -6,3 +6,4 @@ public interface UserView {
     String getLastName();
     String getAvatar();
 }
+
