@@ -10,5 +10,4 @@ public interface MessageForStompView {
     Calendar getTimestamp();
     DialogForStomp getDialog();
     //Long getDialogId();
-
 }

@@ -58,8 +58,29 @@ public class MessageService {
     }
 
     public Long checkDialog(User user) {
-        return dialogRepository.findDialogByName(user.getUsername(),
-                userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()).getUsername());
+
+        User authUser = userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication());
+
+        Long dialog_id = dialogRepository.findDialogByName(user.getUsername(),
+                authUser.getUsername());
+
+        if (dialog_id == null) {
+            Dialog dialog = new Dialog();
+            //  Set<User> users = new HashSet<>();
+            dialog.addUser(userService.loadUserByUsername(user.getUsername()));
+            dialog.addUser(userService.loadUserByUsername(authUser.getUsername()));
+//            users.add(userService.loadUserByUsername(user.getUsername()));
+//            users.add(userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()));
+            //dialog.setUsers(users);
+            dialogRepository.save(dialog);
+            return dialog.getDialogId();
+        } else {
+            return dialog_id;
+        }
+    }
+
+    public Long checkDialogForApi(String username1, String username2) {
+        return dialogRepository.findDialogByName(username1, username2);
     }
 
     public void checkDialog(Dialog dialog) {

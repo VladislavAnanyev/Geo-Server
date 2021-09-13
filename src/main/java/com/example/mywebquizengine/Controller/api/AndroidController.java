@@ -2,6 +2,7 @@ package com.example.mywebquizengine.Controller.api;
 
 import com.example.mywebquizengine.Model.AuthRequest;
 import com.example.mywebquizengine.Model.AuthResponse;
+import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Chat.Message;
 import com.example.mywebquizengine.Model.GoogleToken;
 import com.example.mywebquizengine.Model.Projection.DialogWithUsersView;
@@ -24,10 +25,12 @@ import com.google.api.client.json.jackson.JacksonFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -78,33 +81,47 @@ public class AndroidController {
     private MessageRepository messageRepository;
 
     @GetMapping(path = "/api/messages")
-    public DialogWithUsersView getMessages(@RequestParam Long id) {
+    //@PreAuthorize(value = "@dialogRepository.findDialogByDialogId(#dialogId).users.contains(@userService.getAuthUser(authentication))")
+    public DialogWithUsersView getMessages(@RequestParam Long dialogId) {
 
+        if (dialogRepository.findDialogByDialogId(dialogId).getUsers().stream().anyMatch(o -> o.getUsername()
+                .equals(userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()).getUsername()))) {
+            return dialogRepository.findDialogByDialogId(dialogId);
+        } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         //return dialog.getMessages();
-        return dialogRepository.findDialogByDialogId(id);
     }
 
 
 
     /*
-        Найти нормальное решение!
-
         Вложенные поля проекции не инициализируются при пользовательском нативном запросе
 
         На данный момент работает следующим образом:
             Пользовательским запросом получается список диалогов, где диалог представлен только id сообщения,
-            далее по всем этим id делается встроенный SELECT и выводятся диалоги
+            далее по всем этим id делается встроенный findById и выводятся диалоги
 
         В идеале необходимо решить проблему с инициализацией вложенных полей
      */
     @GetMapping(path = "/api/dialogs")
-    public ArrayList<MessageForApiView> getMessage(@RequestParam String username) {
+    @PreAuthorize(value = "@userService.getAuthUser(authentication).username.equals(#username)")
+    public ArrayList<MessageForApiView> getDialogs(@RequestParam String username) {
+
         return messageService.getDialogsForApi(username);
+    }
+
+    @GetMapping(path = "/api/getDialogId")
+    @ResponseBody
+    public Long checkDialog(@RequestParam String username) {
+
+        //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        //User user = userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication());
+
+        return messageService.checkDialog(userService.loadUserByUsername(username));
     }
 
 
     @PostMapping(path = "/api/authuser")
-    public User getAuthUser() {
+    public User getApiAuthUser() {
 
         final String authorizationHeader = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
                 .getRequest().getHeader("Authorization");
@@ -229,10 +246,18 @@ public class AndroidController {
             user.setEmail(email);
             user.setFirstName(givenName);
             user.setLastName(familyName);
-            user.setAvatar("default");
+            //user.setAvatar("default");
 
             userService.tryToSaveUser(user);
-            String jwt = jwtTokenUtil.generateToken(userService.loadUserByUsername(user.getUsername()));
+
+            User savedUser = userService.loadUserByUsername(user.getUsername());
+
+            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+                    new UsernamePasswordAuthenticationToken(
+                            username, null, savedUser.getAuthorities()); // Проверить работу getAuthorities
+            SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+
+            String jwt = jwtTokenUtil.generateToken(savedUser);
             return new AuthResponse(jwt);
             // Use or store profile information
             // ...

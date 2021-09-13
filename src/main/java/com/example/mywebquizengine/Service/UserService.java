@@ -8,6 +8,7 @@ import com.example.mywebquizengine.Repos.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -217,7 +218,11 @@ public class UserService implements UserDetailsService {
                         .toString();
             }
 
-        } else {
+        }
+        else if (authentication instanceof UsernamePasswordAuthenticationToken) {
+            name = (authentication).getPrincipal().toString();
+        }
+        else {
             User user = (User) authentication.getPrincipal();
             name = user.getUsername();
         }
@@ -241,9 +246,10 @@ public class UserService implements UserDetailsService {
                         .toString();
             }
 
-            
-
-        } else {
+        } else if (authentication instanceof UsernamePasswordAuthenticationToken) {
+            name = (authentication).getPrincipal().toString();
+        }
+        else {
             User user = (User) authentication.getPrincipal();
             name = user.getUsername();
         }
