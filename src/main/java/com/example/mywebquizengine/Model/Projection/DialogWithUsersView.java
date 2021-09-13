@@ -7,6 +7,6 @@ public interface DialogWithUsersView {
     Long getDialogId();
     String getName();
     String getImage();
-    Set<UserView> getUsers();
+    Set<UserForMessageView> getUsers();
     List<MessageView> getMessages();
 }

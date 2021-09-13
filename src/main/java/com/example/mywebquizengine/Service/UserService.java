@@ -247,11 +247,17 @@ public class UserService implements UserDetailsService {
             }
 
         } else if (authentication instanceof UsernamePasswordAuthenticationToken) {
-            name = (authentication).getPrincipal().toString();
-        }
-        else {
-            User user = (User) authentication.getPrincipal();
-            name = user.getUsername();
+
+            if (authentication.getCredentials() != null) {
+                name = (authentication).getPrincipal().toString();
+
+            } else {
+                User user = (User) authentication.getPrincipal();
+                name = user.getUsername();
+            }
+
+
+
         }
 
         return loadUserByUsername(name);

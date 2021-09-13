@@ -6,6 +6,7 @@ import com.example.mywebquizengine.Model.GoogleToken;
 import com.example.mywebquizengine.Model.Projection.DialogWithUsersView;
 
 import com.example.mywebquizengine.Model.Projection.MessageForApiView;
+import com.example.mywebquizengine.Model.Projection.UserForMessageView;
 import com.example.mywebquizengine.Model.Projection.UserView;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.DialogRepository;
@@ -117,7 +118,7 @@ public class AndroidController {
 
 
     @PostMapping(path = "/api/authuser")
-    public User getApiAuthUser() {
+    public UserView getApiAuthUser() {
 
         final String authorizationHeader = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
                 .getRequest().getHeader("Authorization");
@@ -131,11 +132,11 @@ public class AndroidController {
             username = jwtTokenUtil.extractUsername(jwt);
         }
 
-        return userService.loadUserByUsername(username);
+        return userRepository.findAllByUsername(username);
     }
 
     @GetMapping(path = "/api/findbyid")
-    public UserView getUserById(@RequestParam String username) {
+    public UserForMessageView getUserById(@RequestParam String username) {
         return userRepository.findByUsername(username);
     }
 

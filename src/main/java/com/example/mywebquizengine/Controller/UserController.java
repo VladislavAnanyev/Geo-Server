@@ -56,7 +56,7 @@ public class UserController {
     @GetMapping(path = "/profile")
     public String getProfile(Model model , Authentication authentication) {
 
-        User user = userService.getAuthUser(authentication);
+        User user = userService.getAuthUserNoProxy(authentication);
         model.addAttribute("user", user);
 
         model.addAttribute("balance", user.getBalance());
@@ -68,7 +68,7 @@ public class UserController {
     @GetMapping(path = "/getbalance")
     @ResponseBody
     public Integer getBalance() {
-        User user = userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication());
+        User user = userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication());
         return user.getBalance();
     }
 

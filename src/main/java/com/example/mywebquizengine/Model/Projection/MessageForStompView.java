@@ -5,7 +5,7 @@ import java.util.Calendar;
 public interface MessageForStompView {
     Integer getId();
     String getContent();
-    UserView getSender();
+    UserForMessageView getSender();
     Calendar getTimestamp();
     DialogForStomp getDialog();
     //Long getDialogId();
