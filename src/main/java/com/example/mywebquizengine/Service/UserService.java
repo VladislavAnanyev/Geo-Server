@@ -203,8 +203,22 @@ public class UserService implements UserDetailsService {
     }
 
     public User getAuthUser(Authentication authentication) {
-        String name = "";
+        String name = getAuthUserCommon(authentication);
+        //String name;
 
+        return getUserProxy(name);
+    }
+
+
+    public User getAuthUserNoProxy(Authentication authentication) {
+        String name = getAuthUserCommon(authentication);
+
+        return loadUserByUsername(name);
+    }
+
+
+    private String getAuthUserCommon(Authentication authentication) {
+        String name = "";
 
 
         if (authentication instanceof OAuth2AuthenticationToken) {
@@ -220,34 +234,6 @@ public class UserService implements UserDetailsService {
 
         }
         else if (authentication instanceof UsernamePasswordAuthenticationToken) {
-            name = (authentication).getPrincipal().toString();
-        }
-        else {
-            User user = (User) authentication.getPrincipal();
-            name = user.getUsername();
-        }
-
-        return getUserProxy(name);
-    }
-
-    public User getAuthUserNoProxy(Authentication authentication) {
-        String name = "";
-
-
-
-        if (authentication instanceof OAuth2AuthenticationToken) {
-
-            if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("google")) {
-
-                name = ((DefaultOidcUser) authentication.getPrincipal()).getAttributes().get("email")
-                        .toString().replace("@gmail.com", "");
-            } else if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("github")) {
-                name = ((DefaultOAuth2User) authentication.getPrincipal()).getAttributes().get("name")
-                        .toString();
-            }
-
-        } else if (authentication instanceof UsernamePasswordAuthenticationToken) {
-
             if (authentication.getCredentials() != null) {
                 name = (authentication).getPrincipal().toString();
 
@@ -255,13 +241,11 @@ public class UserService implements UserDetailsService {
                 User user = (User) authentication.getPrincipal();
                 name = user.getUsername();
             }
-
-
-
         }
-
-        return loadUserByUsername(name);
+        return name;
     }
+
+
 
 
     public ArrayList<User> getUserList() {

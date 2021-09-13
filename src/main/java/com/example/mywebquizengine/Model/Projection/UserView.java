@@ -10,6 +10,7 @@ public interface UserView {
     String getFirstName();
     String getLastName();
     String getAvatar();
+    String getEmail();
     Integer getBalance();
     List<Role> getRoles();
     List<GrantedAuthority> getAuthorities();
