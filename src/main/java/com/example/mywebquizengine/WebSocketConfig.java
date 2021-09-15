@@ -1,6 +1,7 @@
 package com.example.mywebquizengine;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.converter.DefaultContentTypeResolver;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
@@ -22,6 +23,9 @@ import java.util.List;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 
+    @Value("${hostname}")
+    private String hostname;
+
 /*
     Конфигурирует брокер сообщений в памяти с одним адресом с префиксом /user для отправки и получения сообщений.
     Адреса с префиксом /app предназначены для сообщений, обрабатываемых методами с аннотацией @MessageMapping
@@ -35,7 +39,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                     //config.setUserDestinationPrefix("/topic");
     registry.setApplicationDestinationPrefixes("/app");
     registry.enableStompBrokerRelay("/topic")
-            .setRelayHost("localhost")
+            .setRelayHost(hostname)
             .setRelayPort(61613)
             .setClientLogin("guest")
             .setClientPasscode("guest")
