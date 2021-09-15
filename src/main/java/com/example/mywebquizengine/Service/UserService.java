@@ -46,7 +46,7 @@ public class UserService implements UserDetailsService {
         if (user.isPresent()) {
             return user.get();
         }else {
-            throw new UsernameNotFoundException(String.format("Username[%s] not found",username));
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
     }
 

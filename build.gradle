@@ -71,6 +71,9 @@ dependencies {
 // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-quartz
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-quartz', version: '2.5.2'
 
+
+
+
     // https://mvnrepository.com/artifact/org.springframework.security.oauth/spring-security-oauth2
     //implementation group: 'org.springframework.security.oauth', name: 'spring-security-oauth2', version: '2.5.1.RELEASE'
 
@@ -109,6 +112,10 @@ dependencies {
     compileOnly group: 'javax.servlet', name: 'servlet-api', version: '3.0-alpha-1'
     compileOnly group: 'javax.servlet', name: 'servlet-api', version: '2.5'*/
 
+// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-reactor-netty
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-reactor-netty'
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    //implementation group: 'org.springframework.amqp', name: 'spring-rabbit', version: '2.3.10'
 
 
 }

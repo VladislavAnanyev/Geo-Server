@@ -25,15 +25,15 @@
 </head>
 <body>
 <script src="../static/chat.js"></script>
-<script src="../static/custom.js"></script>
+<#--<script src="../static/custom.js"></script>-->
 <script src="../static/activeChat.js"></script>
 <script src="../static/createGroup.js"></script>
 <script src="../static/newActiveDialog.js"></script>
 <#--<script src="/static/getUserList.js"></script>-->
 <script>connect()</script>
 
-<#if dialog_id??>
-<input id="dialogId" type="hidden" value="${dialog_id?string}">
+<#if dialog??>
+<input id="dialogId" type="hidden" value="${dialog?string}">
 </#if>
 <div class="container">
     <button type="button" <#--onclick="getUserList()"--> class="btn btn-primary mb-2" data-toggle="modal" data-target="#staticBackdrop">Создать группу</button>
@@ -107,7 +107,7 @@
                         <#list lastDialogs?if_exists as dialog>
 
 
-                            <#if dialog.dialog.users?size = 2>
+                            <#if dialog.dialog.users?size = 2 <#--|| (dialogObj.users?size = 1 && !dialogObj.name??)-->>
 
 
                             <#--                            Переделать-->
@@ -259,8 +259,6 @@
 
 <script>
 
-    <#if dialogObj.users?size = 2>
-
     let dialog = document.getElementById("dialogs")
     let div2 = document.createElement("div")
     let dialogsName = document.getElementsByClassName("chat_list")
@@ -270,6 +268,7 @@
 
     div2.setAttribute('id', "${dialog?c}")
     div2.setAttribute('class', "chat_list")
+    div2.setAttribute('onclick', "location.href='/chat/${dialog?c}'")
 
 
 
@@ -277,7 +276,14 @@
         dialogsNameArr.push(dialogsName[i].id)
         console.log(dialogsName[i].id)
     }
+
+    <#if dialogObj.users?size = 2 <#--|| (dialogObj.users?size = 1 && !dialogObj.name??)-->>
+
+
     //div2.setAttribute('class', "inbox_chat")
+
+    if (dialogsNameArr.indexOf("${dialog?c}") == -1) {
+
     div2.innerHTML =
         "                                    <div class=\"chat_people\">\n" +
         "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" src=\"<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${c.avatar}.jpg\" alt=\"sunil\"> </div>\n" +
@@ -289,7 +295,8 @@
         "                                </div>"
 
     console.log(dialogsNameArr.indexOf("${dialog?c}"))
-    if (dialogsNameArr.indexOf("${dialog?c}") == -1) {
+
+
     dialog.prepend(div2)
 
 
@@ -298,37 +305,24 @@
 
     <#else>
 
-    let dialog = document.getElementById("dialogs")
-    let div2 = document.createElement("div")
-    let dialogsName = document.getElementsByClassName("chat_list")
 
-    let dialogsNameArr = []
-
-
-    div2.setAttribute('id', "${dialog?c}")
-    div2.setAttribute('class', "chat_list")
-
-
-
-    for (let i = 0; i < dialogsName.length; i++) {
-        dialogsNameArr.push(dialogsName[i].id)
-        console.log(dialogsName[i].id)
-    }
     //div2.setAttribute('class', "inbox_chat")
-    div2.innerHTML =
-        "                                    <div class=\"chat_people\">\n" +
-        "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" src=\"<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialogObj.image}.jpg\" alt=\"sunil\"> </div>\n" +
-        "                                        <div class=\"chat_ib\">\n" +
-        "                                            <h5 class=\"dialogsuser\">${dialogObj.name}<span class=\"chat_date\"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>\n" +
-        "                                            <p id=\"lastMsg${dialog?c}\"></p>\n" +
-        "                                        </div>\n" +
-        "                                    </div>\n" +
-        "                                </div>"
 
-    console.log(dialogsNameArr.indexOf("${dialog?c}"))
     if (dialogsNameArr.indexOf("${dialog?c}") == -1) {
-        dialog.prepend(div2)
 
+        div2.innerHTML =
+            "                                    <div class=\"chat_people\">\n" +
+            "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" src=\"<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialogObj.image}.jpg\" alt=\"sunil\"> </div>\n" +
+            "                                        <div class=\"chat_ib\">\n" +
+            "                                            <h5 class=\"dialogsuser\">${dialogObj.name}<span class=\"chat_date\"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>\n" +
+            "                                            <p id=\"lastMsg${dialog?c}\"></p>\n" +
+            "                                        </div>\n" +
+            "                                    </div>\n" +
+            "                                </div>"
+
+        console.log(dialogsNameArr.indexOf("${dialog?c}"))
+
+        dialog.prepend(div2)
 
     }
 

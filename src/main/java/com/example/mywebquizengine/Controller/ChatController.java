@@ -10,17 +10,22 @@ import com.example.mywebquizengine.Repos.MessageRepository;
 import com.example.mywebquizengine.Repos.UserRepository;
 import com.example.mywebquizengine.Service.MessageService;
 import com.example.mywebquizengine.Service.UserService;
+import org.hibernate.boot.model.source.internal.hbm.CommaSeparatedStringHelper;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.http.HttpStatus;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
 import java.util.*;
@@ -29,6 +34,9 @@ import java.util.*;
 
 @Controller
 public class ChatController {
+
+    @Autowired
+    RabbitTemplate rabbitTemplate;
 
     @Autowired
     private UserService userService;
@@ -60,6 +68,7 @@ public class ChatController {
 
     @PostMapping(path = "/checkdialog")
     @ResponseBody
+    @PreAuthorize(value = "!@userService.getAuthUser(authentication).username.equals(#user.username)")
     public Long checkDialog(@RequestBody User user) {
 
         Long dialog_id = messageService.checkDialog(user);
@@ -82,31 +91,52 @@ public class ChatController {
     @GetMapping(path = "/chat/{dialog_id}")
     public String chatWithUser(Model model, @PathVariable String dialog_id, Authentication authentication) {
 
-        Dialog dialog = dialogRepository.findById(Long.valueOf(dialog_id)).get();
+        if (dialogRepository.findDialogByDialogId(Long.valueOf(dialog_id)).getUsers().stream().anyMatch(o -> o.getUsername()
+                .equals(userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()).getUsername()))) {
+
+            Dialog dialog = dialogRepository.findById(Long.valueOf(dialog_id)).get();
 
 
 
-        User user = userService.getAuthUser(authentication);
-        model.addAttribute("myUsername", user);
-        model.addAttribute("lastDialogs", messageService.getDialogs(user.getUsername()));
 
-        model.addAttribute("dialog", dialog.getDialogId());
-        model.addAttribute("messages", dialog.getMessages());
 
-        model.addAttribute("dialogObj", dialog);
+            User user = userService.getAuthUser(authentication);
+            model.addAttribute("myUsername", user);
+            model.addAttribute("lastDialogs", messageService.getDialogs(user.getUsername()));
 
-        model.addAttribute("userList", userService.getUserList());
-        return "chat";
+            model.addAttribute("dialog", dialog.getDialogId());
+            model.addAttribute("messages", dialog.getMessages());
+
+            model.addAttribute("dialogObj", dialog);
+
+            model.addAttribute("userList", userService.getUserList());
+            return "chat";
+        } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+
+
     }
 
     @PostMapping(path = "/createGroup")
     @ResponseBody
     public Long createGroup(@RequestBody Dialog newDialog) {
-        Dialog dialog = new Dialog();
-        for (User user: newDialog.getUsers()) {
-            dialog.addUser(userService.loadUserByUsername(user.getUsername()));
-        }
-        dialog.addUser(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()));
+
+        User authUser = new User();
+
+        authUser.setUsername(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()).getUsername());
+
+        newDialog.addUser(authUser);
+
+        if (newDialog.getUsers().stream().anyMatch(o -> o.getUsername()
+                .equals(userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()).getUsername()))) {
+
+            Dialog dialog = new Dialog();
+
+            newDialog.getUsers().forEach(user -> dialog.addUser(userService.loadUserByUsername(user.getUsername())));
+
+            /*for (User user: newDialog.getUsers()) {
+                dialog.addUser(userService.loadUserByUsername(user.getUsername()));
+            }*/
+            //dialog.addUser(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()));
 
         /*if (newDialog.getName() == null || newDialog.getName().trim().equals("")) {
             StringBuilder name = new StringBuilder();
@@ -119,15 +149,20 @@ public class ChatController {
             dialog.setName(newDialog.getName());
         }*/
 
-        if (newDialog.getName() == null) {
-            dialog.setName("Конференция");
-        } else {
-            dialog.setName(newDialog.getName());
-        }
-        //group.setCreator(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()));
-        dialog.setImage("default");
-        dialogRepository.save(dialog);
-        return dialog.getDialogId();
+
+            if (newDialog.getName() == null) {
+                dialog.setName("Конференция");
+            } else {
+                dialog.setName(newDialog.getName());
+            }
+            //group.setCreator(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()));
+            dialog.setImage("default");
+            dialogRepository.save(dialog);
+            return dialog.getDialogId();
+
+        } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+
+
     }
 
 
@@ -135,54 +170,63 @@ public class ChatController {
     @Transactional
     @MessageMapping("/user/{dialogId}")
     @SendTo("/topic/{dialogId}")
+    //@PreAuthorize(value = "@message.sender.username.equals(@userService.getAuthUser(authentication).username)")
     public void sendMessage(@Payload Message message, Authentication authentication) {
 
+        if (message.getSender().getUsername().equals(userService.getAuthUser(authentication).getUsername())) {
 
-        User sender = userService.loadUserByUsername(message.getSender().getUsername());
+            User sender = userService.loadUserByUsername(message.getSender().getUsername());
 
-        // Persistence Bag. Используется костыль
-        // для корректного отображения (тесты не инициализируются автоматически)
-        //.setTests(new ArrayList<>());
+            // Persistence Bag. Используется костыль
+            // для корректного отображения (тесты не инициализируются автоматически)
+            //.setTests(new ArrayList<>());
 
-        message.setSender(sender);
+            message.setSender(sender);
 
-        //User recipient = userService.loadUserByUsername(message.getRecipient().getUsername());
-        //recipient.setTests(new ArrayList<>());
-        //message.setRecipient(recipient);
+            //User recipient = userService.loadUserByUsername(message.getRecipient().getUsername());
+            //recipient.setTests(new ArrayList<>());
+            //message.setRecipient(recipient);
 
-        message.setDialog(dialogRepository.findById(message.getDialog().getDialogId()).get());
+            message.setDialog(dialogRepository.findById(message.getDialog().getDialogId()).get());
 
 
-        // Устанавливается часовой пояс для хранения времени в БД постоянно по Москве
-        // В БД будет сохраняться Московское время независимо от местоположения сервера/пользователя
-        TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
-        Calendar nowDate = new GregorianCalendar();
-        nowDate.setTimeZone(timeZone);
-        message.setTimestamp(nowDate);;
+            // Устанавливается часовой пояс для хранения времени в БД постоянно по Москве
+            // В БД будет сохраняться Московское время независимо от местоположения сервера/пользователя
+            TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
+            Calendar nowDate = new GregorianCalendar();
+            nowDate.setTimeZone(timeZone);
+            message.setTimestamp(nowDate);;
 
-        message.setStatus(MessageStatus.DELIVERED);
-        messageService.saveMessage(message);
+            message.setStatus(MessageStatus.DELIVERED);
+            messageService.saveMessage(message);
 
-        Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
+            Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
 
-        User authUser = userService.getAuthUserNoProxy(authentication);
+            User authUser = userService.getAuthUserNoProxy(authentication);
 
-        for (User user :dialog.getUsers()) {
-            if (!user.getUsername().equals(authUser.getUsername())) {
-                simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
-                        messageRepository.findMessageById(message.getId()));
+            for (User user :dialog.getUsers()) {
+                if (!user.getUsername().equals(authUser.getUsername())) {
+                    simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
+                            messageRepository.findMessageById(message.getId()));
+
+
+                }
             }
-        }
 
-        //simpMessagingTemplate.convertAndSend("/topic/application", message);
+            //simpMessagingTemplate.convertAndSend("/topic/application", message);
 
-        //return messageRepository.getMessageById(message.getId());
+            //return messageRepository.getMessageById(message.getId());
+
+        } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+
+
+
     }
 
-    /*@GetMapping(path = "/error")
+    @GetMapping(path = "/error")
     public String handleError(){
         return "error";
-    }*/
+    }
 
 
 

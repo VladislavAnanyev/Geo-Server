@@ -190,9 +190,16 @@ public class UserController {
 
     @GetMapping(path = "/about/{username}")
     public String getInfoAboutUser(Model model, @PathVariable String username) {
-        User user = userService.loadUserByUsername(username);
-        model.addAttribute("user", user);
-        return "user";
+
+        if (username.equals(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()).getUsername())) {
+            return "redirect:/profile";
+        } else {
+            User user = userService.loadUserByUsername(username);
+            model.addAttribute("user", user);
+            return "user";
+        }
+
+
     }
 
     @PostMapping(path = "/checkyandex")
