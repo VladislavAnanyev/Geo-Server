@@ -26,6 +26,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Value("${hostname}")
     private String hostname;
 
+    @Value("${rabbitLogin}")
+    private String login;
+
+    @Value("${rabbitPassword}")
+    private String password;
+
 /*
     Конфигурирует брокер сообщений в памяти с одним адресом с префиксом /user для отправки и получения сообщений.
     Адреса с префиксом /app предназначены для сообщений, обрабатываемых методами с аннотацией @MessageMapping
@@ -41,10 +47,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     registry.enableStompBrokerRelay("/topic")
             .setRelayHost(hostname)
             .setRelayPort(61613)
-            .setClientLogin("guest")
-            .setClientPasscode("guest")
-            .setSystemLogin("guest")
-            .setSystemPasscode("guest");
+            .setClientLogin(login)
+            .setClientPasscode(password)
+            .setSystemLogin(login)
+            .setSystemPasscode(password);
 
 
     /*ReactorNettyTcpClient<byte[]> client = new ReactorNettyTcpClient<>(tcpClient -> tcpClient
