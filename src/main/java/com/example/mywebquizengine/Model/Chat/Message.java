@@ -71,4 +71,16 @@ public class Message {
     public Dialog getDialog() {
         return dialog;
     }
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "id=" + id +
+                ", sender=" + sender +
+                ", content='" + content + '\'' +
+                ", timestamp=" + timestamp +
+                ", status=" + status +
+                ", dialog=" + dialog +
+                '}';
+    }
 }

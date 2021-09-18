@@ -1,22 +1,34 @@
 package com.example.mywebquizengine;
 
+
+import com.example.mywebquizengine.Controller.ChatController;
 import freemarker.template.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
+
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.aspectj.EnableSpringConfigured;
+import org.springframework.context.annotation.Bean;
+
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.security.crypto.password.PasswordEncoder;
+
 
 import java.io.*;
-import java.net.InetAddress;
-import java.util.HashMap;
-import java.util.Map;
+
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
+import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+
 
 @SpringBootApplication
 @EnableScheduling
@@ -115,4 +127,8 @@ public class MywebquizengineApplication {
     private void setApplicationContext(ApplicationContext applicationContext) {
         ctx = applicationContext;
     }
+
+
+
+
 }

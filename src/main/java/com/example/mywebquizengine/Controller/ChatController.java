@@ -5,12 +5,16 @@ import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Chat.Message;
 import com.example.mywebquizengine.Model.Chat.MessageStatus;
 import com.example.mywebquizengine.Model.User;
+import com.example.mywebquizengine.RabbitMqConfiguration;
 import com.example.mywebquizengine.Repos.DialogRepository;
 import com.example.mywebquizengine.Repos.MessageRepository;
 import com.example.mywebquizengine.Repos.UserRepository;
 import com.example.mywebquizengine.Service.MessageService;
 import com.example.mywebquizengine.Service.UserService;
-import org.hibernate.boot.model.source.internal.hbm.CommaSeparatedStringHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Modifying;
@@ -22,6 +26,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -33,10 +38,12 @@ import java.util.*;
 
 
 @Controller
+@EnableRabbit
+@Component
 public class ChatController {
 
     @Autowired
-    RabbitTemplate rabbitTemplate;
+    private RabbitTemplate rabbitTemplate;
 
     @Autowired
     private UserService userService;
@@ -55,6 +62,10 @@ public class ChatController {
 
     @Autowired
     private MessageRepository messageRepository;
+
+    Logger logger = LoggerFactory.getLogger("main");
+
+
 
 
     @GetMapping(path = "/chat")
@@ -206,9 +217,14 @@ public class ChatController {
 
             for (User user :dialog.getUsers()) {
                 if (!user.getUsername().equals(authUser.getUsername())) {
+
+                    rabbitTemplate.setExchange("message-exchange");
+
                     simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
                             messageRepository.findMessageById(message.getId()));
 
+                    rabbitTemplate.convertAndSend(
+                            "android", messageRepository.findMessageById(message.getId()));
 
                 }
             }
@@ -221,6 +237,21 @@ public class ChatController {
 
 
 
+    }
+
+
+    @RabbitListener(queues = "WebMessageQueue")
+    public void getWebMessageFromRabbitMq(Message message) {
+        logger.info("123");
+        System.out.println("Сообщение получено на веб, " + message.toString());
+        //sendMessage(message, SecurityContextHolder.getContext().getAuthentication());
+    }
+
+    @RabbitListener(queues = "AndroidMessageQueue")
+    public void getAndroidMessageFromRabbitMq(Message message) {
+        logger.info("123");
+        System.out.println("Сообщение получено на андройд, " + message.toString());
+        //sendMessage(message, SecurityContextHolder.getContext().getAuthentication());
     }
 
     @GetMapping(path = "/error")

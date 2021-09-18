@@ -95,15 +95,8 @@
     </div>
 
     <#--<div class="form-group">
-        <label for="exampleInputEmail1">Адрес электронной почты</label>
-        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
-        <small id="emailHelp" class="form-text text-muted">Мы никогда никому не передадим Вашу электронную почту.</small>
-    </div>-->
-
-   <#-- <div class="form-group">
         <label for="exampleInputEmail1">Описание</label>
         <input class="form-control" type="text" name="formcomment" id="exampleInputEmail1" value="Проект «Железный человек»: реактор холодного ядерного синтеза">
-
     </div>-->
 
     <div class="form-group">
@@ -114,15 +107,12 @@
 
 
     <input class="form-control" type="hidden" name="label" value="${order.order_id?c}">
-
-
     <input class="form-control" type="hidden" name="quickpay-form" value="donate">
-    <input class="form-control" type="hidden" name="targets" value="Покупка coins" disabled>
+    <input class="form-control" type="hidden" name="targets" value="Покупка coins">
 
     <div class="form-group">
         <label class="form-label">Сумма в рублях (1 руб. = 100 coins)</label>
         <input class="form-control" type="text" name="sum" value="2" data-type="number">
-
     </div>
 
     <#--<div class="form-group">
@@ -133,7 +123,6 @@
     <input class="form-control" type="hidden" name="need-fio" value="false">
     <input class="form-control" type="hidden" name="need-email" value="false">
     <input class="form-control" type="hidden" name="need-phone" value="false">
-    <input class="form-control" type="hidden" name="need-address" value="false">
     <input class="form-control" type="hidden" name="need-address" value="false">
     <input class="form-control" type="hidden" name="successURL" value="https://webquizzes.me/checkout">
     <div>
@@ -150,41 +139,6 @@
     </div>
 </form>
 
-
-<#--<form>
-    <div class="form-group">
-        <label for="exampleInputEmail1">Адрес электронной почты</label>
-        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
-        <small id="emailHelp" class="form-text text-muted">Мы никогда никому не передадим Вашу электронную почту.</small>
-    </div>
-    <div class="form-group">
-        <label for="exampleInputPassword1">Пароль</label>
-        <input type="password" class="form-control" id="exampleInputPassword1">
-    </div>
-    <div class="form-group form-check">
-        <input type="checkbox" class="form-check-input" id="exampleCheck1">
-        <label class="form-check-label" for="exampleCheck1">Проверить меня</label>
-    </div>
-    <button type="submit" class="btn btn-primary">Отправить</button>
-</form>-->
-
-
-<#--<form method="POST" action="https://yoomoney.ru/quickpay/confirm.xml">
-    <input type="hidden" name="receiver" value="41001xxxxxxxxxxxx">
-    <input type="hidden" name="formcomment" value="Проект «Железный человек»: реактор холодного ядерного синтеза">
-    <input type="hidden" name="short-dest" value="Проект «Железный человек»: реактор холодного ядерного синтеза">
-    <input type="hidden" name="label" value="$order_id">
-    <input type="hidden" name="quickpay-form" value="donate">
-    <input type="hidden" name="targets" value="транзакция {order_id}">
-    <input type="hidden" name="sum" value="4568.25" data-type="number">
-    <input type="hidden" name="comment" value="Хотелось бы получить дистанционное управление.">
-    <input type="hidden" name="need-fio" value="true">
-    <input type="hidden" name="need-email" value="true">
-    <input type="hidden" name="need-phone" value="false">
-    <input type="hidden" name="need-address" value="false">
-    <label><input type="radio" name="paymentType" value="PC">ЮMoney</label>
-    <label><input type="radio" name="paymentType" value="AC">Банковской картой</label>
-    <input type="submit" value="Перевести"></form>-->
 
 
 
