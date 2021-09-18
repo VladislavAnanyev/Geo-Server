@@ -247,12 +247,12 @@ public class ChatController {
         //sendMessage(message, SecurityContextHolder.getContext().getAuthentication());
     }
 
-    @RabbitListener(queues = "AndroidMessageQueue")
+    /*@RabbitListener(queues = "AndroidMessageQueue")
     public void getAndroidMessageFromRabbitMq(Message message) {
         logger.info("123");
         System.out.println("Сообщение получено на андройд, " + message.toString());
         //sendMessage(message, SecurityContextHolder.getContext().getAuthentication());
-    }
+    }*/
 
     @GetMapping(path = "/error")
     public String handleError(){
