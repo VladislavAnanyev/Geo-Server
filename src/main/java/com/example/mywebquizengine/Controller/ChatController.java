@@ -13,8 +13,11 @@ import com.example.mywebquizengine.Service.MessageService;
 import com.example.mywebquizengine.Service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Modifying;
@@ -64,6 +67,9 @@ public class ChatController {
     private MessageRepository messageRepository;
 
     Logger logger = LoggerFactory.getLogger("main");
+
+    @Autowired
+    private RabbitAdmin rabbitAdmin;
 
 
 
@@ -180,7 +186,7 @@ public class ChatController {
     @Modifying
     @Transactional
     @MessageMapping("/user/{dialogId}")
-    @SendTo("/topic/{dialogId}")
+    //@SendTo("/topic/{dialogId}")
     //@PreAuthorize(value = "@message.sender.username.equals(@userService.getAuthUser(authentication).username)")
     public void sendMessage(@Payload Message message, Authentication authentication) {
 
@@ -216,17 +222,27 @@ public class ChatController {
             User authUser = userService.getAuthUserNoProxy(authentication);
 
             for (User user :dialog.getUsers()) {
-                if (!user.getUsername().equals(authUser.getUsername())) {
 
-                    rabbitTemplate.setExchange("message-exchange");
+                if (!user.getUsername().equals(authUser.getUsername())) {
 
                     simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
                             messageRepository.findMessageById(message.getId()));
 
-                    rabbitTemplate.convertAndSend(
-                            "android", messageRepository.findMessageById(message.getId()));
+                    rabbitTemplate.setExchange("message-exchange");
+
+
+                    rabbitTemplate.convertAndSend(user.getUsername(),
+                            messageRepository.findMessageById(message.getId()));
+
+
+
+
+                    /*rabbitTemplate.convertAndSend(
+                            "android", messageRepository.findMessageById(message.getId()));*/
+
 
                 }
+
             }
 
             //simpMessagingTemplate.convertAndSend("/topic/application", message);
@@ -240,7 +256,7 @@ public class ChatController {
     }
 
 
-    @RabbitListener(queues = "WebMessageQueue")
+    @RabbitListener(queues = "application")
     public void getWebMessageFromRabbitMq(Message message) {
         logger.info("123");
         System.out.println("Сообщение получено на веб, " + message.toString());
@@ -255,7 +271,7 @@ public class ChatController {
     }*/
 
     @GetMapping(path = "/error")
-    public String handleError(){
+    public String handleError() {
         return "error";
     }
 

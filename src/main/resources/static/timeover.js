@@ -46,7 +46,7 @@ function onConnected() {
     let id = document.getElementById("useranswerid").value
 
     console.log('/topic/' + username);
-    stompClient.subscribe('/topic/' + username + '/' + id, onMessageReceived);
+    stompClient.subscribe('/topic/' + username + id, onMessageReceived);
 
 
     // Tell your username to the server
@@ -64,7 +64,7 @@ function onError(error) {
     connectingElement.style.color = 'red';*/
     console.log("fail")
 
-    connect()
+    //connect()
     console.log("try")
 }
 

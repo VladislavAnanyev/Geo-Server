@@ -5,6 +5,9 @@ import com.example.mywebquizengine.Model.Role;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.GeolocationRepository;
 import com.example.mywebquizengine.Repos.UserRepository;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -25,6 +28,9 @@ import java.util.UUID;
 
 @Service
 public class UserService implements UserDetailsService {
+
+    @Autowired
+    private RabbitAdmin rabbitAdmin;
 
     @Autowired
     private UserRepository userRepository;
@@ -184,6 +190,15 @@ public class UserService implements UserDetailsService {
     }
 
     public void doInitialize(User user) {
+
+        Queue queue = new Queue(user.getUsername(), true, false, false);
+
+        Binding binding = new Binding(user.getUsername(), Binding.DestinationType.QUEUE,
+                "message-exchange", user.getUsername(), null);
+
+        rabbitAdmin.declareQueue(queue);
+        rabbitAdmin.declareBinding(binding);
+
         if (user.getAvatar() == null) {
             user.setAvatar("default");
         }

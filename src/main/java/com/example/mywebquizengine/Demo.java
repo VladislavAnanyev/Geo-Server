@@ -9,6 +9,9 @@ import com.example.mywebquizengine.Service.UserAnswerService;
 import com.example.mywebquizengine.Service.UserService;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -41,13 +44,27 @@ public class Demo implements CommandLineRunner {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private RabbitAdmin rabbitAdmin;
+
 
 
 
     @Override
     public void run(String... args) throws UnknownHostException, SchedulerException, InterruptedException, NoSuchAlgorithmException {
 
+        List<User> users = userRepository.findAll();
 
+
+        for (User user: users) {
+            Queue queue = new Queue(user.getUsername(), true, false, false);
+
+            Binding binding = new Binding(user.getUsername(), Binding.DestinationType.QUEUE,
+                    "message-exchange", user.getUsername(), null);
+
+            rabbitAdmin.declareQueue(queue);
+            rabbitAdmin.declareBinding(binding);
+        }
 
 
 

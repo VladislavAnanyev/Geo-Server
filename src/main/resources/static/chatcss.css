@@ -100,6 +100,11 @@ img{ max-width:100%;}
     padding: 5px 10px 5px 12px;
     width:100%;
 }
+
+.incoming_msg{
+    margin:26px 0 26px;
+}
+
 .outgoing_msg{ overflow:hidden; margin:26px 0 26px;}
 .sent_msg {
     float: right;

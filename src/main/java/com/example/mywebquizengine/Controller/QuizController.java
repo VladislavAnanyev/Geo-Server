@@ -358,7 +358,7 @@ public class QuizController {
         userAnswerService.saveAnswer(userTestAnswer);
 
         simpMessagingTemplate.convertAndSend("/topic/" +
-                userTestAnswer.getUser().getUsername() + "/" + userTestAnswer.getUserAnswerId(), result.toString().toCharArray());
+                userTestAnswer.getUser().getUsername() + userTestAnswer.getUserAnswerId(), result.toString().toCharArray());
 
         return String.valueOf(result);
     }
