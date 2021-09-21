@@ -1,14 +1,5 @@
 'use strict';
 
-/*var usernamePage = document.querySelector('#username-page');
-var chatPage = document.querySelector('#chat-page');
-var usernameForm = document.querySelector('#usernameForm');
-var messageForm = document.querySelector('#messageForm');*/
-//var messageInput = document.querySelector('#message');
-
-/*var messageArea = document.querySelector('#messageArea');
-var connectingElement = document.querySelector('.connecting');*/
-
 var stompClient = null;
 var username = null;
 
@@ -17,42 +8,21 @@ var colors = [
     '#ffc107', '#ff85af', '#FF9800', '#39bbb0'
 ];
 
-function connect(/*event*/) {
-    //username = document.querySelector('#name').value.trim();
-
-    //if(username) {
-        //usernamePage.classList.add('hidden');
-        //chatPage.classList.remove('hidden');
+function connect() {
 
     console.log("Go")
         var socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
-
         stompClient.connect({}, onConnected, onError);
-    //}
-    //event.preventDefault();
 }
 
-
 function onConnected() {
-
-    // Subscribe to the Public Topic
     console.log('/topic/' + document.getElementById("dialogId").value);
     stompClient.subscribe('/topic/' + document.getElementById("autoUs").textContent, onMessageReceived);
-
-    // Tell your username to the server
-   /*stompClient.send("/app/testchat",
-        {},
-        JSON.stringify({sender: username, type: 'JOIN'})
-    )
-
-    connectingElement.classList.add('hidden');*/
 }
 
 
 function onError(error) {
-    /*connectingElement.textContent = 'Could not connect to WebSocket server. Please refresh this page to try again!';
-    connectingElement.style.color = 'red';*/
     console.log("fail")
 
     connect()
@@ -61,6 +31,8 @@ function onError(error) {
 
 
 function sendMessage(sender, dialog) {
+
+    //console.log(document.getElementById("autoUs").textContent)
 
     let messageInput = document.getElementById("inputtext");
     if (messageInput.value.length !== 0) {
@@ -109,14 +81,22 @@ function sendMessage(sender, dialog) {
 
 
 function onMessageReceived(payload) {
-    //f(21623)
-   /* var myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'), {
-        keyboard: false
-    })
-    myModal.toggle()*/
-    //console.log("receive")
+
     var message = JSON.parse(payload.body);
+
     console.log(message)
+
+    let authUsername
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', '/authuser', false);
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            authUsername = xhr.responseText
+        }
+    }
+    xhr.send();
+
     let dialog = document.getElementById("dialogs")
 
     let dialogsName = document.getElementsByClassName("dialogsuser")
@@ -128,75 +108,53 @@ function onMessageReceived(payload) {
     }
 
 
-
     let div2 = document.createElement("div")
     div2.setAttribute('class', "chat_list")
     div2.setAttribute('id', message.sender.username)
     div2.setAttribute('onclick', "activeChat(" + message.sender.username + ")")
 
-    div2.innerHTML =
-        "                                    <div class=\"chat_people\">\n" +
-        "                                        <div class=\"chat_img\"> <img src=\"../../../../img/" + message.sender.avatar + ".jpg" + "\" alt=\"sunil\"> </div>\n" +
-        "                                        <div class=\"chat_ib\">\n" +
-        "                                            <h5 class=\"dialogsuser\">"+message.sender.username+"<span class=\"chat_date\"></span></h5>\n" +
-        "                                            <p>" + message.content + "</p>\n" +
-        "                                        </div>\n" +
-        "                                    </div>"
+    if (authUsername !== message.sender.username) {
+
+        div2.innerHTML =
+            "                                    <div class=\"chat_people\">\n" +
+            "                                        <div class=\"chat_img\"> <img src=\"../../../../img/" + message.sender.avatar + ".jpg" + "\" alt=\"sunil\"> </div>\n" +
+            "                                        <div class=\"chat_ib\">\n" +
+            "                                            <h5 class=\"dialogsuser\">" + message.sender.username + "<span class=\"chat_date\"></span></h5>\n" +
+            "                                            <p>" + message.content + "</p>\n" +
+            "                                        </div>\n" +
+            "                                    </div>"
 
 
-    //console.log(message.sender.username)
-    //console.log(dialogsNameArr.indexOf(message.sender.username))
+        if (dialogsNameArr.indexOf(message.sender.username) === -1) {
+            dialog.before(div2)
+        }
 
-    if (dialogsNameArr.indexOf(message.sender.username) === -1) {
-        dialog.before(div2)
+        if (dialogsNameArr.indexOf(message.sender.username) === 0) {
+            document.getElementById("lastMsg" + message.dialog.dialogId).textContent = message.content
+        }
+
     }
 
-    if (dialogsNameArr.indexOf(message.sender.username) === 0) {
-        document.getElementById("lastMsg" + message.dialog.dialogId).textContent = message.content
-    }
-
-    //var messageElement = document.createElement('li');
-
-    /*if(message.type === 'JOIN') {
-        messageElement.classList.add('event-message');
-        message.content = message.sender + ' joined!';
-    } else if (message.type === 'LEAVE') {
-        messageElement.classList.add('event-message');
-        message.content = message.sender + ' left!';
-    } else {
-        messageElement.classList.add('chat-message');
-
-        var avatarElement = document.createElement('i');
-        var avatarText = document.createTextNode(message.sender[0]);
-        avatarElement.appendChild(avatarText);
-        avatarElement.style['background-color'] = getAvatarColor(message.sender);
-
-        messageElement.appendChild(avatarElement);
-
-        var usernameElement = document.createElement('span');
-        var usernameText = document.createTextNode(message.sender);
-        usernameElement.appendChild(usernameText);
-        messageElement.appendChild(usernameElement);
-    }*/
-
-    /*var textElement = document.createElement('p');
-    var messageText = document.createTextNode(message.content);
-    textElement.appendChild(messageText);
-
-    messageElement.appendChild(textElement);
-
-    messageArea.appendChild(messageElement);
-    messageArea.scrollTop = messageArea.scrollHeight;*/
     let div = document.createElement("div");
-    div.setAttribute('class', "incoming_msg")
 
-    let date = new Date(message.timestamp)
-    div.innerHTML =
-        "<div class=\"incoming_msg_img\"> <img src=\"../../../../img/" + message.sender.avatar + ".jpg" + "\" alt=\"sunil\"> </div>" +
-        "                        <div class=\"received_msg\">\n" +
-        "                        <div class=\"received_withd_msg\">\n" +
-        "                            <p>" + message.content + "</p>\n" +
-        "                            <span class=\"time_date\">" +  date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div> </div>\n"
+    if (authUsername !== message.sender.username) {
+        div.setAttribute('class', "incoming_msg")
+        let date = new Date(message.timestamp)
+        div.innerHTML =
+            "<div class=\"incoming_msg_img\"> <img src=\"../../../../img/" + message.sender.avatar + ".jpg" + "\" alt=\"sunil\"> </div>" +
+            "                        <div class=\"received_msg\">\n" +
+            "                        <div class=\"received_withd_msg\">\n" +
+            "                            <p>" + message.content + "</p>\n" +
+            "                            <span class=\"time_date\">" +  date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div> </div>\n"
+
+    } else {
+        div.setAttribute('class', "outgoing_msg")
+        let date = new Date(message.timestamp)
+        div.innerHTML = "<div class=\"sent_msg\">\n" +
+            "                                    <p>" + message.content + "</p>\n" +
+            "                                    <span class=\"time_date\">" +  date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div>\n" +
+            "                            "
+    }
 
 
     let last = document.getElementById("msg");
@@ -205,11 +163,9 @@ function onMessageReceived(payload) {
 
     var div3 = $("#msg");
     div3.scrollTop(div3.prop('scrollHeight'));
+
+
 }
 
 
-
-//usernameForm.addEventListener('submit', connect, true)
-
-//messageForm.addEventListener('submit', sendMessage, true)
 

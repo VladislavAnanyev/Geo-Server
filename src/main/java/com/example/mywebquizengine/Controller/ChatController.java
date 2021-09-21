@@ -11,6 +11,7 @@ import com.example.mywebquizengine.Repos.MessageRepository;
 import com.example.mywebquizengine.Repos.UserRepository;
 import com.example.mywebquizengine.Service.MessageService;
 import com.example.mywebquizengine.Service.UserService;
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Binding;
@@ -219,6 +220,8 @@ public class ChatController {
 
             Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
 
+
+
             User authUser = userService.getAuthUserNoProxy(authentication);
 
             for (User user :dialog.getUsers()) {
@@ -234,40 +237,28 @@ public class ChatController {
                     rabbitTemplate.convertAndSend(user.getUsername(),
                             messageRepository.findMessageById(message.getId()));
 
-
-
-
-                    /*rabbitTemplate.convertAndSend(
-                            "android", messageRepository.findMessageById(message.getId()));*/
-
-
                 }
-
             }
 
-            //simpMessagingTemplate.convertAndSend("/topic/application", message);
-
-            //return messageRepository.getMessageById(message.getId());
-
         } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-
-
 
     }
 
 
 
 
+    @Modifying
+    @Transactional
     @RabbitListener(queues = "incoming-messages")
     public void getMessageFromAndroid(Message message) {
         //logger.info("123");
         System.out.println("Сообщение получено из андройда");
         //sendMessage(message, SecurityContextHolder.getContext().getAuthentication());
 
-        if (message.getSender().getUsername().equals(userService.getAuthUser(
+        /*if (message.getSender().getUsername().equals(userService.getAuthUser(
                 SecurityContextHolder
                         .getContext()
-                        .getAuthentication()).getUsername())) {
+                        .getAuthentication()).getUsername())) {*/
 
             User sender = userService.loadUserByUsername(message.getSender().getUsername());
 
@@ -295,7 +286,22 @@ public class ChatController {
             message.setStatus(MessageStatus.DELIVERED);
             messageService.saveMessage(message);
 
+        Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
+
+
+        Hibernate.initialize(dialog.getUsers());
+        //User authUser = userService.getAuthUserNoProxy(authentication);
+
+        for (User user :dialog.getUsers()) {
+
+            //if (!user.getUsername().equals(authUser.getUsername())) {
+
+                simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
+                        messageRepository.findMessageById(message.getId()));
+
+            //}
         }
+        //}
     }
 
     /*@RabbitListener(queues = "AndroidMessageQueue")

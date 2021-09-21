@@ -64,6 +64,12 @@ public class UserController {
         return "profile";
     }
 
+    @GetMapping(path = "/authuser")
+    @ResponseBody
+    public String getAuthUser() {
+        return userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()).getUsername();
+    }
+
 
     @GetMapping(path = "/getbalance")
     @ResponseBody
