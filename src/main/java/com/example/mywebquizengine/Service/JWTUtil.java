@@ -52,7 +52,7 @@ public class JWTUtil {
         return Jwts.builder().setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(expireTimeFromNow())
+                .setExpiration(/*expireTimeFromNow()*/null)
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY).compact();
     }
 
