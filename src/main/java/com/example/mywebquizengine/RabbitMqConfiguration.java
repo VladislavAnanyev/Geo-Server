@@ -23,6 +23,9 @@ public class RabbitMqConfiguration implements RabbitListenerConfigurer {
     public static final String QUEUE_ANDROID = "AndroidMessageQueue";
 
     public static final String EXCHANGE = "message-exchange";
+
+    public static final String INCOMING_MESSAGES = "incoming-messages";
+
     public static final String QUEUE_DEAD_ORDERS = "orders-dead";
 
     @Bean
@@ -33,6 +36,11 @@ public class RabbitMqConfiguration implements RabbitListenerConfigurer {
     @Bean
     Queue QueueAndroid() {
         return QueueBuilder.durable(QUEUE_ANDROID).build();
+    }
+
+    @Bean
+    Queue QueueInMessages() {
+        return QueueBuilder.durable(INCOMING_MESSAGES).build();
     }
 
     @Bean

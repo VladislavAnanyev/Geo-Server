@@ -256,11 +256,46 @@ public class ChatController {
     }
 
 
-    @RabbitListener(queues = "application")
-    public void getWebMessageFromRabbitMq(Message message) {
-        logger.info("123");
-        System.out.println("Сообщение получено на веб, " + message.toString());
+
+
+    @RabbitListener(queues = "incoming-messages")
+    public void getMessageFromAndroid(Message message) {
+        //logger.info("123");
+        System.out.println("Сообщение получено из андройда");
         //sendMessage(message, SecurityContextHolder.getContext().getAuthentication());
+
+        if (message.getSender().getUsername().equals(userService.getAuthUser(
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication()).getUsername())) {
+
+            User sender = userService.loadUserByUsername(message.getSender().getUsername());
+
+            // Persistence Bag. Используется костыль
+            // для корректного отображения (тесты не инициализируются автоматически)
+            //.setTests(new ArrayList<>());
+
+            message.setSender(sender);
+
+            //User recipient = userService.loadUserByUsername(message.getRecipient().getUsername());
+            //recipient.setTests(new ArrayList<>());
+            //message.setRecipient(recipient);
+
+            message.setDialog(dialogRepository.findById(message.getDialog().getDialogId()).get());
+
+
+            // Устанавливается часовой пояс для хранения времени в БД постоянно по Москве
+            // В БД будет сохраняться Московское время независимо от местоположения сервера/пользователя
+            TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
+            Calendar nowDate = new GregorianCalendar();
+            nowDate.setTimeZone(timeZone);
+            message.setTimestamp(nowDate);
+
+
+            message.setStatus(MessageStatus.DELIVERED);
+            messageService.saveMessage(message);
+
+        }
     }
 
     /*@RabbitListener(queues = "AndroidMessageQueue")
