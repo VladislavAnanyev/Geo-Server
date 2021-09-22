@@ -13,8 +13,10 @@ import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.DialogRepository;
 import com.example.mywebquizengine.Repos.MessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,22 +63,26 @@ public class MessageService {
 
         User authUser = userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication());
 
-        Long dialog_id = dialogRepository.findDialogByName(user.getUsername(),
-                authUser.getUsername());
+        if (!authUser.getUsername().equals(user.getUsername())) {
+            Long dialog_id = dialogRepository.findDialogByName(user.getUsername(),
+                    authUser.getUsername());
 
-        if (dialog_id == null) {
-            Dialog dialog = new Dialog();
-            //  Set<User> users = new HashSet<>();
-            dialog.addUser(userService.loadUserByUsername(user.getUsername()));
-            dialog.addUser(userService.loadUserByUsername(authUser.getUsername()));
+            if (dialog_id == null) {
+                Dialog dialog = new Dialog();
+                //  Set<User> users = new HashSet<>();
+                dialog.addUser(userService.loadUserByUsername(user.getUsername()));
+                dialog.addUser(userService.loadUserByUsername(authUser.getUsername()));
 //            users.add(userService.loadUserByUsername(user.getUsername()));
 //            users.add(userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()));
-            //dialog.setUsers(users);
-            dialogRepository.save(dialog);
-            return dialog.getDialogId();
-        } else {
-            return dialog_id;
-        }
+                //dialog.setUsers(users);
+                dialogRepository.save(dialog);
+                return dialog.getDialogId();
+            } else {
+                return dialog_id;
+            }
+        } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+
+
     }
 
     public Long checkDialogForApi(String username1, String username2) {

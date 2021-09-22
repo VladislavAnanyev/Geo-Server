@@ -11,28 +11,36 @@ var colors = [
 function connect() {
 
     console.log("Go")
-        var socket = new SockJS('/ws');
-        stompClient = Stomp.over(socket);
-        stompClient.connect({}, onConnected, onError);
+    var socket = new SockJS('/ws');
+    stompClient = Stomp.over(socket);
+    stompClient.connect({}, onConnected, onError);
 }
 
 function onConnected() {
     console.log('/topic/' + document.getElementById("dialogId").value);
-    stompClient.subscribe('/topic/' + document.getElementById("autoUs").textContent, onMessageReceived);
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', '/authuser', false);
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            username = xhr.responseText
+        }
+    }
+    xhr.send();
+
+    stompClient.subscribe('/topic/' + username, onMessageReceived);
+
 }
 
 
 function onError(error) {
     console.log("fail")
-
     connect()
     console.log("try")
 }
 
 
-function sendMessage(sender, dialog) {
-
-    //console.log(document.getElementById("autoUs").textContent)
+function sendMessage(dialog) {
 
     let messageInput = document.getElementById("inputtext");
     if (messageInput.value.length !== 0) {
@@ -40,7 +48,7 @@ function sendMessage(sender, dialog) {
         var messageContent = messageInput.value.trim();
         if(messageContent && stompClient) {
             var chatMessage = {
-                sender: {username: sender},
+                sender: {username: username},
                 content: messageInput.value,
                 dialog: {dialogId: dialog}
             };
@@ -49,7 +57,6 @@ function sendMessage(sender, dialog) {
         }
 
         let date = new Date()
-
         let div = document.createElement("div");
         div.setAttribute('class', "outgoing_msg")
 
@@ -61,9 +68,7 @@ function sendMessage(sender, dialog) {
 
         let last = document.getElementById("msg");
 
-
         last.append(div)
-        //window.scrollTo(0,document.querySelector("#msgcont").scroll);
 
         var div2 = $("#msg");
         div2.scrollTop(div2.prop('scrollHeight'));
@@ -73,8 +78,6 @@ function sendMessage(sender, dialog) {
         let msgInput = messageInput.value
         messageInput.value = ' '
         lastMsg.textContent = msgInput
-
-
 
     }
 }
@@ -86,17 +89,6 @@ function onMessageReceived(payload) {
 
     console.log(message)
 
-    let authUsername
-
-    let xhr = new XMLHttpRequest();
-    xhr.open('GET', '/authuser', false);
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-            authUsername = xhr.responseText
-        }
-    }
-    xhr.send();
-
     let dialog = document.getElementById("dialogs")
 
     let dialogsName = document.getElementsByClassName("dialogsuser")
@@ -104,7 +96,7 @@ function onMessageReceived(payload) {
 
     for (let i = 0; i < dialogsName.length; i++) {
         dialogsNameArr.push(dialogsName[i].textContent)
-      //  console.log(dialogsName[i].textContent)
+        //  console.log(dialogsName[i].textContent)
     }
 
 
@@ -113,7 +105,7 @@ function onMessageReceived(payload) {
     div2.setAttribute('id', message.sender.username)
     div2.setAttribute('onclick', "activeChat(" + message.sender.username + ")")
 
-    if (authUsername !== message.sender.username) {
+    if (username !== message.sender.username) {
 
         div2.innerHTML =
             "                                    <div class=\"chat_people\">\n" +
@@ -137,7 +129,7 @@ function onMessageReceived(payload) {
 
     let div = document.createElement("div");
 
-    if (authUsername !== message.sender.username) {
+    if (username !== message.sender.username) {
         div.setAttribute('class', "incoming_msg")
         let date = new Date(message.timestamp)
         div.innerHTML =

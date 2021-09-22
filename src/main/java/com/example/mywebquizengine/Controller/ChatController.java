@@ -220,22 +220,25 @@ public class ChatController {
 
             Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
 
+            
 
 
             User authUser = userService.getAuthUserNoProxy(authentication);
 
             for (User user :dialog.getUsers()) {
 
+                rabbitTemplate.setExchange("message-exchange");
+
+
+                rabbitTemplate.convertAndSend(user.getUsername(),
+                        messageRepository.findMessageById(message.getId()));
+
                 if (!user.getUsername().equals(authUser.getUsername())) {
 
                     simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
                             messageRepository.findMessageById(message.getId()));
 
-                    rabbitTemplate.setExchange("message-exchange");
 
-
-                    rabbitTemplate.convertAndSend(user.getUsername(),
-                            messageRepository.findMessageById(message.getId()));
 
                 }
             }
@@ -251,6 +254,9 @@ public class ChatController {
     @Transactional
     @RabbitListener(queues = "incoming-messages")
     public void getMessageFromAndroid(Message message) {
+
+
+
         //logger.info("123");
         System.out.println("Сообщение получено из андройда");
         //sendMessage(message, SecurityContextHolder.getContext().getAuthentication());
@@ -298,6 +304,9 @@ public class ChatController {
 
                 simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
                         messageRepository.findMessageById(message.getId()));
+
+                rabbitTemplate.convertAndSend(user.getUsername(),
+                    messageRepository.findMessageById(message.getId()));
 
             //}
         }

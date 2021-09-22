@@ -1,6 +1,7 @@
 package com.example.mywebquizengine.Model.Projection;
 
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 public interface MessageForApiView {
     Integer getId();

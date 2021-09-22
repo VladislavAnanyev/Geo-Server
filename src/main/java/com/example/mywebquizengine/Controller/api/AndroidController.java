@@ -107,7 +107,7 @@ public class AndroidController {
     }
 
     @GetMapping(path = "/api/getDialogId")
-    @ResponseBody
+    //@ResponseBody
     public Long checkDialog(@RequestParam String username) {
 
         //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -117,7 +117,7 @@ public class AndroidController {
     }
 
 
-    @PostMapping(path = "/api/authuser")
+    @GetMapping(path = "/api/authuser")
     public UserView getApiAuthUser() {
 
         final String authorizationHeader = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
@@ -175,7 +175,7 @@ public class AndroidController {
 
 
     @PostMapping(path = "/api/signup")
-    @ResponseBody
+    //@ResponseBody
     public AuthResponse signup(@RequestBody User user) {
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
