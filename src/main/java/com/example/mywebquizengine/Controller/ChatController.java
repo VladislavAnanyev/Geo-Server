@@ -4,6 +4,7 @@ package com.example.mywebquizengine.Controller;
 import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Chat.Message;
 import com.example.mywebquizengine.Model.Chat.MessageStatus;
+import com.example.mywebquizengine.Model.Projection.MessageForApiView;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.RabbitMqConfiguration;
 import com.example.mywebquizengine.Repos.DialogRepository;
@@ -29,14 +30,18 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
+import javax.validation.Valid;
+import java.security.Principal;
 import java.util.*;
 
 
@@ -44,6 +49,7 @@ import java.util.*;
 @Controller
 @EnableRabbit
 @Component
+@Validated
 public class ChatController {
 
     @Autowired
@@ -76,8 +82,8 @@ public class ChatController {
 
 
     @GetMapping(path = "/chat")
-    public String chat(Model model, Authentication authentication) {
-        User user = userService.getAuthUser(authentication);
+    public String chat(Model model, @AuthenticationPrincipal Principal principal) {
+        User user = userService.loadUserByUsernameProxy(principal.getName());
         model.addAttribute("myUsername", user);
         model.addAttribute("lastDialogs", messageService.getDialogs(user.getUsername()));
         model.addAttribute("userList", userService.getUserList());
@@ -86,16 +92,17 @@ public class ChatController {
 
     @PostMapping(path = "/checkdialog")
     @ResponseBody
-    @PreAuthorize(value = "!@userService.getAuthUser(authentication).username.equals(#user.username)")
-    public Long checkDialog(@RequestBody User user) {
+    @PreAuthorize(value = "!#principal.name.equals(#user.username)")
+    public Long checkDialog(@RequestBody User user, @AuthenticationPrincipal Principal principal) {
 
-        Long dialog_id = messageService.checkDialog(user);
+        String s = principal.getName();
+        Long dialog_id = messageService.checkDialog(user, principal.getName());
 
         if (dialog_id == null) {
             Dialog dialog = new Dialog();
           //  Set<User> users = new HashSet<>();
             dialog.addUser(userService.loadUserByUsername(user.getUsername()));
-            dialog.addUser(userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()));
+            dialog.addUser(userService.loadUserByUsername(principal.getName()));
 //            users.add(userService.loadUserByUsername(user.getUsername()));
 //            users.add(userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()));
             //dialog.setUsers(users);
@@ -107,10 +114,10 @@ public class ChatController {
     }
 
     @GetMapping(path = "/chat/{dialog_id}")
-    public String chatWithUser(Model model, @PathVariable String dialog_id, Authentication authentication) {
+    public String chatWithUser(Model model, @PathVariable String dialog_id, @AuthenticationPrincipal Principal principal) {
 
         if (dialogRepository.findDialogByDialogId(Long.valueOf(dialog_id)).getUsers().stream().anyMatch(o -> o.getUsername()
-                .equals(userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()).getUsername()))) {
+                .equals(principal.getName()))) {
 
             Dialog dialog = dialogRepository.findById(Long.valueOf(dialog_id)).get();
 
@@ -118,7 +125,7 @@ public class ChatController {
 
 
 
-            User user = userService.getAuthUser(authentication);
+            User user = userService.loadUserByUsername(principal.getName());
             model.addAttribute("myUsername", user);
             model.addAttribute("lastDialogs", messageService.getDialogs(user.getUsername()));
 
@@ -136,16 +143,16 @@ public class ChatController {
 
     @PostMapping(path = "/createGroup")
     @ResponseBody
-    public Long createGroup(@RequestBody Dialog newDialog) {
+    public Long createGroup(@RequestBody Dialog newDialog, @AuthenticationPrincipal Principal principal) {
 
         User authUser = new User();
 
-        authUser.setUsername(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()).getUsername());
+        authUser.setUsername(principal.getName());
 
         newDialog.addUser(authUser);
 
         if (newDialog.getUsers().stream().anyMatch(o -> o.getUsername()
-                .equals(userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()).getUsername()))) {
+                .equals(principal.getName()))) {
 
             Dialog dialog = new Dialog();
 
@@ -189,41 +196,31 @@ public class ChatController {
     @MessageMapping("/user/{dialogId}")
     //@SendTo("/topic/{dialogId}")
     //@PreAuthorize(value = "@message.sender.username.equals(@userService.getAuthUser(authentication).username)")
-    public void sendMessage(@Payload Message message, Authentication authentication) {
+    public void sendMessage(@Valid @Payload Message message, @AuthenticationPrincipal Principal principal) {
 
-        if (message.getSender().getUsername().equals(userService.getAuthUser(authentication).getUsername())) {
+        String s = principal.getName();
 
-            User sender = userService.loadUserByUsername(message.getSender().getUsername());
+        User authUser = userService.loadUserByUsernameProxy(s);
 
-            // Persistence Bag. Используется костыль
-            // для корректного отображения (тесты не инициализируются автоматически)
-            //.setTests(new ArrayList<>());
+        if (message.getSender().getUsername().equals(authUser.getUsername())) {
 
-            message.setSender(sender);
 
-            //User recipient = userService.loadUserByUsername(message.getRecipient().getUsername());
-            //recipient.setTests(new ArrayList<>());
-            //message.setRecipient(recipient);
+            message.setSender(authUser);
 
             message.setDialog(dialogRepository.findById(message.getDialog().getDialogId()).get());
-
 
             // Устанавливается часовой пояс для хранения времени в БД постоянно по Москве
             // В БД будет сохраняться Московское время независимо от местоположения сервера/пользователя
             TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
             Calendar nowDate = new GregorianCalendar();
             nowDate.setTimeZone(timeZone);
-            message.setTimestamp(nowDate);;
+            message.setTimestamp(nowDate);
 
             message.setStatus(MessageStatus.DELIVERED);
             messageService.saveMessage(message);
 
             Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
-
-            
-
-
-            User authUser = userService.getAuthUserNoProxy(authentication);
+            MessageForApiView messageDto = messageRepository.findMessageById(message.getId());
 
             for (User user :dialog.getUsers()) {
 
@@ -231,14 +228,12 @@ public class ChatController {
 
 
                 rabbitTemplate.convertAndSend(user.getUsername(),
-                        messageRepository.findMessageById(message.getId()));
+                       messageDto);
 
                 if (!user.getUsername().equals(authUser.getUsername())) {
 
                     simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
-                            messageRepository.findMessageById(message.getId()));
-
-
+                            messageDto);
 
                 }
             }
@@ -253,9 +248,7 @@ public class ChatController {
     @Modifying
     @Transactional
     @RabbitListener(queues = "incoming-messages")
-    public void getMessageFromAndroid(Message message) {
-
-
+    public void getMessageFromAndroid(@Valid Message message) {
 
         //logger.info("123");
         System.out.println("Сообщение получено из андройда");
@@ -266,31 +259,31 @@ public class ChatController {
                         .getContext()
                         .getAuthentication()).getUsername())) {*/
 
-            User sender = userService.loadUserByUsername(message.getSender().getUsername());
+        User sender = userService.loadUserByUsername(message.getSender().getUsername());
 
-            // Persistence Bag. Используется костыль
-            // для корректного отображения (тесты не инициализируются автоматически)
-            //.setTests(new ArrayList<>());
+        // Persistence Bag. Используется костыль
+        // для корректного отображения (тесты не инициализируются автоматически)
+        //.setTests(new ArrayList<>());
 
-            message.setSender(sender);
+        message.setSender(sender);
 
-            //User recipient = userService.loadUserByUsername(message.getRecipient().getUsername());
-            //recipient.setTests(new ArrayList<>());
-            //message.setRecipient(recipient);
+        //User recipient = userService.loadUserByUsername(message.getRecipient().getUsername());
+        //recipient.setTests(new ArrayList<>());
+        //message.setRecipient(recipient);
 
-            message.setDialog(dialogRepository.findById(message.getDialog().getDialogId()).get());
-
-
-            // Устанавливается часовой пояс для хранения времени в БД постоянно по Москве
-            // В БД будет сохраняться Московское время независимо от местоположения сервера/пользователя
-            TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
-            Calendar nowDate = new GregorianCalendar();
-            nowDate.setTimeZone(timeZone);
-            message.setTimestamp(nowDate);
+        message.setDialog(dialogRepository.findById(message.getDialog().getDialogId()).get());
 
 
-            message.setStatus(MessageStatus.DELIVERED);
-            messageService.saveMessage(message);
+        // Устанавливается часовой пояс для хранения времени в БД постоянно по Москве
+        // В БД будет сохраняться Московское время независимо от местоположения сервера/пользователя
+        TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
+        Calendar nowDate = new GregorianCalendar();
+        nowDate.setTimeZone(timeZone);
+        message.setTimestamp(nowDate);
+
+
+        message.setStatus(MessageStatus.DELIVERED);
+        messageService.saveMessage(message);
 
         Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
 

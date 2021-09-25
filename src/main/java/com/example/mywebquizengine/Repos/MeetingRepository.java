@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.Repos;
 
-import com.example.mywebquizengine.Model.Meeting;
+import com.example.mywebquizengine.Model.Geo.Meeting;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 

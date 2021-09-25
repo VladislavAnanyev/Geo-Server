@@ -11,12 +11,15 @@ import com.paypal.api.payments.ShippingAddress;
 import com.paypal.api.payments.Transaction;
 import com.paypal.base.rest.PayPalRESTException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.security.Principal;
 
 @Controller
 public class PayPalController {
@@ -28,11 +31,11 @@ public class PayPalController {
     private UserService userService;
 
     @GetMapping(path = "/checkout")
-    public String getCheckOut(Model model) {
+    public String getCheckOut(Model model, @AuthenticationPrincipal Principal principal) {
 
         Order order = new Order();
 
-        order.setUser(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()));
+        order.setUser(userService.loadUserByUsernameProxy(principal.getName()));
 
         paymentServices.saveStartOrder(order);
 
@@ -129,6 +132,7 @@ public class PayPalController {
 
             /*request.setAttribute("payer", payerInfo);
             request.setAttribute("transaction", transaction);*/
+
 
             //request.getRequestDispatcher("receip").forward(request, response);
             return "receiptPage";

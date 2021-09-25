@@ -1,13 +1,10 @@
 package com.example.mywebquizengine.Controller.api;
 
-import com.example.mywebquizengine.Model.AuthRequest;
-import com.example.mywebquizengine.Model.AuthResponse;
-import com.example.mywebquizengine.Model.GoogleToken;
-import com.example.mywebquizengine.Model.Projection.DialogWithUsersView;
+import com.example.mywebquizengine.Model.UserInfo.AuthRequest;
+import com.example.mywebquizengine.Model.UserInfo.AuthResponse;
+import com.example.mywebquizengine.Model.UserInfo.GoogleToken;
+import com.example.mywebquizengine.Model.Projection.*;
 
-import com.example.mywebquizengine.Model.Projection.MessageForApiView;
-import com.example.mywebquizengine.Model.Projection.UserForMessageView;
-import com.example.mywebquizengine.Model.Projection.UserView;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.DialogRepository;
 import com.example.mywebquizengine.Repos.MessageRepository;
@@ -28,6 +25,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,6 +39,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -78,11 +77,11 @@ public class AndroidController {
     private MessageRepository messageRepository;
 
     @GetMapping(path = "/api/messages")
-    //@PreAuthorize(value = "@dialogRepository.findDialogByDialogId(#dialogId).users.contains(@userService.getAuthUser(authentication))")
-    public DialogWithUsersView getMessages(@RequestParam Long dialogId) {
+    //@PreAuthorize(value = "@dialogRepository.findDialogByDialogId(#dialogId).users/*проверить содержание тут надо*/.contains(principal.name)")
+    public DialogWithUsersView getMessages(@RequestParam Long dialogId, @AuthenticationPrincipal Principal principal) {
 
         if (dialogRepository.findDialogByDialogId(dialogId).getUsers().stream().anyMatch(o -> o.getUsername()
-                .equals(userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()).getUsername()))) {
+                .equals(principal.getName()))) {
             return dialogRepository.findDialogByDialogId(dialogId);
         } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         //return dialog.getMessages();
@@ -100,20 +99,19 @@ public class AndroidController {
         В идеале необходимо решить проблему с инициализацией вложенных полей
      */
     @GetMapping(path = "/api/dialogs")
-    @PreAuthorize(value = "@userService.getAuthUser(authentication).username.equals(#username)")
-    public ArrayList<MessageForApiView> getDialogs(@RequestParam String username) {
+    public ArrayList<MessageForApiViewWithCustomQuery> getDialogs(@AuthenticationPrincipal Principal principal) {
 
-        return messageService.getDialogsForApi(username);
+        return messageService.getDialogsForApi(principal.getName());
     }
 
     @GetMapping(path = "/api/getDialogId")
     //@ResponseBody
-    public Long checkDialog(@RequestParam String username) {
+    public Long checkDialog(@RequestParam String username, @AuthenticationPrincipal Principal principal) {
 
         //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         //User user = userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication());
 
-        return messageService.checkDialog(userService.loadUserByUsername(username));
+        return messageService.checkDialog(userService.loadUserByUsername(username), principal.getName());
     }
 
 

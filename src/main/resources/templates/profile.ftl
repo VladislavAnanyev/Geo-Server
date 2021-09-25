@@ -57,7 +57,9 @@
 
         <div>
 
-        <img width="100px" height="100px" src="/../../../../img/${user.avatar}.jpg" alt="../../../../img/${user.avatar}.jpg">
+
+                <img class="rounded-circle" width="100px" height="100px" src="${user.avatar}" alt="${user.avatar}.jpg">
+
 
 
 

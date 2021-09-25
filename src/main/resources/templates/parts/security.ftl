@@ -22,16 +22,20 @@
 
     >
 
-    <#if nowUser.principal.username??>
+
+<#--    <#if nowUser.principal.username??>-->
         <#assign
-        name = nowUser.principal.username
-<#--        balance = nowUser.principal.balance-->
+        name = nowUser.name
+<#--        balance = nowUser.principal.getBalance()-->
             >
 
+<#--        <#else>-->
+<#--            <#assign name = nowUser.principal.name>-->
 
-        <#elseif nowUser.authorizedClientRegistrationId = "github">
+
+        <#--<#elseif nowUser.authorizedClientRegistrationId = "github">
             <#assign
-    <#--        name = nowUser.username-->
+    &lt;#&ndash;        name = nowUser.username&ndash;&gt;
             name = nowUser.principal.attributes.login
 
             >
@@ -39,7 +43,7 @@
             <#assign
                         name = nowUser.principal.attributes.email?replace("@gmail.com","")
                 >
-
+-->
 
 
 
@@ -50,7 +54,7 @@
 &lt;#&ndash;            name = nowUser.attributes.email?replace("@gmail.com","")&ndash;&gt;
                 name = nowUser.attributes.login
             >-->
-    </#if>
+<#--    </#if>-->
 
     <#--<#elseif knownhttp>
     <#assign

@@ -17,7 +17,7 @@
         <div class="col-sm-6">
         <#if meeting.secondUser.username != myUsername>
     <div class="card mt-2" style="width: 18rem;">
-        <img src="/../../../../img/${meeting.secondUser.avatar}.jpg" class="card-img-top" alt="...">
+        <img class="rounded-circle" src="${meeting.secondUser.avatar}" alt="...">
         <div class="card-body">
             <h5 class="card-title">${meeting.secondUser.firstName} ${meeting.secondUser.lastName}</h5>
             <p class="card-text">${meeting.time.time?datetime?string ["dd.MM.yyyy HH:mm:ss"]}</p>
@@ -31,7 +31,7 @@
             <#else>
 
                 <div class="card" style="width: 18rem;">
-                    <img src="/../../../../img/${meeting.firstUser.avatar}.jpg" class="card-img-top" alt="...">
+                    <#if meeting.firstUser.avatar?contains("http")><img class="rounded-circle" src="${meeting.firstUser.avatar}" <#else> <img class="rounded-circle" src="../../../../img/${meeting.firstUser.avatar}.jpg" </#if> alt="...">
                     <div class="card-body">
                         <h5 class="card-title">${meeting.firstUser.firstName} ${meeting.firstUser.lastName}</h5>
                         <p class="card-text">${meeting.time.time?datetime?string ["dd.MM.yyyy HH:mm:ss"]}</p>

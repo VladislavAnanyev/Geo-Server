@@ -6,7 +6,8 @@ import com.example.mywebquizengine.Model.Chat.Message;
 
 import com.example.mywebquizengine.Model.Projection.DialogWithUsersView;
 import com.example.mywebquizengine.Model.Projection.MessageForApiView;
-import com.example.mywebquizengine.Model.Projection.MessageForStompView;
+//import com.example.mywebquizengine.Model.Projection.MessageForStompView;
+import com.example.mywebquizengine.Model.Projection.MessageForApiViewWithCustomQuery;
 import com.example.mywebquizengine.Model.Projection.MessageView;
 import com.example.mywebquizengine.Model.User;
 
@@ -59,9 +60,9 @@ public class MessageService {
 
     }
 
-    public Long checkDialog(User user) {
+    public Long checkDialog(User user, String authUsername) {
 
-        User authUser = userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication());
+        User authUser = userService.loadUserByUsername(authUsername);
 
         if (!authUser.getUsername().equals(user.getUsername())) {
             Long dialog_id = dialogRepository.findDialogByName(user.getUsername(),
@@ -99,18 +100,19 @@ public class MessageService {
         return messageRepository.getDialogs(username);
     }
 
-    public ArrayList<MessageForApiView> getDialogsForApi(String username) {
+    public ArrayList<MessageForApiViewWithCustomQuery> getDialogsForApi(String username) {
 
-        List<Integer> messageViews = messageRepository.getDialogsIdForApi(username);
+        List<MessageForApiViewWithCustomQuery> messageViews = messageRepository.getDialogsForApi(username);
 
-        ArrayList<MessageForApiView> messageForStompViews = new ArrayList<>();
+        /*ArrayList<MessageForApiView> messageForStompViews = new ArrayList<>();
 
         for (int i = 0; i < messageViews.size(); i++) {
             messageForStompViews.add(messageRepository.findMessageById(messageViews.get(i)));
-        }
+        }*/
 
         //return messageRepository.findAllById((ArrayList<Integer>) messageViews);
-        return messageForStompViews;
+        //return messageForStompViews;
+        return (ArrayList<MessageForApiViewWithCustomQuery>) messageViews;
     }
 
     /*public List<Message> getDialogs(String username) {

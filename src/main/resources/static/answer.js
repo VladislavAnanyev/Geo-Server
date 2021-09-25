@@ -44,7 +44,8 @@ function f(id) {
     xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
     xhr.onreadystatechange = function () {
         if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-            /*for (let i = 0; i < size.length; i++) {
+            /*console.log(xhr.response)
+            for (let i = 0; i < size.length; i++) {
                 let style = document.getElementById("test" + i).style;
                 style.padding = '20px';
                 style.borderRadius = '10px';
@@ -58,11 +59,16 @@ function f(id) {
                 }
 
 
-            }
+            }*/
 
-            chartpie(xhr.response)
+            /*var myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'), {
+                keyboard: false
+            })
+            myModal.toggle()*/
+
+            //chartpie(xhr.response)
             let btn = document.getElementById("btnAns")
-            btn.disabled = true*/
+            btn.disabled = true
         }
     };
     xhr.send(JSON.stringify(json));
@@ -74,7 +80,7 @@ function chartpie(array) {
     $(document).ready(function () {
         /*let xhr = new XMLHttpRequest();
 
-        xhr.open('GET', '/api/quizzes/' + id +'/solve/info', true);
+        xhr.open('GET', '/quizzes/' + id +'/solve/info', true);
         xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
         xhr.onreadystatechange = function () {
             if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {

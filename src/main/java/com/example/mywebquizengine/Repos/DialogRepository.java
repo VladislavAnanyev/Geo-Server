@@ -2,10 +2,11 @@ package com.example.mywebquizengine.Repos;
 
 import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Projection.DialogWithUsersView;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
-public interface DialogRepository extends CrudRepository<Dialog, Long> {
+public interface DialogRepository extends CrudRepository<Dialog, Long>, JpaRepository<Dialog, Long> {
 
     /*
     Если при группировке по идентификатору для выбранных пользователей результат группировки - 2

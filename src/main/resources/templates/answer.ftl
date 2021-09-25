@@ -2,6 +2,23 @@
 <#include "parts/security.ftl">
 
 <@e.page>
+<#--    <link href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css'>-->
+
+<#--    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" type="text/css" rel="stylesheet">-->
+    <link type="text/html" rel="stylesheet" href="../static/chart.css">
+    <link href="/static/timer.css" type="text/css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+<#--    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>-->
+
     <title>Ответить</title>
 
     <input type="hidden" id="username" value="${name}">
@@ -12,20 +29,7 @@
     <input type="hidden" id="time" value="${timeout?datetime?string ["MM.dd.yyyy HH:mm:ss"]}">
     </#if>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.4.0/sockjs.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" type="text/css" rel="stylesheet">
 
-    <link href="/static/timer.css" type="text/css" rel="stylesheet">
-
-
-    <script src="/static/timeover.js"></script>
-    <script>connect()</script>
-    <script src="/static/answer.js"></script>
-    <script src="/static/session.js"></script>
-    <link href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css'>
-    <script src='https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js'></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
 
     <#--<div class="progress">
         <div class="progress-bar progress-bar-striped" role="progressbar" style="width: 15%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
@@ -36,7 +40,7 @@
 
 
     <#if test_id.duration??>
-        <div class="alltime mb-3">
+        <div class="alltime mb-3" id="clock">
             <h1 class="countdown-title">Осталось времени</h1>
             <div id="countdown" class="countdown">
                 <div class="countdown-number">
@@ -100,12 +104,12 @@
             </div>
         </#list>
 
-        <button type="submit" data-toggle="modal" data-target="#staticBackdrop"
+        <button type="submit" data-toggle="modal" <#--data-target="#staticBackdrop"-->
                 class="btn btn-primary ml-2 mb-2" id="btnAns" onclick="f(${test_id.id?c})">Ответить</button>
 
 
 
-        <div onload="chartpie(${test_id.id?c})" class="modal fade bd-example-modal-lg" id="staticBackdrop" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div  <#--onload="chartpie(${test_id.id?c})"-->  class="modal fade" id="staticBackdrop" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -115,22 +119,16 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <link rel="stylesheet" href="../static/chart.css">
-
-                        <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.bundle.min.js'></script>
-                        <script>
 
 
 
-
-                        </script>
                         <div class="page-content page-container" id="page-content">
                             <div class="padding">
                                 <div class="row">
                                     <div class="container-fluid d-flex justify-content-center">
                                         <div class="col-sm-8 col-md-6">
                                             <div class="card justify-content-center" >
-                                                <#--                                            <div class="card-header">Диаграмма</div>-->
+                                                <#--<div class="card-header">Диаграмма</div>-->
                                                 <div class="card-body" style="height: 420px">
                                                     <div class="chartjs-size-monitor" style="position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;">
                                                         <div class="chartjs-size-monitor-expand" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
@@ -150,7 +148,7 @@
                     </div>
                     <div class="modal-footer">
                         <#--                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Назад</button>-->
-                        <button type="button" data-dismiss="modal" class="btn btn-primary">Понятно</button>
+                        <button type="button" onclick="document.getElementById('staticBackdrop').hidden=true; document.getElementsByClassName('modal-backdrop fade show').item(0).hidden=true" data-dismiss="modal" class="btn btn-primary">Понятно</button>
                     </div>
 
                 </div>
@@ -158,16 +156,34 @@
 
 
         </div>
+
+
+
+
+
+
     </div>
+
+
 
 
     <!--
     https://denis-creative.com/jstimer/
     https://www.sitepoint.com/build-javascript-countdown-timer-no-dependencies/
     -->
+    <script src="/static/timeover.js"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.bundle.min.js'></script>
+<#--    <script src='https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js'></script>-->
+    <script src="/static/answer.js"></script>
 
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.4.0/sockjs.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="/static/session.js"></script>
     <script src="/static/downtimer.js"></script>
+
+    <script>connect()</script>
+
+
 
 
 </@e.page>

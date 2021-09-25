@@ -30,6 +30,7 @@ function f(pass1, pass2) {
         console.log("Успех");
         document.getElementById("password1").style.background = 'MediumSpringGreen';
         document.getElementById("password2").style.background = 'MediumSpringGreen';
+        document.location.href= "../../singin"
     } else {
         document.getElementById("password1").style.background = 'Salmon';
         document.getElementById("password2").style.background = 'Salmon';

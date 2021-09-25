@@ -1,9 +1,13 @@
 package com.example.mywebquizengine.Model.Chat;
 
+import com.example.mywebquizengine.Model.Projection.UserForMessageView;
 import com.example.mywebquizengine.Model.User;
+import com.example.mywebquizengine.MywebquizengineApplication;
+import com.example.mywebquizengine.Repos.DialogRepository;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -11,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 @Entity(name = "DIALOGS")
-public class Dialog {
+public class Dialog  {
 
     @Id
     @Column(name = "DIALOG_ID")
@@ -22,6 +26,18 @@ public class Dialog {
 
     private String image;
 
+    public Dialog() {}
+
+    public Dialog(Long dialogId, String name, String image) {
+        this.dialogId = dialogId;
+        this.name = name;
+        this.image = image;
+
+        DialogRepository dialogRepository = MywebquizengineApplication.ctx.getBean(DialogRepository.class);
+        this.users.clear();
+        this.users.addAll(dialogRepository.findById(dialogId).get().getUsers());
+
+    }
 
     @ManyToMany(mappedBy = "dialogs", cascade = {CascadeType.PERSIST,CascadeType.MERGE})
     private Set<User> users = new HashSet<>();

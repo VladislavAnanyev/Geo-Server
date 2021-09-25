@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.*;
@@ -15,6 +16,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -110,6 +112,15 @@ public class User implements UserDetails {
         this.password = password;
         this.status = false;
     }
+
+    public User(String username, String firstName, String lastName, String avatar) {
+        this.username = username;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.avatar = avatar;
+
+    }
+
 
     @Enumerated(EnumType.STRING)
     @ElementCollection(fetch = FetchType.EAGER)
@@ -257,4 +268,5 @@ public class User implements UserDetails {
     /*public void setTests(List<Test> tests) {
         this.tests = tests;
     }*/
+
 }

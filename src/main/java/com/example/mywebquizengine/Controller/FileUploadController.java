@@ -3,7 +3,9 @@ package com.example.mywebquizengine.Controller;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Controller;
@@ -14,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.security.Principal;
 import java.util.Random;
 import java.util.UUID;
 
@@ -24,6 +27,9 @@ public class FileUploadController {
     @Autowired
     private UserService userService;
 
+    @Value("${hostname}")
+    private String hostname;
+
     @GetMapping(path = "/upload")
     @ResponseBody
     public String provideUploadInfo() {
@@ -31,7 +37,7 @@ public class FileUploadController {
     }
 
     @PostMapping(path = "/upload")
-    public String handleFileUpload(Model model, @RequestParam("file") MultipartFile file, Authentication authentication) {
+    public String handleFileUpload(Model model, @RequestParam("file") MultipartFile file, @AuthenticationPrincipal Principal principal) {
         String name = file.getOriginalFilename();
 
         if (!file.isEmpty()) {
@@ -46,14 +52,14 @@ public class FileUploadController {
                 stream.write(bytes);
                 stream.close();
 
-                User user = userService.getAuthUser(authentication);
+                User user = userService.loadUserByUsernameProxy(principal.getName());
 
-                userService.setAvatar(uuid, user);
+                userService.setAvatar("https://" + hostname + "/img/" + uuid + ".jpg", user);
 
                 //file.transferTo(new File("C:/Users/avlad/IdeaProjects/WebQuiz" + name));
 
-                User userLogin = userService.getAuthUser(authentication);
-                userLogin.setAvatar(uuid);
+                User userLogin = userService.loadUserByUsernameProxy(principal.getName());
+                //userLogin.setAvatar("https://" + hostname + "/img/" + uuid + ".jpg");
                 model.addAttribute("user", userLogin);
                 return "profile";
             } catch (Exception e) {

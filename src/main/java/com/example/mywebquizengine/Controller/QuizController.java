@@ -1,31 +1,23 @@
 package com.example.mywebquizengine.Controller;
 
-import com.example.mywebquizengine.Model.Geolocation;
-import com.example.mywebquizengine.Model.SimpleJob;
+import com.example.mywebquizengine.Model.Test.SimpleJob;
 import com.example.mywebquizengine.Model.Test.*;
 import com.example.mywebquizengine.Model.User;
-import com.example.mywebquizengine.MyConstants;
 import com.example.mywebquizengine.Service.QuizService;
 import com.example.mywebquizengine.Service.TestService;
 import com.example.mywebquizengine.Service.UserAnswerService;
 import com.example.mywebquizengine.Service.UserService;
-import com.maxmind.geoip2.DatabaseReader;
 import com.maxmind.geoip2.exception.GeoIp2Exception;
-import com.maxmind.geoip2.model.CityResponse;
-import com.maxmind.geoip2.record.*;
-import freemarker.template.Configuration;
-import freemarker.template.TemplateExceptionHandler;
 import freemarker.template.TemplateModelException;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
@@ -39,9 +31,8 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
+import java.security.Principal;
 import java.util.*;
 import java.util.Calendar;
 
@@ -73,16 +64,6 @@ public class QuizController {
     private OAuth2AuthorizedClientService authorizedClientService;
 
 
-    /*@Modifying
-    //@Transactional
-    @MessageMapping("/user/application")
-    //@SendTo("/topic/application")
-    public static String sendNotification() {
-        System.out.println("Абоба");
-        simpMessagingTemplate.convertAndSend("/topic/application", "OK");
-        return "OK";
-    }*/
-
     @GetMapping(path = "/quizzes")
     public String getQuizzes(Model model, @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
                              @RequestParam(required = false,defaultValue = "10") @Min(1) @Max(10) Integer pageSize,
@@ -90,25 +71,17 @@ public class QuizController {
 
         Page<Test> page1 = testService.getAllQuizzes(page, pageSize, sortBy);
 
-        //File dir = new File(System.getProperty("user.dir") + "/img/look.com.ua_2016.02-111-1920x1080"); //path указывает на директорию
-        //File[] arrFiles = dir.listFiles();
-        //List<File> files = Arrays.asList(arrFiles);
 
-        //Random random = new Random(System.currentTimeMillis());
-
-        //model.addAttribute("img", files);
-
-        //model.addAttribute("quiz", page1.getContent());
         model.addAttribute("test", page1.getContent());
         return "getAllQuiz";
     }
 
     @GetMapping(path = "/myquiz")
-    public String getMyQuizzes(Authentication authentication, Model model, @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
+    public String getMyQuizzes(@AuthenticationPrincipal Principal principal, Model model, @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
                                @RequestParam(required = false,defaultValue = "10") @Min(1) @Max(10) Integer pageSize,
                                @RequestParam(defaultValue = "id") String sortBy) {
 
-        User user = userService.getAuthUser(authentication);
+        User user = userService.loadUserByUsernameProxy(principal.getName());
         Page<Test> page1 = testService.getMyQuiz(user.getUsername(), page, pageSize, sortBy);
         model.addAttribute("myquiz", page1.getContent());
 
@@ -118,9 +91,9 @@ public class QuizController {
     // Проверка наличия неотправленных ответов
     @GetMapping(path = "/checklastanswer/{id}")
     @ResponseBody
-    public Boolean checkLastAnswer(@PathVariable String id, Authentication authentication) {
-        if (userAnswerService.checkLastComplete(userService.getAuthUser(authentication), id) != null) {
-            return userAnswerService.checkLastComplete(userService.getAuthUser(authentication), id).getCompletedAt() == null;
+    public Boolean checkLastAnswer(@PathVariable String id, @AuthenticationPrincipal Principal principal) {
+        if (userAnswerService.checkLastComplete(userService.loadUserByUsernameProxy(principal.getName()), id) != null) {
+            return userAnswerService.checkLastComplete(userService.loadUserByUsernameProxy(principal.getName()), id).getCompletedAt() == null;
         } else {
             return false;
         }
@@ -150,12 +123,12 @@ public class QuizController {
 
 
     @PostMapping(path = "/quizzes", consumes={"application/json"})
-    public String addQuiz(Model model, @RequestBody @Valid Test test, Authentication authentication) throws ResponseStatusException {
+    public String addQuiz(Model model, @RequestBody @Valid Test test, @AuthenticationPrincipal Principal principal) throws ResponseStatusException {
         try {
 
             //User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-            User user = userService.getAuthUser(authentication);
+            User user = userService.loadUserByUsernameProxy(principal.getName());
 
             //user.setTests(new ArrayList<>()); // Handle Persistance bug
             user.setRoles(new ArrayList<>());
@@ -177,129 +150,15 @@ public class QuizController {
     @GetMapping(path = "/")
     public String home(Model model, HttpServletRequest request) throws TemplateModelException, IOException, GeoIp2Exception {
 
-   /*     System.out.println(request.getRemoteAddr());
-
-        // A File object pointing to your GeoLite2 database
-        //File dbFile = new File(MyConstants.DATABASE_CITY_PATH);
-
-        // This creates the DatabaseReader object,
-        // which should be reused across lookups.
-
-        // A File object pointing to your GeoIP2 or GeoLite2 database
-        //File database = new File("C:\\My\\GeoIP\\GeoLite2-City.mmdb");
-
-// This creates the DatabaseReader object. To improve performance, reuse
-// the object across lookups. The object is thread-safe.
-        //DatabaseReader reader = new DatabaseReader.Builder(database).build();
-
-        //DatabaseReader reader = new DatabaseReader.Builder(dbFile).build();
-
-
-        // A IP Address
-        //InetAddress ipAddress = InetAddress.getByName("109.252.36.242");
-
-
-
-        // Get City info
-        //CityResponse response = reader.city(ipAddress);
-
-        // Country Info
-        Country country = response.getCountry();
-        System.out.println("Country IsoCode: "+ country.getIsoCode()); // 'US'
-        System.out.println("Country Name: "+ country.getName()); // 'United States'
-        System.out.println(country.getNames().get("ru-CN")); // '美国'
-
-        Subdivision subdivision = response.getMostSpecificSubdivision();
-        System.out.println("Subdivision Name: " +subdivision.getName()); // 'Minnesota'
-        System.out.println("Subdivision IsoCode: "+subdivision.getIsoCode()); // 'MN'
-
-        // City Info.
-        City city = response.getCity();
-        System.out.println("City Name: "+ city.getName()); // 'Minneapolis'
-
-        // Postal info
-        Postal postal = response.getPostal();
-        System.out.println(postal.getCode()); // '55455'
-
-        // Geo Location info.
-        Location location = response.getLocation();
-
-        // Latitude
-        System.out.println("Latitude: "+ location.getLatitude()); // 44.9733
-
-        System.out.println(location.getAccuracyRadius());
-        // Longitude
-        System.out.println("Longitude: "+ location.getLongitude()); // -93.2323*/
-
         return "home";
     }
-
-
-    /*@PostMapping(path = "/api/quizzes/{id}/solve")
-    @ResponseBody
-    public String getAnswerOnTest(@PathVariable String id,
-                                  @RequestBody UserTestAnswer userTestAnswer) {
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-
-        UserTestAnswer userTestAnswer1 = userAnswerService.findByUserAnswerId(25911);
-
-        //userTestAnswer1.getUserQuizAnswers();
-
-        StringBuilder result = new StringBuilder();
-        List<UserQuizAnswer> userQuizAnswers = new ArrayList<>();
-        int trueAnswers = 0;
-        User user = getAuthUser(authentication, userService);
-
-        userTestAnswer.setUser(user);
-        userTestAnswer.setTest(testService.findTestProxy(Integer.parseInt(id)));
-
-
-        for (int i = 0; i < testService.findTest(Integer.parseInt(id)).getQuizzes().size(); i++) {
-            UserQuizAnswer quizAnswer = new UserQuizAnswer();
-            AnswerChecker answerChecker = new AnswerChecker();
-
-            answerChecker.quiz = quizService.findQuiz(testService.findTest(Integer.parseInt(id)).getQuizzes().get(i).getId());
-            quizAnswer.setQuiz(answerChecker.quiz);
-
-            answerChecker.checkAnswer(userTestAnswer.getUserQuizAnswers().get(i).getAnswer());
-            quizAnswer.setStatus(answerChecker.isSuccess());
-
-            quizAnswer.setAnswer(userTestAnswer.getUserQuizAnswers().get(i).getAnswer());
-
-            userQuizAnswers.add(quizAnswer);
-
-            if (quizAnswer.getStatus().toString().equals("true")) {
-                result.append("1");
-                trueAnswers++;
-            } else {
-                result.append("0");
-            }
-        }
-
-        userTestAnswer.setUserQuizAnswers(userQuizAnswers);
-
-        userTestAnswer.setPercent(((double) trueAnswers/(double)result.length()) * 100.0);
-
-        TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
-        Calendar nowDate = new GregorianCalendar();
-        nowDate.setTimeZone(timeZone);
-
-        userTestAnswer.setCompletedAt(nowDate);
-
-        userAnswerService.saveAnswer(userTestAnswer);
-
-        return String.valueOf(result);
-    }*/
-
 
 
 
     @PostMapping(path = "/quizzes/{id}/solve")
     @ResponseBody
     @Transactional
-    public String getAnswerOnTest(@PathVariable String id,
+    public void getAnswerOnTest(@PathVariable String id,
                                   @RequestBody UserTestAnswer userAnswerId) {
 
         UserTestAnswer userTestAnswer = userAnswerService.findByUserAnswerId(userAnswerId.getUserAnswerId());
@@ -353,14 +212,18 @@ public class QuizController {
         Calendar nowDate = new GregorianCalendar();
         nowDate.setTimeZone(timeZone);
 
-        userTestAnswer.setCompletedAt(nowDate);
+        /*if (userTestAnswer.getCompletedAt() == null) {*/
+            simpMessagingTemplate.convertAndSend("/topic/" +
+                    userTestAnswer.getUser().getUsername() + userTestAnswer.getUserAnswerId(), result.toString().toCharArray());
+            userTestAnswer.setCompletedAt(nowDate);
+//        }
+
+
 
         userAnswerService.saveAnswer(userTestAnswer);
 
-        simpMessagingTemplate.convertAndSend("/topic/" +
-                userTestAnswer.getUser().getUsername() + userTestAnswer.getUserAnswerId(), result.toString().toCharArray());
 
-        return String.valueOf(result);
+        //return String.valueOf(result);
     }
 
 
@@ -377,12 +240,12 @@ public class QuizController {
     @GetMapping(path = "/quizzes/{id}/solve")
     public String passTest(Model model, @PathVariable String id,
                            @RequestParam(required = false, defaultValue = "false") String restore,
-                           Authentication authentication) throws SchedulerException {
+                           @AuthenticationPrincipal Principal principal) throws SchedulerException {
 
         Test test = testService.findTest(Integer.parseInt(id));
         UserTestAnswer userTestAnswer;
 
-        UserTestAnswer lastUserTestAnswer = userAnswerService.checkLastComplete(userService.getAuthUser(authentication), id);
+        UserTestAnswer lastUserTestAnswer = userAnswerService.checkLastComplete(userService.loadUserByUsernameProxy(principal.getName()), id);
 
         if (Boolean.parseBoolean(restore) && lastUserTestAnswer != null && lastUserTestAnswer.getCompletedAt() == null) {
 
@@ -402,7 +265,7 @@ public class QuizController {
             Calendar calendar = new GregorianCalendar();
             userTestAnswer.setStartAt(calendar);
             userTestAnswer.setTest(testService.findTest(Integer.parseInt(id)));
-            userTestAnswer.setUser(userService.getAuthUser(authentication));
+            userTestAnswer.setUser(userService.loadUserByUsernameProxy(principal.getName()));
             userAnswerService.saveStartAnswer(userTestAnswer);
 
             model.addAttribute("lastAnswer", userTestAnswer);
@@ -420,7 +283,7 @@ public class QuizController {
 
                 JobDetail job = newJob(SimpleJob.class)
                         .withIdentity(UUID.randomUUID().toString(), "group1")
-                        .usingJobData("username", userService.getAuthUser(authentication).getUsername())
+                        .usingJobData("username", userService.loadUserByUsernameProxy(principal.getName()).getUsername())
                         .usingJobData("test", test.getId())
                         .usingJobData("answer", userTestAnswer.getUserAnswerId())
                         .build();
@@ -463,17 +326,17 @@ public class QuizController {
     }
 
     @DeleteMapping(path = "/quizzes/{id}")
-    @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(@userService.getAuthUser(authentication).username)")
-    public void deleteTest(@PathVariable Integer id, Authentication authentication) {
+    @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(#principal.name)")
+    public void deleteTest(@PathVariable Integer id, @AuthenticationPrincipal Principal principal) {
         testService.deleteTest(id);
     }
 
 
     @PutMapping(path = "/update/{id}", consumes={"application/json"})
     @ResponseBody
-    @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(@userService.getAuthUser(authentication).username)")
+    @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(#principal.name)")
     public void changeTest(@PathVariable Integer id, @Valid @RequestBody Test test,
-                           Authentication authentication) throws ResponseStatusException {
+                           @AuthenticationPrincipal Principal principal) throws ResponseStatusException {
 
         /*for (int i = 0; i < test.getQuizzes().size(); i++) {
             Quiz oldQuiz = testService.findTest(id).getQuizzes().get(i);
@@ -488,8 +351,8 @@ public class QuizController {
 
 
     @GetMapping(path = "/update/{id}")
-    @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(@userService.getAuthUser(authentication).username)")
-    public String update(@PathVariable Integer id, Model model, Authentication authentication) {
+    @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(#principal.name)")
+    public String update(@PathVariable Integer id, Model model, @AuthenticationPrincipal Principal principal) {
 
         Test tempTest = testService.findTest(id);
         model.addAttribute("oldTest", tempTest);
@@ -502,11 +365,11 @@ public class QuizController {
 
 
     @GetMapping(path = "/quizzes/{id}/info/")
-    @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(@userService.getAuthUser(authentication).username)")
+    @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(#principal.name)")
     public String getInfo(@PathVariable Integer id, Model model,
                           @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
                           @RequestParam(required = false,defaultValue = "2000") @Min(1) @Max(2000) Integer pageSize,
-                          @RequestParam(defaultValue = "completed_at") String sortBy) {
+                          @RequestParam(defaultValue = "completed_at") String sortBy, @AuthenticationPrincipal Principal principal) {
 
         Test test = testService.findTest(id);
         model.addAttribute("quizzes", test.getQuizzes());
@@ -517,8 +380,8 @@ public class QuizController {
     }
 
     @PostMapping(value = "/answersession/{id}")
-    public void getAnswerSession(Authentication authentication,@RequestBody UserTestAnswer userTestAnswer, @PathVariable String id) {
-        User user = userService.getAuthUser(authentication);
+    public void getAnswerSession(@AuthenticationPrincipal Principal principal,@RequestBody UserTestAnswer userTestAnswer, @PathVariable String id) {
+        User user = userService.loadUserByUsernameProxy(principal.getName());
 
 
         userTestAnswer.setUser(user);

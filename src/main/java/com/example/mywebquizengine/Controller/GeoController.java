@@ -1,18 +1,20 @@
 package com.example.mywebquizengine.Controller;
 
-import com.example.mywebquizengine.Model.Geolocation;
-import com.example.mywebquizengine.Model.Meeting;
+import com.example.mywebquizengine.Model.Geo.Geolocation;
+import com.example.mywebquizengine.Model.Geo.Meeting;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.GeolocationRepository;
 import com.example.mywebquizengine.Repos.MeetingRepository;
 import com.example.mywebquizengine.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -37,8 +39,8 @@ public class GeoController {
 
     @PostMapping(path = "/sendGeolocation")
     @ResponseBody
-    public void sendGeolocation(Authentication authentication, @RequestBody Geolocation myGeolocation) {
-        myGeolocation.setUser(userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()));
+    public void sendGeolocation(@AuthenticationPrincipal Principal principal, @RequestBody Geolocation myGeolocation) {
+        myGeolocation.setUser(userService.loadUserByUsername(principal.getName()));
         //geolocation.setId(geolocation.getUser().getUsername());
         userService.saveGeo(myGeolocation);
 
@@ -46,7 +48,7 @@ public class GeoController {
         Timestamp date = Timestamp.from(calendar.toInstant());
         //System.out.println(date.toString().substring(0,10));
 
-        ArrayList<Geolocation> peopleNearMe = findInSquare(authentication,"20");
+        ArrayList<Geolocation> peopleNearMe = findInSquare(principal.getName(),"20");
 
         if (peopleNearMe.size() > 0) {
 
@@ -79,10 +81,10 @@ public class GeoController {
 
     @GetMapping(path = "/getAllGeoWithoutMe")
     @ResponseBody
-    public ArrayList<Geolocation> getAllGeoWithoutMe() {
+    public ArrayList<Geolocation> getAllGeoWithoutMe(@AuthenticationPrincipal Principal principal) {
 
         return userService.getAllGeo(userService.
-                getAuthUser(SecurityContextHolder.getContext().getAuthentication()).getUsername());
+                loadUserByUsernameProxy(principal.getName()).getUsername());
     }
 
     //https://en.wikipedia.org/wiki/Longitude#Length_of_a_degree_of_longitude
@@ -97,7 +99,7 @@ public class GeoController {
 
     @GetMapping(path = "/square")
     @ResponseBody
-    public ArrayList<Geolocation> findInSquare(Authentication authentication, @RequestParam(required = false, defaultValue = "1000") String size) {
+    public ArrayList<Geolocation> findInSquare(String authUser, @RequestParam(required = false, defaultValue = "1000") String size) {
 
         int DISTANCE = Integer.parseInt(size); // Интересующее нас расстояние
 
@@ -111,15 +113,15 @@ public class GeoController {
         double aroundLng = DISTANCE / deltaLon; // Вычисляем диапазон координат по долготе
 
         //System.out.println(aroundLat + " " + aroundLng);
-        return (ArrayList<Geolocation>) geolocationRepository.findInSquare(myLatitude,myLongitude, aroundLat, aroundLng, userService.getAuthUser(authentication).getUsername());
+        return (ArrayList<Geolocation>) geolocationRepository.findInSquare(myLatitude,myLongitude, aroundLat, aroundLng, userService.loadUserByUsernameProxy(authUser).getUsername());
         //return aroundLat + " " + aroundLon;
     }
 
 
     @GetMapping(path = "/meetings")
-    public String getMyMeetings(Model model) {
+    public String getMyMeetings(Model model, @AuthenticationPrincipal Principal principal) {
 
-        User authUser = userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication());
+        User authUser = userService.loadUserByUsername(principal.getName());
 
         model.addAttribute("myUsername", authUser.getUsername());
         Calendar calendar = new GregorianCalendar();

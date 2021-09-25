@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.Model;
+package com.example.mywebquizengine.Model.UserInfo;
 
 public class AuthResponse {
     private String jwtToken;

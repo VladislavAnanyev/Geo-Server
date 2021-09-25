@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.Model;
+package com.example.mywebquizengine.Model.Test;
 
 
 import com.example.mywebquizengine.Controller.QuizController;
@@ -47,7 +47,7 @@ public class SimpleJob extends QuartzJobBean {
 
 
             /*simpMessagingTemplate.convertAndSend("/topic/" +
-                    dataMap.getString("username") + "/" + dataMap.get("test"), "OK");*/
+                    dataMap.getString("username") + dataMap.get("test"), "OK");*/
 
 
 

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -42,8 +43,6 @@ public class UserController {
     @Autowired
     private PaymentServices paymentServices;
 
-    @Value("${notification-secret}")
-    String notification_secret;
 
     @Autowired
     private GeolocationRepository geolocationRepository;
@@ -54,9 +53,9 @@ public class UserController {
 
 
     @GetMapping(path = "/profile")
-    public String getProfile(Model model , Authentication authentication) {
+    public String getProfile(Model model , @AuthenticationPrincipal Principal principal) {
 
-        User user = userService.getAuthUserNoProxy(authentication);
+        User user = userService.loadUserByUsername(principal.getName());
         model.addAttribute("user", user);
 
         model.addAttribute("balance", user.getBalance());
@@ -66,15 +65,16 @@ public class UserController {
 
     @GetMapping(path = "/authuser")
     @ResponseBody
-    public String getAuthUser() {
-        return userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()).getUsername();
+    public String getAuthUser(@AuthenticationPrincipal Principal principal) {
+       // Authentication authentication2 = SecurityContextHolder.getContext().getAuthentication();
+        return userService.loadUserByUsernameProxy(principal.getName()).getUsername();
     }
 
 
     @GetMapping(path = "/getbalance")
     @ResponseBody
-    public Integer getBalance() {
-        User user = userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication());
+    public Integer getBalance(@AuthenticationPrincipal Principal principal) {
+        User user = userService.loadUserByUsername(principal.getName());
         return user.getBalance();
     }
 
@@ -100,9 +100,9 @@ public class UserController {
     }
 
     @PostMapping(path = "/update/userinfo/password", consumes ={"application/json"} )
-    public void tryToChangePassWithAuth(Authentication authentication) {
+    public void tryToChangePassWithAuth(@AuthenticationPrincipal Principal principal) {
 
-        User user = userService.getAuthUser(authentication);
+        User user = userService.loadUserByUsernameProxy(principal.getName());
         userService.sendCodeForChangePassword(user);
 
     }
@@ -145,23 +145,12 @@ public class UserController {
         return "singin";
     }
 
-    /*@GetMapping(path = "/android")
-    public String singin2() {
-        return "singin";
-    }*/
-
-
-
-    /*@PostMapping(path = "/api/error")
-    public String error() {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-    }*/
 
     @Transactional
     @PutMapping(path = "/pass", consumes ={"application/json"})
-    public String changePassword(@RequestBody User user, Authentication authentication) {
+    public String changePassword(@RequestBody User user, @AuthenticationPrincipal Principal principal) {
 
-        User userLogin = userService.getAuthUser(authentication);
+        User userLogin = userService.loadUserByUsername(principal.getName());
 
         user.setUsername(userLogin.getUsername());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -189,15 +178,17 @@ public class UserController {
 
     @Transactional
     @PutMapping(path = "/update/user/{username}", consumes={"application/json"})
-    @PreAuthorize(value = "@userService.getAuthUser(authentication).username.equals(#username)")
-    public void changeUser(@PathVariable String username, @RequestBody User user, Authentication authentication) {
+    @PreAuthorize(value = "#principal.name.equals(#username)")
+    public void changeUser(@PathVariable String username, @RequestBody User user, @AuthenticationPrincipal Principal principal) {
         userService.updateUser(user.getLastName(), user.getFirstName(), username);
     }
 
     @GetMapping(path = "/about/{username}")
-    public String getInfoAboutUser(Model model, @PathVariable String username) {
+    public String getInfoAboutUser(Model model, @PathVariable String username, @AuthenticationPrincipal Principal principal) {
 
-        if (username.equals(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()).getUsername())) {
+
+
+        if (username.equals(userService.loadUserByUsername(principal.getName()).getUsername())) {
             return "redirect:/profile";
         } else {
             User user = userService.loadUserByUsername(username);
@@ -217,42 +208,11 @@ public class UserController {
                             String firstname, String fathersname, String email, String phone, String city,
                             String street, String building, String suite, String flat, String zip) throws NoSuchAlgorithmException {
 
-        String mySha = notification_type + "&" + operation_id + "&" + amount + "&" + currency + "&" +
-                datetime + "&" + sender + "&" + codepro + "&" + notification_secret + "&" + label;
-
-        //System.out.println(mySha);
-
-        MessageDigest mDigest = MessageDigest.getInstance("SHA1");
-        byte[] result = mDigest.digest(mySha.getBytes());
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < result.length; i++) {
-            sb.append(Integer.toString((result[i] & 0xff) + 0x100, 16).substring(1));
-        }
-
-
-        if (sb.toString().equals(sha1_hash)) {
-            System.out.println("Пришло уведомление");
-            System.out.println("notification_type = " + notification_type + ", operation_id = " + operation_id +
-                    ", amount = " + amount + ", withdraw_amount = " + withdraw_amount + ", currency = " + currency +
-                    ", datetime = " + datetime + ", sender = " + sender + ", codepro = " + codepro + ", label = " + label +
-                    ", sha1_hash = " + sha1_hash + ", test_notification = " + test_notification + ", unaccepted = " + unaccepted + ", lastname = " + lastname + ", firstname = " + firstname + ", fathersname = " + fathersname + ", email = " + email + ", phone = " + phone + ", city = " + city + ", street = " + street + ", building = " + building + ", suite = " + suite + ", flat = " + flat + ", zip = " + zip);
-            System.out.println();
-
-            Order order = new Order();
-
-            order.setAmount(String.valueOf(amount));
-            order.setCoins((int) (Double.parseDouble(String.valueOf(withdraw_amount)) * 100.0));
-            order.setOperation_id(operation_id);
-            order.setOrder_id(Integer.valueOf(label));
-
-            order = paymentServices.saveFinalOrder(order);
-            userService.updateBalance(order.getCoins(), order.getUser());
-
-        } else {
-            System.out.println("Неправильный хэш");
-        }
+        userService.processPayment(notification_type, operation_id, amount, withdraw_amount, currency, datetime, sender, codepro, label, sha1_hash, test_notification, unaccepted, lastname, firstname, fathersname, email, phone, city, street, building, suite, flat, zip);
 
     }
+
+
 
     @GetMapping(path = "/getUserList")
     @ResponseBody

@@ -3,20 +3,21 @@
 var stompClient = null;
 var username = null;
 
-var colors = [
+var colors2 = [
     '#2196F3', '#32c787', '#00BCD4', '#ff5652',
     '#ffc107', '#ff85af', '#FF9800', '#39bbb0'
 ];
 
-function connect() {
+function notificationConnect() {
 
-    console.log("Go")
-    var socket = new SockJS('/ws');
-    stompClient = Stomp.over(socket);
-    stompClient.connect({}, onConnected, onError);
+        console.log("Go")
+        var socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, onConnectedNotif, onErrorNotif)
+
 }
 
-function onConnected() {
+function onConnectedNotif() {
     //console.log('/topic/' + document.getElementById("dialogId").value);
 
     let xhr = new XMLHttpRequest();
@@ -28,12 +29,12 @@ function onConnected() {
     }
     xhr.send();
 
-    stompClient.subscribe('/topic/' + username, onMessageReceived);
+    stompClient.subscribe('/topic/' + username, onMessageReceivedNotif);
 
 }
 
 
-function onError(error) {
+function onErrorNotif(error) {
     console.log("fail")
     connect()
     console.log("try")
@@ -43,7 +44,7 @@ function onError(error) {
 
 
 
-function onMessageReceived(payload) {
+function onMessageReceivedNotif(payload) {
 
     var message = JSON.parse(payload.body);
 

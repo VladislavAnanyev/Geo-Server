@@ -63,7 +63,10 @@ dependencies {
     // https://mvnrepository.com/artifact/com.paypal.sdk/rest-api-sdk
     implementation group: 'com.paypal.sdk', name: 'rest-api-sdk', version: '1.14.0'
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-oauth2-client
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-client', version: '2.3.3.RELEASE'
+
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-oauth2-client
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-client', version: '2.5.4'
+
 
 // https://mvnrepository.com/artifact/org.quartz-scheduler/quartz
     //implementation group: 'org.quartz-scheduler', name: 'quartz', version: '2.3.2'
@@ -86,7 +89,9 @@ dependencies {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
     compile("org.springframework.boot:spring-boot-starter-web")
-    compile("org.springframework.boot:spring-boot-starter-security")
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-security
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.5.4'
+
     compile("org.springframework.boot:spring-boot-starter-mail")
     //compile 'com.paypal.sdk:rest-api-sdk:+'
     //compile('org.springframework.security.oauth:spring-security-oauth2')
@@ -106,6 +111,10 @@ dependencies {
     // https://mvnrepository.com/artifact/com.google.api-client/google-api-client-jackson2
     implementation group: 'com.google.api-client', name: 'google-api-client-jackson2', version: '1.32.1'
     compile 'com.google.http-client:google-http-client-jackson:1.15.0-rc'
+
+    // https://mvnrepository.com/artifact/org.springframework.security.oauth.boot/spring-security-oauth2-autoconfigure
+    implementation group: 'org.springframework.security.oauth.boot', name: 'spring-security-oauth2-autoconfigure', version: '2.5.2'
+
 
     // https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api
 /*    compileOnly group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1'

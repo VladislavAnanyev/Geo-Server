@@ -1,4 +1,6 @@
-package com.example.mywebquizengine.Model;
+package com.example.mywebquizengine.Model.Geo;
+
+import com.example.mywebquizengine.Model.User;
 
 import javax.persistence.*;
 import java.util.Calendar;

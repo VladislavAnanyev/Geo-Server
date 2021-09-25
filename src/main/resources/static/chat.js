@@ -27,6 +27,7 @@ function onConnected() {
         }
     }
     xhr.send();
+    console.log(username)
 
     stompClient.subscribe('/topic/' + username, onMessageReceived);
 
@@ -42,14 +43,16 @@ function onError(error) {
 
 function sendMessage(dialog) {
 
-    let messageInput = document.getElementById("inputtext");
+
+    let messageInput = document.getElementById("inputtextarea");
+    console.log(messageInput.value)
     if (messageInput.value.length !== 0) {
 
         var messageContent = messageInput.value.trim();
         if(messageContent && stompClient) {
             var chatMessage = {
                 sender: {username: username},
-                content: messageInput.value,
+                content: messageContent,
                 dialog: {dialogId: dialog}
             };
             stompClient.send("/app/user/" + dialog, {}, JSON.stringify(chatMessage));
@@ -62,7 +65,7 @@ function sendMessage(dialog) {
 
         div.innerHTML =
             "                        <div class=\"sent_msg\">\n" +
-            "                            <p>" + messageInput.value + "</p>\n" +
+            "                            <p>" + messageContent + "</p>\n" +
             "                            <span class=\"time_date\">" +  date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div>\n"
 
 
@@ -74,10 +77,10 @@ function sendMessage(dialog) {
         div2.scrollTop(div2.prop('scrollHeight'));
 
         let lastMsg = document.getElementById("lastMsg" + dialog)
-        console.log(lastMsg)
-        let msgInput = messageInput.value
-        messageInput.value = ' '
-        lastMsg.textContent = msgInput
+        //console.log(lastMsg)
+        //let msgInput = messageInput.value
+        messageInput.value = ''
+        lastMsg.textContent = messageContent
 
     }
 }

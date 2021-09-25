@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.Model;
+package com.example.mywebquizengine.Service;
 
 import com.example.mywebquizengine.Service.JWTUtil;
 import com.google.api.client.auth.oauth2.Credential;

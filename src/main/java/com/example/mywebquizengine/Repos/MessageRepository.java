@@ -3,7 +3,8 @@ package com.example.mywebquizengine.Repos;
 import com.example.mywebquizengine.Model.Chat.Message;
 import com.example.mywebquizengine.Model.Projection.DialogWithUsersView;
 import com.example.mywebquizengine.Model.Projection.MessageForApiView;
-import com.example.mywebquizengine.Model.Projection.MessageForStompView;
+//import com.example.mywebquizengine.Model.Projection.MessageForStompView;
+import com.example.mywebquizengine.Model.Projection.MessageForApiViewWithCustomQuery;
 import com.example.mywebquizengine.Model.Projection.MessageView;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -49,7 +50,7 @@ public interface MessageRepository extends CrudRepository<Message, Integer> {
             "FROM USERS_DIALOGS WHERE USERS_DIALOGS.USER_ID = :username) ORDER BY MESSAGES.TIMESTAMP DESC", nativeQuery = true)
     List<MessageForStompView> getDialogsForApi(String username);*/
 
-    @Query(value = "SELECT id\n" +
+    /*@Query(value = "SELECT id\n" +
             "FROM MESSAGES \n" +
             "    LEFT OUTER JOIN USERS U\n" +
             "        on U.USERNAME = MESSAGES.SENDER_USERNAME \n" +
@@ -58,9 +59,9 @@ public interface MessageRepository extends CrudRepository<Message, Integer> {
             "WHERE MESSAGES.TIMESTAMP IN (SELECT MAX(MESSAGES.TIMESTAMP)\n" +
             "FROM MESSAGES GROUP BY MESSAGES.DIALOG_ID) and MESSAGES.DIALOG_ID IN (SELECT USERS_DIALOGS.DIALOG_ID\n" +
             "FROM USERS_DIALOGS WHERE USERS_DIALOGS.USER_ID = :username) ORDER BY MESSAGES.TIMESTAMP DESC", nativeQuery = true)
-    List<Integer> getDialogsIdForApi(String username);
+    List<Integer> getDialogsIdForApi(String username);*/
 
-    /*@Query(value = "SELECT id, content, timestamp, DIALOGS.dialog_id as dialogId, MESSAGES.SENDER_USERNAME as users_username, activation_code, avatar, balance, change_password_code, email, first_name, last_name, password, MESSAGES.status, image, name\n" +
+    @Query(value = "SELECT id, content, DIALOGS.dialog_id as dialogId, MESSAGES.SENDER_USERNAME as username, activation_code, avatar, balance, change_password_code, email, first_name as firstName, last_name as lastName, password, MESSAGES.status, image, name , timestamp as timestamp\n" +
             "FROM MESSAGES \n" +
             "    LEFT OUTER JOIN USERS U\n" +
             "        on U.USERNAME = MESSAGES.SENDER_USERNAME \n" +
@@ -69,14 +70,14 @@ public interface MessageRepository extends CrudRepository<Message, Integer> {
             "WHERE MESSAGES.TIMESTAMP IN (SELECT MAX(MESSAGES.TIMESTAMP)\n" +
             "FROM MESSAGES GROUP BY MESSAGES.DIALOG_ID) and MESSAGES.DIALOG_ID IN (SELECT USERS_DIALOGS.DIALOG_ID\n" +
             "FROM USERS_DIALOGS WHERE USERS_DIALOGS.USER_ID = :username) ORDER BY MESSAGES.TIMESTAMP DESC", nativeQuery = true)
-    List<DialogWithUsersView> getDialogsForApi(String username);*/
+    List<MessageForApiViewWithCustomQuery> getDialogsForApi(String username);
 
     /*@Query(value = "SELECT * FROM MESSAGES WHERE ID = :id", nativeQuery = true)
     MessageViewForStomp findMessageById(Integer id);*/
 
-    List<MessageForStompView> findMessagesById(List<Integer> integers);
+/*    List<MessageForStompView> findMessagesById(List<Integer> integers);
 
-    ArrayList<MessageForStompView> findAllById(ArrayList<Integer> integers);
+    ArrayList<MessageForStompView> findAllById(ArrayList<Integer> integers);*/
 
     MessageForApiView findMessageById(Integer id);
 

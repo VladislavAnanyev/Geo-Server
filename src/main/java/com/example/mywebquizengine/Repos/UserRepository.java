@@ -46,6 +46,11 @@ public interface UserRepository extends CrudRepository<User, String>, JpaReposit
     @Query(value = "UPDATE USERS SET status = true WHERE USERNAME = :username", nativeQuery = true)
     void activateAccount(String username);
 
+    /*@Modifying
+    @Transactional
+    @Query(value = "UPDATE USERS SET AVATAR = :avatar WHERE USERNAME = :username", nativeQuery = true)
+    void updateAvatar(String username, String avatar);*/
+
 
     @Query(value = "SELECT * FROM USERS WHERE CHANGE_PASSWORD_CODE = :changePasswordCode", nativeQuery = true )
     Optional<User> findByChangePasswordCode(String changePasswordCode);

@@ -1,6 +1,7 @@
 package com.example.mywebquizengine.Service;
 
-import com.example.mywebquizengine.Model.Geolocation;
+import com.example.mywebquizengine.Model.Geo.Geolocation;
+import com.example.mywebquizengine.Model.Order;
 import com.example.mywebquizengine.Model.Role;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.GeolocationRepository;
@@ -11,8 +12,10 @@ import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.RememberMeAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -21,6 +24,8 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,19 +46,32 @@ public class UserService implements UserDetailsService {
     @Value("${hostname}")
     private String hostname;
 
+    @Value("${notification-secret}")
+    String notification_secret;
+
+    @Autowired
+    private PaymentServices paymentServices;
+
     @Autowired
     private GeolocationRepository geolocationRepository;
 
     @Override
     public User /*UserDetails*/ loadUserByUsername(String username) throws UsernameNotFoundException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Optional<User> user = userRepository.findById(username);
+
 
 
         if (user.isPresent()) {
             return user.get();
-        }else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
+        } /*else if (authentication != null){
+            return castToUser((OAuth2AuthenticationToken) authentication);
+        }*/ else throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+    }
+
+
+    public User /*UserDetails*/ loadUserByUsernameProxy(String username) throws UsernameNotFoundException {
+        return userRepository.getOne(username);
     }
 
     public void setAvatar(String avatar, User user) {
@@ -145,6 +163,21 @@ public class UserService implements UserDetailsService {
             doInitialize(user);
             userRepository.save(user);
         }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (userRepository.findById(user.getUsername()).get().getAvatar().contains("default")) {
+
+            if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("google")) {
+                user.setAvatar(((DefaultOidcUser) authentication.getPrincipal()).getPicture());
+                userRepository.setAvatar(user.getAvatar(), user.getUsername());
+
+            }  else if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("github")) {
+                user.setAvatar(((OAuth2AuthenticationToken) authentication).getPrincipal().getAttributes().get("avatar_url").toString());
+                userRepository.setAvatar(user.getAvatar(), user.getUsername());
+            }
+
+
+        }
+
 
     }
 
@@ -164,6 +197,7 @@ public class UserService implements UserDetailsService {
             user.setEmail((String) authentication.getPrincipal().getAttributes().get("email"));
             user.setFirstName((String) authentication.getPrincipal().getAttributes().get("given_name"));
             user.setLastName((String) authentication.getPrincipal().getAttributes().get("family_name"));
+            user.setAvatar((String) authentication.getPrincipal().getAttributes().get("picture"));
 
             user.setUsername(((String) authentication.getPrincipal().getAttributes()
                     .get("email")).replace("@gmail.com", ""));
@@ -175,6 +209,7 @@ public class UserService implements UserDetailsService {
             user.setUsername(authentication.getPrincipal().getAttributes().get("login").toString());
             user.setFirstName(authentication.getPrincipal().getAttributes().get("name").toString());
             user.setLastName(authentication.getPrincipal().getAttributes().get("name").toString());
+            user.setAvatar(authentication.getPrincipal().getAttributes().get("avatar_url").toString());
 
             if (authentication.getPrincipal().getAttributes().get("email") != null) {
                 user.setEmail(authentication.getPrincipal().getAttributes().get("email").toString());
@@ -200,7 +235,7 @@ public class UserService implements UserDetailsService {
         rabbitAdmin.declareBinding(binding);
 
         if (user.getAvatar() == null) {
-            user.setAvatar("default");
+            user.setAvatar("https://localhost/img/default.jpg");
         }
 
         user.setEnabled(true);
@@ -217,7 +252,7 @@ public class UserService implements UserDetailsService {
         user2.setBalance(user2.getBalance() + coins);
     }
 
-    public User getAuthUser(Authentication authentication) {
+    /*public User getAuthUser(Authentication authentication) {
         String name = getAuthUserCommon(authentication);
         //String name;
 
@@ -256,8 +291,48 @@ public class UserService implements UserDetailsService {
                 User user = (User) authentication.getPrincipal();
                 name = user.getUsername();
             }
+        } else if (authentication instanceof RememberMeAuthenticationToken) {
+            name = ((User) authentication.getPrincipal()).getUsername();
         }
         return name;
+    }*/
+
+
+    public void processPayment(String notification_type, String operation_id, Number amount, Number withdraw_amount, String currency, String datetime, String sender, Boolean codepro, String label, String sha1_hash, Boolean test_notification, Boolean unaccepted, String lastname, String firstname, String fathersname, String email, String phone, String city, String street, String building, String suite, String flat, String zip) throws NoSuchAlgorithmException {
+        String mySha = notification_type + "&" + operation_id + "&" + amount + "&" + currency + "&" +
+                datetime + "&" + sender + "&" + codepro + "&" + notification_secret + "&" + label;
+
+        //System.out.println(mySha);
+
+        MessageDigest mDigest = MessageDigest.getInstance("SHA1");
+        byte[] result = mDigest.digest(mySha.getBytes());
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < result.length; i++) {
+            sb.append(Integer.toString((result[i] & 0xff) + 0x100, 16).substring(1));
+        }
+
+
+        if (sb.toString().equals(sha1_hash)) {
+            System.out.println("Пришло уведомление");
+            System.out.println("notification_type = " + notification_type + ", operation_id = " + operation_id +
+                    ", amount = " + amount + ", withdraw_amount = " + withdraw_amount + ", currency = " + currency +
+                    ", datetime = " + datetime + ", sender = " + sender + ", codepro = " + codepro + ", label = " + label +
+                    ", sha1_hash = " + sha1_hash + ", test_notification = " + test_notification + ", unaccepted = " + unaccepted + ", lastname = " + lastname + ", firstname = " + firstname + ", fathersname = " + fathersname + ", email = " + email + ", phone = " + phone + ", city = " + city + ", street = " + street + ", building = " + building + ", suite = " + suite + ", flat = " + flat + ", zip = " + zip);
+            System.out.println();
+
+            Order order = new Order();
+
+            order.setAmount(String.valueOf(amount));
+            order.setCoins((int) (Double.parseDouble(String.valueOf(withdraw_amount)) * 100.0));
+            order.setOperation_id(operation_id);
+            order.setOrder_id(Integer.valueOf(label));
+
+            order = paymentServices.saveFinalOrder(order);
+            updateBalance(order.getCoins(), order.getUser());
+
+        } else {
+            System.out.println("Неправильный хэш");
+        }
     }
 
 
