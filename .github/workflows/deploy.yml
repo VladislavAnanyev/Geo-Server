@@ -10,7 +10,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  deploy:
 
     runs-on: ubuntu-latest
 
@@ -22,9 +22,15 @@ jobs:
         java-version: '11'
         distribution: 'adopt'
         cache: gradle
+        host: ${{secrets.SSH_HOST}}
+        key: ${{secrets.SSH_KEY}}
+        username: ${{secrets.SSH_USERNAME}}
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build
       run: ./gradlew build -x test
     - name: Run
       run: java -jar build/libs/mywebquizengine-0.0.1-SNAPSHOT.jar &
+      
+  
+  
