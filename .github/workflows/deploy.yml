@@ -25,6 +25,8 @@ jobs:
         script: |
           whoami
           ls
+          cd /api/WebQuiz
+          java -jar build/libs/mywebquizengine-0.0.1-SNAPSHOT.jar &
         
       
   
