@@ -47,10 +47,10 @@
             <label for="exampleInputPassword1">Пароль</label>
             <input type="password" class="form-control" id="exampleInputPassword1" name="password">
         </div>
-        <div class="form-group form-check">
+        <#--<div class="form-group form-check">
             <input type="checkbox" class="form-check-input" id="exampleCheck1">
             <label class="form-check-label" for="exampleCheck1">Запомнить меня</label>
-        </div>
+        </div>-->
         <button type="submit" class="btn btn-primary">Войти</button>
         <button type="button" class="btn btn-primary my-1" data-toggle="modal" data-target="#staticBackdrop">
             Забыли пароль?

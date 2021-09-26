@@ -181,7 +181,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             http
 
                     .authorizeRequests()
-                    .antMatchers("/register", "/activate/*", "/img/**",
+                    .antMatchers("/googlee45a32e3d6f7edf4.html", "/register", "/activate/*", "/img/**",
                             "/quizzes", "/reg",  "/androidSign",
                             "/", "/signin", "/checkyandex", "/h2-console/**", "/.well-known/pki-validation/**",
                             "/static/forgotPassword.js", "/static/changePassword.js", "/update/userinfo/pswrdwithoutauth",

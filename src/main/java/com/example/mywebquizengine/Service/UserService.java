@@ -123,8 +123,16 @@ public class UserService implements UserDetailsService {
 
     public void sendCodeForChangePassword(User user) {
         String mes = user.getChangePasswordCode();
+
+        if (mes == null) {
+            mes = UUID.randomUUID().toString();
+            //user.setChangePasswordCode(mes);
+            userRepository.setChangePasswordCode(user.getUsername(), mes);
+
+        }
+
         mailSender.send(user.getEmail(),"Смена пароля в WebQuizzes", "Для смены пароля в WebQuizzes" +
-                " перейдите по ссылке: https://" + hostname + "/updatepass/" + mes + " Если вы не меняли пароль на данном ресурсе, то проигнорируйте это сообщение");
+                " перейдите по ссылке: https://" + hostname + "/updatepass/" + mes + " Если вы не меняли пароль на данном ресурсе, то проигнорируйте сообщение");
     }
 
 
@@ -244,6 +252,7 @@ public class UserService implements UserDetailsService {
 
         user.grantAuthority(Role.ROLE_USER);
         user.setChangePasswordCode(UUID.randomUUID().toString());
+        //user.setActivationCode(UUID.randomUUID().toString());
     }
 
 

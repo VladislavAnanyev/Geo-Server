@@ -18,11 +18,12 @@ public class MvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/static/**", "/img/**", "/video/**", "/.well-known/pki-validation/**" , "yandex_135f209071de02b1.html")
+        registry.addResourceHandler("/static/**", "/img/**", "/video/**", "/.well-known/pki-validation/**" , "yandex_135f209071de02b1.html", "googlee45a32e3d6f7edf4.html")
                 .addResourceLocations("classpath:/static/", "file:" + System.getProperty("user.dir") + "/img/",
                                                             "file:" + System.getProperty("user.dir") + "/video/",
                                                             "file:" + System.getProperty("user.dir") + "/.well-known/pki-validation/" ,
-                                                            "file:" + System.getProperty("user.dir") +  "/yandex_135f209071de02b1.html");
+                                                            "file:" + System.getProperty("user.dir") +  "/yandex_135f209071de02b1.html",
+                                                            "file:" + System.getProperty("user.dir") +  "/googlee45a32e3d6f7edf4.html");
         // for Windows
         /*.addResourceLocations("classpath:/static/", "file:C:\\Users\\avlad\\IdeaProjects\\WebQuiz\\img\\",
                 "file:C:\\Users\\avlad\\IdeaProjects\\WebQuiz\\video\\", "file:C:\\Users\\avlad\\IdeaProjects\\WebQuiz\\.well-known\\pki-validation\\");*/
