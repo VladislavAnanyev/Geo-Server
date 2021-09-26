@@ -23,12 +23,8 @@ jobs:
         username: ${{secrets.SSH_USERNAME}}
         passphrase: ${{secrets.SSH_PASSPHRASE}}
         script: |
-          cd /api/WebQuiz
-          pkill -f java
-          git fetch
-          git merge
-          ./gradlew build -x test
-          java -jar build/libs/mywebquizengine-0.0.1-SNAPSHOT.jar &
+          whoami
+          ls
         
       
   
