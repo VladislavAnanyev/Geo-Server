@@ -22,6 +22,9 @@ jobs:
         java-version: '11'
         distribution: 'adopt'
         cache: gradle
+    - name: digitalocean  
+      uses: appleboy/ssh-action@v0.1.2
+      with: 
         host: ${{secrets.SSH_HOST}}
         key: ${{secrets.SSH_KEY}}
         username: ${{secrets.SSH_USERNAME}}
