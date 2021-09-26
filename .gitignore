@@ -1,7 +1,7 @@
 HELP.md
 .gradle
 build/
-img/
+
 
 
 
@@ -9,7 +9,7 @@ img/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-!**/src/test/**/img/
+
 
 ### STS ###
 .apt_generated
@@ -61,5 +61,7 @@ out/production/resources/application.properties
 logs/logging.log
 
 
+#!/img/4fe8efec.jpg
+
 /img/
-!/img/
+

@@ -44,7 +44,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 @RestController
-public class AndroidController {
+public class ApiController {
 
     private static final HttpTransport transport = new NetHttpTransport();
     private static final JsonFactory jsonFactory = new JacksonFactory();
@@ -241,7 +241,7 @@ public class AndroidController {
             user.setEmail(email);
             user.setFirstName(givenName);
             user.setLastName(familyName);
-            //user.setAvatar("default");
+            user.setAvatar(pictureUrl);
 
             userService.tryToSaveUser(user);
 
