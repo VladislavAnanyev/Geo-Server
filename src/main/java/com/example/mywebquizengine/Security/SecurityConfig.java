@@ -53,16 +53,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected UserDetailsService userDetailsService;
 
 
-    // Биним в конфигурации
-    /*@Bean
-    public TokenBasedRememberMeServices rememberMeServices() {
-        TokenBasedRememberMeServices rememberMeServices
-                = new CustomRememberMeService(stringKey(), userDetailsService);
-        return rememberMeServices;
-    }*/
-
-
-
     @Bean
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
@@ -98,11 +88,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             http.antMatcher("/api/**")
 
                     .authorizeRequests()
-                    .antMatchers("/api/register", "/api/jwt", "/activate/*", "/img/**",
-                            "/api/quizzes", "/reg", "/geo", "/androidSign", "/api/signin", "/api/googleauth","/api/signup",
-                            "/", "/signin", "/checkyandex", "/h2-console/**", "/.well-known/pki-validation/**",
-                            "/static/forgotPassword.js", "/static/changePassword.js", "/update/userinfo/pswrdwithoutauth",
-                            "/updatepass/**", "/pass/**", "/updatepassword/{activationCOde}", "/yandex_135f209071de02b1.html").permitAll()
+                    .antMatchers("/api/register", "/api/jwt", "/img/**",
+                            "/api/quizzes", "/api/signin", "/api/googleauth", "/api/signup").permitAll()
                     .anyRequest().authenticated()
 
                     .and()
@@ -116,8 +103,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .logout()
                     .permitAll()
                     .and()
-                    //.rememberMe().and()
-                    // for h2-console correct view
                     .headers()
                     .frameOptions()
                     .sameOrigin().and()
@@ -140,30 +125,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         @Autowired
         DataSource dataSource;
 
-    /*    @Autowired
-        private PersistentTokenBasedRememberMeServices2 persistentTokenBasedRememberMeServices2;*/
-
-        
-
-
-        /*public void setPersistentTokenBasedRememberMeServices2(PersistentTokenBasedRememberMeServices2 persistentTokenBasedRememberMeServices2) {
-            this.persistentTokenBasedRememberMeServices2 = persistentTokenBasedRememberMeServices2;
-        }*/
 
         @Bean
         public String getKey() {
             return "secretkey";
         }
 
-        /*@Bean
-        public TokenBasedRememberMeServices2 tokenBasedRememberMeServices() {
-            return new TokenBasedRememberMeServices2("secretkey", userDetailsService);
-        }*/
-
-        /*@Bean
-        public PersistentTokenBasedRememberMeServices2 persistentTokenBasedRememberMeServices2() {
-            return new PersistentTokenBasedRememberMeServices2("secretkey", userDetailsService, persistentTokenRepository());
-        }*/
 
         @Bean
         public PersistentTokenRepository persistentTokenRepository() {
@@ -185,7 +152,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                             "/quizzes", "/reg",  "/androidSign",
                             "/", "/signin", "/checkyandex", "/h2-console/**", "/.well-known/pki-validation/**",
                             "/static/forgotPassword.js", "/static/changePassword.js", "/update/userinfo/pswrdwithoutauth",
-                            "/updatepass/**", "/pass/**", "/updatepassword/{activationCOde}", "/yandex_135f209071de02b1.html").permitAll()
+                            "/updatepass/**", "/pass/**", "/updatepassword/{activationCode}", "/yandex_135f209071de02b1.html").permitAll()
                     .anyRequest().authenticated()
 
                     .and()
@@ -199,14 +166,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .permitAll()/*.and().rememberMe().rememberMeParameter("remember-me")
                     //.and().key("secretkey").alwaysRemember(true).rememberMeServices(rememberMeServices())*/
 
-
                     .and().rememberMe()
                     .key("secretkey").alwaysRemember(true).userDetailsService(userDetailsService)
                     .tokenRepository(persistentTokenRepository())
-                    /*.rememberMeServices(new PersistentTokenBasedRememberMeServices2(getKey(), userDetailsService))*/
-
-                    /*.rememberMeServices(rememberMeServices())
-                    .rememberMeParameter("remember-me")*/
 
                     .and()
                     .logout()
@@ -224,12 +186,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         private OAuth2UserService<OAuth2UserRequest, OAuth2User>  oAuth2UserService() {
 
-            /*final OAuth2UserService delegate = new OAuth2UserService() {
-                @Override
-                public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-                    return null;
-                }
-            };*/
 
             final DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
 
@@ -248,32 +204,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             final OidcUserService delegate = new OidcUserService();
 
             return (userRequest) -> {
-                // Delegate to the default implementation for loading a user
 
-               // userRequest = null;
                 OidcUser oidcUser = delegate.loadUser(userRequest);
 
-
                 Set<GrantedAuthority> mappedAuthorities = new HashSet<>(oidcUser.getAuthorities());
-
-                /*OidcUser oidcUser = delegate.loadUser(userRequest);
-
-                //List<GrantedAuthority> authorities2 = AuthorityUtils.commaSeparatedStringToAuthorityList(commaSeparatedListOfAuthorities);
-
-
-                OAuth2AccessToken accessToken = userRequest.getAccessToken();
-                Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
-                mappedAuthorities.add((GrantedAuthority) oidcUser.getAuthorities().toArray()[0]);
-
-                // TODO
-                // 1) Fetch the authority information from the protected resource using accessToken
-                // 2) Map the authority information to one or more GrantedAuthority's and add it to mappedAuthorities
-
-                // 3) Create a copy of oidcUser but use the mappedAuthorities instead
-
-
-
-                oidcUser = new DefaultOidcUser(mappedAuthorities, oidcUser.getIdToken(), oidcUser.getUserInfo());*/
 
                 Map<String, Object> map = new HashMap<>(oidcUser.getIdToken().getClaims());
                 map.put("myLogin", oidcUser.getIdToken().getEmail().replace("@gmail.com", ""));
@@ -282,8 +216,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         oidcUser.getExpiresAt(), map);
 
                 oidcUser = new DefaultOidcUser(mappedAuthorities, oidcIdToken, oidcUser.getUserInfo(), "myLogin");
-
-
 
 
                 return oidcUser;

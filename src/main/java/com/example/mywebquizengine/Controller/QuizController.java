@@ -7,7 +7,7 @@ import com.example.mywebquizengine.Service.QuizService;
 import com.example.mywebquizengine.Service.TestService;
 import com.example.mywebquizengine.Service.UserAnswerService;
 import com.example.mywebquizengine.Service.UserService;
-import com.maxmind.geoip2.exception.GeoIp2Exception;
+
 import freemarker.template.TemplateModelException;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
@@ -148,7 +148,7 @@ public class QuizController {
 
 
     @GetMapping(path = "/")
-    public String home(Model model, HttpServletRequest request) throws TemplateModelException, IOException, GeoIp2Exception {
+    public String home(Model model, HttpServletRequest request) {
 
         return "home";
     }

@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.Controller.api;
 
+import com.example.mywebquizengine.Model.Geo.Meeting;
 import com.example.mywebquizengine.Model.UserInfo.AuthRequest;
 import com.example.mywebquizengine.Model.UserInfo.AuthResponse;
 import com.example.mywebquizengine.Model.UserInfo.GoogleToken;
@@ -7,6 +8,7 @@ import com.example.mywebquizengine.Model.Projection.*;
 
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.DialogRepository;
+import com.example.mywebquizengine.Repos.MeetingRepository;
 import com.example.mywebquizengine.Repos.MessageRepository;
 import com.example.mywebquizengine.Repos.UserRepository;
 import com.example.mywebquizengine.Service.JWTUtil;
@@ -20,7 +22,6 @@ import com.google.api.client.json.jackson.JacksonFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -40,8 +41,11 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.GregorianCalendar;
 
 @RestController
 public class ApiController {
@@ -76,6 +80,9 @@ public class ApiController {
     @Autowired
     private MessageRepository messageRepository;
 
+    @Autowired
+    private MeetingRepository meetingRepository;
+
     @GetMapping(path = "/api/messages")
     //@PreAuthorize(value = "@dialogRepository.findDialogByDialogId(#dialogId).users/*проверить содержание тут надо*/.contains(principal.name)")
     public DialogWithUsersView getMessages(@RequestParam Long dialogId, @AuthenticationPrincipal Principal principal) {
@@ -108,9 +115,6 @@ public class ApiController {
     //@ResponseBody
     public Long checkDialog(@RequestParam String username, @AuthenticationPrincipal Principal principal) {
 
-        //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        //User user = userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication());
-
         return messageService.checkDialog(userService.loadUserByUsername(username), principal.getName());
     }
 
@@ -134,7 +138,7 @@ public class ApiController {
     }
 
     @GetMapping(path = "/api/findbyid")
-    public UserForMessageView getUserById(@RequestParam String username) {
+    public UserCommonView getUserById(@RequestParam String username) {
         return userRepository.findByUsername(username);
     }
 
@@ -154,22 +158,6 @@ public class ApiController {
         return new AuthResponse(jwt);
     }
 
-    /*@PostMapping(path = "/api/googleauth")
-    public AuthResponse googleJwt(@RequestBody User user) {
-
-        *//*try {
-            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
-            System.out.println(authentication);
-        } catch (BadCredentialsException e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Имя или пароль неправильны", e);
-        }*//*
-
-        userService.tryToSaveUser(user);
-
-        // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
-        String jwt = jwtTokenUtil.generateToken(userService.reloadUser(user.getUsername()));
-        return new AuthResponse(jwt);
-    }*/
 
 
     @PostMapping(path = "/api/signup")
@@ -185,25 +173,7 @@ public class ApiController {
     }
 
 
-    /*@PostMapping(path = "/api/googleauth")
-    public AuthResponse googleJwt(@RequestBody Authentication authentication) {
 
-
-
-        *//*try {
-            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
-            System.out.println(authentication);
-        } catch (BadCredentialsException e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Имя или пароль неправильны", e);
-        }*//*
-        User user = userService.castToUser((OAuth2AuthenticationToken) authentication);
-
-        userService.tryToSaveUser(user);
-
-        // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
-        String jwt = jwtTokenUtil.generateToken(userService.loadUserByUsername(user.getUsername()));
-        return new AuthResponse(jwt);
-    }*/
 
     @PostMapping(path = "/api/googleauth")
     public AuthResponse googleJwt(@RequestBody GoogleToken token) throws GeneralSecurityException, IOException {
@@ -259,23 +229,29 @@ public class ApiController {
 
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-            //System.out.println("Error");
-        /*try {
-            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
-            System.out.println(authentication);
-        } catch (BadCredentialsException e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Имя или пароль неправильны", e);
-        }*/
-/*        User user = userService.castToUser((OAuth2AuthenticationToken) authentication);
 
-        userService.tryToSaveUser(user);
-
-        // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
-        String jwt = jwtTokenUtil.generateToken(userService.loadUserByUsername(user.getUsername()));*/
-        //return new AuthResponse(jwt);
+        }
 
     }
 
+    @GetMapping(path = "/api/meetings")
+    public ArrayList<MeetingView> getMyMeetings(@AuthenticationPrincipal Principal principal) {
 
-}
+        User authUser = userService.loadUserByUsername(principal.getName());
+
+        Calendar calendar = new GregorianCalendar();
+        Timestamp date = Timestamp.from(calendar.toInstant());
+
+        //ArrayList<Geolocation> peopleNearMe = findInSquare(SecurityContextHolder.getContext().getAuthentication(),"20");
+
+        return (ArrayList<MeetingView>) meetingRepository.getMyMeetingsToday(authUser.getUsername(),
+                date.toString().substring(0,10) + " 00:00:00",
+                date.toString().substring(0,10) + " 23:59:59");
+        /*return (ArrayList<Meeting>) meetingRepository.getMyMeetingsToday(userService.getAuthUserNoProxy
+                (SecurityContextHolder.getContext().getAuthentication()).getUsername(),
+                        date.toString().substring(0,10) + " 00:00:00",
+                date.toString().substring(0,10) + " 23:59:59");*/
+        //return "meetings";
+    }
+
 }

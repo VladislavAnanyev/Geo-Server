@@ -5,11 +5,11 @@ import com.example.mywebquizengine.Model.OrderDetail;
 //import com.example.mywebquizengine.Service.PaymentServices;
 import com.example.mywebquizengine.Service.PaymentServices;
 import com.example.mywebquizengine.Service.UserService;
-import com.paypal.api.payments.PayerInfo;
+/*import com.paypal.api.payments.PayerInfo;
 import com.paypal.api.payments.Payment;
 import com.paypal.api.payments.ShippingAddress;
 import com.paypal.api.payments.Transaction;
-import com.paypal.base.rest.PayPalRESTException;
+import com.paypal.base.rest.PayPalRESTException;*/
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -44,7 +44,7 @@ public class PayPalController {
         return "checkout";
     }
 
-    @PostMapping(path = "/authorize_payment")
+    /*@PostMapping(path = "/authorize_payment")
     public String authorizePayment(Model model, OrderDetail request) {
         String product = request.getProductName();
         String subtotal = request.getSubtotal();
@@ -68,21 +68,21 @@ public class PayPalController {
             return "error";
             //request.getRequestDispatcher("error.ftl").forward(request, response);
         }
-    }
+    }*/
 
 
 
-    @GetMapping(path = "/review_payment")
-    public String reviewPayment(Model model, Payment request, @RequestParam String paymentId, @RequestParam String PayerID) {
+   /* @GetMapping(path = "/review_payment")
+    public String reviewPayment(Model model, *//*Payment request,*//* @RequestParam String paymentId, @RequestParam String PayerID) {
 
         try {
             PaymentServices paymentServices = new PaymentServices();
-            Payment payment = paymentServices.getPaymentDetails(paymentId);
+*//*            Payment payment = paymentServices.getPaymentDetails(paymentId);
 
             PayerInfo payerInfo = payment.getPayer().getPayerInfo();
             Transaction transaction = payment.getTransactions().get(0);
 
-            ShippingAddress shippingAddress = transaction.getItemList().getShippingAddress();
+            ShippingAddress shippingAddress = transaction.getItemList().getShippingAddress();*//*
 
             //transaction.setDescription("IPhone");
 
@@ -112,9 +112,9 @@ public class PayPalController {
             return "error";
             //request.getRequestDispatcher("error.ftl").forward(request, response);
         }
-    }
+    }*/
 
-    @PostMapping(path = "/execute_payment")
+    /*@PostMapping(path = "/execute_payment")
     public String executePayment(Model model, @RequestParam String paymentId, @RequestParam String PayerID) {
 
 
@@ -130,8 +130,8 @@ public class PayPalController {
             model.addAttribute("payer", payerInfo);
             model.addAttribute("transaction", transaction);
 
-            /*request.setAttribute("payer", payerInfo);
-            request.setAttribute("transaction", transaction);*/
+            *//*request.setAttribute("payer", payerInfo);
+            request.setAttribute("transaction", transaction);*//*
 
 
             //request.getRequestDispatcher("receip").forward(request, response);
@@ -143,5 +143,5 @@ public class PayPalController {
             //request.getRequestDispatcher("error.ftl").forward(request, response);
             return "error";
         }
-    }
+    }*/
 }

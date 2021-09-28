@@ -1,15 +1,11 @@
 package com.example.mywebquizengine.Model.Projection;
 
-import org.springframework.beans.factory.annotation.Value;
-
-import java.sql.Timestamp;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 
 public interface MessageForApiView {
     Integer getId();
     String getContent();
-    UserForMessageView getSender();
+    UserCommonView getSender();
     Calendar getTimestamp();
     DialogForApi getDialog();
     //Long getDialogId();

@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.Repos;
 
-import com.example.mywebquizengine.Model.Projection.UserForMessageView;
+import com.example.mywebquizengine.Model.Projection.UserCommonView;
 import com.example.mywebquizengine.Model.Projection.UserView;
 import com.example.mywebquizengine.Model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,7 +18,7 @@ public interface UserRepository extends CrudRepository<User, String>, JpaReposit
     Optional<User> findById(String s);
 
 
-    UserForMessageView findByUsername(String username);
+    UserCommonView findByUsername(String username);
 
     UserView findAllByUsername(String username);
 

@@ -61,7 +61,7 @@ dependencies {
 
     //implementation 'com.vaadin:vaadin-spring-boot-starter'
     // https://mvnrepository.com/artifact/com.paypal.sdk/rest-api-sdk
-    implementation group: 'com.paypal.sdk', name: 'rest-api-sdk', version: '1.14.0'
+    //implementation group: 'com.paypal.sdk', name: 'rest-api-sdk', version: '1.14.0'
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-oauth2-client
 
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-oauth2-client
@@ -98,7 +98,7 @@ dependencies {
 // https://mvnrepository.com/artifact/com.maxmind.geoip2/geoip2
     //implementation group: 'com.maxmind.geoip2', name: 'geoip2', version: '2.15.0'
 
-    compile 'com.maxmind.geoip2:geoip2:2.15.0'
+
     //compile('redis.clients:jedis:2.9.0')
     //compile('org.springframework.session:spring-session-data-redis')
     //compile 'io.lettuce:lettuce-core:5.0.5.RELEASE'

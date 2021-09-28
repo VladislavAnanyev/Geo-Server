@@ -3,9 +3,9 @@ package com.example.mywebquizengine.Service;
 import com.example.mywebquizengine.Model.Order;
 import com.example.mywebquizengine.Model.OrderDetail;
 import com.example.mywebquizengine.Repos.OrderRepository;
-import com.paypal.api.payments.*;
+/*import com.paypal.api.payments.*;
 import com.paypal.base.rest.APIContext;
-import com.paypal.base.rest.PayPalRESTException;
+import com.paypal.base.rest.PayPalRESTException;*/
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +43,7 @@ public class PaymentServices {
     }
 
 
-    public String authorizePayment(OrderDetail orderDetail)
+    /*public String authorizePayment(OrderDetail orderDetail)
             throws PayPalRESTException {
 
         Payer payer = getPayerInformation();
@@ -126,14 +126,14 @@ public class PaymentServices {
         items.add(item);
         itemList.setItems(items);
 
-        /*ShippingAddress shippingAddress = new ShippingAddress();
+        *//*ShippingAddress shippingAddress = new ShippingAddress();
         shippingAddress.setCountryCode("US");
         shippingAddress.setRecipientName("Александр");
         shippingAddress.setLine1("Первая линия");
         shippingAddress.setCity("Москва");
         shippingAddress.setState("Москва");
         shippingAddress.setPostalCode("345654");
-        itemList.setShippingAddress(shippingAddress);*/
+        itemList.setShippingAddress(shippingAddress);*//*
 
         transaction.setItemList(itemList);
 
@@ -179,7 +179,7 @@ public class PaymentServices {
 
         return payment.execute(apiContext, paymentExecution);
     }
-
+*/
     public Order findById(String label) {
         return orderRepository.findById(Integer.valueOf(label)).get();
     }

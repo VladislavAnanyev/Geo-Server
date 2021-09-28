@@ -3,7 +3,6 @@ package com.example.mywebquizengine.Model.Projection;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.sql.Timestamp;
-import java.util.Calendar;
 
 public interface MessageForApiViewWithCustomQuery {
 
@@ -12,7 +11,7 @@ public interface MessageForApiViewWithCustomQuery {
     String getContent();
 
     @Value("#{new com.example.mywebquizengine.Model.User(target.username, target.firstName, target.lastName, target.avatar)}")
-    UserForMessageView getSender();
+    UserCommonView getSender();
 
     Timestamp getTimestamp();
 

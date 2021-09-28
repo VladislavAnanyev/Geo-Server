@@ -6,5 +6,5 @@ public interface DialogForApi {
     Long getDialogId();
     String getName();
     String getImage();
-    Set<UserForMessageView> getUsers();
+    Set<UserCommonView> getUsers();
 }
