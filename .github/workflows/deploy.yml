@@ -21,13 +21,14 @@ jobs:
         host: ${{secrets.SSH_HOST}}
         key: ${{secrets.SSH_KEY}}
         username: ${{secrets.SSH_USERNAME}}
-        passphrase: ${{secrets.SSH_PASSPHRASE}}
         script: |
-          cd /api/WebQuiz
+          pkill -9 java
+          cd api/WebQuiz
           git fetch
           git merge
           ./gradlew build -x test
-          java -jar build/libs/mywebquizengine-0.0.1-SNAPSHOT.jar
+          java -jar build/libs/mywebquizengine-0.0.1-SNAPSHOT.jar &
+          echo 'Success'
       
   
   
