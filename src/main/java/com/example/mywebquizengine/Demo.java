@@ -44,7 +44,7 @@ public class Demo implements CommandLineRunner {
     @Override
     public void run(String... args) throws UnknownHostException, SchedulerException, InterruptedException, NoSuchAlgorithmException {
 
-        List<User> users = userRepository.findAll();
+        /*List<User> users = userRepository.findAll();
 
         for (User user: users) {
             Queue queue = new Queue(user.getUsername(), true, false, false);
@@ -54,7 +54,7 @@ public class Demo implements CommandLineRunner {
 
             rabbitAdmin.declareQueue(queue);
             rabbitAdmin.declareBinding(binding);
-        }
+        }*/
    /*     List<User> users = userRepository.findAll();
 
 
