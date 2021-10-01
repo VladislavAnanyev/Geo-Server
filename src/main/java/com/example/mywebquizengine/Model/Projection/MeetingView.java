@@ -3,6 +3,10 @@ package com.example.mywebquizengine.Model.Projection;
 import com.example.mywebquizengine.Model.User;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.util.Calendar;
+
 public interface MeetingView {
     Long getId();
 
@@ -14,4 +18,6 @@ public interface MeetingView {
 
     Double getLng();
     Double getLat();
+
+    Timestamp getTime();
 }

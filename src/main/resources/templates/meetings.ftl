@@ -20,7 +20,7 @@
         <img class="rounded-circle" src="${meeting.secondUser.avatar}" alt="...">
         <div class="card-body">
             <h5 class="card-title">${meeting.secondUser.firstName} ${meeting.secondUser.lastName}</h5>
-            <p class="card-text">${meeting.time.time?datetime?string ["dd.MM.yyyy HH:mm:ss"]}</p>
+            <p class="card-text">${meeting.time?datetime?string["dd.MM.yyyy HH:mm:ss"]}</p>
             <a onclick="writeMsg('${meeting.secondUser.username}')" href="../chat/${meeting.secondUser.username}" class="btn btn-primary">Написать сообщение</a>
 
         </div>
