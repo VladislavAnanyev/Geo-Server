@@ -171,17 +171,21 @@ public class UserService implements UserDetailsService {
             doInitialize(user);
             userRepository.save(user);
         }
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (userRepository.findById(user.getUsername()).get().getAvatar().contains("default")) {
 
-            if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("google")) {
-                user.setAvatar(((DefaultOidcUser) authentication.getPrincipal()).getPicture());
-                userRepository.setAvatar(user.getAvatar(), user.getUsername());
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-            }  else if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("github")) {
-                user.setAvatar(((OAuth2AuthenticationToken) authentication).getPrincipal().getAttributes().get("avatar_url").toString());
-                userRepository.setAvatar(user.getAvatar(), user.getUsername());
+            if (authentication instanceof OAuth2AuthenticationToken) {
+                if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("google")) {
+                    user.setAvatar(((DefaultOidcUser) authentication.getPrincipal()).getPicture());
+                    userRepository.setAvatar(user.getAvatar(), user.getUsername());
+
+                }  else if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("github")) {
+                    user.setAvatar(((OAuth2AuthenticationToken) authentication).getPrincipal().getAttributes().get("avatar_url").toString());
+                    userRepository.setAvatar(user.getAvatar(), user.getUsername());
+                }
             }
+
 
 
         }
@@ -243,7 +247,7 @@ public class UserService implements UserDetailsService {
         rabbitAdmin.declareBinding(binding);
 
         if (user.getAvatar() == null) {
-            user.setAvatar("https://localhost/img/default.jpg");
+            user.setAvatar("https://" + hostname + "/img/default.jpg");
         }
 
         user.setEnabled(true);
