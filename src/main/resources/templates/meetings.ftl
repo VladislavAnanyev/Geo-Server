@@ -34,7 +34,7 @@
                     <#if meeting.firstUser.avatar?contains("http")><img class="rounded-circle" src="${meeting.firstUser.avatar}" <#else> <img class="rounded-circle" src="../../../../img/${meeting.firstUser.avatar}.jpg" </#if> alt="...">
                     <div class="card-body">
                         <h5 class="card-title">${meeting.firstUser.firstName} ${meeting.firstUser.lastName}</h5>
-                        <p class="card-text">${meeting.time.time?datetime?string ["dd.MM.yyyy HH:mm:ss"]}</p>
+                        <p class="card-text">${meeting.time?datetime?string["dd.MM.yyyy HH:mm:ss"]}</p>
                         <a onclick="writeMsg('${meeting.firstUser.username}')" <#--href="../chat/${meeting.firstUser.username}"--> class="btn btn-primary">Написать сообщение</a>
                     </div>
 <#--                </div>-->
