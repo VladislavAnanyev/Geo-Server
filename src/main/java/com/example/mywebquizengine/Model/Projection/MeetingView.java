@@ -20,6 +20,6 @@ public interface MeetingView {
 
     Double getLng();
     Double getLat();
-
+//выфавыа
     LocalDateTime getTime();
 }
