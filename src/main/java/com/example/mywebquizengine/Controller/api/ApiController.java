@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -249,6 +250,7 @@ public class ApiController {
         Timestamp date = Timestamp.from(calendar.toInstant());
 
         //ArrayList<Geolocation> peopleNearMe = findInSquare(SecurityContextHolder.getContext().getAuthentication(),"20");
+
 
         return (ArrayList<MeetingView>) meetingRepository.getMyMeetingsToday(authUser.getUsername(),
                 date.toString().substring(0,10) + " 00:00:00",

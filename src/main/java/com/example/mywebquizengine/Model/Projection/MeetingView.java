@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 
 public interface MeetingView {
@@ -19,5 +21,5 @@ public interface MeetingView {
     Double getLng();
     Double getLat();
 
-    Timestamp getTime();
+    LocalDateTime getTime();
 }
