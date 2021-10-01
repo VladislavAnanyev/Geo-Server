@@ -53,7 +53,7 @@ public class ApiController {
     private static final HttpTransport transport = new NetHttpTransport();
     private static final JsonFactory jsonFactory = new JacksonFactory();
 
-    @Value("${spring.security.oauth2.client.registration.google.client-id}")
+    @Value("${androidGoogleClientId}")
     private String CLIENT_ID;
 
     @Autowired
