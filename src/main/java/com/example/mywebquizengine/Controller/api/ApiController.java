@@ -1,5 +1,7 @@
 package com.example.mywebquizengine.Controller.api;
 
+import com.example.mywebquizengine.Controller.GeoController;
+import com.example.mywebquizengine.Model.Geo.Geolocation;
 import com.example.mywebquizengine.Model.Geo.Meeting;
 import com.example.mywebquizengine.Model.UserInfo.AuthRequest;
 import com.example.mywebquizengine.Model.UserInfo.AuthResponse;
@@ -82,6 +84,10 @@ public class ApiController {
 
     @Autowired
     private MeetingRepository meetingRepository;
+
+
+    @Autowired
+    private GeoController geoController;
 
     @GetMapping(path = "/api/messages")
     //@PreAuthorize(value = "@dialogRepository.findDialogByDialogId(#dialogId).users/*проверить содержание тут надо*/.contains(principal.name)")
@@ -252,6 +258,12 @@ public class ApiController {
                         date.toString().substring(0,10) + " 00:00:00",
                 date.toString().substring(0,10) + " 23:59:59");*/
         //return "meetings";
+    }
+
+    @PostMapping(path = "/api/sendGeolocation")
+    public void sendGeolocation(@AuthenticationPrincipal Principal principal, @RequestBody Geolocation myGeolocation) {
+        geoController.sendGeolocation(principal, myGeolocation);
+        throw new ResponseStatusException(HttpStatus.OK);
     }
 
 }
