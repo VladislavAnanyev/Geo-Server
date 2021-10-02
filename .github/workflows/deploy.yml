@@ -28,7 +28,8 @@ jobs:
           git merge
           ./gradlew build -x test
           java -jar build/libs/mywebquizengine-0.0.1-SNAPSHOT.jar &
-          echo 'Success'
+          disown %1
+          exit
       
   
   
