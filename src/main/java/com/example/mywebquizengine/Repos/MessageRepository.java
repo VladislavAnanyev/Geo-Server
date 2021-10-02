@@ -1,16 +1,13 @@
 package com.example.mywebquizengine.Repos;
 
 import com.example.mywebquizengine.Model.Chat.Message;
-import com.example.mywebquizengine.Model.Projection.DialogWithUsersView;
-import com.example.mywebquizengine.Model.Projection.MessageForApiView;
+import com.example.mywebquizengine.Model.Projection.Api.MessageForApiView;
 //import com.example.mywebquizengine.Model.Projection.MessageForStompView;
-import com.example.mywebquizengine.Model.Projection.MessageForApiViewWithCustomQuery;
-import com.example.mywebquizengine.Model.Projection.MessageView;
+import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewWithCustomQuery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Repository

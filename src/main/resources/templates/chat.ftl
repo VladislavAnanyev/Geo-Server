@@ -102,7 +102,7 @@
 
                                     <div id="${dialog.dialog.dialogId?c}" <#--последнее сообщение не от меня--> onclick="location.href='/chat/${dialog.dialog.dialogId?c}'" class="chat_list <#--active_chat-->">
                                         <div class="chat_people">
-                                            <div class="chat_img"> <img class="rounded-circle" src="${dialog.sender.avatar}"  alt="sunil"> </div>
+                                            <div class="chat_img"> <img class="rounded-circle" width="43.26px" height="43.26px" src="${dialog.sender.avatar}"  alt="sunil"> </div>
                                             <div class="chat_ib последнее сообщение не от меня">
                                                 <h5 class="dialogsuser">${dialog.sender.username}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
                                                 <p id="lastMsg${dialog.dialog.dialogId?c}">${dialog.content}</p>
@@ -121,7 +121,7 @@
 
                                     <div id="${dialog.dialog.dialogId?c}" <#--последнее сообщение от меня--> onclick="location.href='/chat/${dialog.dialog.dialogId?c}'" class="chat_list <#--active_chat-->">
                                         <div class="chat_people">
-                                            <div class="chat_img"> <img class="rounded-circle" src="${o.avatar}" alt="sunil"> </div>
+                                            <div class="chat_img"> <img class="rounded-circle" width="43.26px" height="43.26px" src="${o.avatar}" alt="sunil"> </div>
                                             <div class="chat_ib последнее сообщение от меня">
                                                 <h5 class="dialogsuser">${o.username}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
                                                 <p id="lastMsg${dialog.dialog.dialogId?c}">${dialog.content}</p>
@@ -135,7 +135,7 @@
 
                                 <div id="${dialog.dialog.dialogId?c}" onclick="location.href='/chat/${dialog.dialog.dialogId?c}'" class="chat_list <#--active_chat-->">
                                     <div class="chat_people">
-                                        <div class="chat_img"> <#if dialog.dialog.image??><img class="rounded-circle" src="<../../../../img/${dialog.dialog.image}.jpg"  alt="sunil"> </#if></div>
+                                        <div class="chat_img"> <#if dialog.dialog.image??><img class="rounded-circle" width="43.26px" height="43.26px" src="<../../../../img/${dialog.dialog.image}.jpg"  alt="sunil"> </#if></div>
                                         <div class="chat_ib группа">
                                             <h5 class="dialogsuser"><#if dialog.dialog.name??>${dialog.dialog.name?string}</#if><span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
                                             <p id="lastMsg${dialog.dialog.dialogId?c}">${dialog.content}</p>
@@ -172,7 +172,7 @@
 
 
                             <div class="incoming_msg">
-                                <div class="incoming_msg_img"> <img class="rounded-circle" src="${msg.sender.avatar}"  alt="sunil"> </div>
+                                <div class="incoming_msg_img"> <img class="rounded-circle" width="43.26px" height="43.26px" src="${msg.sender.avatar}"  alt="sunil"> </div>
                                 <div class="received_msg">
                                     <div class="received_withd_msg">
                                         <p>${msg.content}</p>
@@ -296,7 +296,7 @@
 
                 div2.innerHTML =
                     "                                    <div class=\"chat_people\">\n" +
-                    "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" src=\"${c.avatar}\" alt=\"sunil\"> </div>\n" +
+                    "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" width=\"43.26px\" height=\"43.26px\" src=\"${c.avatar}\" alt=\"sunil\"> </div>\n" +
                     "                                        <div class=\"chat_ib\">\n" +
                     "                                            <h5 class=\"dialogsuser\">${c.username}<span class=\"chat_date\"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>\n" +
                     "                                            <p></p>\n" +
@@ -322,7 +322,7 @@
 
                 div2.innerHTML =
                     "                                    <div class=\"chat_people\">\n" +
-                    "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" src=\"<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialogObj.image}.jpg\" alt=\"sunil\"> </div>\n" +
+                    "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" width=\"43.26px\" height=\"43.26px\" src=\"<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialogObj.image}.jpg\" alt=\"sunil\"> </div>\n" +
                     "                                        <div class=\"chat_ib\">\n" +
                     "                                            <h5 class=\"dialogsuser\">${dialogObj.name}<span class=\"chat_date\"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>\n" +
                     "                                            <p id=\"lastMsg${dialog?c}\"></p>\n" +

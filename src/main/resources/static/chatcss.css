@@ -1,3 +1,8 @@
+
+.chat_list:hover {
+    background: #f1f1f1;
+}
+
 .container{max-width:1170px; margin:auto;}
 img{ max-width:100%;}
 .inbox_people {
@@ -56,9 +61,16 @@ img{ max-width:100%;}
     margin: 0;
     padding: 18px 16px 10px;
 }
-.inbox_chat { height: 550px; overflow-y: scroll;}
 
 .active_chat{ background:#ebebeb;}
+
+.active_chat:hover{
+    background:#ebebeb;
+}
+
+.inbox_chat { height: 550px; overflow-y: scroll;}
+
+
 
 .incoming_msg_img {
     display: inline-block;

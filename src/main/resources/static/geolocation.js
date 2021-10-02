@@ -1,5 +1,5 @@
 function geo() {
-    var findMeButton = document.getElementById("findme")
+    //var findMeButton = document.getElementById("findme")
 
 
     let geoconfig={
@@ -11,9 +11,9 @@ function geo() {
     if (!navigator.geolocation) {
 
 
-        
-        findMeButton.addClass("disabled");
-        $('.no-browser-support').addClass("visible");
+        console.log("Браузер не поддерживается")
+        //findMeButton.addClass("disabled");
+        //$('.no-browser-support').addClass("visible");
 
     } else {
 
@@ -81,46 +81,57 @@ function geo() {
             let lat = position.coords.latitude;
             let lng = position.coords.longitude;
 
-            map = new GMaps({
-                el: '#map',
-                lat: lat,
-                lng: lng
-            });
+            if (document.getElementById("map") != null) {
+                map = new GMaps({
+                    el: '#map',
+                    lat: lat,
+                    lng: lng
+                });
 
 
-            m = map.addMarker({
-                lat: lat,
-                lng: lng
-            });
+                m = map.addMarker({
+                    lat: lat,
+                    lng: lng
+                });
 
-            let json = {
-                lat: lat,
-                lng: lng
-            }
 
-            let xhr = new XMLHttpRequest();
-            xhr.open('GET', '/getAllGeoWithoutMe',true);
-            xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                let json = {
+                    lat: lat,
+                    lng: lng
+                }
 
-                    let array = JSON.parse(xhr.response)
-                    console.log(array)
-                    for (let i = 0; i < xhr.response.length; i++) {
 
-                        map.addMarker({
-                            lat: array[i].lat,
-                            lng: array[i].lng
-                        });
+                let xhr = new XMLHttpRequest();
+                xhr.open('GET', '/getAllGeoWithoutMe',true);
+                xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+
+                        let array = JSON.parse(xhr.response)
+                        console.log(array)
+                        for (let i = 0; i < array.length; i++) {
+
+                           // console.log()
+                            map.addMarker({
+                                lat: array[i].lat,
+                                lng: array[i].lng
+                            });
+
+                        }
+
+
+                    } else if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 400) {
 
                     }
+                };
+                xhr.send()
+            }
 
 
-                } else if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 400) {
 
-                }
-            };
-            xhr.send()
+
+
+
 
         }, null, geoconfig);
 
@@ -142,12 +153,16 @@ function geo() {
                 lng: lng
             });*/
 
-            map.removeMarker(m)
+            if (document.getElementById("map")) {
+                map.removeMarker(m)
 
-            m = map.addMarker({
-                lat: lat,
-                lng: lng
-            });
+                m = map.addMarker({
+                    lat: lat,
+                    lng: lng
+                });
+            }
+
+
 
 
             let json = {

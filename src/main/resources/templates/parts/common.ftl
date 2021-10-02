@@ -153,6 +153,12 @@
         $('[data-toggle="tooltip"]').tooltip()
     })</script>
 
+<#if nowUser??>
+<script src="/static/geolocation.js"></script>
+<script>geo()</script>
+</#if>
+
+
 </body>
 </html>
 </#macro>

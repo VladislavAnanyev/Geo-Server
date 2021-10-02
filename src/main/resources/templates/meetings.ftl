@@ -21,7 +21,7 @@
         <div class="card-body">
             <h5 class="card-title">${meeting.secondUser.firstName} ${meeting.secondUser.lastName}</h5>
             <p class="card-text">${meeting.time?datetime?string["dd.MM.yyyy HH:mm:ss"]}</p>
-            <a onclick="writeMsg('${meeting.secondUser.username}')" href="../chat/${meeting.secondUser.username}" class="btn btn-primary">Написать сообщение</a>
+            <a onclick="writeMsg('${meeting.secondUser.username}')" <#--href="../chat/${meeting.secondUser.username}"--> href="#" class="btn btn-primary">Написать сообщение</a>
 
         </div>
 
@@ -35,7 +35,7 @@
                     <div class="card-body">
                         <h5 class="card-title">${meeting.firstUser.firstName} ${meeting.firstUser.lastName}</h5>
                         <p class="card-text">${meeting.time?datetime?string["dd.MM.yyyy HH:mm:ss"]}</p>
-                        <a onclick="writeMsg('${meeting.firstUser.username}')" <#--href="../chat/${meeting.firstUser.username}"--> class="btn btn-primary">Написать сообщение</a>
+                        <a onclick="writeMsg('${meeting.firstUser.username}')" <#--href="../chat/${meeting.firstUser.username}"--> href="#" class="btn btn-primary">Написать сообщение</a>
                     </div>
 <#--                </div>-->
 

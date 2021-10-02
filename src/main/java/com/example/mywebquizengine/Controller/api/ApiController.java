@@ -2,7 +2,8 @@ package com.example.mywebquizengine.Controller.api;
 
 import com.example.mywebquizengine.Controller.GeoController;
 import com.example.mywebquizengine.Model.Geo.Geolocation;
-import com.example.mywebquizengine.Model.Geo.Meeting;
+import com.example.mywebquizengine.Model.Projection.Api.MeetingForApiView;
+import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewWithCustomQuery;
 import com.example.mywebquizengine.Model.UserInfo.AuthRequest;
 import com.example.mywebquizengine.Model.UserInfo.AuthResponse;
 import com.example.mywebquizengine.Model.UserInfo.GoogleToken;
@@ -44,7 +45,6 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.sql.Timestamp;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -242,7 +242,7 @@ public class ApiController {
     }
 
     @GetMapping(path = "/api/meetings")
-    public ArrayList<MeetingView> getMyMeetings(@AuthenticationPrincipal Principal principal) {
+    public ArrayList<MeetingForApiView> getMyMeetings(@AuthenticationPrincipal Principal principal) {
 
         User authUser = userService.loadUserByUsername(principal.getName());
 
@@ -252,7 +252,7 @@ public class ApiController {
         //ArrayList<Geolocation> peopleNearMe = findInSquare(SecurityContextHolder.getContext().getAuthentication(),"20");
 
 
-        return (ArrayList<MeetingView>) meetingRepository.getMyMeetingsToday(authUser.getUsername(),
+        return (ArrayList<MeetingForApiView>) meetingRepository.getMyMeetingsTodayApi(authUser.getUsername(),
                 date.toString().substring(0,10) + " 00:00:00",
                 date.toString().substring(0,10) + " 23:59:59");
         /*return (ArrayList<Meeting>) meetingRepository.getMyMeetingsToday(userService.getAuthUserNoProxy
@@ -265,7 +265,6 @@ public class ApiController {
     @PostMapping(path = "/api/sendGeolocation")
     public void sendGeolocation(@AuthenticationPrincipal Principal principal, @RequestBody Geolocation myGeolocation) {
         geoController.sendGeolocation(principal, myGeolocation);
-        throw new ResponseStatusException(HttpStatus.OK);
     }
 
 }

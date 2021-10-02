@@ -1,13 +1,16 @@
-package com.example.mywebquizengine.Model.Projection;
+package com.example.mywebquizengine.Model.Projection.Api;
 
+import com.example.mywebquizengine.Model.Projection.UserCommonView;
+import com.example.mywebquizengine.Model.User;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Calendar;
 
-public interface MeetingView {
+public interface MeetingForApiView {
     Long getId();
 
     @Value("#{new com.example.mywebquizengine.Model.User(target.first_username, target.first_firstName, target.first_lastName, target.first_avatar)}")
@@ -19,5 +22,5 @@ public interface MeetingView {
     Double getLng();
     Double getLat();
 
-    Timestamp getTime();
+    LocalDateTime getTime();
 }

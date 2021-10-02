@@ -1,4 +1,6 @@
-package com.example.mywebquizengine.Model.Projection;
+package com.example.mywebquizengine.Model.Projection.Api;
+
+import com.example.mywebquizengine.Model.Projection.UserCommonView;
 
 import java.util.Set;
 

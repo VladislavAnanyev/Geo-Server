@@ -130,6 +130,8 @@ function onMessageReceived(payload) {
 
     }
 
+
+
     let div = document.createElement("div");
 
     if (username !== message.sender.username) {
@@ -149,6 +151,11 @@ function onMessageReceived(payload) {
             "                                    <p>" + message.content + "</p>\n" +
             "                                    <span class=\"time_date\">" +  date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div>\n" +
             "                            "
+
+
+        //if (dialogsNameArr.indexOf(message.sender.username) === 0) {
+            document.getElementById("lastMsg" + message.dialog.dialogId).textContent = message.content
+        //}
     }
 
 

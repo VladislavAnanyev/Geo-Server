@@ -4,18 +4,14 @@ package com.example.mywebquizengine.Service;
 import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Chat.Message;
 
-import com.example.mywebquizengine.Model.Projection.DialogWithUsersView;
-import com.example.mywebquizengine.Model.Projection.MessageForApiView;
 //import com.example.mywebquizengine.Model.Projection.MessageForStompView;
-import com.example.mywebquizengine.Model.Projection.MessageForApiViewWithCustomQuery;
-import com.example.mywebquizengine.Model.Projection.MessageView;
+import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewWithCustomQuery;
 import com.example.mywebquizengine.Model.User;
 
 import com.example.mywebquizengine.Repos.DialogRepository;
 import com.example.mywebquizengine.Repos.MessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
