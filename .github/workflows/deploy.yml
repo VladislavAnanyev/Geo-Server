@@ -27,9 +27,7 @@ jobs:
           git fetch
           git merge
           ./gradlew build -x test
-          java -jar build/libs/mywebquizengine-0.0.1-SNAPSHOT.jar
-          disown -h %1
-          bg 1
+          nohup java -jar build/libs/mywebquizengine-0.0.1-SNAPSHOT.jar
   
       
   
