@@ -5,12 +5,23 @@ import org.apache.catalina.connector.Connector;
 import org.apache.tomcat.util.descriptor.web.SecurityCollection;
 import org.apache.tomcat.util.descriptor.web.SecurityConstraint;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.servlet.http.HttpSessionListener;
+
 @Configuration
 public class ServerConfig {
+
+    /*@Bean
+    public ServletListenerRegistrationBean<HttpSessionListener> listenerRegistrationBean() {
+        ServletListenerRegistrationBean<HttpSessionListener> bean =
+                new ServletListenerRegistrationBean<>();
+        bean.setListener(new SessionEventListener());
+        return bean;
+    }*/
 
     @Bean
     public ServletWebServerFactory servletContainer() {

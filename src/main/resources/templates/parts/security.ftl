@@ -10,7 +10,9 @@
 
 
 <#if known>
+
     <#assign
+
 <#--        nowUser = Session.SPRING_SECURITY_CONTEXT.authentication.principal.attributes-->
 <#--        <#if nowUser??> -->
         nowUser = Session.SPRING_SECURITY_CONTEXT.authentication

@@ -77,32 +77,40 @@
 
 
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
-        <div id="liveToast" class="toast fade" role="alert" aria-live="assertive" aria-atomic="true">
+        <div id="liveToastMessage" class="toast fade" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-envelope-fill" viewBox="0 0 16 16">
                     <path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414.05 3.555zM0 4.697v7.104l5.803-3.558L0 4.697zM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586l-1.239-.757zm3.436-.586L16 11.801V4.697l-5.803 3.546z"/>
                 </svg>
-                <strong class="me-auto ml-2" id="toast-head">Bootstrap</strong>
+                <strong class="me-auto ml-2" id="toast-head-msg">Bootstrap</strong>
                 <small class="text-muted">прямо сейчас</small>
                 <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Закрыть"></button>
             </div>
-            <div class="toast-body" id="toast-text">
+            <div class="toast-body" id="toast-text-msg">
                 Видите? Именно так.
             </div>
         </div>
 
-        <#--<div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    </div>
+
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="liveToastMeet" class="toast fade" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header">
-                <svg class="bd-placeholder-img rounded me-2" width="20" height="20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="100%" height="100%" fill="#007aff"></rect></svg>
-                <strong class="me-auto">Bootstrap</strong>
-                <small class="text-muted">2 секунды назад</small>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-envelope-fill" viewBox="0 0 16 16">
+                    <path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414.05 3.555zM0 4.697v7.104l5.803-3.558L0 4.697zM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586l-1.239-.757zm3.436-.586L16 11.801V4.697l-5.803 3.546z"/>
+                </svg>
+                <strong class="me-auto ml-2" id="toast-head-meet">Bootstrap</strong>
+                <small class="text-muted">прямо сейчас</small>
                 <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Закрыть"></button>
             </div>
-            <div class="toast-body">
-                Внимание, всплывающие сообщения складываются автоматически
+            <div class="toast-body" id="toast-text-meet">
+                Видите? Именно так.
             </div>
-        </div>-->
+        </div>
     </div>
+
+
 
 </div>
 
@@ -127,7 +135,9 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 
 
-
+<#if nowUser??>
+<script src="/static/meetingNotif.js"></script>
+</#if>
 
 <#if test_id??>
 <#if nowUser??>

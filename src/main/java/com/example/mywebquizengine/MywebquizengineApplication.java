@@ -9,6 +9,7 @@ import org.springframework.boot.SpringApplication;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 
@@ -29,14 +30,15 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import javax.servlet.http.HttpSession;
 
+@ServletComponentScan("com.example.mywebquizengine.Security")
 @SpringBootApplication
 @EnableScheduling
 @EnableAsync
 public class MywebquizengineApplication {
 
     public static void main(String[] args) throws TemplateException, IOException {
-
 
 
         SpringApplication.run(MywebquizengineApplication.class, args);

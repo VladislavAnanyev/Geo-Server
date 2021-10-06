@@ -2,6 +2,8 @@
 <#include "parts/security.ftl">
 
 <@e.page>
+
+
     <title>Вход</title>
     <script src="/static/forgotPassword.js"></script>
     <#macro logout>

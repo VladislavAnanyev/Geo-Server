@@ -17,14 +17,18 @@ import com.example.mywebquizengine.Repos.UserRepository;
 import com.example.mywebquizengine.Service.JWTUtil;
 import com.example.mywebquizengine.Service.MessageService;
 import com.example.mywebquizengine.Service.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson.JacksonFactory;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,22 +37,22 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
 
-import java.io.IOException;
+import javax.transaction.Transactional;
+import java.io.*;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.GregorianCalendar;
+import java.util.*;
 
 @RestController
 public class ApiController {
@@ -86,6 +90,8 @@ public class ApiController {
     @Autowired
     private MeetingRepository meetingRepository;
 
+    @Value("${hostname}")
+    private String hostname;
 
     @Autowired
     private GeoController geoController;
@@ -263,8 +269,56 @@ public class ApiController {
     }
 
     @PostMapping(path = "/api/sendGeolocation")
-    public void sendGeolocation(@AuthenticationPrincipal Principal principal, @RequestBody Geolocation myGeolocation) {
+    public void sendGeolocation(@AuthenticationPrincipal Principal principal, @RequestBody Geolocation myGeolocation) throws JsonProcessingException, ParseException {
         geoController.sendGeolocation(principal, myGeolocation);
+    }
+
+    @PostMapping(path = "/api/upload")
+    public void handleFileUpload(@RequestParam("file") MultipartFile file, @AuthenticationPrincipal Principal principal) {
+       // String name = file.getOriginalFilename();
+
+        if (!file.isEmpty()) {
+            try {
+                String uuid = UUID.randomUUID().toString();
+                uuid = uuid.substring(0, 8);
+                byte[] bytes = file.getBytes();
+
+                BufferedOutputStream stream =
+                        new BufferedOutputStream(new FileOutputStream(new File("img/" +
+                                uuid + ".jpg")));
+                stream.write(bytes);
+                stream.close();
+
+                User user = userService.loadUserByUsernameProxy(principal.getName());
+
+                userService.setAvatar("https://" + hostname + "/img/" + uuid + ".jpg", user);
+
+                //file.transferTo(new File("C:/Users/avlad/IdeaProjects/WebQuiz" + name));
+
+                //User userLogin = userService.loadUserByUsernameProxy(principal.getName());
+                //userLogin.setAvatar("https://" + hostname + "/img/" + uuid + ".jpg");
+                //model.addAttribute("user", userLogin);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Transactional
+    @PutMapping(path = "/api/update/user/{username}", consumes={"application/json"})
+    @PreAuthorize(value = "#principal.name.equals(#username)")
+    public void changeUser(@PathVariable String username, @RequestBody User user, @AuthenticationPrincipal Principal principal) {
+        userService.updateUser(user.getLastName(), user.getFirstName(), username);
+    }
+
+
+    @GetMapping(path = "/api/test")
+    public ResponseEntity<MeetingView> test() {
+        return ResponseEntity
+                .ok()
+                .header("type", "meeting")
+                .body(meetingRepository.findMeetingById(46364L));
     }
 
 }

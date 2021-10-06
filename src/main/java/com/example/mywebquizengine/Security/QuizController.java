@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.Controller;
+package com.example.mywebquizengine.Security;
 
 import com.example.mywebquizengine.Model.Test.SimpleJob;
 import com.example.mywebquizengine.Model.Test.*;
@@ -8,17 +8,17 @@ import com.example.mywebquizengine.Service.TestService;
 import com.example.mywebquizengine.Service.UserAnswerService;
 import com.example.mywebquizengine.Service.UserService;
 
-import freemarker.template.TemplateModelException;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
@@ -27,6 +27,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
@@ -53,15 +55,15 @@ public class QuizController {
 
     @Autowired
     private UserAnswerService userAnswerService;
+/*
+    @Autowired
+    private LoggedUser loggedUser;*/
 
     @Autowired
     private UserService userService;
 
     @Autowired
     private TestService testService;
-
-    @Autowired
-    private OAuth2AuthorizedClientService authorizedClientService;
 
 
     @GetMapping(path = "/quizzes")
@@ -150,8 +152,54 @@ public class QuizController {
     @GetMapping(path = "/")
     public String home(Model model, HttpServletRequest request) {
 
+
         return "home";
     }
+
+    /*@GetMapping("/loggedUsers")
+    @ResponseBody
+    public List<String> getLoggedUsers(Locale locale, Model model) {
+
+        List<String> list = loggedUser.getUsers();
+        return loggedUser.getUsers();
+    }*/
+
+    /*@GetMapping("/viewSessionData")
+    @ResponseBody// it will handle all request for /viewSessionData
+    public java.util.Map<String, Integer> start(HttpServletRequest request) {
+        if (request.getSession() != null) {
+            request.getSession().invalidate();
+        }
+        Integer integer = (Integer) request.getSession()
+                .getAttribute("hitCounter");        // create session if not exists and get attribute
+        if (integer == null) {
+            integer = new Integer(0);
+            integer++;
+            request.getSession().setAttribute("hitCounter", integer);           // replace session attribute
+        } else {
+            integer++;
+            request.getSession().setAttribute("hitCounter", integer);            // replace session attribute
+        }
+        java.util.Map<String, Integer> hitCounter = new HashMap<>();
+        hitCounter.put("Hit Counter", integer);
+        return hitCounter;
+    }
+
+    private static final Logger LOG = LoggerFactory.getLogger(QuizController.class);*/
+
+    /*@GetMapping("/get-session-count")
+    @ResponseBody
+    public String testSessionListner(HttpServletRequest request, HttpServletResponse response){
+
+        HttpSession session = null;
+        if(session == null){
+            LOG.info("Unable to find session. Creating a new session");
+            session = request.getSession(true);
+        }
+        LOG.info("Session exist");
+
+        return "Session Test completed";
+    }*/
 
 
 

@@ -5,7 +5,7 @@ import com.example.mywebquizengine.Model.Projection.UserCommonView;
 
 import java.util.Calendar;
 
-public interface MessageForApiView {
+public interface MessageForApiViewCustomQuery {
     Integer getId();
     String getContent();
     UserCommonView getSender();

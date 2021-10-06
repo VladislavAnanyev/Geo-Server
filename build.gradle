@@ -33,7 +33,7 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom 'org.springframework.session:spring-session-bom:2020.0.3'
+        //mavenBom 'org.springframework.session:spring-session-bom:2020.0.3'
     }
 
     /*imports {
@@ -47,8 +47,8 @@ dependencies {
     //implementation 'org.springframework.boot:spring-boot-starter-freemarker'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
-    implementation 'org.springframework.session:spring-session-jdbc'
-    implementation 'org.springframework.session:spring-session-core'
+    //implementation 'org.springframework.session:spring-session-jdbc'
+    //implementation 'org.springframework.session:spring-session-core'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '2.5.0'
 // https://mvnrepository.com/artifact/commons-codec/commons-codec
     implementation group: 'commons-codec', name: 'commons-codec', version: '1.7'
@@ -104,8 +104,8 @@ dependencies {
     //compile 'io.lettuce:lettuce-core:5.0.5.RELEASE'
     //compile 'redis.clients:jedis'
     //compile 'org.apache.commons:commons-pool2'
-    compile 'org.springframework.session:spring-session-core:2.0.0.RELEASE'
-    compile 'org.springframework.session:spring-session-jdbc:2.0.0.RELEASE'
+    //compile 'org.springframework.session:spring-session-core:2.0.0.RELEASE'
+    //compile 'org.springframework.session:spring-session-jdbc:2.0.0.RELEASE'
     compile 'com.google.api-client:google-api-client:1.31.5'
 
     // https://mvnrepository.com/artifact/com.google.api-client/google-api-client-jackson2
@@ -126,6 +126,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
     //implementation group: 'org.springframework.amqp', name: 'spring-rabbit', version: '2.3.10'
 
+    implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
 
 }
 

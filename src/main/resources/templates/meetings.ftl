@@ -16,30 +16,66 @@
     <#list meetings as meeting>
         <div class="col-sm-6">
         <#if meeting.secondUser.username != myUsername>
-    <div class="card mt-2" style="width: 18rem;">
-        <img class="rounded-circle" src="${meeting.secondUser.avatar}" alt="...">
-        <div class="card-body">
-            <h5 class="card-title">${meeting.secondUser.firstName} ${meeting.secondUser.lastName}</h5>
-            <p class="card-text">${meeting.time?datetime?string["dd.MM.yyyy HH:mm:ss"]}</p>
-            <a onclick="writeMsg('${meeting.secondUser.username}')" <#--href="../chat/${meeting.secondUser.username}"--> href="#" class="btn btn-primary">Написать сообщение</a>
-
-        </div>
+            <div class="card mt-2" style="width: 18rem;">
+            <img class="rounded-circle" src="${meeting.secondUser.avatar}" alt="...">
+            <div class="card-body">
+                <h5 class="card-title">${meeting.secondUser.firstName} ${meeting.secondUser.lastName}</h5>
+                <p class="card-text">${meeting.time?datetime?string["dd.MM.yyyy HH:mm:ss"]}</p>
 
 
+<#--                <div class="input-group mb-2">-->
+
+<#--                </div>-->
+
+                <#if friendsName?seq_contains(meeting.secondUser.username)>
+                    <a  onclick="writeMsg('${meeting.secondUser.username}')" href="#" id="button${meeting.secondUser.username}" class="btn btn-primary">Написать сообщение</a>
+
+                <#else>
+
+                    <span class="input-group-text mb-1">Сообщение</span>
+                    <textarea class="form-control mb-2" id="${meeting.secondUser.username}msg" aria-label="With textarea"></textarea>
+
+                    <a  onclick="sendRequest('${meeting.secondUser.username}', '${meeting.id?c}')" href="#" id="button${meeting.secondUser.username}" class="btn btn-primary">Отправить запрос</a>
 
 
-            <#else>
+                </#if>
 
-                <div class="card" style="width: 18rem;">
-                    <#if meeting.firstUser.avatar?contains("http")><img class="rounded-circle" src="${meeting.firstUser.avatar}" <#else> <img class="rounded-circle" src="../../../../img/${meeting.firstUser.avatar}.jpg" </#if> alt="...">
-                    <div class="card-body">
-                        <h5 class="card-title">${meeting.firstUser.firstName} ${meeting.firstUser.lastName}</h5>
-                        <p class="card-text">${meeting.time?datetime?string["dd.MM.yyyy HH:mm:ss"]}</p>
-                        <a onclick="writeMsg('${meeting.firstUser.username}')" <#--href="../chat/${meeting.firstUser.username}"--> href="#" class="btn btn-primary">Написать сообщение</a>
-                    </div>
+            </div>
+
+
+
+        <#else>
+
+            <div class="card" style="width: 18rem;">
+                <img class="rounded-circle" src="${meeting.firstUser.avatar}" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">${meeting.firstUser.firstName} ${meeting.firstUser.lastName}</h5>
+                    <p class="card-text">${meeting.time?datetime?string["dd.MM.yyyy HH:mm:ss"]}</p>
+
+
+
+                    <#if friendsName?seq_contains(meeting.firstUser.username)>
+                        <a  onclick="writeMsg('${meeting.firstUser.username}')" href="#" id="button${meeting.firstUser.username}" class="btn btn-primary">Написать сообщение</a>
+
+                    <#else>
+
+                        <span class="input-group-text mb-1">Сообщение</span>
+                        <textarea class="form-control mb-2" id="${meeting.firstUser.username}msg" aria-label="With textarea"></textarea>
+
+                        <a  onclick="sendRequest('${meeting.firstUser.username}', '${meeting.id?c}')" href="#" id="button${meeting.firstUser.username}" class="btn btn-primary">Отправить запрос</a>
+
+
+                    </#if>
+
+
+                </div>
+
 <#--                </div>-->
 
         </#if>
+
+
+
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
                 <div class="map-overlay">
@@ -105,4 +141,5 @@
         </script>
 
 
+        <script src="/static/sendRequest.js"></script>
 </@e.page>

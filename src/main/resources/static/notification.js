@@ -9,7 +9,7 @@ var colors2 = [
 ];
 
 function notificationConnect() {
-
+    meetingConnect()
         console.log("Go")
         var socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
@@ -18,6 +18,8 @@ function notificationConnect() {
 }
 
 function onConnectedNotif() {
+
+
     //console.log('/topic/' + document.getElementById("dialogId").value);
 
     let xhr = new XMLHttpRequest();
@@ -36,7 +38,7 @@ function onConnectedNotif() {
 
 function onErrorNotif(error) {
     console.log("fail")
-    connect()
+    notificationConnect()
     console.log("try")
 }
 
@@ -50,86 +52,25 @@ function onMessageReceivedNotif(payload) {
 
     console.log(message)
 
-    /*let dialog = document.getElementById("dialogs")
-
-    let dialogsName = document.getElementsByClassName("dialogsuser")
-    let dialogsNameArr = []
-
-    for (let i = 0; i < dialogsName.length; i++) {
-        dialogsNameArr.push(dialogsName[i].textContent)
-        //  console.log(dialogsName[i].textContent)
-    }*/
+   // username = frame.headers['type'];
 
 
-    /*let div2 = document.createElement("div")
-    div2.setAttribute('class', "chat_list")
-    div2.setAttribute('id', message.sender.username)
-    div2.setAttribute('onclick', "activeChat(" + message.sender.username + ")")*/
 
-    /*if (username !== message.sender.username) {
-
-        div2.innerHTML =
-            "                                    <div class=\"chat_people\">\n" +
-            "                                        <div class=\"chat_img\"> <img src=\"../../../../img/" + message.sender.avatar + ".jpg" + "\" alt=\"sunil\"> </div>\n" +
-            "                                        <div class=\"chat_ib\">\n" +
-            "                                            <h5 class=\"dialogsuser\">" + message.sender.username + "<span class=\"chat_date\"></span></h5>\n" +
-            "                                            <p>" + message.content + "</p>\n" +
-            "                                        </div>\n" +
-            "                                    </div>"
-
-
-        if (dialogsNameArr.indexOf(message.sender.username) === -1) {
-            dialog.before(div2)
-        }
-
-        if (dialogsNameArr.indexOf(message.sender.username) === 0) {
-            document.getElementById("lastMsg" + message.dialog.dialogId).textContent = message.content
-        }
-
-    }*/
-
-    let div = document.createElement("div");
 
     if (username !== message.sender.username) {
-        /*div.setAttribute('class', "incoming_msg")
-        let date = new Date(message.timestamp)
-        div.innerHTML =
-            "<div class=\"toast\" role=\"alert\" aria-live=\"assertive\" aria-atomic=\"true\">\n" +
-            "  <div class=\"toast-header\">\n" +
-            "    <img src=\"...\" class=\"rounded me-2\" alt=\"...\">\n" +
-            "    <strong class=\"me-auto\">Bootstrap</strong>\n" +
-            "    <small>11 мин. назад</small>\n" +
-            "    <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"toast\" aria-label=\"Закрыть\"></button>\n" +
-            "  </div>\n" +
-            "  <div class=\"toast-body\">\n" +
-            "    Привет мир! Это тост-сообщение.\n" +
-            "  </div>\n" +
-            "</div>"*/
 
+        var toastLiveExample = document.getElementById('liveToastMessage')
 
-        //var toastTrigger = document.getElementById('liveToastBtn')
-        var toastLiveExample = document.getElementById('liveToast')
-
-        let body = document.getElementById("toast-text")
-        let head = document.getElementById("toast-head")
+        let body = document.getElementById("toast-text-msg")
+        let head = document.getElementById("toast-head-msg")
 
         body.textContent = message.content
         head.textContent = message.sender.username
-        //if (toastTrigger) {
-            //toastTrigger.addEventListener('click', function () {
-                var toast = new bootstrap.Toast(toastLiveExample, null)
 
-                toast.show()
+        var toast = new bootstrap.Toast(toastLiveExample, null)
 
+        toast.show()
 
-        /*var toastElList = [].slice.call(document.querySelectorAll('.toast'))
-        var toastList = toastElList.map(function (toastEl) {
-            return new bootstrap.Toast(toastEl, null)
-        })
-
-        toastList[0].show()*/
-            //})
-        //}
 
     }
 

@@ -35,6 +35,11 @@
         <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
     </div>
 
+    <div class="col-md-6 mb-3">
+        <label for="validationDefault05">Онлайн</label>
+        <input type="text" class="form-control" id="validationDefault05" disabled value="${user.online}" name="online" required>
+    </div>
+
     <button onclick="writeMsg('${user.username}')" id="confirm" type="submit" class="btn btn-primary ml-2 my-1">Написать сообщение</button>
 
 </@e.page>

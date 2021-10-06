@@ -1,20 +1,17 @@
 package com.example.mywebquizengine.Model.Test;
 
 
-import com.example.mywebquizengine.Controller.QuizController;
-import com.example.mywebquizengine.Model.Test.UserTestAnswer;
+import com.example.mywebquizengine.Security.QuizController;
 import com.example.mywebquizengine.MywebquizengineApplication;
 import com.example.mywebquizengine.Service.UserAnswerService;
 
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.quartz.*;
 
 import org.springframework.stereotype.Component;
 
-import javax.transaction.Transactional;
 import java.util.GregorianCalendar;
 
 

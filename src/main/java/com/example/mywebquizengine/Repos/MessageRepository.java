@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.Repos;
 
 import com.example.mywebquizengine.Model.Chat.Message;
-import com.example.mywebquizengine.Model.Projection.Api.MessageForApiView;
+import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewCustomQuery;
 //import com.example.mywebquizengine.Model.Projection.MessageForStompView;
 import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewWithCustomQuery;
 import org.springframework.data.jpa.repository.Query;
@@ -76,7 +76,7 @@ public interface MessageRepository extends CrudRepository<Message, Integer> {
 
     ArrayList<MessageForStompView> findAllById(ArrayList<Integer> integers);*/
 
-    MessageForApiView findMessageById(Integer id);
+    MessageForApiViewCustomQuery findMessageById(Integer id);
 
     //MessageForStompView findMessageById(Integer id);
 

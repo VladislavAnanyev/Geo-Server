@@ -3,6 +3,7 @@ package com.example.mywebquizengine.Repos;
 import com.example.mywebquizengine.Model.Geo.Meeting;
 import com.example.mywebquizengine.Model.Projection.Api.MeetingForApiView;
 import com.example.mywebquizengine.Model.Projection.MeetingView;
+import com.example.mywebquizengine.Model.Projection.MeetingViewCustomQuery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
@@ -35,6 +36,10 @@ public interface MeetingRepository extends CrudRepository<Meeting, Long> {
             "WHERE (FIRST_USER_USERNAME = :username \n" +
             "  AND SECOND_USER_USERNAME != :username or FIRST_USER_USERNAME != :username \n" +
             "    AND SECOND_USER_USERNAME = :username) and TIME BETWEEN :dateStart AND :dateEnd", nativeQuery = true)
-    List<MeetingView> getMyMeetingsToday(String username, String dateStart, String dateEnd);
+    List<MeetingViewCustomQuery> getMyMeetingsToday(String username, String dateStart, String dateEnd);
+
+    MeetingView findMeetingById(Long id);
+
+    MeetingForApiView getMeetingById(Long id);
 
 }

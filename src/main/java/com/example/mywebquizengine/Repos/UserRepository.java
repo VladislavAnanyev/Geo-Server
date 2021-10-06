@@ -10,6 +10,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -60,5 +61,6 @@ public interface UserRepository extends CrudRepository<User, String>, JpaReposit
     @Query(value = "UPDATE USERS SET CHANGE_PASSWORD_CODE = :mes WHERE USERNAME = :username", nativeQuery = true)
     void setChangePasswordCode(String username, String mes);
 
+    List<UserCommonView> findUsersByFriendsUsernameContains(String s);
 
 }

@@ -26,14 +26,6 @@ public class Demo implements CommandLineRunner {
     @Autowired
     private UserRepository userRepository ;
 
-    @Autowired
-    private UserAnswerService userAnswerService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder ;
-
-    @Autowired
-    private UserService userService;
 
     @Autowired
     private RabbitAdmin rabbitAdmin;
@@ -47,7 +39,7 @@ public class Demo implements CommandLineRunner {
         if (rabbitAdmin.getQueueProperties("application") == null) {
             List<User> users = userRepository.findAll();
 
-            for (User user: users) {
+            for (User user : users) {
                 Queue queue = new Queue(user.getUsername(), true, false, false);
 
                 Binding binding = new Binding(user.getUsername(), Binding.DestinationType.QUEUE,
@@ -55,8 +47,26 @@ public class Demo implements CommandLineRunner {
 
                 rabbitAdmin.declareQueue(queue);
                 rabbitAdmin.declareBinding(binding);
+
+
             }
         }
+
+        /*if (rabbitAdmin.getQueueProperties("applicationmeeting") == null ) {
+
+            List<User> users = userRepository.findAll();
+
+            for (User user: users) {
+                Queue queueMeeting = new Queue(user.getUsername() + "meeting", true, false, false);
+
+                Binding bindingMeeting = new Binding(user.getUsername() + "meeting", Binding.DestinationType.QUEUE,
+                        "message-exchange", user.getUsername() + "meeting", null);
+
+
+                rabbitAdmin.declareQueue(queueMeeting);
+                rabbitAdmin.declareBinding(bindingMeeting);
+            }
+        }*/
 
    /*     List<User> users = userRepository.findAll();
 
@@ -73,10 +83,9 @@ public class Demo implements CommandLineRunner {
         }*/
 
 
-
         //Thread.sleep(5000L);
 
-       // scheduler.shutdown(true);
+        // scheduler.shutdown(true);
 
         //Map<Integer, Double> answerStats = userAnswerService.getAnswerStats();
         /*User user = userRepository.findById("application").get();
@@ -90,7 +99,11 @@ public class Demo implements CommandLineRunner {
         userRepository.save(user);*/
         //answerStats.clear();
 
+        /*List<User> users = userRepository.findAll();
 
+        for (User user : users) {
+            rabbitAdmin.deleteQueue(user.getUsername() + "meeting");
 
+        }*/
     }
 }

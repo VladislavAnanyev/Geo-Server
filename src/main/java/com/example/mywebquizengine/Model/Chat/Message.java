@@ -34,6 +34,8 @@ public class Message {
     @JoinColumn(name = "dialog_id")
     private Dialog dialog;
 
+
+
     public Message() {}
 
     public User getSender() {
@@ -85,4 +87,6 @@ public class Message {
                 ", dialog=" + dialog +
                 '}';
     }
+
+
 }

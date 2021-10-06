@@ -47,19 +47,9 @@
                         </label>
                     </div>
                         </#if>
-                    <#--<div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="flexCheckChecked" checked>
-                        <label class="form-check-label" for="flexCheckChecked">
-                            Checked checkbox
-                        </label>
-                    </div>-->
-                    </#list>
-                    <#--<div class="form-group"> Вы действительно хотите изменить пароль?
 
-                        &lt;#&ndash;                        <input type="text" class="form-control" id="oldpassword" placeholder="Придумайте новый пароль"  aria-describedby="emailHelp" name="password">&ndash;&gt;
-                        &lt;#&ndash;<input type="text" class="form-control" id="password1" placeholder="Придумайте новый пароль"  aria-describedby="emailHelp" name="password1">
-                        <input type="text" class="form-control mt-3" id="password2" placeholder="Введите новый пароль ещё раз" aria-describedby="emailHelp" name="password2">&ndash;&gt;
-                    </div>-->
+                    </#list>
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Назад</button>
@@ -81,11 +71,7 @@
                         <h4 id="autoUs">${name}</h4>
                     </div>
                     <div class="srch_bar">
-                        <#--<div class="stylish-input-group">
-                            <input type="text" class="search-bar"  placeholder="Search" >
-                            <span class="input-group-addon">
-                <button type="button"> <i class="fa fa-search" aria-hidden="true"></i> </button>
-                </span> </div>-->
+
                     </div>
                 </div>
                 <div class="inbox_chat" id="dialogs">
@@ -196,18 +182,6 @@
                         <button onclick="sendMessage('${dialog?c}')" class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
                     </div>
                 </div>
-
-                    <#--<#else>
-
-                    <div class="type_msg">
-                        <div class="input_msg_write">
-                            <input type="text" class="write_msg" id="inputtext" placeholder="Type a message" />
-                            &lt;#&ndash;<button onclick="sendMsg('${user.username}')" class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>&ndash;&gt;
-                            <button onclick="sendMessage('${name}', 'null')" class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
-                        </div>
-                    </div>-->
-
-
 
 
                 </#if>

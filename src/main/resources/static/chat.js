@@ -90,81 +90,87 @@ function onMessageReceived(payload) {
 
     var message = JSON.parse(payload.body);
 
-    console.log(message)
+    if (message.type === "MESSAGE") {
+        console.log(message)
 
-    let dialog = document.getElementById("dialogs")
+        let dialog = document.getElementById("dialogs")
 
-    let dialogsName = document.getElementsByClassName("dialogsuser")
-    let dialogsNameArr = []
+        //console.log(freme.headers['type'])
 
-    for (let i = 0; i < dialogsName.length; i++) {
-        dialogsNameArr.push(dialogsName[i].textContent)
-        //  console.log(dialogsName[i].textContent)
-    }
+        let dialogsName = document.getElementsByClassName("dialogsuser")
+        let dialogsNameArr = []
 
-
-    let div2 = document.createElement("div")
-    div2.setAttribute('class', "chat_list")
-    div2.setAttribute('id', message.sender.username)
-    div2.setAttribute('onclick', "activeChat(" + message.sender.username + ")")
-
-    if (username !== message.sender.username) {
-
-        div2.innerHTML =
-            "                                    <div class=\"chat_people\">\n" +
-            "                                        <div class=\"chat_img\"> <img src=\"../../../../img/" + message.sender.avatar + ".jpg" + "\" alt=\"sunil\"> </div>\n" +
-            "                                        <div class=\"chat_ib\">\n" +
-            "                                            <h5 class=\"dialogsuser\">" + message.sender.username + "<span class=\"chat_date\"></span></h5>\n" +
-            "                                            <p>" + message.content + "</p>\n" +
-            "                                        </div>\n" +
-            "                                    </div>"
-
-
-        if (dialogsNameArr.indexOf(message.sender.username) === -1) {
-            dialog.before(div2)
+        for (let i = 0; i < dialogsName.length; i++) {
+            dialogsNameArr.push(dialogsName[i].textContent)
+            //  console.log(dialogsName[i].textContent)
         }
 
-        if (dialogsNameArr.indexOf(message.sender.username) === 0) {
-            document.getElementById("lastMsg" + message.dialog.dialogId).textContent = message.content
+
+        let div2 = document.createElement("div")
+        div2.setAttribute('class', "chat_list")
+        div2.setAttribute('id', message.sender.username)
+        div2.setAttribute('onclick', "activeChat(" + message.sender.username + ")")
+
+        if (username !== message.sender.username) {
+
+            div2.innerHTML =
+                "                                    <div class=\"chat_people\">\n" +
+                "                                        <div class=\"chat_img\"> <img src="+ message.sender.avatar +" alt=\"sunil\"> </div>\n" +
+                "                                        <div class=\"chat_ib\">\n" +
+                "                                            <h5 class=\"dialogsuser\">" + message.sender.username + "<span class=\"chat_date\"></span></h5>\n" +
+                "                                            <p>" + message.content + "</p>\n" +
+                "                                        </div>\n" +
+                "                                    </div>"
+
+
+            if (dialogsNameArr.indexOf(message.sender.username) === -1) {
+                dialog.before(div2)
+            }
+
+            if (dialogsNameArr.indexOf(message.sender.username) === 0) {
+                document.getElementById("lastMsg" + message.dialog.dialogId).textContent = message.content
+            }
+
         }
 
-    }
 
 
+        let div = document.createElement("div");
 
-    let div = document.createElement("div");
+        if (username !== message.sender.username) {
+            div.setAttribute('class', "incoming_msg")
+            let date = new Date(message.timestamp)
+            div.innerHTML =
+                "<div class=\"incoming_msg_img\"> <img src="+ message.sender.avatar +" alt=\"sunil\"> </div>" +
+                "                        <div class=\"received_msg\">\n" +
+                "                        <div class=\"received_withd_msg\">\n" +
+                "                            <p>" + message.content + "</p>\n" +
+                "                            <span class=\"time_date\">" +  date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div> </div>\n"
 
-    if (username !== message.sender.username) {
-        div.setAttribute('class', "incoming_msg")
-        let date = new Date(message.timestamp)
-        div.innerHTML =
-            "<div class=\"incoming_msg_img\"> <img src=\"../../../../img/" + message.sender.avatar + ".jpg" + "\" alt=\"sunil\"> </div>" +
-            "                        <div class=\"received_msg\">\n" +
-            "                        <div class=\"received_withd_msg\">\n" +
-            "                            <p>" + message.content + "</p>\n" +
-            "                            <span class=\"time_date\">" +  date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div> </div>\n"
-
-    } else {
-        div.setAttribute('class', "outgoing_msg")
-        let date = new Date(message.timestamp)
-        div.innerHTML = "<div class=\"sent_msg\">\n" +
-            "                                    <p>" + message.content + "</p>\n" +
-            "                                    <span class=\"time_date\">" +  date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div>\n" +
-            "                            "
+        } else {
+            div.setAttribute('class', "outgoing_msg")
+            let date = new Date(message.timestamp)
+            div.innerHTML = "<div class=\"sent_msg\">\n" +
+                "                                    <p>" + message.content + "</p>\n" +
+                "                                    <span class=\"time_date\">" +  date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div>\n" +
+                "                            "
 
 
-        //if (dialogsNameArr.indexOf(message.sender.username) === 0) {
+            //if (dialogsNameArr.indexOf(message.sender.username) === 0) {
             document.getElementById("lastMsg" + message.dialog.dialogId).textContent = message.content
-        //}
+            //}
+        }
+
+
+        let last = document.getElementById("msg");
+
+        last.append(div)
+
+        var div3 = $("#msg");
+        div3.scrollTop(div3.prop('scrollHeight'));
     }
 
 
-    let last = document.getElementById("msg");
-
-    last.append(div)
-
-    var div3 = $("#msg");
-    div3.scrollTop(div3.prop('scrollHeight'));
 
 
 }

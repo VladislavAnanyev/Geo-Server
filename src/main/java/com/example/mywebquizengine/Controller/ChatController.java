@@ -4,14 +4,23 @@ package com.example.mywebquizengine.Controller;
 import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Chat.Message;
 import com.example.mywebquizengine.Model.Chat.MessageStatus;
-import com.example.mywebquizengine.Model.Projection.Api.MessageForApiView;
+import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewCustomQuery;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.DialogRepository;
 import com.example.mywebquizengine.Repos.MessageRepository;
 import com.example.mywebquizengine.Repos.UserRepository;
 import com.example.mywebquizengine.Service.MessageService;
 import com.example.mywebquizengine.Service.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.client.json.Json;
+import com.google.gson.JsonObject;
+import jdk.nashorn.internal.ir.debug.JSONWriter;
+import org.codehaus.jackson.annotate.JsonValue;
 import org.hibernate.Hibernate;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
@@ -21,11 +30,13 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -59,24 +70,25 @@ public class ChatController {
     private SimpMessagingTemplate simpMessagingTemplate;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private DialogRepository dialogRepository;
 
     @Autowired
     private MessageRepository messageRepository;
 
+    @Autowired
+    SessionRegistry sessionRegistry;
+
     Logger logger = LoggerFactory.getLogger("main");
 
-    @Autowired
-    private RabbitAdmin rabbitAdmin;
 
+    @Autowired
+    private ObjectMapper objectMapper;
 
 
 
     @GetMapping(path = "/chat")
     public String chat(Model model, @AuthenticationPrincipal Principal principal) {
+
         User user = userService.loadUserByUsernameProxy(principal.getName());
         model.addAttribute("myUsername", user);
         model.addAttribute("lastDialogs", messageService.getDialogs(user.getUsername()));
@@ -190,7 +202,7 @@ public class ChatController {
     @MessageMapping("/user/{dialogId}")
     //@SendTo("/topic/{dialogId}")
     //@PreAuthorize(value = "@message.sender.username.equals(@userService.getAuthUser(authentication).username)")
-    public void sendMessage(@Valid @Payload Message message, @AuthenticationPrincipal Principal principal) {
+    public void sendMessage(@Valid @Payload Message message, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
 
         String s = principal.getName();
 
@@ -214,20 +226,26 @@ public class ChatController {
             messageService.saveMessage(message);
 
             Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
-            MessageForApiView messageDto = messageRepository.findMessageById(message.getId());
+            MessageForApiViewCustomQuery messageDto = messageRepository.findMessageById(message.getId());
 
             for (User user :dialog.getUsers()) {
 
                 rabbitTemplate.setExchange("message-exchange");
 
 
+                JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(messageDto));
+                jsonObject.put("type", "MESSAGE");
+
                 rabbitTemplate.convertAndSend(user.getUsername(),
-                       messageDto);
+                       jsonObject);
 
                 if (!user.getUsername().equals(authUser.getUsername())) {
 
+                    //objectMapper.writeValueAsString(messageDto);
+
+
                     simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
-                            messageDto);
+                            jsonObject);
 
                 }
             }
@@ -242,16 +260,10 @@ public class ChatController {
     @Modifying
     @Transactional
     @RabbitListener(queues = "incoming-messages")
-    public void getMessageFromAndroid(@Valid Message message) {
+    public void getMessageFromAndroid(@Valid Message message) throws JsonProcessingException, ParseException {
 
-        //logger.info("123");
         System.out.println("Сообщение получено из андройда");
-        //sendMessage(message, SecurityContextHolder.getContext().getAuthentication());
 
-        /*if (message.getSender().getUsername().equals(userService.getAuthUser(
-                SecurityContextHolder
-                        .getContext()
-                        .getAuthentication()).getUsername())) {*/
 
         User sender = userService.loadUserByUsername(message.getSender().getUsername());
 
@@ -261,9 +273,7 @@ public class ChatController {
 
         message.setSender(sender);
 
-        //User recipient = userService.loadUserByUsername(message.getRecipient().getUsername());
-        //recipient.setTests(new ArrayList<>());
-        //message.setRecipient(recipient);
+
 
         message.setDialog(dialogRepository.findById(message.getDialog().getDialogId()).get());
 
@@ -285,15 +295,18 @@ public class ChatController {
         Hibernate.initialize(dialog.getUsers());
         //User authUser = userService.getAuthUserNoProxy(authentication);
 
+        JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(messageRepository.findMessageById(message.getId())));
+        jsonObject.put("type", "MESSAGE");
+
         for (User user :dialog.getUsers()) {
 
             //if (!user.getUsername().equals(authUser.getUsername())) {
 
                 simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
-                        messageRepository.findMessageById(message.getId()));
+                        jsonObject);
 
                 rabbitTemplate.convertAndSend(user.getUsername(),
-                    messageRepository.findMessageById(message.getId()));
+                    jsonObject);
 
             //}
         }

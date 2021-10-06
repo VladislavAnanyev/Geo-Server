@@ -19,24 +19,11 @@ import org.springframework.messaging.handler.annotation.support.MessageHandlerMe
 @Configuration
 public class RabbitMqConfiguration implements RabbitListenerConfigurer {
 
-    public static final String QUEUE_WEB = "WebMessageQueue";
-    public static final String QUEUE_ANDROID = "AndroidMessageQueue";
-
     public static final String EXCHANGE = "message-exchange";
 
     public static final String INCOMING_MESSAGES = "incoming-messages";
 
     public static final String QUEUE_DEAD_ORDERS = "orders-dead";
-
-    @Bean
-    Queue QueueWeb() {
-        return QueueBuilder.durable(QUEUE_WEB).build();
-    }
-
-    @Bean
-    Queue QueueAndroid() {
-        return QueueBuilder.durable(QUEUE_ANDROID).build();
-    }
 
     @Bean
     Queue QueueInMessages() {
@@ -47,6 +34,7 @@ public class RabbitMqConfiguration implements RabbitListenerConfigurer {
     Queue deadLetterQueue() {
         return QueueBuilder.durable(QUEUE_DEAD_ORDERS).build();
     }
+
     @Bean
     DirectExchange ordersExchange() {
         return new DirectExchange(EXCHANGE);
@@ -64,6 +52,7 @@ public class RabbitMqConfiguration implements RabbitListenerConfigurer {
 
 
 
+/*
     @Bean
     public Binding androidBinding() {
         return BindingBuilder.bind(QueueAndroid()).to(ordersExchange()).with("android");
@@ -74,6 +63,7 @@ public class RabbitMqConfiguration implements RabbitListenerConfigurer {
     public Binding webBinding() {
         return BindingBuilder.bind(QueueWeb()).to(ordersExchange()).with("web");
     }
+*/
 
 
 

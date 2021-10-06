@@ -2,11 +2,24 @@ package com.example.mywebquizengine.Controller;
 
 import com.example.mywebquizengine.Model.Geo.Geolocation;
 import com.example.mywebquizengine.Model.Geo.Meeting;
+import com.example.mywebquizengine.Model.Projection.UserCommonView;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.GeolocationRepository;
 import com.example.mywebquizengine.Repos.MeetingRepository;
+import com.example.mywebquizengine.Repos.UserRepository;
 import com.example.mywebquizengine.Service.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
+import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessagePostProcessor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,18 +30,31 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 @Controller
 public class GeoController {
 
     @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private GeolocationRepository geolocationRepository;
 
     @Autowired
     private MeetingRepository meetingRepository;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
 
     @GetMapping("/geo")
     public String geo() {
@@ -37,7 +63,7 @@ public class GeoController {
 
     @PostMapping(path = "/sendGeolocation")
     @ResponseBody
-    public void sendGeolocation(@AuthenticationPrincipal Principal principal, @RequestBody Geolocation myGeolocation) {
+    public void sendGeolocation(@AuthenticationPrincipal Principal principal, @RequestBody Geolocation myGeolocation) throws JsonProcessingException, ParseException {
         myGeolocation.setUser(userService.loadUserByUsername(principal.getName()));
         //geolocation.setId(geolocation.getUser().getUsername());
         userService.saveGeo(myGeolocation);
@@ -67,6 +93,26 @@ public class GeoController {
                     meeting.setTime(calendar);
 
                     meetingRepository.save(meeting);
+
+                    JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(meetingRepository.findMeetingById(meeting.getId())));
+                    jsonObject.put("type", "MEETING");
+
+                    simpMessagingTemplate.convertAndSend("/topic/" + myGeolocation.getUser().getUsername(), jsonObject);
+
+                    rabbitTemplate.setExchange("message-exchange");
+
+                    rabbitTemplate.convertAndSend(myGeolocation.getUser().getUsername(), jsonObject);
+
+
+                /*    ResponseEntity
+                            .ok()
+                            .header("type", "meeting")
+                            .body(meetingRepository.findMeetingById(meeting.getId()))*/
+
+                    /*message -> {
+                        message.getMessageProperties().setHeader("type", "MEETING");
+                        return message;
+                    })*/
                 }
 
             }
@@ -101,8 +147,8 @@ public class GeoController {
 
         int DISTANCE = Integer.parseInt(size); // Интересующее нас расстояние
 
-        double myLatitude = geolocationRepository.findById("application").get().getLat(); //Интересующие нас координаты широты
-        double myLongitude = geolocationRepository.findById("application").get().getLng();  //Интересующие нас координаты долготы
+        double myLatitude = geolocationRepository.findById(authUser).get().getLat(); //Интересующие нас координаты широты
+        double myLongitude = geolocationRepository.findById(authUser).get().getLng();  //Интересующие нас координаты долготы
 
         double deltaLat = computeDelta(myLatitude); //Получаем дельту по широте
         double deltaLon = computeDelta(myLongitude); // Дельту по долготе
@@ -125,8 +171,21 @@ public class GeoController {
         Calendar calendar = new GregorianCalendar();
         Timestamp date = Timestamp.from(calendar.toInstant());
 
+        List<UserCommonView> friends = userRepository.findUsersByFriendsUsernameContains(authUser.getUsername());
+
+
+
+        List<String> friendsName = new ArrayList<>();
+
+        for (int i = 0; i < friends.size(); i++) {
+            friendsName.add(friends.get(i).getUsername());
+        }
+
+        model.addAttribute("friendsName", friendsName);
+
         //ArrayList<Geolocation> peopleNearMe = findInSquare(SecurityContextHolder.getContext().getAuthentication(),"20");
 
+        //System.out.println(users.get(0).getUsername());
         model.addAttribute("meetings", meetingRepository.getMyMeetingsToday(authUser.getUsername(),
                 date.toString().substring(0,10) + " 00:00:00",
                 date.toString().substring(0,10) + " 23:59:59"));

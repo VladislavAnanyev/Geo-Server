@@ -46,6 +46,8 @@
 
 
 
+
+
         <div class="col-md-6 mb-3">
             <form method="post" enctype="multipart/form-data" action="/upload">
                 <label for="formFile" class="form-label">Фотография</label>
@@ -83,10 +85,16 @@
     <button onclick="changePersonalInfo()" id="confirm" type="submit" class="btn btn-primary ml-2 my-1">Подтвердить</button>
 
 
+
     <!-- Button trigger modal -->
     <button type="button" class="btn btn-primary ml-2 my-1" data-toggle="modal" data-target="#staticBackdrop">
         Изменить пароль
     </button>
+
+    <div class="col-md-6 mb-3">
+        <label for="validationDefault05">Онлайн</label>
+        <input type="text" class="form-control" id="validationDefault05" disabled value="${user.online}" name="online" required>
+    </div>
 
     <div class="modal fade" id="staticBackdrop" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">

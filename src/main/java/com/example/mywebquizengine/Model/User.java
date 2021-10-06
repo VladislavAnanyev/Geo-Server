@@ -11,19 +11,20 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity(name = "USERS")
-public class User implements UserDetails {
+public class User implements UserDetails, OAuth2User  {
 
     @Id
     private String username;
@@ -58,6 +59,8 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "group_id")
     )
     private List<Group> groups;*/
+
+
 
 
 
@@ -98,6 +101,7 @@ public class User implements UserDetails {
     private static final long serialVersionUID = -7422293274841574951L;
 
     public User(){
+
         this.accountNonExpired = true;
         this.accountNonLocked = true;
         this.credentialsNonExpired = true;
@@ -118,9 +122,22 @@ public class User implements UserDetails {
         this.firstName = firstName;
         this.lastName = lastName;
         this.avatar = avatar;
-
     }
 
+
+    private String online;
+
+
+    public void setOnline(String online) {
+        this.online = online;
+    }
+
+    public String getOnline() {
+        return online;
+    }
+
+    @OneToMany
+    private List<User> friends;
 
     @Enumerated(EnumType.STRING)
     @ElementCollection(fetch = FetchType.EAGER)
@@ -133,6 +150,8 @@ public class User implements UserDetails {
         roles.forEach(role -> authorities.add(new SimpleGrantedAuthority(role.toString())));
         return authorities;
     }
+
+
 
     public String getActivationCode() {
         return activationCode;
@@ -170,6 +189,8 @@ public class User implements UserDetails {
         if ( roles == null ) roles = new ArrayList<>();
         this.roles.add(authority);
     }
+
+
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
@@ -269,4 +290,27 @@ public class User implements UserDetails {
         this.tests = tests;
     }*/
 
+    public List<User> getFriends() {
+        return friends;
+    }
+
+    public void setFriends(List<User> friends) {
+        this.friends = new ArrayList<>();
+        this.friends.addAll(friends);
+    }
+
+    public void addFriend(User user) {
+        this.friends.add(user);
+        user.getFriends().add(this);
+    }
+
+    @Override
+    public String getName() {
+        return username;
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return getAttributes();
+    }
 }

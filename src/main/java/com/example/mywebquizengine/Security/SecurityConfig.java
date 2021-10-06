@@ -3,7 +3,10 @@ import com.example.mywebquizengine.Service.JWTFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,6 +19,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
@@ -32,10 +37,13 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
 
+import javax.servlet.ServletContextListener;
+import javax.servlet.http.HttpSessionListener;
 import javax.sql.DataSource;
 import java.util.*;
 
@@ -51,6 +59,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Qualifier("userService")
     @Autowired
     protected UserDetailsService userDetailsService;
+
+
+
+
 
 
     @Bean
@@ -119,18 +131,34 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Order(2)
     @Configuration
+    @ServletComponentScan("com.example.mywebquizengine.Security")
     public class FormConfigurationAdapter extends
             WebSecurityConfigurerAdapter {
 
         @Autowired
         DataSource dataSource;
 
+        @Autowired
+        MyAuthenticationSuccessHandler myAuthenticationSuccessHandler;
+
+        @Autowired
+        MyLogoutSuccessHandler myLogoutSuccessHandler;
 
         @Bean
         public String getKey() {
             return "secretkey";
         }
 
+        @Bean
+        public SessionRegistry sessionRegistry() {
+            return new SessionRegistryImpl();
+        }
+
+
+        @Bean
+        public ActiveUserStore activeUserStore(){
+            return new ActiveUserStore();
+        }
 
         @Bean
         public PersistentTokenRepository persistentTokenRepository() {
@@ -140,10 +168,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         }
 
 
+
+
         @Override
         protected void configure(HttpSecurity http) throws Exception {
 
             http.csrf().disable();
+
+
 
             http
 
@@ -157,22 +189,31 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                     .and()
                     .formLogin()
+                        .loginPage("/signin")
+                        .successHandler(myAuthenticationSuccessHandler)
+                        //.defaultSuccessUrl("/profile")
+                        //.failureUrl("/signin?error")
 
-                    .loginPage("/signin").defaultSuccessUrl("/profile").failureUrl("/signin?error")
+
                     .and().oauth2Login().userInfoEndpoint()
-                    .oidcUserService(this.oidcUserService()).userService(this.oAuth2UserService())
-                    .userAuthoritiesMapper(this.userAuthoritiesMapper()).and()
-                    .defaultSuccessUrl("/loginSuccess")
+                        .oidcUserService(this.oidcUserService()).userService(this.oAuth2UserService())
+                        .userAuthoritiesMapper(this.userAuthoritiesMapper()).and()
+                        .defaultSuccessUrl("/loginSuccess").successHandler(myAuthenticationSuccessHandler)
                     .permitAll()/*.and().rememberMe().rememberMeParameter("remember-me")
                     //.and().key("secretkey").alwaysRemember(true).rememberMeServices(rememberMeServices())*/
 
                     .and().rememberMe()
                     .key("secretkey").alwaysRemember(true).userDetailsService(userDetailsService)
-                    .tokenRepository(persistentTokenRepository())
+                    .tokenRepository(persistentTokenRepository()).authenticationSuccessHandler(myAuthenticationSuccessHandler)
 
                     .and()
                     .logout()
+                    .logoutSuccessHandler(myLogoutSuccessHandler)
+
+
                     .permitAll()
+                    //.logoutSuccessHandler(myLogoutSuccessHandler)
+
                     .and()
                     // for h2-console correct view
                     .headers()
@@ -180,8 +221,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .sameOrigin().and()
                     .requiresChannel()
                     .anyRequest()
-                    .requiresSecure();
+                    .requiresSecure().and()
+
+                    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
+                    .maximumSessions(1).sessionRegistry(sessionRegistry()).and().sessionFixation().none();
     }
+
 
 
         private OAuth2UserService<OAuth2UserRequest, OAuth2User>  oAuth2UserService() {

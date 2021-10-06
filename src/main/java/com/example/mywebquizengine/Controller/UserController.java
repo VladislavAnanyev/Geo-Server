@@ -1,7 +1,13 @@
 package com.example.mywebquizengine.Controller;
 
 import com.example.mywebquizengine.Model.*;
+import com.example.mywebquizengine.Model.Chat.Dialog;
+import com.example.mywebquizengine.Repos.DialogRepository;
 import com.example.mywebquizengine.Repos.GeolocationRepository;
+import com.example.mywebquizengine.Repos.MeetingRepository;
+import com.example.mywebquizengine.Repos.RequestRepository;
+import com.example.mywebquizengine.Security.ActiveUserStore;
+import com.example.mywebquizengine.Service.MessageService;
 import com.example.mywebquizengine.Service.PaymentServices;
 import com.example.mywebquizengine.Service.UserService;
 import freemarker.template.TemplateModelException;
@@ -18,18 +24,26 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.UUID;
+import java.sql.Timestamp;
+import java.util.*;
 
 
 @Controller
 public class UserController {
+
+    @Autowired
+    private MessageService messageService;
+
+    @Autowired
+    private DialogRepository dialogRepository;
 
     @Autowired
     private UserService userService;
@@ -38,18 +52,14 @@ public class UserController {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private OAuth2AuthorizedClientService authorizedClientService;
+    private RequestRepository requestRepository;
 
-    @Autowired
-    private PaymentServices paymentServices;
-
-
-    @Autowired
-    private GeolocationRepository geolocationRepository;
+    @Value("${hostname}")
+    private String hostname;
 
 
     @Autowired
-    private QuizController quizController;
+    private ActiveUserStore activeUserStore;
 
 
     @GetMapping(path = "/profile")
@@ -90,7 +100,7 @@ public class UserController {
         try {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             user.setEnabled(false);
-            user.setAvatar("default");
+            user.setAvatar("https://" + hostname + "/img/default.jpg");
             user.grantAuthority(Role.ROLE_USER);
             userService.saveUser(user);
             return "reg";
@@ -105,6 +115,13 @@ public class UserController {
         User user = userService.loadUserByUsernameProxy(principal.getName());
         userService.sendCodeForChangePassword(user);
 
+    }
+
+    @GetMapping("/loggedUsers")
+    @ResponseBody
+    public ArrayList<String> getLoggedUsers(Locale locale, Model model) {
+
+        return (ArrayList<String>) activeUserStore.getUsers();
     }
 
     @PostMapping(path = "/update/userinfo/pswrdwithoutauth", consumes ={"application/json"} )
@@ -142,6 +159,7 @@ public class UserController {
 
     @GetMapping(path = "/signin")
     public String singin() {
+
         return "singin";
     }
 
@@ -222,6 +240,73 @@ public class UserController {
 
 
     // UserService is required because this method is static, but UserService non-static
+
+    @PostMapping(path = "/sendRequest")
+    @ResponseBody
+    public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) {
+        request.setSender(userService.loadUserByUsername(principal.getName()));
+
+
+
+        requestRepository.save(request);
+    }
+
+    @GetMapping(path = "/requests")
+    public String getMyRequests(Model model, @AuthenticationPrincipal Principal principal) {
+
+        User authUser = userService.loadUserByUsername(principal.getName());
+
+        model.addAttribute("myUsername", authUser.getUsername());
+
+        model.addAttribute("meetings",
+                requestRepository.findAllByToUsernameAndStatus(authUser.getUsername(), "PENDING"));
+
+        return "requests";
+    }
+
+
+    @PostMapping(path = "/acceptRequest")
+    @ResponseBody
+    //@PreAuthorize(value = "!#principal.name.equals(#user.username)")
+    public Long acceptRequest(@RequestBody Request requestId, @AuthenticationPrincipal Principal principal) {
+
+        User authUser = userService.loadUserByUsername(principal.getName());
+
+
+        Request request = requestRepository.findById(requestId.getId()).get();
+        request.setStatus("ACCEPTED");
+
+        authUser.addFriend(request.getSender());
+
+        Long dialog_id = messageService.checkDialog(request.getSender(), principal.getName());
+
+        if (dialog_id == null) {
+            Dialog dialog = new Dialog();
+            //  Set<User> users = new HashSet<>();
+            dialog.addUser(userService.loadUserByUsername(request.getSender().getUsername()));
+            dialog.addUser(authUser);
+//            users.add(userService.loadUserByUsername(user.getUsername()));
+//            users.add(userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()));
+            //dialog.setUsers(users);
+            dialogRepository.save(dialog);
+            return dialog.getDialogId();
+        } else {
+            return dialog_id;
+        }
+    }
+
+    @PostMapping(path = "/rejectRequest")
+    @ResponseBody
+    //@PreAuthorize(value = "!#principal.name.equals(#user.username)")
+    public void rejectRequest(@RequestBody Request requestId, @AuthenticationPrincipal Principal principal) {
+        Request request = requestRepository.findById(requestId.getId()).get();
+        request.setStatus("REJECTED");
+        requestRepository.save(request);
+    }
+
+
+
+
 
 
 }
