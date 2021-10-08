@@ -2,6 +2,7 @@ package com.example.mywebquizengine.Controller;
 
 import com.example.mywebquizengine.Model.*;
 import com.example.mywebquizengine.Model.Chat.Dialog;
+import com.example.mywebquizengine.Model.Chat.MessageStatus;
 import com.example.mywebquizengine.Repos.DialogRepository;
 import com.example.mywebquizengine.Repos.GeolocationRepository;
 import com.example.mywebquizengine.Repos.MeetingRepository;
@@ -56,6 +57,9 @@ public class UserController {
 
     @Value("${hostname}")
     private String hostname;
+
+    @Autowired
+    private ChatController chatController;
 
 
     @Autowired
@@ -246,7 +250,14 @@ public class UserController {
     public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) {
         request.setSender(userService.loadUserByUsername(principal.getName()));
 
+        Long dialogId = chatController.checkDialog(request.getTo(), principal);
 
+        Dialog dialog = new Dialog();
+        dialog.setDialogId(dialogId);
+        request.getMessage().setDialog(dialog);
+        request.getMessage().setSender(userService.loadUserByUsernameProxy(principal.getName()));
+        request.getMessage().setStatus(MessageStatus.DELIVERED);
+        request.getMessage().setTimestamp(new GregorianCalendar());
 
         requestRepository.save(request);
     }
@@ -277,7 +288,7 @@ public class UserController {
         request.setStatus("ACCEPTED");
 
         authUser.addFriend(request.getSender());
-
+        requestRepository.save(request);
         Long dialog_id = messageService.checkDialog(request.getSender(), principal.getName());
 
         if (dialog_id == null) {
@@ -306,6 +317,11 @@ public class UserController {
 
 
 
+    @GetMapping(path = "/testConnection")
+    @ResponseBody
+    public String testConnection() {
+        return "OK";
+    }
 
 
 

@@ -24,7 +24,8 @@ public class Request {
     @OneToOne
     private Meeting meeting;
 
-    private String message;
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    private Message message;
 
     public Long getId() {
         return id;
@@ -66,11 +67,12 @@ public class Request {
         this.meeting = meeting;
     }
 
-    public String getMessage() {
+
+    public Message getMessage() {
         return message;
     }
 
-    public void setMessage(String message) {
+    public void setMessage(Message message) {
         this.message = message;
     }
 }

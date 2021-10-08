@@ -166,6 +166,8 @@
 <#if nowUser??>
 <script src="/static/geolocation.js"></script>
 <script>geo()</script>
+    <#--<script src="/static/testConnect.js"></script>
+    <script>setInterval(() => testConnect(), 30000);</script>-->
 </#if>
 
 

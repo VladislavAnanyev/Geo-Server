@@ -136,7 +136,7 @@ public class User implements UserDetails, OAuth2User  {
         return online;
     }
 
-    @OneToMany
+    @ManyToMany
     private List<User> friends;
 
     @Enumerated(EnumType.STRING)

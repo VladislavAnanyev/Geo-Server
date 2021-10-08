@@ -103,6 +103,7 @@ public class UserService implements UserDetailsService {
             Geolocation geolocation2 = geolocation1.get();
             geolocation2.setLat(geolocation.getLat());
             geolocation2.setLng(geolocation.getLng());
+            geolocation2.setTime(geolocation.getTime());
             geolocationRepository.save(geolocation2);
         } else {
             geolocationRepository.save(geolocation);

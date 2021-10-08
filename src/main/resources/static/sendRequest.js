@@ -4,7 +4,7 @@ function sendRequest(to, id) {
         to: {username:to},
         status: "PENDING",
         meeting: {id: id},
-        message: document.getElementById(to + "msg").value
+        message: {content: document.getElementById(to + "msg").value}
     }
     //console.log(username)
     xhr.open('POST', '/sendRequest');

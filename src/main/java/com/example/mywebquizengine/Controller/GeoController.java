@@ -65,11 +65,14 @@ public class GeoController {
     @ResponseBody
     public void sendGeolocation(@AuthenticationPrincipal Principal principal, @RequestBody Geolocation myGeolocation) throws JsonProcessingException, ParseException {
         myGeolocation.setUser(userService.loadUserByUsername(principal.getName()));
+        Calendar calendar = new GregorianCalendar();
+        Timestamp date = Timestamp.from(calendar.toInstant());
+        myGeolocation.setTime(calendar);
         //geolocation.setId(geolocation.getUser().getUsername());
         userService.saveGeo(myGeolocation);
 
-        Calendar calendar = new GregorianCalendar();
-        Timestamp date = Timestamp.from(calendar.toInstant());
+
+
         //System.out.println(date.toString().substring(0,10));
 
         ArrayList<Geolocation> peopleNearMe = findInSquare(principal.getName(),"20");
@@ -147,8 +150,12 @@ public class GeoController {
 
         int DISTANCE = Integer.parseInt(size); // Интересующее нас расстояние
 
-        double myLatitude = geolocationRepository.findById(authUser).get().getLat(); //Интересующие нас координаты широты
-        double myLongitude = geolocationRepository.findById(authUser).get().getLng();  //Интересующие нас координаты долготы
+        Geolocation myGeolocation = geolocationRepository.findById(authUser).get();
+        Timestamp date = Timestamp.from(myGeolocation.getTime().toInstant());
+
+
+        double myLatitude = myGeolocation.getLat(); //Интересующие нас координаты широты
+        double myLongitude = myGeolocation.getLng();  //Интересующие нас координаты долготы
 
         double deltaLat = computeDelta(myLatitude); //Получаем дельту по широте
         double deltaLon = computeDelta(myLongitude); // Дельту по долготе
@@ -157,7 +164,10 @@ public class GeoController {
         double aroundLng = DISTANCE / deltaLon; // Вычисляем диапазон координат по долготе
 
         //System.out.println(aroundLat + " " + aroundLng);
-        return (ArrayList<Geolocation>) geolocationRepository.findInSquare(myLatitude,myLongitude, aroundLat, aroundLng, userService.loadUserByUsernameProxy(authUser).getUsername());
+        return (ArrayList<Geolocation>) geolocationRepository
+                .findInSquare(myLatitude,myLongitude, aroundLat, aroundLng, userService
+                        .loadUserByUsernameProxy(authUser)
+                        .getUsername());
         //return aroundLat + " " + aroundLon;
     }
 

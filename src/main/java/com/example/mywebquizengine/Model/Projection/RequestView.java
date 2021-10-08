@@ -1,5 +1,7 @@
 package com.example.mywebquizengine.Model.Projection;
 
+import com.example.mywebquizengine.Model.Chat.Message;
+
 public interface RequestView {
 
     Long getId();
@@ -12,5 +14,5 @@ public interface RequestView {
 
     MeetingCommonView getMeeting();
 
-    String getMessage();
+    Message getMessage();
 }

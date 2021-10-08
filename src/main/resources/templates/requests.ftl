@@ -21,7 +21,7 @@
                 <img class="rounded-circle" src="${request.sender.avatar}" alt="...">
                 <div class="card-body">
                     <h5 class="card-title">${request.sender.firstName} ${request.sender.lastName}</h5>
-                    <p>Сообщение для вас: ${request.message}</p>
+                    <p>Сообщение для вас: ${request.message.content}</p>
 <#--                    <p class="card-text">${meeting.time?datetime?string["dd.MM.yyyy HH:mm:ss"]}</p>-->
                     <a onclick="acceptRequest('${request.id?c}')" href="#" class="btn btn-primary">Принять</a>
                     <a onclick="rejectRequest('${request.id?c}')" href="#" class="btn btn-primary">Отклонить</a>

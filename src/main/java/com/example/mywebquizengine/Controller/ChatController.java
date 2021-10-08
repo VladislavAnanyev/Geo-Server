@@ -262,54 +262,60 @@ public class ChatController {
     @RabbitListener(queues = "incoming-messages")
     public void getMessageFromAndroid(@Valid Message message) throws JsonProcessingException, ParseException {
 
-        System.out.println("Сообщение получено из андройда");
+        try {
+            System.out.println("Сообщение получено из андройда");
 
 
-        User sender = userService.loadUserByUsername(message.getSender().getUsername());
+            User sender = userService.loadUserByUsername(message.getSender().getUsername());
 
-        // Persistence Bag. Используется костыль
-        // для корректного отображения (тесты не инициализируются автоматически)
-        //.setTests(new ArrayList<>());
+            // Persistence Bag. Используется костыль
+            // для корректного отображения (тесты не инициализируются автоматически)
+            //.setTests(new ArrayList<>());
 
-        message.setSender(sender);
-
-
-
-        message.setDialog(dialogRepository.findById(message.getDialog().getDialogId()).get());
+            message.setSender(sender);
 
 
-        // Устанавливается часовой пояс для хранения времени в БД постоянно по Москве
-        // В БД будет сохраняться Московское время независимо от местоположения сервера/пользователя
-        TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
-        Calendar nowDate = new GregorianCalendar();
-        nowDate.setTimeZone(timeZone);
-        message.setTimestamp(nowDate);
+
+            message.setDialog(dialogRepository.findById(message.getDialog().getDialogId()).get());
 
 
-        message.setStatus(MessageStatus.DELIVERED);
-        messageService.saveMessage(message);
+            // Устанавливается часовой пояс для хранения времени в БД постоянно по Москве
+            // В БД будет сохраняться Московское время независимо от местоположения сервера/пользователя
+            TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
+            Calendar nowDate = new GregorianCalendar();
+            nowDate.setTimeZone(timeZone);
+            message.setTimestamp(nowDate);
 
-        Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
+
+            message.setStatus(MessageStatus.DELIVERED);
+            messageService.saveMessage(message);
+
+            Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
 
 
-        Hibernate.initialize(dialog.getUsers());
-        //User authUser = userService.getAuthUserNoProxy(authentication);
+            Hibernate.initialize(dialog.getUsers());
+            //User authUser = userService.getAuthUserNoProxy(authentication);
 
-        JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(messageRepository.findMessageById(message.getId())));
-        jsonObject.put("type", "MESSAGE");
+            JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(messageRepository.findMessageById(message.getId())));
+            jsonObject.put("type", "MESSAGE");
 
-        for (User user :dialog.getUsers()) {
+            for (User user :dialog.getUsers()) {
 
-            //if (!user.getUsername().equals(authUser.getUsername())) {
+                //if (!user.getUsername().equals(authUser.getUsername())) {
 
                 simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
                         jsonObject);
 
                 rabbitTemplate.convertAndSend(user.getUsername(),
-                    jsonObject);
+                        jsonObject);
 
-            //}
+                //}
+            }
+        } catch (Exception e) {
+            System.out.println("BAD MESSAGE");
         }
+
+
         //}
     }
 
