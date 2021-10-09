@@ -64,10 +64,10 @@ public class GeoController {
     @PostMapping(path = "/sendGeolocation")
     @ResponseBody
     public void sendGeolocation(@AuthenticationPrincipal Principal principal, @RequestBody Geolocation myGeolocation) throws JsonProcessingException, ParseException {
-        myGeolocation.setUser(userService.loadUserByUsername(principal.getName()));
+        //myGeolocation.setId(principal.getName());
+        myGeolocation.setUser(userService.loadUserByUsernameProxy(principal.getName()));
         Calendar calendar = new GregorianCalendar();
-        Timestamp date = Timestamp.from(calendar.toInstant());
-        myGeolocation.setTime(calendar);
+
         //geolocation.setId(geolocation.getUser().getUsername());
         userService.saveGeo(myGeolocation);
 
@@ -75,7 +75,7 @@ public class GeoController {
 
         //System.out.println(date.toString().substring(0,10));
 
-        ArrayList<Geolocation> peopleNearMe = findInSquare(principal.getName(),"20");
+        ArrayList<Geolocation> peopleNearMe = findInSquare(principal.getName(),myGeolocation, "20");
 
         if (peopleNearMe.size() > 0) {
 
@@ -83,9 +83,7 @@ public class GeoController {
 
                 if (meetingRepository.
                         getMeetings(myGeolocation.getUser().getUsername(),
-                                peopleNearMe.get(i).getUser().getUsername(),
-                                date.toString().substring(0,10) + " 00:00:00",
-                                date.toString().substring(0,10) + " 23:59:59")
+                                peopleNearMe.get(i).getUser().getUsername())
                         .size() == 0) {
 
                     Meeting meeting = new Meeting();
@@ -146,12 +144,12 @@ public class GeoController {
 
     @GetMapping(path = "/square")
     @ResponseBody
-    public ArrayList<Geolocation> findInSquare(String authUser, @RequestParam(required = false, defaultValue = "1000") String size) {
+    public ArrayList<Geolocation> findInSquare(String authUser, Geolocation myGeolocation, @RequestParam(required = false, defaultValue = "1000") String size) {
 
         int DISTANCE = Integer.parseInt(size); // Интересующее нас расстояние
 
-        Geolocation myGeolocation = geolocationRepository.findById(authUser).get();
-        Timestamp date = Timestamp.from(myGeolocation.getTime().toInstant());
+        //Geolocation myGeolocation = geolocationRepository.findById(authUser).get();
+        //Timestamp date = Timestamp.from(myGeolocation.getTime().toInstant());
 
 
         double myLatitude = myGeolocation.getLat(); //Интересующие нас координаты широты

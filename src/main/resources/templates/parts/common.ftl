@@ -3,6 +3,8 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+<#--    <http pattern="/static/**" security="none"></http>
+    <http pattern="/img/**" security="none"></http>-->
     <meta charset="UTF-8">
     <#--    <title>Title</title>-->
     <#--    <link rel="stylesheet" type="text/css" href="/styles/style.css">-->

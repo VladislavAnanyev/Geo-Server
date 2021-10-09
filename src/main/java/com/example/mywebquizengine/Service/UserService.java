@@ -11,6 +11,7 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Example;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.RememberMeAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,6 +25,7 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.persistence.EntityNotFoundException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -98,16 +100,15 @@ public class UserService implements UserDetailsService {
     }
 
     public void saveGeo(Geolocation geolocation) {
-        Optional<Geolocation> geolocation1 = geolocationRepository.findById(geolocation.getUser().getUsername());
-        if (geolocation1.isPresent()) {
-            Geolocation geolocation2 = geolocation1.get();
-            geolocation2.setLat(geolocation.getLat());
-            geolocation2.setLng(geolocation.getLng());
-            geolocation2.setTime(geolocation.getTime());
-            geolocationRepository.save(geolocation2);
-        } else {
-            geolocationRepository.save(geolocation);
-        }
+
+
+            if (geolocationRepository.existsById(geolocation.getUser().getUsername())) {
+
+                geolocationRepository.updateGeo(geolocation.getLat(), geolocation.getLng(), geolocation.getUser().getUsername());
+            } else {
+
+                geolocationRepository.save(geolocation);
+            }
     }
 
 

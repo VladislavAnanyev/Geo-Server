@@ -14,6 +14,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -168,6 +169,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         }
 
 
+        @Override
+        public void configure(WebSecurity web) throws Exception {
+            web.debug(true).ignoring().antMatchers("/img/**", "/static/**");
+        }
 
 
         @Override
@@ -180,10 +185,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             http
 
                     .authorizeRequests()
-                    .antMatchers("/googlee45a32e3d6f7edf4.html", "/register", "/activate/*", "/img/**",
+                    .antMatchers("/googlee45a32e3d6f7edf4.html", "/register", "/activate/*",
                             "/quizzes", "/reg",  "/androidSign",
                             "/", "/signin", "/checkyandex", "/h2-console/**", "/.well-known/pki-validation/**",
-                            "/static/forgotPassword.js", "/static/changePassword.js", "/update/userinfo/pswrdwithoutauth",
+                            /*"/static/forgotPassword.js", "/static/changePassword.js", */"/update/userinfo/pswrdwithoutauth",
                             "/updatepass/**", "/pass/**", "/updatepassword/{activationCode}", "/yandex_135f209071de02b1.html").permitAll()
                     .anyRequest().authenticated()
 
