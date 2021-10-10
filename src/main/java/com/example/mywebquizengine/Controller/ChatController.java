@@ -28,6 +28,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.MessageHeaders;
@@ -56,6 +57,9 @@ import java.util.*;
 @Component
 @Validated
 public class ChatController {
+
+    @Value("${hostname}")
+    private String hostname;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -164,22 +168,6 @@ public class ChatController {
 
             newDialog.getUsers().forEach(user -> dialog.addUser(userService.loadUserByUsername(user.getUsername())));
 
-            /*for (User user: newDialog.getUsers()) {
-                dialog.addUser(userService.loadUserByUsername(user.getUsername()));
-            }*/
-            //dialog.addUser(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()));
-
-        /*if (newDialog.getName() == null || newDialog.getName().trim().equals("")) {
-            StringBuilder name = new StringBuilder();
-            for (User user : dialog.getUsers()) {
-                name.append(user.getUsername()).append(" ");
-            }
-            dialog.setName(name.toString());
-
-        } else {
-            dialog.setName(newDialog.getName());
-        }*/
-
 
             if (newDialog.getName() == null) {
                 dialog.setName("Конференция");
@@ -187,7 +175,7 @@ public class ChatController {
                 dialog.setName(newDialog.getName());
             }
             //group.setCreator(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()));
-            dialog.setImage("default");
+            dialog.setImage("https://" + hostname + "/img/default.jpg");
             dialogRepository.save(dialog);
             return dialog.getDialogId();
 
@@ -325,6 +313,8 @@ public class ChatController {
         System.out.println("Сообщение получено на андройд, " + message.toString());
         //sendMessage(message, SecurityContextHolder.getContext().getAuthentication());
     }*/
+
+
 
     @GetMapping(path = "/error")
     public String handleError() {

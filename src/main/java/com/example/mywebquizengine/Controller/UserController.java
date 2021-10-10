@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.Controller;
 
+import com.example.mywebquizengine.Controller.api.ApiController;
 import com.example.mywebquizengine.Model.*;
 import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Chat.MessageStatus;
@@ -65,6 +66,9 @@ public class UserController {
 
     @Autowired
     private ActiveUserStore activeUserStore;
+
+    @Autowired
+    private ApiController apiController;
 
 
     @GetMapping(path = "/profile")
@@ -249,18 +253,7 @@ public class UserController {
     @PostMapping(path = "/sendRequest")
     @ResponseBody
     public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) {
-        request.setSender(userService.loadUserByUsername(principal.getName()));
-
-        Long dialogId = chatController.checkDialog(request.getTo(), principal);
-
-        Dialog dialog = new Dialog();
-        dialog.setDialogId(dialogId);
-        request.getMessage().setDialog(dialog);
-        request.getMessage().setSender(userService.loadUserByUsernameProxy(principal.getName()));
-        request.getMessage().setStatus(MessageStatus.DELIVERED);
-        request.getMessage().setTimestamp(new GregorianCalendar());
-
-        requestRepository.save(request);
+        apiController.sendRequest(request, principal);
     }
 
     @GetMapping(path = "/requests")
@@ -281,39 +274,14 @@ public class UserController {
     @ResponseBody
     //@PreAuthorize(value = "!#principal.name.equals(#user.username)")
     public Long acceptRequest(@RequestBody Request requestId, @AuthenticationPrincipal Principal principal) {
-
-        User authUser = userService.loadUserByUsername(principal.getName());
-
-
-        Request request = requestRepository.findById(requestId.getId()).get();
-        request.setStatus("ACCEPTED");
-
-        authUser.addFriend(request.getSender());
-        requestRepository.save(request);
-        Long dialog_id = messageService.checkDialog(request.getSender(), principal.getName());
-
-        if (dialog_id == null) {
-            Dialog dialog = new Dialog();
-            //  Set<User> users = new HashSet<>();
-            dialog.addUser(userService.loadUserByUsername(request.getSender().getUsername()));
-            dialog.addUser(authUser);
-//            users.add(userService.loadUserByUsername(user.getUsername()));
-//            users.add(userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()));
-            //dialog.setUsers(users);
-            dialogRepository.save(dialog);
-            return dialog.getDialogId();
-        } else {
-            return dialog_id;
-        }
+        return apiController.acceptRequest(requestId, principal);
     }
 
     @PostMapping(path = "/rejectRequest")
     @ResponseBody
     //@PreAuthorize(value = "!#principal.name.equals(#user.username)")
     public void rejectRequest(@RequestBody Request requestId, @AuthenticationPrincipal Principal principal) {
-        Request request = requestRepository.findById(requestId.getId()).get();
-        request.setStatus("REJECTED");
-        requestRepository.save(request);
+        apiController.rejectRequest(requestId, principal);
     }
 
 

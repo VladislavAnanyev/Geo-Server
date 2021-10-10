@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.Model.Test;
 
 
-import com.example.mywebquizengine.Security.QuizController;
+import com.example.mywebquizengine.Controller.QuizController;
 import com.example.mywebquizengine.MywebquizengineApplication;
 import com.example.mywebquizengine.Service.UserAnswerService;
 

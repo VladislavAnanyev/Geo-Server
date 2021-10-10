@@ -4,14 +4,18 @@ import com.example.mywebquizengine.Model.Chat.Message;
 import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewCustomQuery;
 //import com.example.mywebquizengine.Model.Projection.MessageForStompView;
 import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewWithCustomQuery;
+import com.example.mywebquizengine.Model.Projection.MessageView;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface MessageRepository extends CrudRepository<Message, Integer> {
+public interface MessageRepository extends CrudRepository<Message, Integer>, PagingAndSortingRepository<Message, Integer> {
     @Query(value = "SELECT * FROM MESSAGES WHERE (SENDER_USERNAME = :sent AND RECIPIENT_USERNAME = :received) OR (SENDER_USERNAME = :received AND RECIPIENT_USERNAME = :sent) ORDER BY TIMESTAMP", nativeQuery = true)
     List<Message> getMessagesByUsername(String sent, String received);
 
@@ -35,6 +39,9 @@ public interface MessageRepository extends CrudRepository<Message, Integer> {
             "FROM MESSAGES GROUP BY MESSAGES.DIALOG_ID) and MESSAGES.DIALOG_ID IN (SELECT USERS_DIALOGS.DIALOG_ID\n" +
             "FROM USERS_DIALOGS WHERE USERS_DIALOGS.USER_ID = :username) ORDER BY MESSAGES.TIMESTAMP DESC", nativeQuery = true)
     List<Message> getDialogs(String username);
+
+
+    Page<MessageView> findAllByDialog_DialogId(Long dialogId, Pageable paging);
 
     /*@Query(value = "SELECT id\n" +
             "FROM MESSAGES \n" +

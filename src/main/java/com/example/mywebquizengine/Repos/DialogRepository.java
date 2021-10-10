@@ -2,11 +2,19 @@ package com.example.mywebquizengine.Repos;
 
 import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Projection.DialogWithUsersView;
+import com.example.mywebquizengine.Model.Projection.DialogWithUsersViewPaging;
+import com.example.mywebquizengine.Model.Test.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
-public interface DialogRepository extends CrudRepository<Dialog, Long>, JpaRepository<Dialog, Long> {
+import javax.transaction.Transactional;
+
+public interface DialogRepository extends CrudRepository<Dialog, Long>, JpaRepository<Dialog, Long>,
+        PagingAndSortingRepository<Dialog, Long> {
 
     /*
     Если при группировке по идентификатору для выбранных пользователей результат группировки - 2
@@ -20,7 +28,11 @@ public interface DialogRepository extends CrudRepository<Dialog, Long>, JpaRepos
             "GROUP BY DIALOG_ID HAVING COUNT(DIALOG_ID) = 2", nativeQuery = true)
     Long findDialogByName(String firstUser, String secondUser);
 
-    //@Query(value = "SELECT * FROM DIALOGS WHERE DIALOG_ID = :id", nativeQuery = true)
     DialogWithUsersView findDialogByDialogId(Long id);
+
+
+
+    DialogWithUsersViewPaging findAllDialogByDialogId(Long id);
+
 
 }

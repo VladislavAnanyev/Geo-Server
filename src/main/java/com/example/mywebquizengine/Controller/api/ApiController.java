@@ -1,7 +1,10 @@
 package com.example.mywebquizengine.Controller.api;
 
+import com.example.mywebquizengine.Controller.ChatController;
 import com.example.mywebquizengine.Controller.GeoController;
 import com.example.mywebquizengine.Controller.UserController;
+import com.example.mywebquizengine.Model.Chat.Dialog;
+import com.example.mywebquizengine.Model.Chat.MessageStatus;
 import com.example.mywebquizengine.Model.Geo.Geolocation;
 import com.example.mywebquizengine.Model.Geo.Meeting;
 import com.example.mywebquizengine.Model.Projection.Api.MeetingForApiView;
@@ -30,6 +33,10 @@ import org.json.simple.parser.ParseException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -52,6 +59,8 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
 
 import javax.transaction.Transactional;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.io.*;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
@@ -115,13 +124,37 @@ public class ApiController {
     @Autowired
     private RequestRepository requestRepository;
 
+    @Autowired
+    private ChatController chatController;
+
+    @Transactional
     @GetMapping(path = "/api/messages")
     //@PreAuthorize(value = "@dialogRepository.findDialogByDialogId(#dialogId).users/*проверить содержание тут надо*/.contains(principal.name)")
-    public DialogWithUsersView getMessages(@RequestParam Long dialogId, @AuthenticationPrincipal Principal principal) {
+    public DialogWithUsersViewPaging getMessages(@RequestParam Long dialogId,
+                                                 @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
+                                                 @RequestParam(required = false,defaultValue = "50") @Min(1) @Max(100) Integer pageSize,
+                                                 @RequestParam(defaultValue = "timestamp") String sortBy,
+                                                 @AuthenticationPrincipal Principal principal) {
+
+        Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
+
+
 
         if (dialogRepository.findDialogByDialogId(dialogId).getUsers().stream().anyMatch(o -> o.getUsername()
                 .equals(principal.getName()))) {
-            return dialogRepository.findDialogByDialogId(dialogId);
+
+            //DialogWithUsersViewPaging allDialogByDialogId = dialogRepository.findAllDialogByDialogId(dialogId);
+
+            dialogRepository.findById(dialogId).get().setPaging(paging);
+
+            //PageRequest.of()
+            //allDialogByDialogId.setMessages(messageRepository.findAllByDialog_DialogId(dialogId, paging));
+
+
+            //Page<MessageView> allByDialog_dialogId = messageRepository.findAllByDialog_DialogId(dialogId, paging);
+            //allDialogByDialogId.setMessages();
+
+            return dialogRepository.findAllDialogByDialogId(dialogId);
         } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         //return dialog.getMessages();
     }
@@ -375,11 +408,6 @@ public class ApiController {
 
                 userService.setAvatar("https://" + hostname + "/img/" + uuid + ".jpg", user);
 
-                //file.transferTo(new File("C:/Users/avlad/IdeaProjects/WebQuiz" + name));
-
-                //User userLogin = userService.loadUserByUsernameProxy(principal.getName());
-                //userLogin.setAvatar("https://" + hostname + "/img/" + uuid + ".jpg");
-                //model.addAttribute("user", userLogin);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -390,7 +418,8 @@ public class ApiController {
     @Transactional
     @PutMapping(path = "/api/update/user/{username}", consumes={"application/json"})
     @PreAuthorize(value = "#principal.name.equals(#username)")
-    public void changeUser(@PathVariable String username, @RequestBody User user, @AuthenticationPrincipal Principal principal) {
+    public void changeUser(@PathVariable String username, @RequestBody User user,
+                           @AuthenticationPrincipal Principal principal) {
         userService.updateUser(user.getLastName(), user.getFirstName(), username);
     }
 
@@ -406,8 +435,20 @@ public class ApiController {
 
     @PostMapping(path = "/api/sendRequest")
     @ResponseBody
+    //@ResponseStatus(HttpStatus.OK)
     public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) {
-        userController.sendRequest(request, principal);
+        request.setSender(userService.loadUserByUsername(principal.getName()));
+
+        Long dialogId = chatController.checkDialog(request.getTo(), principal);
+
+        Dialog dialog = new Dialog();
+        dialog.setDialogId(dialogId);
+        request.getMessage().setDialog(dialog);
+        request.getMessage().setSender(userService.loadUserByUsernameProxy(principal.getName()));
+        request.getMessage().setStatus(MessageStatus.DELIVERED);
+        request.getMessage().setTimestamp(new GregorianCalendar());
+
+        requestRepository.save(request);
         throw new ResponseStatusException(HttpStatus.OK);
     }
 
@@ -415,7 +456,9 @@ public class ApiController {
     @ResponseBody
     //@PreAuthorize(value = "!#principal.name.equals(#user.username)")
     public void rejectRequest(@RequestBody Request requestId, @AuthenticationPrincipal Principal principal) {
-        userController.rejectRequest(requestId, principal);
+        Request request = requestRepository.findById(requestId.getId()).get();
+        request.setStatus("REJECTED");
+        requestRepository.save(request);
         throw new ResponseStatusException(HttpStatus.OK);
     }
 
@@ -423,15 +466,37 @@ public class ApiController {
     @ResponseBody
     //@PreAuthorize(value = "!#principal.name.equals(#user.username)")
     public Long acceptRequest(@RequestBody Request requestId, @AuthenticationPrincipal Principal principal) {
-        return userController.acceptRequest(requestId, principal);
+        User authUser = userService.loadUserByUsername(principal.getName());
+
+
+        Request request = requestRepository.findById(requestId.getId()).get();
+        request.setStatus("ACCEPTED");
+
+        authUser.addFriend(request.getSender());
+        requestRepository.save(request);
+        Long dialog_id = messageService.checkDialog(request.getSender(), principal.getName());
+
+        if (dialog_id == null) {
+            Dialog dialog = new Dialog();
+            //  Set<User> users = new HashSet<>();
+            dialog.addUser(userService.loadUserByUsername(request.getSender().getUsername()));
+            dialog.addUser(authUser);
+//            users.add(userService.loadUserByUsername(user.getUsername()));
+//            users.add(userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()));
+            //dialog.setUsers(users);
+            dialogRepository.save(dialog);
+            return dialog.getDialogId();
+        } else {
+            return dialog_id;
+        }
     }
 
     @GetMapping(path = "/api/requests")
     public ArrayList<RequestView> getMyRequests(Model model, @AuthenticationPrincipal Principal principal) {
 
-        User authUser = userService.loadUserByUsername(principal.getName());
+        //User authUser = userService.loadUserByUsername(principal.getName());
 
-        return requestRepository.findAllByToUsernameAndStatus(authUser.getUsername(), "PENDING");
+        return requestRepository.findAllByToUsernameAndStatus(principal.getName(), "PENDING");
     }
 
 }
