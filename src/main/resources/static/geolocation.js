@@ -123,18 +123,6 @@ function geo() {
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
 
-                    //let array = JSON.parse(xhr.response)
-                    //console.log(array)
-
-                    /*for (let i = 0; i < xhr.response.length; i++) {
-
-                        map.addMarker({
-                            lat: array[i].lat,
-                            lng: array[i].lng
-                        });
-
-                    }
-*/
 
                 } else if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 400) {
 
@@ -155,20 +143,67 @@ function geo() {
             }
             console.log(lat + " " + lng)
 
-            let xhr = new XMLHttpRequest();
-            xhr.open('POST', '/sendGeolocation',true);
-            xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            if (lat != null && lng != null) {
+                let xhrBackground = new XMLHttpRequest();
+                xhrBackground.open('POST', '/sendGeolocation',true);
+                xhrBackground.setRequestHeader('Content-type','application/json; charset=utf-8');
+                xhrBackground.onreadystatechange = function () {
+                    if (xhrBackground.readyState === XMLHttpRequest.DONE && xhrBackground.status === 200) {
 
 
 
-                } else if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 400) {
+                    } else if (xhrBackground.readyState === XMLHttpRequest.DONE && xhrBackground.status === 400) {
 
-                }
-            };
-            xhr.send(JSON.stringify(jsonBack))
+                    }
+                };
+                xhrBackground.send(JSON.stringify(jsonBack))
+
+                /*let xhrTest3 = new XMLHttpRequest();
+                xhrTest3.open('GET', '/testConnection',true);
+                xhrTest3.setRequestHeader('Content-type','application/json; charset=utf-8');
+                xhrTest3.onreadystatechange = function () {
+                    if (xhrTest3.readyState === XMLHttpRequest.DONE && xhrTest3.status === 200) {
+                        console.log(xhr.responseText)
+
+
+                    } else if (xhrTest3.readyState === XMLHttpRequest.DONE && xhrTest3.status === 400) {
+
+                    }
+                };
+                xhrTest3.send()*/
+
+            } else {
+                let xhrTest = new XMLHttpRequest();
+                xhrTest.open('GET', '/testConnection',true);
+                xhrTest.setRequestHeader('Content-type','application/json; charset=utf-8');
+                xhrTest.onreadystatechange = function () {
+                    if (xhrTest.readyState === XMLHttpRequest.DONE && xhrTest.status === 200) {
+                        console.log(xhr.responseText)
+
+
+                    } else if (xhrTest.readyState === XMLHttpRequest.DONE && xhrTest.status === 400) {
+
+                    }
+                };
+                xhrTest.send()
+            }
+
+
         }, 30000)
+
+        let xhrTest2 = new XMLHttpRequest();
+        xhrTest2.open('GET', '/testConnection',true);
+        xhrTest2.setRequestHeader('Content-type','application/json; charset=utf-8');
+        xhrTest2.onreadystatechange = function () {
+            if (xhrTest2.readyState === XMLHttpRequest.DONE && xhrTest2.status === 200) {
+                console.log(xhr.responseText)
+
+
+            } else if (xhrTest2.readyState === XMLHttpRequest.DONE && xhrTest2.status === 400) {
+
+            }
+        };
+        xhrTest2.send()
 
 
 

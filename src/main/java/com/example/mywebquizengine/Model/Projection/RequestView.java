@@ -14,5 +14,5 @@ public interface RequestView {
 
     MeetingCommonView getMeeting();
 
-    Message getMessage();
+    MessageView getMessage();
 }

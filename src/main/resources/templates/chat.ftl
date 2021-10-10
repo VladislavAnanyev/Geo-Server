@@ -209,7 +209,7 @@
 <script>connect()</script>
 
 
-<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+<#--<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>-->
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
     <#if dialog??>
@@ -258,7 +258,7 @@
 
             for (let i = 0; i < dialogsName.length; i++) {
                 dialogsNameArr.push(dialogsName[i].id)
-                console.log(dialogsName[i].id)
+                //console.log(dialogsName[i].id)
             }
 
             <#if dialogObj.users?size = 2 <#--|| (dialogObj.users?size = 1 && !dialogObj.name??)-->>

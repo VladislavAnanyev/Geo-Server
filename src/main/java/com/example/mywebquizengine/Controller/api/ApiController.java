@@ -1,33 +1,37 @@
 package com.example.mywebquizengine.Controller.api;
 
 import com.example.mywebquizengine.Controller.GeoController;
+import com.example.mywebquizengine.Controller.UserController;
 import com.example.mywebquizengine.Model.Geo.Geolocation;
+import com.example.mywebquizengine.Model.Geo.Meeting;
 import com.example.mywebquizengine.Model.Projection.Api.MeetingForApiView;
 import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewWithCustomQuery;
+import com.example.mywebquizengine.Model.Request;
 import com.example.mywebquizengine.Model.UserInfo.AuthRequest;
 import com.example.mywebquizengine.Model.UserInfo.AuthResponse;
 import com.example.mywebquizengine.Model.UserInfo.GoogleToken;
 import com.example.mywebquizengine.Model.Projection.*;
 
 import com.example.mywebquizengine.Model.User;
-import com.example.mywebquizengine.Repos.DialogRepository;
-import com.example.mywebquizengine.Repos.MeetingRepository;
-import com.example.mywebquizengine.Repos.MessageRepository;
-import com.example.mywebquizengine.Repos.UserRepository;
+import com.example.mywebquizengine.Repos.*;
 import com.example.mywebquizengine.Service.JWTUtil;
 import com.example.mywebquizengine.Service.MessageService;
 import com.example.mywebquizengine.Service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson.JacksonFactory;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -95,6 +99,21 @@ public class ApiController {
 
     @Autowired
     private GeoController geoController;
+
+    @Autowired
+    private UserController userController;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
+
+    @Autowired
+    private RequestRepository requestRepository;
 
     @GetMapping(path = "/api/messages")
     //@PreAuthorize(value = "@dialogRepository.findDialogByDialogId(#dialogId).users/*проверить содержание тут надо*/.contains(principal.name)")
@@ -270,7 +289,70 @@ public class ApiController {
 
     @PostMapping(path = "/api/sendGeolocation")
     public void sendGeolocation(@AuthenticationPrincipal Principal principal, @RequestBody Geolocation myGeolocation) throws JsonProcessingException, ParseException {
-        geoController.sendGeolocation(principal, myGeolocation);
+        //myGeolocation.setId(principal.getName());
+
+
+
+
+        myGeolocation.setUser(userService.loadUserByUsernameProxy(principal.getName()));
+        Calendar calendar = new GregorianCalendar();
+
+        //geolocation.setId(geolocation.getUser().getUsername());
+        userService.saveGeo(myGeolocation);
+
+
+
+        //System.out.println(date.toString().substring(0,10));
+
+        ArrayList<Geolocation> peopleNearMe = geoController.findInSquare(principal.getName(),myGeolocation, "20");
+
+        if (peopleNearMe.size() > 0) {
+
+            for (int i = 0; i < peopleNearMe.size(); i++) {
+
+                if (meetingRepository.
+                        getMeetings(myGeolocation.getUser().getUsername(),
+                                peopleNearMe.get(i).getUser().getUsername())
+                        .size() == 0) {
+
+                    Meeting meeting = new Meeting();
+                    meeting.setFirstUser(myGeolocation.getUser());
+                    meeting.setSecondUser(peopleNearMe.get(i).getUser());
+                    meeting.setLat(myGeolocation.getLat());
+                    meeting.setLng(myGeolocation.getLng());
+                    meeting.setTime(calendar);
+
+                    meetingRepository.save(meeting);
+
+                    JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(meetingRepository.findMeetingById(meeting.getId())));
+                    jsonObject.put("type", "MEETING");
+
+                    simpMessagingTemplate.convertAndSend("/topic/" + myGeolocation.getUser().getUsername(), jsonObject);
+
+                    rabbitTemplate.setExchange("message-exchange");
+
+                    rabbitTemplate.convertAndSend(myGeolocation.getUser().getUsername(), jsonObject);
+
+
+
+
+                /*    ResponseEntity
+                            .ok()
+                            .header("type", "meeting")
+                            .body(meetingRepository.findMeetingById(meeting.getId()))*/
+
+                    /*message -> {
+                        message.getMessageProperties().setHeader("type", "MEETING");
+                        return message;
+                    })*/
+                }
+
+            }
+
+            /*userController.testConnection(principal);*/
+
+
+        }
     }
 
     @PostMapping(path = "/api/upload")
@@ -313,12 +395,43 @@ public class ApiController {
     }
 
 
-    @GetMapping(path = "/api/test")
+    /*@GetMapping(path = "/api/test")
     public ResponseEntity<MeetingView> test() {
         return ResponseEntity
                 .ok()
                 .header("type", "meeting")
                 .body(meetingRepository.findMeetingById(46364L));
+    }*/
+
+
+    @PostMapping(path = "/api/sendRequest")
+    @ResponseBody
+    public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) {
+        userController.sendRequest(request, principal);
+        throw new ResponseStatusException(HttpStatus.OK);
+    }
+
+    @PostMapping(path = "/api/rejectRequest")
+    @ResponseBody
+    //@PreAuthorize(value = "!#principal.name.equals(#user.username)")
+    public void rejectRequest(@RequestBody Request requestId, @AuthenticationPrincipal Principal principal) {
+        userController.rejectRequest(requestId, principal);
+        throw new ResponseStatusException(HttpStatus.OK);
+    }
+
+    @PostMapping(path = "/api/acceptRequest")
+    @ResponseBody
+    //@PreAuthorize(value = "!#principal.name.equals(#user.username)")
+    public Long acceptRequest(@RequestBody Request requestId, @AuthenticationPrincipal Principal principal) {
+        return userController.acceptRequest(requestId, principal);
+    }
+
+    @GetMapping(path = "/api/requests")
+    public ArrayList<RequestView> getMyRequests(Model model, @AuthenticationPrincipal Principal principal) {
+
+        User authUser = userService.loadUserByUsername(principal.getName());
+
+        return requestRepository.findAllByToUsernameAndStatus(authUser.getUsername(), "PENDING");
     }
 
 }

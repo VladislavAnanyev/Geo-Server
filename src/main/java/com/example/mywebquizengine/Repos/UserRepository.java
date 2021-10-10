@@ -63,4 +63,14 @@ public interface UserRepository extends CrudRepository<User, String>, JpaReposit
 
     List<UserCommonView> findUsersByFriendsUsernameContains(String s);
 
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE USERS SET ONLINE = :status WHERE USERNAME = :username", nativeQuery = true)
+    void setOnline(String username, String status);
+
+    //@Modifying
+    @Transactional
+    @Query(value = "select ONLINE from USERS WHERE USERNAME = :username", nativeQuery = true)
+    String getOnline(String username);
+
 }

@@ -35,8 +35,10 @@ public class MyAuthenticationSuccessHandler implements AuthenticationSuccessHand
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
 
 
+        System.out.println("Саксес хендлер");
         HttpSession session = request.getSession(false);
         if (session != null) {
+
             LoggedUser user = new LoggedUser(authentication.getName(), activeUserStore);
             session.setAttribute("user", user);
             session.setMaxInactiveInterval(60);

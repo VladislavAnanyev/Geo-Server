@@ -41,6 +41,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+import org.springframework.security.web.session.SessionInformationExpiredStrategy;
 
 
 import javax.servlet.ServletContextListener;
@@ -200,16 +201,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         //.failureUrl("/signin?error")
 
 
-                    .and().oauth2Login().userInfoEndpoint()
+                    .and()
+                    .oauth2Login().userInfoEndpoint()
                         .oidcUserService(this.oidcUserService()).userService(this.oAuth2UserService())
                         .userAuthoritiesMapper(this.userAuthoritiesMapper()).and()
-                        .defaultSuccessUrl("/loginSuccess").successHandler(myAuthenticationSuccessHandler)
-                    .permitAll()/*.and().rememberMe().rememberMeParameter("remember-me")
+                        .defaultSuccessUrl("/loginSuccess").successHandler(myAuthenticationSuccessHandler).permitAll()/*.and().rememberMe().rememberMeParameter("remember-me")
                     //.and().key("secretkey").alwaysRemember(true).rememberMeServices(rememberMeServices())*/
 
-                    .and().rememberMe()
-                    .key("secretkey").alwaysRemember(true).userDetailsService(userDetailsService)
-                    .tokenRepository(persistentTokenRepository()).authenticationSuccessHandler(myAuthenticationSuccessHandler)
+                    .and()
+                    .rememberMe()
+                        .key("secretkey").alwaysRemember(true).userDetailsService(userDetailsService)
+                        .tokenRepository(persistentTokenRepository()).authenticationSuccessHandler(myAuthenticationSuccessHandler)
 
                     .and()
                     .logout()
@@ -228,8 +230,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .anyRequest()
                     .requiresSecure().and()
 
-                    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
-                    .maximumSessions(1).sessionRegistry(sessionRegistry()).and().sessionFixation().none();
+                    .sessionManagement().maximumSessions(1).sessionRegistry(sessionRegistry())
+                    .and().sessionCreationPolicy(SessionCreationPolicy.ALWAYS).sessionFixation().none();
     }
 
 

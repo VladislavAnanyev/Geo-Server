@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.Controller;
 
+import com.example.mywebquizengine.Controller.api.ApiController;
 import com.example.mywebquizengine.Model.Geo.Geolocation;
 import com.example.mywebquizengine.Model.Geo.Meeting;
 import com.example.mywebquizengine.Model.Projection.UserCommonView;
@@ -56,6 +57,12 @@ public class GeoController {
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
+    @Autowired
+    private UserController userController;
+
+    @Autowired
+    private ApiController apiController;
+
     @GetMapping("/geo")
     public String geo() {
         return "geo";
@@ -64,63 +71,8 @@ public class GeoController {
     @PostMapping(path = "/sendGeolocation")
     @ResponseBody
     public void sendGeolocation(@AuthenticationPrincipal Principal principal, @RequestBody Geolocation myGeolocation) throws JsonProcessingException, ParseException {
-        //myGeolocation.setId(principal.getName());
-        myGeolocation.setUser(userService.loadUserByUsernameProxy(principal.getName()));
-        Calendar calendar = new GregorianCalendar();
-
-        //geolocation.setId(geolocation.getUser().getUsername());
-        userService.saveGeo(myGeolocation);
-
-
-
-        //System.out.println(date.toString().substring(0,10));
-
-        ArrayList<Geolocation> peopleNearMe = findInSquare(principal.getName(),myGeolocation, "20");
-
-        if (peopleNearMe.size() > 0) {
-
-            for (int i = 0; i < peopleNearMe.size(); i++) {
-
-                if (meetingRepository.
-                        getMeetings(myGeolocation.getUser().getUsername(),
-                                peopleNearMe.get(i).getUser().getUsername())
-                        .size() == 0) {
-
-                    Meeting meeting = new Meeting();
-                    meeting.setFirstUser(myGeolocation.getUser());
-                    meeting.setSecondUser(peopleNearMe.get(i).getUser());
-                    meeting.setLat(myGeolocation.getLat());
-                    meeting.setLng(myGeolocation.getLng());
-                    meeting.setTime(calendar);
-
-                    meetingRepository.save(meeting);
-
-                    JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(meetingRepository.findMeetingById(meeting.getId())));
-                    jsonObject.put("type", "MEETING");
-
-                    simpMessagingTemplate.convertAndSend("/topic/" + myGeolocation.getUser().getUsername(), jsonObject);
-
-                    rabbitTemplate.setExchange("message-exchange");
-
-                    rabbitTemplate.convertAndSend(myGeolocation.getUser().getUsername(), jsonObject);
-
-
-                /*    ResponseEntity
-                            .ok()
-                            .header("type", "meeting")
-                            .body(meetingRepository.findMeetingById(meeting.getId()))*/
-
-                    /*message -> {
-                        message.getMessageProperties().setHeader("type", "MEETING");
-                        return message;
-                    })*/
-                }
-
-            }
-
-
-        }
-
+       apiController.sendGeolocation(principal, myGeolocation);
+       userController.testConnection(principal);
 
     }
 

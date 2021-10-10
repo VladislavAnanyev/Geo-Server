@@ -3,10 +3,8 @@ package com.example.mywebquizengine.Controller;
 import com.example.mywebquizengine.Model.*;
 import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Chat.MessageStatus;
-import com.example.mywebquizengine.Repos.DialogRepository;
-import com.example.mywebquizengine.Repos.GeolocationRepository;
-import com.example.mywebquizengine.Repos.MeetingRepository;
-import com.example.mywebquizengine.Repos.RequestRepository;
+import com.example.mywebquizengine.MywebquizengineApplication;
+import com.example.mywebquizengine.Repos.*;
 import com.example.mywebquizengine.Security.ActiveUserStore;
 import com.example.mywebquizengine.Service.MessageService;
 import com.example.mywebquizengine.Service.PaymentServices;
@@ -60,6 +58,9 @@ public class UserController {
 
     @Autowired
     private ChatController chatController;
+
+    @Autowired
+    private UserRepository userRepository;
 
 
     @Autowired
@@ -319,7 +320,16 @@ public class UserController {
 
     @GetMapping(path = "/testConnection")
     @ResponseBody
-    public String testConnection() {
+    public String testConnection(@AuthenticationPrincipal Principal principal) {
+/*        if (!activeUserStore.getUsers().contains(principal.getName())) {
+            activeUserStore.getUsers().add(principal.getName());
+            userRepository.setOnline(principal.getName(), "true");
+        }*/
+
+        if (userRepository.getOnline(principal.getName()).equals("false")) {
+            userRepository.setOnline(principal.getName(), "true");
+        }
+
         return "OK";
     }
 

@@ -3,6 +3,8 @@ package com.example.mywebquizengine.Model.Geo;
 import com.example.mywebquizengine.Model.User;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.Calendar;
 
 @Entity(name = "GEOLOCATIONS")
@@ -17,9 +19,16 @@ public class Geolocation {
     @JoinColumn(name = "username")
     private User user;
 
+    @NotNull
+    @NotBlank
     private Double lat;
+
+    @NotNull
+    @NotBlank
     private Double lng;
 
+    @NotNull
+    @NotBlank
     private Calendar time;
 
     public Geolocation() {}
