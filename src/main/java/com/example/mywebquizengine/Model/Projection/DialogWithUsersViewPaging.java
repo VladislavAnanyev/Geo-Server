@@ -19,6 +19,7 @@ public interface DialogWithUsersViewPaging {
 
 
     //@Named(value = "messages")
-    @JsonProperty(value = "messages")
-    List<MessageView> getMessagesPages();
+    //@JsonProperty(value = "messages")
+    @Value("#{T(com.google.common.collect.Lists).reverse(@messageRepository.findAllByDialog_DialogId(target.dialogId, target.paging).content)}")
+    List<MessageView> getMessages();
 }

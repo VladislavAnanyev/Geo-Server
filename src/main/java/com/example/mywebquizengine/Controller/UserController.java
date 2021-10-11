@@ -288,15 +288,15 @@ public class UserController {
 
     @GetMapping(path = "/testConnection")
     @ResponseBody
-    public String testConnection(@AuthenticationPrincipal Principal principal) {
+    public String testConnection(/*@AuthenticationPrincipal Principal principal*/) {
 /*        if (!activeUserStore.getUsers().contains(principal.getName())) {
             activeUserStore.getUsers().add(principal.getName());
             userRepository.setOnline(principal.getName(), "true");
         }*/
 
-        if (userRepository.getOnline(principal.getName()).equals("false")) {
+        /*if (userRepository.getOnline(principal.getName()).equals("false")) {
             userRepository.setOnline(principal.getName(), "true");
-        }
+        }*/
 
         return "OK";
     }

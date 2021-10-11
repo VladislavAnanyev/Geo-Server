@@ -40,31 +40,11 @@ public class RabbitMqConfiguration implements RabbitListenerConfigurer {
         return new DirectExchange(EXCHANGE);
     }
 
-    /*@Bean
-    Binding binding(@Qualifier("QueueAndroid") Queue ordersQueue, TopicExchange ordersExchange) {
-        return BindingBuilder.bind(ordersQueue).to(ordersExchange).with(QUEUE_ANDROID);
-    }*/
 
     @Bean
     public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
         return new RabbitAdmin(connectionFactory);
     }
-
-
-
-/*
-    @Bean
-    public Binding androidBinding() {
-        return BindingBuilder.bind(QueueAndroid()).to(ordersExchange()).with("android");
-    }
-
-
-    @Bean
-    public Binding webBinding() {
-        return BindingBuilder.bind(QueueWeb()).to(ordersExchange()).with("web");
-    }
-*/
-
 
 
     @Bean

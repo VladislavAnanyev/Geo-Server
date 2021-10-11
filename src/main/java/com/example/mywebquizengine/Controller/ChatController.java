@@ -4,19 +4,14 @@ package com.example.mywebquizengine.Controller;
 import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Chat.Message;
 import com.example.mywebquizengine.Model.Chat.MessageStatus;
-import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewCustomQuery;
+import com.example.mywebquizengine.Model.Projection.Api.MessageForApiView;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.DialogRepository;
 import com.example.mywebquizengine.Repos.MessageRepository;
-import com.example.mywebquizengine.Repos.UserRepository;
 import com.example.mywebquizengine.Service.MessageService;
 import com.example.mywebquizengine.Service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.client.json.Json;
-import com.google.gson.JsonObject;
-import jdk.nashorn.internal.ir.debug.JSONWriter;
-import org.codehaus.jackson.annotate.JsonValue;
 import org.hibernate.Hibernate;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -25,13 +20,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.http.HttpStatus;
-import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -214,7 +207,7 @@ public class ChatController {
             messageService.saveMessage(message);
 
             Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
-            MessageForApiViewCustomQuery messageDto = messageRepository.findMessageById(message.getId());
+            MessageForApiView messageDto = messageRepository.findMessageById(message.getId());
 
             for (User user :dialog.getUsers()) {
 
@@ -228,8 +221,6 @@ public class ChatController {
                        jsonObject);
 
                 if (!user.getUsername().equals(authUser.getUsername())) {
-
-                    //objectMapper.writeValueAsString(messageDto);
 
 
                     simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),

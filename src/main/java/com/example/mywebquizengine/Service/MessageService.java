@@ -5,7 +5,7 @@ import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Chat.Message;
 
 //import com.example.mywebquizengine.Model.Projection.MessageForStompView;
-import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewWithCustomQuery;
+import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewCustomQuery;
 import com.example.mywebquizengine.Model.User;
 
 import com.example.mywebquizengine.Repos.DialogRepository;
@@ -32,13 +32,7 @@ public class MessageService {
     private UserService userService;
 
 
-    public ArrayList<Message> getMessages(String sent, String received) {
-        return (ArrayList<Message>) messageRepository.getMessagesByUsername(sent, received);
-    }
 
-    public ArrayList<Message> getMessagesInGroup(String group) {
-        return (ArrayList<Message>) messageRepository.getMessagesByGroup(group);
-    }
 
 /*    public void saveGroup(Group group) {
         groupRepository.save(group);
@@ -96,9 +90,9 @@ public class MessageService {
         return messageRepository.getDialogs(username);
     }
 
-    public ArrayList<MessageForApiViewWithCustomQuery> getDialogsForApi(String username) {
+    public ArrayList<MessageForApiViewCustomQuery> getDialogsForApi(String username) {
 
-        List<MessageForApiViewWithCustomQuery> messageViews = messageRepository.getDialogsForApi(username);
+        List<MessageForApiViewCustomQuery> messageViews = messageRepository.getDialogsForApi(username);
 
         /*ArrayList<MessageForApiView> messageForStompViews = new ArrayList<>();
 
@@ -108,7 +102,7 @@ public class MessageService {
 
         //return messageRepository.findAllById((ArrayList<Integer>) messageViews);
         //return messageForStompViews;
-        return (ArrayList<MessageForApiViewWithCustomQuery>) messageViews;
+        return (ArrayList<MessageForApiViewCustomQuery>) messageViews;
     }
 
     /*public List<Message> getDialogs(String username) {

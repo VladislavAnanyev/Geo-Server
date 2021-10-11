@@ -40,6 +40,15 @@ public class MyAuthenticationSuccessHandler implements AuthenticationSuccessHand
         if (session != null) {
 
             LoggedUser user = new LoggedUser(authentication.getName(), activeUserStore);
+            session.invalidate();
+            session = request.getSession(true);
+            session.setAttribute("user", user);
+            session.setMaxInactiveInterval(5);
+        } else {
+            LoggedUser user = new LoggedUser(authentication.getName(), activeUserStore);
+            //session = request.getSession(true);
+
+            session = request.getSession(true);
             session.setAttribute("user", user);
             session.setMaxInactiveInterval(60);
         }

@@ -29,15 +29,12 @@ public class Dialog  {
 
     public Dialog() {}
 
-    public Dialog(Long dialogId, String name, String image) {
+
+    public Dialog(Long dialogId, String name, String image, Set<User> users) {
         this.dialogId = dialogId;
         this.name = name;
         this.image = image;
-
-        DialogRepository dialogRepository = MywebquizengineApplication.ctx.getBean(DialogRepository.class);
-        this.users.clear();
-        this.users.addAll(dialogRepository.findById(dialogId).get().getUsers());
-
+        this.users = users;
     }
 
     @ManyToMany(mappedBy = "dialogs", cascade = {CascadeType.PERSIST,CascadeType.MERGE})
@@ -56,32 +53,9 @@ public class Dialog  {
 
 
     public List<Message> getMessages() {
-        //Pageable paging = PageRequest.of(0, 50);
-
         return messages;
-        //page.stream().limit(6);
-        //return new PageImpl<MessageView>(getMessagesView("application", this.dialogId));
-
     }
 
-    public List<MessageView> getMessagesPages() {
-        //Pageable paging = PageRequest.of(0, 50);
-
-        List<MessageView> content = MywebquizengineApplication.ctx
-                .getBean(MessageRepository.class).findAllByDialog_DialogId(this.dialogId, paging).getContent();
-
-
-
-        return Lists.reverse(content);
-        //page.stream().limit(6);
-        //return new PageImpl<MessageView>(getMessagesView("application", this.dialogId));
-
-    }
-
-    /*public List<MessageView> getMessagesView(Long dialogId) {
-        return MywebquizengineApplication.ctx.getBean(MessageRepository.class)
-                .findAllByDialog_DialogId(dialogId);
-    }*/
 
     public void setMessages(List<Message> messages) {
         this.messages = messages;

@@ -72,7 +72,7 @@ public class GeoController {
     @ResponseBody
     public void sendGeolocation(@AuthenticationPrincipal Principal principal, @RequestBody Geolocation myGeolocation) throws JsonProcessingException, ParseException {
        apiController.sendGeolocation(principal, myGeolocation);
-       userController.testConnection(principal);
+       //userController.testConnection(/*principal*/);
 
     }
 

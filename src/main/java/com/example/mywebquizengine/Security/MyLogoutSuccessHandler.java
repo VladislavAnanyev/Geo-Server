@@ -32,9 +32,12 @@ public class MyLogoutSuccessHandler implements LogoutSuccessHandler {
             throws IOException, ServletException {
 
         HttpSession session = request.getSession();
+        System.out.println("Логаут");
         if (session != null){
             session.removeAttribute("user");
+            session.invalidate();
         }
+
 
         /*HttpSession session = request.getSession();
         if (session != null) {

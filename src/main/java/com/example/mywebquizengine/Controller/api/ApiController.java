@@ -8,7 +8,7 @@ import com.example.mywebquizengine.Model.Chat.MessageStatus;
 import com.example.mywebquizengine.Model.Geo.Geolocation;
 import com.example.mywebquizengine.Model.Geo.Meeting;
 import com.example.mywebquizengine.Model.Projection.Api.MeetingForApiView;
-import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewWithCustomQuery;
+import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewCustomQuery;
 import com.example.mywebquizengine.Model.Request;
 import com.example.mywebquizengine.Model.UserInfo.AuthRequest;
 import com.example.mywebquizengine.Model.UserInfo.AuthResponse;
@@ -33,7 +33,6 @@ import org.json.simple.parser.ParseException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -171,7 +170,7 @@ public class ApiController {
         В идеале необходимо решить проблему с инициализацией вложенных полей
      */
     @GetMapping(path = "/api/dialogs")
-    public ArrayList<MessageForApiViewWithCustomQuery> getDialogs(@AuthenticationPrincipal Principal principal) {
+    public ArrayList<MessageForApiViewCustomQuery> getDialogs(@AuthenticationPrincipal Principal principal) {
 
         return messageService.getDialogsForApi(principal.getName());
     }

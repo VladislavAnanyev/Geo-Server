@@ -117,18 +117,6 @@ function geo() {
                 lng: lng
             }
 
-            let xhr = new XMLHttpRequest();
-            xhr.open('POST', '/sendGeolocation',true);
-            xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-
-
-                } else if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 400) {
-
-                }
-            };
-            xhr.send(JSON.stringify(json))
 
 
 
@@ -189,21 +177,9 @@ function geo() {
             }
 
 
-        }, 30000)
-
-        let xhrTest2 = new XMLHttpRequest();
-        xhrTest2.open('GET', '/testConnection',true);
-        xhrTest2.setRequestHeader('Content-type','application/json; charset=utf-8');
-        xhrTest2.onreadystatechange = function () {
-            if (xhrTest2.readyState === XMLHttpRequest.DONE && xhrTest2.status === 200) {
-                console.log(xhr.responseText)
+        }, 20000)
 
 
-            } else if (xhrTest2.readyState === XMLHttpRequest.DONE && xhrTest2.status === 400) {
-
-            }
-        };
-        xhrTest2.send()
 
 
 

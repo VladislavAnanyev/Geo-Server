@@ -231,7 +231,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .requiresSecure().and()
 
                     .sessionManagement().maximumSessions(1).sessionRegistry(sessionRegistry())
-                    .and().sessionCreationPolicy(SessionCreationPolicy.ALWAYS).sessionFixation().none();
+                    .and().sessionCreationPolicy(SessionCreationPolicy.NEVER).sessionFixation().none()
+                    ;
     }
 
 
