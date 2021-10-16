@@ -1,23 +1,28 @@
 
+/*@media (max-width: 768px) {
+	.body {
+		background: black;
+	}
+}*/
 
 body{
-	background-color: #fff;
-	color: #555;
+	/*background-color: #fff;*/
+	/*color: #555;*/
 	font-size: 14px;
-	font-family: 'Bad Script', cursive;
-	margin: 0;
-	padding: 0;
-	min-width: 480px;
+	font-family: 'Bad Script', Monaco, cursive ;
+	/*margin: 0;
+	padding: 0;*/
+	/*min-width: 480px;*/
 }
 
-html, body{ 
+/*html, body{
 	height: 100%; 
-}
+}*/
 
 h2{
 	font-size: 80px;
 	text-align: center;
-	font-family: 'Lobster', cursive;
+	font-family: 'Lobster', Monaco, cursive;
 	font-weight: 700;
 	font-style: italic;
 	color: #444;

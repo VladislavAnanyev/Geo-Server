@@ -1085,7 +1085,8 @@ document.getElementById("msg").addEventListener('scroll', populate);
 
     }
 
-}], cacheIgnore: true/*,
+}], cacheIgnore: true,
+            prefetchIgnore: true/*,
             prefetchIgnore: true*/
 
 /*prevent: (el, event, href) => {
