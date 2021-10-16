@@ -92,7 +92,7 @@ function createGroup() {
 
                 div2.innerHTML = "<a id=" + xhr.response+"href\" href=\"/chat/" + xhr.response + "\">" +
                     "                                    <div class=\"chat_people\">\n" +
-                    "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" src=\"https://localhost/img/default.jpg" + "\" alt=\"sunil\"> </div>\n" +
+                    "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" src=\"https://" + location.host + "/img/default.jpg" + "\" alt=\"sunil\"> </div>\n" +
                     "                                        <div class=\"chat_ib\">\n" +
                     "                                            <h5 class=\"dialogsuser\">" + name.value + "<span class=\"chat_date\"></span></h5>\n" +
                     "                                            <p>Группа создана</p>\n" +
