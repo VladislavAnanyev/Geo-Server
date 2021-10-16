@@ -7,9 +7,7 @@
 <@e.page>
 
 
-    <script src="https://cdn.jsdelivr.net/npm/@barba/core"></script>
-<#--    <script src="https://unpkg.com/@barba/core"></script>-->
-    <script src="https://unpkg.com/gsap@latest/dist/gsap.min.js"></script>
+
 
 
 <#--    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">-->
@@ -260,22 +258,47 @@
 
                 <script>
 
-                    if (location.pathname.replace("/chat/", "") === "" ||
-                        location.pathname.replace("/chat/", "") === "/chat") {
+                    //console.log(document.getElementsByClassName("input_msg_write").length)
+
+
+
+                        if (location.pathname.replace("/chat/", "") === "" ||
+                            location.pathname.replace("/chat/", "") === "/chat") {
+                            let textArea = document.createElement('div')
+                            textArea.setAttribute("id", "msgArea")
+                            textArea.classList.add("type_msg")
+                            textArea.innerHTML = "<div class=\"input_msg_write\">\n" +
+                                "                        <input type=\"text\" class=\"write_msg\" id=\"inputtextarea\" placeholder=\"Type a message\"/>\n" +
+                                "                        <button onclick=\"sendMessage(location.pathname.replace('/chat/', ''))\" class=\"msg_send_btn\" type=\"button\"><i class=\"fa fa-paper-plane-o\" aria-hidden=\"true\"></i></button>\n" +
+                                "                    </div>"
+
+                            let msgsById = document.getElementById("msg");
+
+                            textArea.after(msgsById)
+
+
+                        }
+
+
+                    if (location.pathname.replace("/chat/", "") !== "" && location.pathname !== "/chat") {
+
                         let textArea = document.createElement('div')
                         textArea.setAttribute("id", "msgArea")
                         textArea.classList.add("type_msg")
                         textArea.innerHTML = "<div class=\"input_msg_write\">\n" +
-                            "                        <input type=\"text\" class=\"write_msg\" id=\"inputtextarea\" placeholder=\"Type a message\"/>\n" +
+                            "                        <input type=\"text\" class=\"write_msg\" id=\"inputtextarea\" placeholder=\"Напишите сообщение\"/>\n" +
                             "                        <button onclick=\"sendMessage(location.pathname.replace('/chat/', ''))\" class=\"msg_send_btn\" type=\"button\"><i class=\"fa fa-paper-plane-o\" aria-hidden=\"true\"></i></button>\n" +
                             "                    </div>"
 
+
+
                         let msgsById = document.getElementById("msg");
 
-                        textArea.after(msgsById)
+                        console.log(location.pathname.replace("/chat/", ""))
 
-
+                        msgsById.after(textArea)
                     }
+
                 </script>
 
 
@@ -667,7 +690,9 @@
         });
     </script>-->
 
-
+    <script src="https://cdn.jsdelivr.net/npm/@barba/core"></script>
+<#--    <script src="https://unpkg.com/@barba/core"></script>-->
+    <script src="https://unpkg.com/gsap@latest/dist/gsap.min.js"></script>
 
     <script>
         barba.init({
@@ -739,10 +764,10 @@
 
                     // create your stunning leave animation here
                 },
-                enter() {
+                /*enter() {
 
                     // create your amazing enter animation here
-                },
+                },*/
                 after(data) {
 
                     //let diaActual = location.pathname.replace("/chat/", "")
