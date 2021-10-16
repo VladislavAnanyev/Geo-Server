@@ -36,6 +36,8 @@
 
 
 
+
+
 <#--<#if dialog??>-->
 
 
@@ -188,7 +190,7 @@
                 <div class="msg_history" id="msg">
 
                     <#--<main data-barba="container">-->
-                    <#--<#list messages?if_exists as msg>
+                    <#list messages?if_exists as msg>
                         <#if msg.sender.username == myUsername.username>
 
 
@@ -196,7 +198,7 @@
                             <div class="outgoing_msg">
                                 <div class="sent_msg">
                                     <p>${msg.content}</p>
-                                    <span id="${msg.id?c}" class="time_date">&lt;#&ndash;?string["dd.MM.yyyy HH:mm:ss"]}&ndash;&gt;</span> </div>
+                                    <span id="${msg.id?c}" class="time_date"><#--?string["dd.MM.yyyy HH:mm:ss"]}-->${msg.timestamp?long?c}</span> </div>
                             </div>
 
 
@@ -208,57 +210,74 @@
                                 <div class="received_msg">
                                     <div class="received_withd_msg">
                                         <p>${msg.content}</p>
-                                        <span id="${msg.id?c}" class="time_date"></span>
+                                        <span id="${msg.id?c}" class="time_date">${msg.timestamp?long?c}</span>
                                     </div>
                                 </div>
                             </div>
 
 
                         </#if>
+                    </#list>
 
 
 
-                    </#list>-->
 
-<#--                    <#if dialog??>-->
-                    <#--<script>
+                    <script id="setTime">
+                    function setTime(time, id) {
+                    let userTime = new Date(time)
+                    document.getElementById(id).textContent = userTime.toLocaleDateString() + " " + userTime.toLocaleTimeString()
+                    }
+                    </script>
 
-                        /*function setTime(time, id) {
+
+                    <#if dialog??>
+
+                        <script id="setTimeAll">
+                            <#list messages as msg>
+                            setTime(${msg.timestamp?long?c}, ${msg.id?c})
+                            </#list>
+                        </script>
+                    </#if>
+
+
+
+
+
+<#--<script>
+
+
+
+                            function setTime(time, id) {
                             let userTime = new Date(time)
                             document.getElementById(id).textContent = userTime.toLocaleDateString() + " " + userTime.toLocaleTimeString()
-                        }*/
+                            }
 
-                        &lt;#&ndash;<#list messages as mes>
+                            <#list messages as mes>
 
-                        <#if mes.timestamp??>
-                        setTime(${mes.timestamp?long?c}, ${mes.id?c})
+                                setTime(${mes.timestamp?long?c}, ${mes.id?c})
 
+                            </#list>
 
-                        <#else >
-                            console.log("nulllllllllll")
-                        </#if>
+                        </script>-->
 
 
 
-                        /*setTime(&lt;#&ndash;${mes.timestamp.toInstant().epochSecond?c}, ${mes.id?c}&ndash;&gt;);*/
-                        </#list>&ndash;&gt;
 
-                    </script>-->
-<#--                    </#if>-->
+
 
 
 <#--                    </main>-->
                 </div>
 
 
-                <#--<#if dialog??>
+                <#if dialog??>
                 <div id="msgArea" class="type_msg">
                     <div class="input_msg_write">
-                        <input type="text" class="write_msg" id="inputtextarea" placeholder="Type a message"/>
+                        <input type="text" class="write_msg" id="inputtextarea" placeholder="Напишите сообщение"/>
                         <button onclick="sendMessage(location.pathname.replace('/chat/', ''))" class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
                     </div>
                 </div>
-                </#if>-->
+                </#if>
 
 
                 <script>
@@ -285,7 +304,7 @@
                         }
 
 
-                    if (location.pathname.replace("/chat/", "") !== "" && location.pathname !== "/chat") {
+                    /*if (location.pathname.replace("/chat/", "") !== "" && location.pathname !== "/chat") {
 
                         let textArea = document.createElement('div')
                         textArea.setAttribute("id", "msgArea")
@@ -302,7 +321,7 @@
                         console.log(location.pathname.replace("/chat/", ""))
 
                         msgsById.after(textArea)
-                    }
+                    }*/
 
                 </script>
 
@@ -700,11 +719,24 @@
         });
     </script>-->
 
+
+
+
+
+
+
+
     <script src="https://cdn.jsdelivr.net/npm/@barba/core"></script>
 <#--    <script src="https://unpkg.com/@barba/core"></script>-->
     <script src="https://unpkg.com/gsap@latest/dist/gsap.min.js"></script>
 
     <script>
+
+
+
+
+
+        /*barba.use(barbaPrefetch);*/
         barba.init({
             transitions: [{
                 name: 'default-transition',
@@ -721,6 +753,7 @@
                 //to: {namespace: ['msgs']},
 
                 before(data) {
+                    console.log(data)
 
                     /*if (document.getElementsByClassName('active_chat').length !==0) {
                         let active = document.getElementsByClassName('active_chat')[0]
@@ -779,7 +812,20 @@
                     // create your amazing enter animation here
                 },*/
                 after(data) {
-                    let count = 0
+                    console.log(data)
+
+
+
+
+                    console.log("12321312312321")
+
+
+
+
+
+
+
+                    /*let count = 0
                     let page = 0;
                     let currentCount = 0;
 
@@ -850,10 +896,12 @@
                             }
                         };
                         xhr.send();
-                    }
+                    }*/
 
+                                var div10 = $("#msg");
+                                div10.scrollTop(div10.prop('scrollHeight'));
 
-                            if (data.next.url.path.replace("/chat/", "") !== "" ||
+                            /*if (data.next.url.path.replace("/chat/", "") !== "" ||
                                 data.next.url.path.replace("/chat/", "") !== "/chat") {
 
                                 let textArea = document.createElement('div')
@@ -869,7 +917,7 @@
                                 last2.after(textArea)
 
 
-                            }
+                            }*/
 
 
 
@@ -882,6 +930,10 @@
 
 
                     if (data.current.url.path.includes("/chat/")) {
+
+
+
+
 
                         let currentDialog = document.getElementById(data.current.url.path.replace("/chat/", "") + "href");
                         if (currentDialog !== null) {
@@ -904,21 +956,26 @@
                     }
 
 
-                    //$('script').remove().appendTo('body');
+                    $('#setTime').remove().appendTo('body');
+
+                    $('#setTimeAll').remove().appendTo('body');
+
+                    //document.getElementById("setTime").remove()
+                    //document.getElementById("setTimeAll")
 
                     /*$('script').run()*/
 
                     let dia = location.pathname.replace("/chat/", "")
                     let id2 = document.getElementById(dia);
                     id2.setAttribute('class', "chat_list active_chat")
-                    /*if (location.href.includes('/chat/<#--${dialog?c}-->')) {*/
-                        /*let active = document.getElementsByClassName('active_chat')[0]
-                        active.classList.remove('active_chat')*/
+                    if (location.href.includes('/chat/<#--${dialog?c}-->')) {
+                        let active = document.getElementsByClassName('active_chat')[0]
+                        active.classList.remove('active_chat')
                         let id = document.getElementById(location.pathname.replace("/chat/", ""));
                         if (id.value !== "") {
                             id.setAttribute('class', "chat_list active_chat")
                         }
-                  // }
+                   }
 
 
 
@@ -1028,8 +1085,8 @@ document.getElementById("msg").addEventListener('scroll', populate);
 
     }
 
-}],
-            prefetchIgnore: true
+}], cacheIgnore: true/*,
+            prefetchIgnore: true*/
 
 /*prevent: (el, event, href) => {
 

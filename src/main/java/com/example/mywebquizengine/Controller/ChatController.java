@@ -136,19 +136,19 @@ public class ChatController {
                                @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
                                @RequestParam(required = false,defaultValue = "50") @Min(1) @Max(100) Integer pageSize,
                                @RequestParam(defaultValue = "timestamp") String sortBy,
-                               @AuthenticationPrincipal Principal principal) {
+                               @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
 
 
 
 
-        if (httpHeaders.get("referer") == null ) {
+        /*if (httpHeaders.get("referer") == null ) {
 
             return "redirect:/chat";
         } else if (httpHeaders.get("referer").get(0).contains(dialog_id) ||
                 httpHeaders.get("referer").get(0).contains("profile") ) {
             List<String> list = httpHeaders.get("referer");
             return "redirect:/chat";
-        } else {
+        } else {*/
 
             Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
 
@@ -177,6 +177,10 @@ public class ChatController {
 
                 model.addAttribute("dialog", dialog.getDialogId());
 
+                DialogWithUsersViewPaging dialogWithUsersViewPaging = dialogRepository.findAllDialogByDialogId(dialog.getDialogId());
+
+                JSONObject jsonObject = (JSONObject) JSONValue
+                        .parseWithException(objectMapper.writeValueAsString(dialogWithUsersViewPaging));
 
                 model.addAttribute("messages", dialog.getMessages());
 
@@ -188,7 +192,7 @@ public class ChatController {
 
             } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 
-        }
+
 
     }
 
