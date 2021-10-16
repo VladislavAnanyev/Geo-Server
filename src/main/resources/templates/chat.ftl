@@ -23,9 +23,14 @@
 
 
 
+    <script>
 
+        if (location.pathname.replace("/chat/", "") !== "/chat" &&
+            location.pathname.replace("/chat/", "") !== "") {
+            document.location.href = "/chat"
+        }
 
-
+    </script>
 
 
 
@@ -346,6 +351,7 @@
 
 
 
+    <#--<#if dialog??>
 
 
         <script>
@@ -441,6 +447,7 @@
 
 
         </script>
+    </#if>-->
 
 
 
@@ -448,7 +455,7 @@
 
 
 
-    <#if dialog?? >
+   <#-- <#if dialog?? >
 
 
 
@@ -480,7 +487,7 @@
                 //console.log(dialogsName[i].id)
             }
 
-            <#if dialogObj.users?size = 2 <#--|| (dialogObj.users?size = 1 && !dialogObj.name??)-->>
+            <#if dialogObj.users?size = 2 &lt;#&ndash;|| (dialogObj.users?size = 1 && !dialogObj.name??)&ndash;&gt;>
 
 
             //div2.setAttribute('class', "inbox_chat")
@@ -494,7 +501,7 @@
                     "                                    <div class=\"chat_people\">\n" +
                     "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" width=\"43.26px\" height=\"43.26px\" src=\"${c.avatar}\" alt=\"sunil\"> </div>\n" +
                     "                                        <div class=\"chat_ib\">\n" +
-                    "                                            <h5 class=\"dialogsuser\">${c.username}<span class=\"chat_date\"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>\n" +
+                    "                                            <h5 class=\"dialogsuser\">${c.username}<span class=\"chat_date\">&lt;#&ndash;${messages[messages?size - 1].timestamp.time?date}&ndash;&gt;</span></h5>\n" +
                     "                                            <p></p>\n" +
                     "                                        </div>\n" +
                     "                                    </div>\n" +
@@ -521,9 +528,9 @@
 
                 div2.innerHTML = "<a id=\"${dialogObj.dialogId?c}href\" href=\"/chat/${dialogObj.dialogId?c}\">" +
                     "                                    <div class=\"chat_people\">\n" +
-                    "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" width=\"43.26px\" height=\"43.26px\" src=\"<#--https://ptetutorials.com/images/user-profile.png-->${dialogObj.image}\" alt=\"sunil\"> </div>\n" +
+                    "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" width=\"43.26px\" height=\"43.26px\" src=\"&lt;#&ndash;https://ptetutorials.com/images/user-profile.png&ndash;&gt;${dialogObj.image}\" alt=\"sunil\"> </div>\n" +
                     "                                        <div class=\"chat_ib\">\n" +
-                    "                                            <h5 class=\"dialogsuser\">${dialogObj.name}<span class=\"chat_date\"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>\n" +
+                    "                                            <h5 class=\"dialogsuser\">${dialogObj.name}<span class=\"chat_date\">&lt;#&ndash;${messages[messages?size - 1].timestamp.time?date}&ndash;&gt;</span></h5>\n" +
                     "                                            <p id=\"lastMsg${dialogObj.dialogId?c}\"></p>\n" +
                     "                                        </div>\n" +
                     "                                    </div>\n" +
@@ -544,27 +551,30 @@
 
 
 
-    </#if>
+    </#if>-->
 
 
 
 
 
 
-        <script>
+
+    <script>
 
 
         document.addEventListener("keypress", function(e) {
-        let messageInput = document.getElementById("inputtextarea");
-        if (e.key === "Enter" && messageInput.value !== ' ') {
-            dia = location.pathname.replace("/chat/", "")
-        sendMessage(dia)
-        }
+            let messageInput = document.getElementById("inputtextarea");
+            if (e.key === "Enter" && messageInput.value !== ' ') {
+                dia = location.pathname.replace("/chat/", "")
+                sendMessage(dia)
+            }
         });
-        </script>
+    </script>
+
+    <#--<#if dialog??>
 
 
-    <#if dialog??>
+
     <script>
 
         function writeMsgs() {
@@ -653,7 +663,7 @@
         }
         writeMsgs()
     </script>
-    </#if>
+    </#if>-->
 
 
         <#--<script>
@@ -729,7 +739,7 @@
                     delete dialog
                     delete div2
                     delete dialogsName
-                    delete onclicks
+                    //delete onclicks
                     delete dialogsNameArr
 
                     //let diaActual = location.pathname.replace("/chat/", "")
@@ -769,75 +779,19 @@
                     // create your amazing enter animation here
                 },*/
                 after(data) {
-
-                    //let diaActual = location.pathname.replace("/chat/", "")
-                    //let idHref= document.getElementById(diaActual + "href")
-                    //console.log(idHref)
-                    //idHref.removeAttribute('href')
-
-
-
-                    if (data.current.url.path.includes("/chat/")) {
-
-                        let currentDialog = document.getElementById(data.current.url.path.replace("/chat/", "") + "href");
-                        if (currentDialog !== null) {
-                            currentDialog.setAttribute("href", "/chat/" + data.current.url.path.replace("/chat/", ""))
-                        }
-                        /*let currentDialog = document.getElementById(data.next.url.path.replace("/chat/", "") + "href");
-                        console.log(currentDialog)
-                        currentDialog.removeAttribute("href")*/
-                    }
-
-
-
-                    let active = document.getElementsByClassName("active_chat")
-
-                    console.log(active)
-                    if (active.length !== 0) {
-                        for (let i = 0; i < active.length; i++) {
-                            active[i].classList.remove("active_chat")
-                        }
-                    }
-
-
-                    //$('script').remove().appendTo('body');
-
-                    /*$('script').run()*/
-
-                    let dia = location.pathname.replace("/chat/", "")
-                    let id2 = document.getElementById(dia);
-                    id2.setAttribute('class', "chat_list active_chat")
-                    /*if (location.href.includes('/chat/<#--${dialog?c}-->')) {*/
-                        /*let active = document.getElementsByClassName('active_chat')[0]
-                        active.classList.remove('active_chat')*/
-                        let id = document.getElementById(location.pathname.replace("/chat/", ""));
-                        if (id.value !== "") {
-                            id.setAttribute('class', "chat_list active_chat")
-                        }
-                  // }
-
-
-
-
-
                     let count = 0
                     let page = 0;
                     let currentCount = 0;
 
-                    //console.log("fffffffffffffffffffffffffff")
 
-
-                    if (document.getElementsByClassName("outgoing_msg").length === 0
-                        && document.getElementsByClassName("incoming_msg").length ===0) {
                         //writeMsgs()
-                        if (count===0 && (document.getElementsByClassName("outgoing_msg").length === 0
-                            && document.getElementsByClassName("incoming_msg").length === 0)) {
+
                             count++
 
 
-                            let dia = location.pathname.replace("/chat/", "")
+                            let dia123 = location.pathname.replace("/chat/", "")
                             let xhr = new XMLHttpRequest();
-                            xhr.open('GET', '/chat/nextPages?dialog_id=' + dia +'&page=' + page);
+                            xhr.open('GET', '/chat/nextPages?dialog_id=' + dia123 +'&page=' + page);
                             xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
                             xhr.onreadystatechange = function () {
                                 if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
@@ -905,7 +859,7 @@
 
                             if (data.next.url.path.replace("/chat/", "") !== "" ||
                                 data.next.url.path.replace("/chat/", "") !== "/chat") {
-                                console.log("00909099090")
+
                                 let textArea = document.createElement('div')
                                 textArea.setAttribute("id", "msgArea")
                                 textArea.classList.add("type_msg")
@@ -921,8 +875,65 @@
 
                             }
 
+
+
+
+                    //let diaActual = location.pathname.replace("/chat/", "")
+                    //let idHref= document.getElementById(diaActual + "href")
+                    //console.log(idHref)
+                    //idHref.removeAttribute('href')
+
+
+
+                    if (data.current.url.path.includes("/chat/")) {
+
+                        let currentDialog = document.getElementById(data.current.url.path.replace("/chat/", "") + "href");
+                        if (currentDialog !== null) {
+                            currentDialog.setAttribute("href", "/chat/" + data.current.url.path.replace("/chat/", ""))
+                        }
+                        /*let currentDialog = document.getElementById(data.next.url.path.replace("/chat/", "") + "href");
+                        console.log(currentDialog)
+                        currentDialog.removeAttribute("href")*/
+                    }
+
+
+
+                    let active = document.getElementsByClassName("active_chat")
+
+                    console.log(active)
+                    if (active.length !== 0) {
+                        for (let i = 0; i < active.length; i++) {
+                            active[i].classList.remove("active_chat")
                         }
                     }
+
+
+                    //$('script').remove().appendTo('body');
+
+                    /*$('script').run()*/
+
+                    let dia = location.pathname.replace("/chat/", "")
+                    let id2 = document.getElementById(dia);
+                    id2.setAttribute('class', "chat_list active_chat")
+                    /*if (location.href.includes('/chat/<#--${dialog?c}-->')) {*/
+                        /*let active = document.getElementsByClassName('active_chat')[0]
+                        active.classList.remove('active_chat')*/
+                        let id = document.getElementById(location.pathname.replace("/chat/", ""));
+                        if (id.value !== "") {
+                            id.setAttribute('class', "chat_list active_chat")
+                        }
+                  // }
+
+
+
+
+
+
+
+                    //console.log("fffffffffffffffffffffffffff")
+
+
+
 
 
                     /**/
@@ -955,7 +966,7 @@
 
     </script>
 
-    <script type="text/javascript">
+    <#--<script type="text/javascript">
         function funonload() {
 
             let dia = location.pathname.replace("/chat/", "")
@@ -971,7 +982,7 @@
         }
 
         window.onload = funonload;
-    </script>
+    </script>-->
 
 
 

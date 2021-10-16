@@ -95,7 +95,7 @@ function createGroup() {
                     "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" src=\"https://" + location.host + "/img/default.jpg" + "\" alt=\"sunil\"> </div>\n" +
                     "                                        <div class=\"chat_ib\">\n" +
                     "                                            <h5 class=\"dialogsuser\">" + name.value + "<span class=\"chat_date\"></span></h5>\n" +
-                    "                                            <p>Группа создана</p>\n" +
+                    "                                            <p id=\"lastMsg" + xhr.response + "\">Группа создана</p>\n" +
                     "                                        </div>\n" +
                     "                                    </div></a>"
 
