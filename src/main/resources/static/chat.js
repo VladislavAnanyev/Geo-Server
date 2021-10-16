@@ -1,3 +1,4 @@
+/*
 'use strict';
 
 var stompClient = null;
@@ -17,7 +18,8 @@ function connect() {
 }
 
 function onConnected() {
-    console.log('/topic/' + document.getElementById("dialogId").value);
+
+
 
     let xhr = new XMLHttpRequest();
     xhr.open('GET', '/authuser', false);
@@ -27,9 +29,16 @@ function onConnected() {
         }
     }
     xhr.send();
-    console.log(username)
+    let dia = location.pathname.replace("/chat/", "")
+    //console.log(dia)
+
+    console.log(dia)
 
     stompClient.subscribe('/topic/' + username, onMessageReceived);
+
+
+
+
 
 }
 
@@ -60,6 +69,8 @@ function sendMessage(dialog) {
         }
 
         let date = new Date()
+        console.log(Intl.DateTimeFormat().resolvedOptions().timeZone)
+
         let div = document.createElement("div");
         div.setAttribute('class', "outgoing_msg")
 
@@ -90,7 +101,11 @@ function onMessageReceived(payload) {
 
     var message = JSON.parse(payload.body);
 
-    if (message.type === "MESSAGE") {
+    console.log(message.dialog.dialogId)
+    console.log(location.pathname)
+
+    if (message.type === "MESSAGE" && location.pathname.includes(message.dialog.dialogId)) {
+        console.log("Успех")
         console.log(message)
 
         let dialog = document.getElementById("dialogs")
@@ -177,3 +192,4 @@ function onMessageReceived(payload) {
 
 
 
+*/

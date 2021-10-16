@@ -27,8 +27,6 @@ public class LoggedUser implements HttpSessionBindingListener {
     public void valueBound(HttpSessionBindingEvent event) {
 
 
-
-
         List<String> users = activeUserStore.getUsers();
         LoggedUser user = (LoggedUser) event.getValue();
         if (!users.contains(user.getUsername())) {
@@ -44,6 +42,7 @@ public class LoggedUser implements HttpSessionBindingListener {
 
     @Override
     public void valueUnbound(HttpSessionBindingEvent event) {
+
         List<String> users = activeUserStore.getUsers();
         LoggedUser user = (LoggedUser) event.getValue();
         if (users.contains(user.getUsername())) {
@@ -55,12 +54,6 @@ public class LoggedUser implements HttpSessionBindingListener {
         User authUser = MywebquizengineApplication.ctx.getBean(UserRepository.class).findById(user.getUsername()).get();
         authUser.setOnline("false");
         MywebquizengineApplication.ctx.getBean(UserRepository.class).save(authUser);
-
-
-        /*if (activeUserStore.getUsers().contains(user.getUsername())) {
-            authUser.setOnline("true");
-            MywebquizengineApplication.ctx.getBean(UserRepository.class).save(authUser);
-        }*/
 
     }
 

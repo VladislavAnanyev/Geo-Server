@@ -13,6 +13,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.*;
 
 @Entity(name = "DIALOGS")
@@ -23,7 +26,9 @@ public class Dialog  {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long dialogId;
 
+
     private String name;
+
 
     private String image;
 
@@ -37,6 +42,7 @@ public class Dialog  {
         this.users = users;
     }
 
+    @Size(min = 2)
     @ManyToMany(mappedBy = "dialogs", cascade = {CascadeType.PERSIST,CascadeType.MERGE})
     private Set<User> users = new HashSet<>();
 
@@ -44,7 +50,7 @@ public class Dialog  {
     @JsonIgnore
     private Pageable paging;
 
-    @OneToMany(mappedBy = "dialog", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "dialog", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST,CascadeType.MERGE})
     private List<Message> messages;
 
     public Long getDialogId() {

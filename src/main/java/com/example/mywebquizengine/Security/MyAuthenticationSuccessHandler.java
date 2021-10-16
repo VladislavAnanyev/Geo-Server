@@ -43,7 +43,7 @@ public class MyAuthenticationSuccessHandler implements AuthenticationSuccessHand
             session.invalidate();
             session = request.getSession(true);
             session.setAttribute("user", user);
-            session.setMaxInactiveInterval(5);
+            session.setMaxInactiveInterval(60);
         } else {
             LoggedUser user = new LoggedUser(authentication.getName(), activeUserStore);
             //session = request.getSession(true);

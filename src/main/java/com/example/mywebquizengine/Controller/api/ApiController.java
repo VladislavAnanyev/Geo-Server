@@ -7,7 +7,7 @@ import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Chat.MessageStatus;
 import com.example.mywebquizengine.Model.Geo.Geolocation;
 import com.example.mywebquizengine.Model.Geo.Meeting;
-import com.example.mywebquizengine.Model.Projection.Api.MeetingForApiView;
+import com.example.mywebquizengine.Model.Projection.Api.MeetingForApiViewCustomQuery;
 import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewCustomQuery;
 import com.example.mywebquizengine.Model.Request;
 import com.example.mywebquizengine.Model.UserInfo.AuthRequest;
@@ -47,7 +47,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -136,10 +135,10 @@ public class ApiController {
                                                  @AuthenticationPrincipal Principal principal) {
 
         Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
+        dialogRepository.findById(Long.valueOf(dialogId)).get().setPaging(paging);
+        DialogWithUsersViewPaging dialog = dialogRepository.findAllDialogByDialogId(Long.valueOf(dialogId));
 
-
-
-        if (dialogRepository.findDialogByDialogId(dialogId).getUsers().stream().anyMatch(o -> o.getUsername()
+        if (dialog.getUsers().stream().anyMatch(o -> o.getUsername()
                 .equals(principal.getName()))) {
 
             //DialogWithUsersViewPaging allDialogByDialogId = dialogRepository.findAllDialogByDialogId(dialogId);
@@ -157,6 +156,8 @@ public class ApiController {
         } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         //return dialog.getMessages();
     }
+
+
 
 
 
@@ -299,7 +300,7 @@ public class ApiController {
     }
 
     @GetMapping(path = "/api/meetings")
-    public ArrayList<MeetingForApiView> getMyMeetings(@AuthenticationPrincipal Principal principal) {
+    public ArrayList<MeetingForApiViewCustomQuery> getMyMeetings(@AuthenticationPrincipal Principal principal) {
 
         User authUser = userService.loadUserByUsername(principal.getName());
 
@@ -309,7 +310,7 @@ public class ApiController {
         //ArrayList<Geolocation> peopleNearMe = findInSquare(SecurityContextHolder.getContext().getAuthentication(),"20");
 
 
-        return (ArrayList<MeetingForApiView>) meetingRepository.getMyMeetingsTodayApi(authUser.getUsername(),
+        return (ArrayList<MeetingForApiViewCustomQuery>) meetingRepository.getMyMeetingsTodayApi(authUser.getUsername(),
                 date.toString().substring(0,10) + " 00:00:00",
                 date.toString().substring(0,10) + " 23:59:59");
         /*return (ArrayList<Meeting>) meetingRepository.getMyMeetingsToday(userService.getAuthUserNoProxy
@@ -327,7 +328,7 @@ public class ApiController {
 
 
         myGeolocation.setUser(userService.loadUserByUsernameProxy(principal.getName()));
-        Calendar calendar = new GregorianCalendar();
+
 
         //geolocation.setId(geolocation.getUser().getUsername());
         userService.saveGeo(myGeolocation);
@@ -336,7 +337,8 @@ public class ApiController {
 
         //System.out.println(date.toString().substring(0,10));
 
-        ArrayList<Geolocation> peopleNearMe = geoController.findInSquare(principal.getName(),myGeolocation, "20");
+        ArrayList<Geolocation> peopleNearMe = geoController
+                .findInSquare(principal.getName(),myGeolocation, "20");
 
         if (peopleNearMe.size() > 0) {
 
@@ -345,38 +347,40 @@ public class ApiController {
                 if (meetingRepository.
                         getMeetings(myGeolocation.getUser().getUsername(),
                                 peopleNearMe.get(i).getUser().getUsername())
-                        .size() == 0) {
-
-                    Meeting meeting = new Meeting();
-                    meeting.setFirstUser(myGeolocation.getUser());
-                    meeting.setSecondUser(peopleNearMe.get(i).getUser());
-                    meeting.setLat(myGeolocation.getLat());
-                    meeting.setLng(myGeolocation.getLng());
-                    meeting.setTime(calendar);
-
-                    meetingRepository.save(meeting);
-
-                    JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(meetingRepository.findMeetingById(meeting.getId())));
-                    jsonObject.put("type", "MEETING");
-
-                    simpMessagingTemplate.convertAndSend("/topic/" + myGeolocation.getUser().getUsername(), jsonObject);
-
-                    rabbitTemplate.setExchange("message-exchange");
-
-                    rabbitTemplate.convertAndSend(myGeolocation.getUser().getUsername(), jsonObject);
+                        .size() == 0 ) {
 
 
+                    if (!principal.getName().equals(peopleNearMe.get(i).getUser().getUsername())) {
+
+                        Meeting meeting = new Meeting();
+                        meeting.setFirstUser(myGeolocation.getUser());
+                        meeting.setSecondUser(peopleNearMe.get(i).getUser());
+                        meeting.setLat(myGeolocation.getLat());
+                        meeting.setLng(myGeolocation.getLng());
+                        meeting.setTime(new Date());
+
+                        meetingRepository.save(meeting);
 
 
-                /*    ResponseEntity
-                            .ok()
-                            .header("type", "meeting")
-                            .body(meetingRepository.findMeetingById(meeting.getId()))*/
+                        JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper
+                                .writeValueAsString(meetingRepository.findMeetingById(meeting.getId())));
+                        jsonObject.put("type", "MEETING");
 
-                    /*message -> {
-                        message.getMessageProperties().setHeader("type", "MEETING");
-                        return message;
-                    })*/
+
+                        simpMessagingTemplate.convertAndSend("/topic/" +
+                                meeting.getFirstUser().getUsername(), jsonObject);
+
+                        simpMessagingTemplate.convertAndSend("/topic/" +
+                                meeting.getSecondUser().getUsername(), jsonObject);
+
+                        rabbitTemplate.setExchange("message-exchange");
+
+                        rabbitTemplate.convertAndSend(meeting.getFirstUser().getUsername(), jsonObject);
+                        rabbitTemplate.convertAndSend(meeting.getSecondUser().getUsername(), jsonObject);
+
+
+                    }
+
                 }
 
             }
@@ -445,7 +449,7 @@ public class ApiController {
         request.getMessage().setDialog(dialog);
         request.getMessage().setSender(userService.loadUserByUsernameProxy(principal.getName()));
         request.getMessage().setStatus(MessageStatus.DELIVERED);
-        request.getMessage().setTimestamp(new GregorianCalendar());
+        request.getMessage().setTimestamp(new Date());
 
         requestRepository.save(request);
         throw new ResponseStatusException(HttpStatus.OK);
@@ -491,11 +495,17 @@ public class ApiController {
     }
 
     @GetMapping(path = "/api/requests")
-    public ArrayList<RequestView> getMyRequests(Model model, @AuthenticationPrincipal Principal principal) {
+    public ArrayList<RequestView> getMyRequests(@AuthenticationPrincipal Principal principal) {
 
         //User authUser = userService.loadUserByUsername(principal.getName());
 
         return requestRepository.findAllByToUsernameAndStatus(principal.getName(), "PENDING");
+    }
+
+    @GetMapping(path = "/api/test")
+    public String test() {
+        //throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        return "OK";
     }
 
 }

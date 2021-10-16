@@ -4,6 +4,7 @@ import com.example.mywebquizengine.Model.User;
 
 import javax.persistence.*;
 import java.util.Calendar;
+import java.util.Date;
 
 @Entity(name = "MEETINGS")
 public class Meeting {
@@ -21,7 +22,7 @@ public class Meeting {
     private Double lat;
     private Double lng;
 
-    private Calendar time;
+    private Date time;
 
     public Long getId() {
         return id;
@@ -47,7 +48,7 @@ public class Meeting {
         return lng;
     }
 
-    public void setTime(Calendar time) {
+    public void setTime(Date time) {
         this.time = time;
     }
 
@@ -63,7 +64,7 @@ public class Meeting {
         return secondUser;
     }
 
-    public Calendar getTime() {
+    public Date getTime() {
         return time;
     }
 

@@ -86,10 +86,16 @@
 
 
 
+
     <!-- Button trigger modal -->
-    <button type="button" class="btn btn-primary ml-2 my-1" data-toggle="modal" data-target="#staticBackdrop">
+    <button type="button" id="bbb" class="btn btn-primary ml-2 my-1" data-toggle="modal" data-target="#staticBackdrop">
+
         Изменить пароль
     </button>
+
+
+
+
 
     <div class="col-md-6 mb-3">
         <label for="validationDefault05">Онлайн</label>

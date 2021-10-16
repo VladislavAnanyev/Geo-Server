@@ -84,6 +84,7 @@ dependencies {
     implementation group: 'org.freemarker', name: 'freemarker', version: '2.3.31'
     implementation 'com.h2database:h2'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'

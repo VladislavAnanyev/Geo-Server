@@ -38,7 +38,8 @@ function geo() {
 
                 m = map.addMarker({
                     lat: lat,
-                    lng: lng
+                    lng: lng,
+                    title: "hello"
                 });
 
 
@@ -59,11 +60,30 @@ function geo() {
                         for (let i = 0; i < array.length; i++) {
 
                            // console.log()
+
+
+
+
+
                             map.addMarker({
                                 lat: array[i].lat,
-                                lng: array[i].lng
+                                lng: array[i].lng,
+                                title: "hello"
+                            }).addListener("click", () => {
+
+                                console.log(array[i].user)
                             });
 
+
+
+
+
+                            /*marker.addListener("click", () => {
+                                infowindow.open(marker.get("map"), marker);
+                            });*/
+                            /*const infowindow = new google.maps.InfoWindow({
+                                content: "hello",
+                            });*/
                         }
 
 
@@ -105,7 +125,8 @@ function geo() {
 
                 m = map.addMarker({
                     lat: lat,
-                    lng: lng
+                    lng: lng,
+                    title: "hello"
                 });
             }
 
@@ -118,7 +139,21 @@ function geo() {
             }
 
 
+            let xhr = new XMLHttpRequest();
+            xhr.open('POST', '/sendGeolocation',true);
+            xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
 
+                    console.log("Отправлено")
+                }
+                else if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 400) {
+
+                    console.log("Нет")
+                }
+
+            }
+            xhr.send(JSON.stringify(json))
 
         }, null, geoconfig)
 

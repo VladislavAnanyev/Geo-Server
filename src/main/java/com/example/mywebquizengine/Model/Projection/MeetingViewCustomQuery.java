@@ -6,6 +6,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Calendar;
+import java.util.Date;
 
 public interface MeetingViewCustomQuery {
     Long getId();
@@ -19,5 +20,5 @@ public interface MeetingViewCustomQuery {
     Double getLng();
     Double getLat();
 
-    Timestamp getTime();
+    Date getTime();
 }

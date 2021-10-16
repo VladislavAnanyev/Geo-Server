@@ -1,17 +1,21 @@
 package com.example.mywebquizengine.Controller;
 
 
+import com.example.mywebquizengine.Controller.api.ApiController;
 import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Chat.Message;
 import com.example.mywebquizengine.Model.Chat.MessageStatus;
-import com.example.mywebquizengine.Model.Projection.Api.MessageForApiView;
+import com.example.mywebquizengine.Model.Projection.Api.MessageWithDialog;
+import com.example.mywebquizengine.Model.Projection.DialogWithUsersViewPaging;
 import com.example.mywebquizengine.Model.User;
+import com.example.mywebquizengine.MywebquizengineApplication;
 import com.example.mywebquizengine.Repos.DialogRepository;
 import com.example.mywebquizengine.Repos.MessageRepository;
 import com.example.mywebquizengine.Service.MessageService;
 import com.example.mywebquizengine.Service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.html.HtmlEscapers;
 import org.hibernate.Hibernate;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -23,8 +27,13 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -38,8 +47,12 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.swing.text.html.HTML;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.security.Principal;
 import java.util.*;
 
@@ -74,6 +87,7 @@ public class ChatController {
 
     @Autowired
     SessionRegistry sessionRegistry;
+
 
     Logger logger = LoggerFactory.getLogger("main");
 
@@ -117,36 +131,83 @@ public class ChatController {
     }
 
     @GetMapping(path = "/chat/{dialog_id}")
-    public String chatWithUser(Model model, @PathVariable String dialog_id, @AuthenticationPrincipal Principal principal) {
-
-        if (dialogRepository.findDialogByDialogId(Long.valueOf(dialog_id)).getUsers().stream().anyMatch(o -> o.getUsername()
-                .equals(principal.getName()))) {
-
-            Dialog dialog = dialogRepository.findById(Long.valueOf(dialog_id)).get();
-
-
+    @Transactional
+    public String chatWithUser(@RequestHeader HttpHeaders httpHeaders, Model model, @PathVariable String dialog_id,
+                               @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
+                               @RequestParam(required = false,defaultValue = "50") @Min(1) @Max(100) Integer pageSize,
+                               @RequestParam(defaultValue = "timestamp") String sortBy,
+                               @AuthenticationPrincipal Principal principal) {
 
 
 
+
+        if (httpHeaders.get("referer") == null ) {
+
+            return "redirect:/chat";
+        } else if (httpHeaders.get("referer").get(0).contains(dialog_id) ||
+                httpHeaders.get("referer").get(0).contains("profile") ) {
+            List<String> list = httpHeaders.get("referer");
+            return "redirect:/chat";
+        } else {
+
+            Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
+
+       /* if (dialog_id.equals("inbox")) {
             User user = userService.loadUserByUsername(principal.getName());
             model.addAttribute("myUsername", user);
             model.addAttribute("lastDialogs", messageService.getDialogs(user.getUsername()));
-
-            model.addAttribute("dialog", dialog.getDialogId());
-            model.addAttribute("messages", dialog.getMessages());
-
-            model.addAttribute("dialogObj", dialog);
-
             model.addAttribute("userList", userService.getUserList());
             return "chat";
-        } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        } else {*/
 
 
+            dialogRepository.findById(Long.valueOf(dialog_id)).get().setPaging(paging);
+            DialogWithUsersViewPaging dialog = dialogRepository.findAllDialogByDialogId(Long.valueOf(dialog_id));
+
+
+            if (dialog.getUsers().stream().anyMatch(o -> o.getUsername()
+                    .equals(principal.getName()))) {
+
+                //Dialog dialog = dialogRepository.findById(Long.valueOf(dialog_id)).get();
+
+                User user = userService.loadUserByUsername(principal.getName());
+
+                model.addAttribute("myUsername", user);
+                model.addAttribute("lastDialogs", messageService.getDialogs(user.getUsername()));
+
+                model.addAttribute("dialog", dialog.getDialogId());
+
+
+                model.addAttribute("messages", dialog.getMessages());
+
+
+                model.addAttribute("dialogObj", dialog);
+
+                model.addAttribute("userList", userService.getUserList());
+                return "chat";
+
+            } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+
+        }
+
+    }
+
+    @GetMapping(path = "/chat/nextPages")
+    @Transactional
+    @ResponseBody
+    public DialogWithUsersViewPaging chatWithUserPages(@RequestParam String dialog_id,
+                               @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
+                               @RequestParam(required = false,defaultValue = "50") @Min(1) @Max(100) Integer pageSize,
+                               @RequestParam(defaultValue = "timestamp") String sortBy,
+                               @AuthenticationPrincipal Principal principal) {
+        return MywebquizengineApplication.ctx.getBean(ApiController.class).getMessages(Long.valueOf(dialog_id), page, pageSize, sortBy, principal);
     }
 
     @PostMapping(path = "/createGroup")
     @ResponseBody
-    public Long createGroup(@RequestBody Dialog newDialog, @AuthenticationPrincipal Principal principal) {
+    public Long createGroup(@Valid @RequestBody Dialog newDialog, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
+
+
 
         User authUser = new User();
 
@@ -161,18 +222,46 @@ public class ChatController {
 
             newDialog.getUsers().forEach(user -> dialog.addUser(userService.loadUserByUsername(user.getUsername())));
 
+            Message message = new Message();
+            message.setContent("Группа создана");
+            message.setSender(userService.loadUserByUsername(principal.getName()));
+            message.setStatus(MessageStatus.DELIVERED);
+            message.setTimestamp(new Date());
+            message.setDialog(dialog);
 
-            if (newDialog.getName() == null) {
+            dialog.setMessages(new ArrayList<>());
+            dialog.getMessages().add(message);
+
+
+
+            if (newDialog.getName() == null || newDialog.getName().equals("")) {
                 dialog.setName("Конференция");
             } else {
                 dialog.setName(newDialog.getName());
             }
+
             //group.setCreator(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()));
             dialog.setImage("https://" + hostname + "/img/default.jpg");
             dialogRepository.save(dialog);
+
+            MessageWithDialog messageDto = messageRepository.findMessageById(message.getId());
+            JSONObject jsonObject = (JSONObject) JSONValue
+                    .parseWithException(objectMapper.writeValueAsString(messageDto));
+            jsonObject.put("type", "MESSAGE");
+            for (User user : dialog.getUsers()) {
+                simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
+                        jsonObject);
+            }
+
+
+
+
             return dialog.getDialogId();
 
         } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+
+
+
 
 
     }
@@ -198,16 +287,16 @@ public class ChatController {
 
             // Устанавливается часовой пояс для хранения времени в БД постоянно по Москве
             // В БД будет сохраняться Московское время независимо от местоположения сервера/пользователя
-            TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
+            /*TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
             Calendar nowDate = new GregorianCalendar();
-            nowDate.setTimeZone(timeZone);
-            message.setTimestamp(nowDate);
+            nowDate.setTimeZone(timeZone);*/
+            message.setTimestamp(new Date());
 
             message.setStatus(MessageStatus.DELIVERED);
             messageService.saveMessage(message);
 
             Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
-            MessageForApiView messageDto = messageRepository.findMessageById(message.getId());
+            MessageWithDialog messageDto = messageRepository.findMessageById(message.getId());
 
             for (User user :dialog.getUsers()) {
 
@@ -260,10 +349,10 @@ public class ChatController {
 
             // Устанавливается часовой пояс для хранения времени в БД постоянно по Москве
             // В БД будет сохраняться Московское время независимо от местоположения сервера/пользователя
-            TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
-            Calendar nowDate = new GregorianCalendar();
-            nowDate.setTimeZone(timeZone);
-            message.setTimestamp(nowDate);
+            /*TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
+            Calendar nowDate = new GregorianCalendar();*/
+            //nowDate.setTimeZone(timeZone);
+            message.setTimestamp(new Date());
 
 
             message.setStatus(MessageStatus.DELIVERED);
@@ -311,6 +400,12 @@ public class ChatController {
     public String handleError() {
         return "error";
     }
+
+
+    /*@GetMapping(path = "/chat/**")
+    public String redirect() {
+        return "forward:/profile";
+    }*/
 
 
 

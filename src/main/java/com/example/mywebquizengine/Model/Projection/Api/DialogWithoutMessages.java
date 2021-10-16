@@ -4,7 +4,7 @@ import com.example.mywebquizengine.Model.Projection.UserCommonView;
 
 import java.util.Set;
 
-public interface DialogForApi {
+public interface DialogWithoutMessages {
     Long getDialogId();
     String getName();
     String getImage();

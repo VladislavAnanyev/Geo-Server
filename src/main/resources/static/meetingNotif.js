@@ -1,3 +1,4 @@
+/*
 'use strict';
 
 
@@ -9,7 +10,7 @@ var colors = [
     '#ffc107', '#ff85af', '#FF9800', '#39bbb0'
 ];
 
-function meetingConnect(/*event*/) {
+function meetingConnect(/!*event*!/) {
 
 
     //if(username) {
@@ -33,6 +34,11 @@ function meetingConnect(/*event*/) {
 
 
 function onConnectedMeeting() {
+    console.log(location.pathname.replace("/chat", ""))
+    if (location.pathname.includes("chat") && location.pathname.replace("/chat", "") !== "") {
+
+        connect()
+    }
 
     let xhr = new XMLHttpRequest();
     xhr.open('GET', '/authuser', false);
@@ -53,18 +59,18 @@ function onConnectedMeeting() {
 
 
     // Tell your username to the server
-    /*stompClient.send("/app/testchat",
+    /!*stompClient.send("/app/testchat",
          {},
          JSON.stringify({sender: username, type: 'JOIN'})
      )
 
-     connectingElement.classList.add('hidden');*/
+     connectingElement.classList.add('hidden');*!/
 }
 
 
 function onErrorMeeting(error) {
-    /*connectingElement.textContent = 'Could not connect to WebSocket server. Please refresh this page to try again!';
-    connectingElement.style.color = 'red';*/
+    /!*connectingElement.textContent = 'Could not connect to WebSocket server. Please refresh this page to try again!';
+    connectingElement.style.color = 'red';*!/
     console.log("fail")
 
     //connect()
@@ -101,3 +107,4 @@ function onMessageReceivedMeeting(payload) {
 
 
 }
+*/

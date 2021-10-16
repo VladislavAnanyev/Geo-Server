@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.Repos;
 
 import com.example.mywebquizengine.Model.Chat.Message;
-import com.example.mywebquizengine.Model.Projection.Api.MessageForApiView;
+import com.example.mywebquizengine.Model.Projection.Api.MessageWithDialog;
 //import com.example.mywebquizengine.Model.Projection.MessageForStompView;
 import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewCustomQuery;
 import com.example.mywebquizengine.Model.Projection.MessageView;
@@ -50,7 +50,7 @@ public interface MessageRepository extends CrudRepository<Message, Integer>, Pag
 
 
 
-    MessageForApiView findMessageById(Integer id);
+    MessageWithDialog findMessageById(Integer id);
 
 
 

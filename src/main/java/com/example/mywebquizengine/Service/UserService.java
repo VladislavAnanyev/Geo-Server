@@ -2,6 +2,7 @@ package com.example.mywebquizengine.Service;
 
 import com.example.mywebquizengine.Model.Geo.Geolocation;
 import com.example.mywebquizengine.Model.Order;
+import com.example.mywebquizengine.Model.Projection.GeolocationView;
 import com.example.mywebquizengine.Model.Role;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.GeolocationRepository;
@@ -112,8 +113,8 @@ public class UserService implements UserDetailsService {
     }
 
 
-    public ArrayList<Geolocation> getAllGeo(String username) {
-        return (ArrayList<Geolocation>) geolocationRepository.getAll(username);
+    public ArrayList<GeolocationView> getAllGeo(String username) {
+        return (ArrayList<GeolocationView>) geolocationRepository.getAll(username);
     }
 
 

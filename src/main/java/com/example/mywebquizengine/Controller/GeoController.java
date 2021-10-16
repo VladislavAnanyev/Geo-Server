@@ -3,6 +3,7 @@ package com.example.mywebquizengine.Controller;
 import com.example.mywebquizengine.Controller.api.ApiController;
 import com.example.mywebquizengine.Model.Geo.Geolocation;
 import com.example.mywebquizengine.Model.Geo.Meeting;
+import com.example.mywebquizengine.Model.Projection.GeolocationView;
 import com.example.mywebquizengine.Model.Projection.UserCommonView;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.GeolocationRepository;
@@ -51,14 +52,6 @@ public class GeoController {
     @Autowired
     private MeetingRepository meetingRepository;
 
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
-
-    @Autowired
-    private SimpMessagingTemplate simpMessagingTemplate;
-
-    @Autowired
-    private UserController userController;
 
     @Autowired
     private ApiController apiController;
@@ -78,7 +71,7 @@ public class GeoController {
 
     @GetMapping(path = "/getAllGeoWithoutMe")
     @ResponseBody
-    public ArrayList<Geolocation> getAllGeoWithoutMe(@AuthenticationPrincipal Principal principal) {
+    public ArrayList<GeolocationView> getAllGeoWithoutMe(@AuthenticationPrincipal Principal principal) {
 
         return userService.getAllGeo(userService.
                 loadUserByUsernameProxy(principal.getName()).getUsername());
@@ -96,7 +89,8 @@ public class GeoController {
 
     @GetMapping(path = "/square")
     @ResponseBody
-    public ArrayList<Geolocation> findInSquare(String authUser, Geolocation myGeolocation, @RequestParam(required = false, defaultValue = "1000") String size) {
+    public ArrayList<Geolocation> findInSquare(String authUser, Geolocation myGeolocation,
+                                               @RequestParam(required = false, defaultValue = "1000") String size) {
 
         int DISTANCE = Integer.parseInt(size); // Интересующее нас расстояние
 
@@ -114,10 +108,13 @@ public class GeoController {
         double aroundLng = DISTANCE / deltaLon; // Вычисляем диапазон координат по долготе
 
         //System.out.println(aroundLat + " " + aroundLng);
-        return (ArrayList<Geolocation>) geolocationRepository
-                .findInSquare(myLatitude,myLongitude, aroundLat, aroundLng, userService
-                        .loadUserByUsernameProxy(authUser)
-                        .getUsername());
+
+
+            return (ArrayList<Geolocation>) geolocationRepository
+                    .findInSquare(myLatitude, myLongitude, aroundLat, aroundLng, userService
+                            .loadUserByUsernameProxy(authUser)
+                            .getUsername());
+
         //return aroundLat + " " + aroundLon;
     }
 
@@ -144,6 +141,7 @@ public class GeoController {
         model.addAttribute("friendsName", friendsName);
 
         //ArrayList<Geolocation> peopleNearMe = findInSquare(SecurityContextHolder.getContext().getAuthentication(),"20");
+
 
         //System.out.println(users.get(0).getUsername());
         model.addAttribute("meetings", meetingRepository.getMyMeetingsToday(authUser.getUsername(),

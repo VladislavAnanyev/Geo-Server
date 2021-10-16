@@ -1,13 +1,13 @@
 <#include "security.ftl">
 <#import "../singin.ftl" as e>
 
-
+<main data-barba-namespace="navig">
 <nav class="navbar navbar-expand-lg navbar-light bg-light shadow p-3 mb-5 rounded">
 
 
 
 
-    <a class="navbar-brand" href="/">
+    <a data-barba-prevent class="navbar-brand" href="/">
         WebQuizzes</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -19,19 +19,19 @@
                 <a class="nav-link" href="/reg">Регистрация</a>
             </li>-->
             <li class="nav-item mt-1">
-                <a class="nav-link" href="/quizzes">Все викторины</a>
+                <a data-barba-prevent class="nav-link"  href="/quizzes">Все викторины</a>
             </li>
             <#--<li class="nav-item">
                 <a class="nav-link" href="">Завершённые</a>
             </li>-->
             <li class="nav-item mt-1">
-                <a class="nav-link" href="/add">Добавить викторину</a>
+                <a data-barba-prevent class="nav-link" href="/add">Добавить викторину</a>
             </li>
             <li class="nav-item mt-1">
-                <a class="nav-link" href="/myquiz">Мои викторины</a>
+                <a data-barba-prevent class="nav-link" href="/myquiz">Мои викторины</a>
             </li>
             <li class="nav-item mt-1">
-                <a class="nav-link" href="/chat">Сообщения</a>
+                <a data-barba-prevent class="nav-link" href="/chat">Сообщения</a>
             </li>
 
             <#--<#if isAdmin>
@@ -58,7 +58,7 @@
 
                 <script>
 
-                    let xhr = new XMLHttpRequest();
+                    xhr = new XMLHttpRequest();
 
                     xhr.open('GET', '/getbalance',true);
                     xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
@@ -92,7 +92,7 @@
             </a>
 
             <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                <a class="dropdown-item" href="/profile">Профиль</a>
+                <a data-barba-prevent class="dropdown-item" href="/profile">Профиль</a>
                <#-- <a class="dropdown-item" href="#">Another action</a>
                 <a class="dropdown-item" href="#">Something else here</a>-->
             </div>
@@ -106,3 +106,4 @@
 
 
 </nav>
+</main>

@@ -1,16 +1,15 @@
 package com.example.mywebquizengine.Model.Projection.Api;
 
-import com.example.mywebquizengine.Model.Projection.Api.DialogForApi;
 import com.example.mywebquizengine.Model.Projection.UserCommonView;
 
-import java.util.Calendar;
+import java.util.Date;
 
-public interface MessageForApiView {
+public interface MessageWithDialog {
     Integer getId();
     String getContent();
     UserCommonView getSender();
-    Calendar getTimestamp();
-    DialogForApi getDialog();
+    Date getTimestamp();
+    DialogWithoutMessages getDialog();
     //Long getDialogId();
 }
 

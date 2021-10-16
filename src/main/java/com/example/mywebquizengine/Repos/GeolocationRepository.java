@@ -1,6 +1,7 @@
 package com.example.mywebquizengine.Repos;
 
 import com.example.mywebquizengine.Model.Geo.Geolocation;
+import com.example.mywebquizengine.Model.Projection.GeolocationView;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -13,10 +14,13 @@ import java.util.Optional;
 public interface GeolocationRepository extends CrudRepository<Geolocation, String>, JpaRepository<Geolocation, String> {
 
     @Query(value = "SELECT * FROM GEOLOCATIONS WHERE USERNAME != :username", nativeQuery = true)
-    List<Geolocation> getAll(String username);
+    List<GeolocationView> getAll(String username);
 
     @Query(value = "select * from GEOLOCATIONS where LAT between :myLat - :aroundLat and :myLat + :aroundLat and LNG between :myLng - :aroundLng and :myLng + :aroundLng and TIME BETWEEN timestampadd(MINUTE, -1, now()) AND timestampadd(MINUTE, 1, now()) and USERNAME != :username", nativeQuery = true)
     List<Geolocation> findInSquare(Double myLat, Double myLng, Double aroundLat, Double aroundLng, String username);
+
+
+
 
     @Modifying
     @Transactional

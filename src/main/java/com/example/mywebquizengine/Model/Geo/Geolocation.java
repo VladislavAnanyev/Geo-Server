@@ -6,6 +6,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Calendar;
+import java.util.Date;
 
 @Entity(name = "GEOLOCATIONS")
 public class Geolocation {
@@ -19,17 +20,11 @@ public class Geolocation {
     @JoinColumn(name = "username")
     private User user;
 
-    @NotNull
-    @NotBlank
     private Double lat;
 
-    @NotNull
-    @NotBlank
     private Double lng;
 
-    @NotNull
-    @NotBlank
-    private Calendar time;
+    private Date time;
 
     public Geolocation() {}
 
@@ -65,11 +60,11 @@ public class Geolocation {
         this.id = id;
     }
 
-    public Calendar getTime() {
+    public Date getTime() {
         return time;
     }
 
-    public void setTime(Calendar calendar) {
+    public void setTime(Date calendar) {
         this.time = calendar;
     }
 

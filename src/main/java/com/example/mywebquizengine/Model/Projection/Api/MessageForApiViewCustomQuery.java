@@ -1,10 +1,9 @@
 package com.example.mywebquizengine.Model.Projection.Api;
 
-import com.example.mywebquizengine.Model.Projection.Api.DialogForApi;
 import com.example.mywebquizengine.Model.Projection.UserCommonView;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.sql.Timestamp;
+import java.util.Date;
 
 public interface MessageForApiViewCustomQuery {
 
@@ -15,10 +14,11 @@ public interface MessageForApiViewCustomQuery {
     @Value("#{new com.example.mywebquizengine.Model.User(target.username, target.firstName, target.lastName, target.avatar)}")
     UserCommonView getSender();
 
-    Timestamp getTimestamp();
+    //@Value("#{new java.util.Date(target.timestamp.getTime())}")
+    Date getTimestamp();
 
     @Value("#{new com.example.mywebquizengine.Model.Chat.Dialog(target.dialogId, target.name, target.image, @dialogRepository.findById(T(Long).parseLong(target.dialogId)).get().getUsers())}")
-    DialogForApi getDialog();
+    DialogWithoutMessages getDialog();
 
     /*@Value("#{new com.example.mywebquizengine.Model.Chat.Dialog(target.dialogId, target.name, target.image)}")
     DialogForApi getDialog();*/

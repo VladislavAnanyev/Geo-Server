@@ -9,8 +9,9 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Calendar;
+import java.util.Date;
 
-public interface MeetingForApiView {
+public interface MeetingForApiViewCustomQuery {
     Long getId();
 
     @Value("#{new com.example.mywebquizengine.Model.User(target.first_username, target.first_firstName, target.first_lastName, target.first_avatar)}")
@@ -22,5 +23,5 @@ public interface MeetingForApiView {
     Double getLng();
     Double getLat();
 
-    LocalDateTime getTime();
+    Date getTime();
 }

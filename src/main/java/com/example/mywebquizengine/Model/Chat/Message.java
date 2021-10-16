@@ -11,8 +11,13 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
+
 @Entity(name = "MESSAGES")
 public class Message {
 
@@ -26,7 +31,7 @@ public class Message {
     @Size(min = 1)
     private String content;
 
-    private Calendar timestamp;
+    private Date timestamp;
 
     private MessageStatus status;
 
@@ -51,10 +56,15 @@ public class Message {
         this.content = content;
     }
 
-    public Calendar getTimestamp() {
+    public Date getTimestamp() {
+/*        TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
+
+
+        timestamp.setTimeZone(timeZone);*/
+
         return timestamp;
     }
-    public void setTimestamp(Calendar timestamp) {
+    public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
     }
     public MessageStatus getStatus() {

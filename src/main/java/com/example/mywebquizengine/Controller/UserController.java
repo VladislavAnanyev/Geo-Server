@@ -39,11 +39,6 @@ import java.util.*;
 @Controller
 public class UserController {
 
-    @Autowired
-    private MessageService messageService;
-
-    @Autowired
-    private DialogRepository dialogRepository;
 
     @Autowired
     private UserService userService;
@@ -56,13 +51,6 @@ public class UserController {
 
     @Value("${hostname}")
     private String hostname;
-
-    @Autowired
-    private ChatController chatController;
-
-    @Autowired
-    private UserRepository userRepository;
-
 
     @Autowired
     private ActiveUserStore activeUserStore;

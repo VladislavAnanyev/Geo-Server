@@ -20,8 +20,28 @@
             <img class="rounded-circle" src="${meeting.secondUser.avatar}" alt="...">
             <div class="card-body">
                 <h5 class="card-title">${meeting.secondUser.firstName} ${meeting.secondUser.lastName}</h5>
-                <p class="card-text">${meeting.time?datetime?string["dd.MM.yyyy HH:mm:ss"]}</p>
+                <p id="${meeting.id?c}" class="card-text"></p>
 
+                <script>
+
+                    function setTime(time, id) {
+                        let userTime = new Date(time)
+                        document.getElementById(id).textContent = userTime.toLocaleDateString() + " " + userTime.toLocaleTimeString()
+                    }
+
+
+                    <#if meeting.time??>
+                    setTime(${meeting.time?long?c}, ${meeting.id?c})
+
+
+                    <#else >
+                    console.log("nulllllllllll")
+                    </#if>
+
+
+
+
+                </script>
 
 <#--                <div class="input-group mb-2">-->
 

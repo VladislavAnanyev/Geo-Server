@@ -1,3 +1,4 @@
+/*
 'use strict';
 
 var stompClient = null;
@@ -9,7 +10,7 @@ var colors2 = [
 ];
 
 function notificationConnect() {
-    meetingConnect()
+
         console.log("Go")
         var socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
@@ -18,9 +19,9 @@ function notificationConnect() {
 }
 
 function onConnectedNotif() {
+    meetingConnect()
 
 
-    //console.log('/topic/' + document.getElementById("dialogId").value);
 
     let xhr = new XMLHttpRequest();
     xhr.open('GET', '/authuser', false);
@@ -55,23 +56,25 @@ function onMessageReceivedNotif(payload) {
    // username = frame.headers['type'];
 
 
+    if (message.type === "MESSAGE" && !location.pathname.includes(message.dialog.dialogId)) {
 
 
-    if (username !== message.sender.username) {
+        if (username !== message.sender.username) {
 
-        var toastLiveExample = document.getElementById('liveToastMessage')
+            var toastLiveExample = document.getElementById('liveToastMessage')
 
-        let body = document.getElementById("toast-text-msg")
-        let head = document.getElementById("toast-head-msg")
+            let body = document.getElementById("toast-text-msg")
+            let head = document.getElementById("toast-head-msg")
 
-        body.textContent = message.content
-        head.textContent = message.sender.username
+            body.textContent = message.content
+            head.textContent = message.sender.username
 
-        var toast = new bootstrap.Toast(toastLiveExample, null)
+            var toast = new bootstrap.Toast(toastLiveExample, null)
 
-        toast.show()
+            toast.show()
 
 
+        }
     }
 
 
@@ -79,3 +82,4 @@ function onMessageReceivedNotif(payload) {
 
 
 
+*/
