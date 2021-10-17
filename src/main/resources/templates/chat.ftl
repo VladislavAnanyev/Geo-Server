@@ -25,10 +25,19 @@
 
     <script>
 
-        if (location.pathname.replace("/chat/", "") !== "/chat" &&
+
+
+        /*if (location.pathname.replace("/chat/", "") !== "/chat" &&
             location.pathname.replace("/chat/", "") !== "") {
             document.location.href = "/chat"
-        }
+        }*/
+
+
+
+        /*if (document.referrer.includes("about")) {
+            console.log("123")
+            barba.go("/chat")
+        }*/
 
     </script>
 
@@ -722,19 +731,140 @@
 
 
 
-
-
+<#--<script>
+    var div8 = $("#msg");
+    div8.scrollTop(div8.prop('scrollHeight'));
+</script>-->
 
 
     <script src="https://cdn.jsdelivr.net/npm/@barba/core"></script>
 <#--    <script src="https://unpkg.com/@barba/core"></script>-->
     <script src="https://unpkg.com/gsap@latest/dist/gsap.min.js"></script>
 
+
     <script>
 
+        function setOnScrollPagesLoad() {
+            let count2 = 0
+            let page2 = 0;
+            let prevPage = 0;
+            let messagesCount = 1
+            function populate() {
+
+
+                //console.log("Скр")
+                // нижняя граница документа
+                let windowRelativeBottom = document.getElementById("msg").offsetTop
+
+
+                let elem = document.getElementById("msg")
+                let scrollBottom = elem.scrollTop;
+                console.log(scrollBottom)
+                //console.log(pageYOffset)
+                // если пользователь прокрутил достаточно далеко (< 100px до конца)
+                console.log(messagesCount)
+                if (scrollBottom < 300 && count2===0 && messagesCount !== 0) {
+                    count2++
+                    page2++
+
+                    console.log("OK")
 
 
 
+                    dia = location.pathname.replace("/chat/", "")
+                    xhr = new XMLHttpRequest();
+                    xhr.open('GET', '/chat/nextPages?dialog_id=' + dia + '&page=' + page2);
+                    xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                            let json = JSON.parse(xhr.response)
+
+
+                            messagesCount = json.messages.length
+
+
+                            if (json.messages.length !== 0) {
+
+
+                                //console.log("123")
+
+
+                                for (let i = json.messages.length - 1; i !== 0; i--) {
+                                    //console.log(11)
+                                    //console.log(json.messages[i].sender.username)
+
+                                    if (json.messages[i].sender.username === '${name}') {
+
+                                        let divChat = document.createElement("div")
+                                        divChat.setAttribute('class', "outgoing_msg")
+                                        divChat.innerHTML =
+                                            "                        <div class=\"sent_msg\">\n" +
+                                            "                            <p>" + json.messages[i].content + "</p>\n" +
+                                            "                            <span id=" + json.messages[i].id + " class=\"time_date\">" + new Date(json.messages[i].timestamp).toLocaleDateString() + " " + new Date(json.messages[i].timestamp).toLocaleTimeString() + "</span> </div>\n"
+
+
+                                        let last = document.getElementById("msg");
+
+                                        last.prepend(divChat)
+                                    } else {
+                                        let divChat = document.createElement("div")
+                                        divChat.setAttribute('class', "incoming_msg")
+                                        divChat.innerHTML =
+                                            "<div class=\"incoming_msg_img\"> <img src=" + json.messages[i].sender.avatar + " alt=\"sunil\"> </div>" +
+                                            "                        <div class=\"received_msg\">\n" +
+                                            "                        <div class=\"received_withd_msg\">\n" +
+                                            "                            <p>" + json.messages[i].content + "</p>\n" +
+                                            "                            <span class=\"time_date\">" + new Date(json.messages[i].timestamp).toLocaleDateString() + " " + new Date(json.messages[i].timestamp).toLocaleTimeString() + "</span> </div> </div>\n"
+
+
+                                        let last = document.getElementById("msg");
+
+                                        last.prepend(divChat)
+                                    }
+                                }
+                            }
+
+
+                            count2--
+
+
+                        }
+                    };
+                    xhr.send();
+
+
+
+
+                }
+
+            }
+
+            document.getElementById("msg").addEventListener('scroll', populate);
+        }
+
+        function funonload() {
+
+            let dia = location.pathname.replace("/chat/", "")
+
+            if (location.href.includes('/chat/' + dia)) {
+                let id = document.getElementById(dia);
+                id.setAttribute('class', "chat_list active_chat")
+
+                let idHref= document.getElementById(dia + "href")
+                //console.log(idHref)
+                idHref.removeAttribute('href')
+            }
+        }
+
+        function setScroll() {
+            var div8 = $("#msg");
+            div8.scrollTop(div8.prop('scrollHeight'));
+        }
+
+        function setActiveChat() {
+
+            window.onload = funonload;
+        }
 
         /*barba.use(barbaPrefetch);*/
         barba.init({
@@ -751,7 +881,12 @@
                 //from: {namespace: ['home']},
                 //both: {namespace: ['home']},
                 //to: {namespace: ['msgs']},
-
+                once(){
+                    console.log("111111111111111111110")
+                    setScroll()
+                    setActiveChat()
+                    setOnScrollPagesLoad()
+                },
                 before(data) {
                     console.log(data)
 
@@ -898,8 +1033,10 @@
                         xhr.send();
                     }*/
 
-                                var div10 = $("#msg");
-                                div10.scrollTop(div10.prop('scrollHeight'));
+                    setScroll()
+
+                                /*var div10 = $("#msg");
+                                div10.scrollTop(div10.prop('scrollHeight'));*/
 
                             /*if (data.next.url.path.replace("/chat/", "") !== "" ||
                                 data.next.url.path.replace("/chat/", "") !== "/chat") {
@@ -981,7 +1118,8 @@
 
 
 
-                    let count2 = 0
+                    setOnScrollPagesLoad()
+                    /*let count2 = 0
                     let page2 = 0;
                     let prevPage = 0;
                     let messagesCount = 1
@@ -1028,7 +1166,7 @@
                                 for (let i = json.messages.length - 1; i !== 0; i--) {
                                     //console.log(11)
                                     //console.log(json.messages[i].sender.username)
-                                    //console.log('${name}')
+
                                     if (json.messages[i].sender.username === '${name}') {
 
                                         let divChat = document.createElement("div")
@@ -1075,7 +1213,7 @@
 
 }
 
-document.getElementById("msg").addEventListener('scroll', populate);
+document.getElementById("msg").addEventListener('scroll', populate);*/
 
 
 
