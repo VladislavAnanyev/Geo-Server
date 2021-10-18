@@ -201,7 +201,7 @@ function geo() {
                 xhrTest.setRequestHeader('Content-type','application/json; charset=utf-8');
                 xhrTest.onreadystatechange = function () {
                     if (xhrTest.readyState === XMLHttpRequest.DONE && xhrTest.status === 200) {
-                        console.log(xhr.responseText)
+                        console.log(xhrTest.responseText)
 
 
                     } else if (xhrTest.readyState === XMLHttpRequest.DONE && xhrTest.status === 400) {

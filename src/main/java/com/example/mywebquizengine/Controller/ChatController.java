@@ -177,10 +177,13 @@ public class ChatController {
 
                 model.addAttribute("dialog", dialog.getDialogId());
 
-                DialogWithUsersViewPaging dialogWithUsersViewPaging = dialogRepository.findAllDialogByDialogId(dialog.getDialogId());
+                //DialogWithUsersViewPaging dialogWithUsersViewPaging = dialogRepository
+                // .findAllDialogByDialogId(dialog.getDialogId());
 
-                JSONObject jsonObject = (JSONObject) JSONValue
-                        .parseWithException(objectMapper.writeValueAsString(dialogWithUsersViewPaging));
+
+
+                /*JSONObject jsonObject = (JSONObject) JSONValue
+                        .parseWithException(objectMapper.writeValueAsString(dialogWithUsersViewPaging));*/
 
                 model.addAttribute("messages", dialog.getMessages());
 
@@ -309,6 +312,7 @@ public class ChatController {
 
                 JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(messageDto));
                 jsonObject.put("type", "MESSAGE");
+                jsonObject.put("client", "WEB");
 
                 rabbitTemplate.convertAndSend(user.getUsername(),
                        jsonObject);
@@ -370,6 +374,7 @@ public class ChatController {
 
             JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(messageRepository.findMessageById(message.getId())));
             jsonObject.put("type", "MESSAGE");
+            jsonObject.put("client", "ANDROID");
 
             for (User user :dialog.getUsers()) {
 

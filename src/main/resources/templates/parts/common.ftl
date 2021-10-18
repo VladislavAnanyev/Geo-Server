@@ -13,6 +13,7 @@
 
     <!-- jsdelivr -->
 
+    <link rel="stylesheet" href="/static/style.css">
 
 
 
@@ -79,7 +80,6 @@
 </#if>
 
 <div class="container">
-    <link rel="stylesheet" href="/static/style.css">
 
 <#--    <div class="row">-->
 
