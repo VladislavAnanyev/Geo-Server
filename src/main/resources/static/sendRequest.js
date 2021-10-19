@@ -2,7 +2,6 @@ function sendRequest(to, id) {
     let xhr = new XMLHttpRequest();
     let json = {
         to: {username:to},
-        status: "PENDING",
         meeting: {id: id},
         message: {content: document.getElementById(to + "msg").value}
     }

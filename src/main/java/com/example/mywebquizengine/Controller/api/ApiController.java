@@ -441,7 +441,7 @@ public class ApiController {
     //@ResponseStatus(HttpStatus.OK)
     public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) {
         request.setSender(userService.loadUserByUsername(principal.getName()));
-
+        request.setStatus("PENDING");
         Long dialogId = chatController.checkDialog(request.getTo(), principal);
 
         Dialog dialog = new Dialog();
