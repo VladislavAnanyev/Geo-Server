@@ -137,8 +137,10 @@ function onMessageReceived(payload) {
     myModal.show()
     chartpie(result)
 
-    let clock = document.getElementById("clock")
-    clock.hidden = true
 
+    let clock = document.getElementById("clock")
+    if (clock !== null) {
+        clock.hidden = true
+    }
 
 }

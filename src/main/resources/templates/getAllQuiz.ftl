@@ -20,6 +20,7 @@
 
 
 
+    <div class="row">
     <#list test as testList>
 
         <#--<div class="card w-75">
@@ -38,6 +39,7 @@
                 <i>${testList.description}</i>
             </div>-->
 
+            <div class="col-sm-6">
             <div class="card mb-3 shadow p-3 mb-5 bg-white rounded">
                 <script src='/static/checkAnswerSession.js'></script>
 
@@ -105,6 +107,7 @@
 
 
             </div>
+            </div>
 
 <#--            <div class="card-footer text-muted">-->
 <#--                <#list quiz.options as options>-->
@@ -121,6 +124,7 @@
 
     </#list>
 
+    </div>
 
 
 

@@ -31,6 +31,7 @@ function onConnectedNotif() {
 
     stompClient.subscribe('/topic/' + username, onMessageReceived);
 
+
     geo()
 }
 

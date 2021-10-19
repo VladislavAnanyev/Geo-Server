@@ -18,11 +18,14 @@ public interface UserQuizAnswerRepository extends CrudRepository<UserQuizAnswer,
     Page<UserQuizAnswer> getCompleteAnswersForUser(String name, Pageable paging);*/
 
 
-    @Query(value = "SELECT QUIZ_ID,\n" +
-            "       ROUND(((SELECT cast(COUNT(1) as FLOAT)\n" +
-            "       FROM USER_QUIZ_ANSWERS AS B WHERE STATUS = TRUE\n" +
-            "                                     AND B.QUIZ_ID = C.QUIZ_ID)/COUNT(1)) * 100, 1)\n" +
-            "FROM USER_QUIZ_ANSWERS AS C WHERE QUIZ_ID IN (:quizzes)  GROUP BY QUIZ_ID", nativeQuery = true)
+    @Query(value = "SELECT QUIZ_ID ,\n" +
+            "   ROUND(((SELECT cast(COUNT(1) as FLOAT)\n" +
+            "   FROM USER_QUIZ_ANSWERS AS B  WHERE STATUS = TRUE\n" +
+            "   AND B.QUIZ_ID = C.QUIZ_ID )/(SELECT COUNT(1)\n" +
+            "                                FROM USER_QUIZ_ANSWERS AS B\n" +
+            "                                         join USER_TEST_ANSWERS UTA on UTA.USER_ANSWER_ID = B.USER_ANSWER_ID\n" +
+            "                                where B.QUIZ_ID = C.QUIZ_ID and UTA.COMPLETED_AT is not null)) * 100, 1)\n" +
+            "   FROM USER_QUIZ_ANSWERS AS C WHERE QUIZ_ID IN (:quizzes)  GROUP BY QUIZ_ID;", nativeQuery = true)
     List<Object[]> getAnswerStat(ArrayList<Integer> quizzes);
 
     @Query(value = "SELECT COUNT(*) FROM USER_QUIZ_ANSWERS Q LEFT OUTER JOIN USER_TEST_ANSWERS T ON Q.USER_ANSWER_ID = T.USER_ANSWER_ID WHERE STATUS = TRUE AND TEST_ID = :id AND T.USER_ANSWER_ID = :answer", nativeQuery = true)

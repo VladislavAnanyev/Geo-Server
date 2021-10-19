@@ -160,6 +160,12 @@ public class UserController {
         return "singin";
     }
 
+    @GetMapping(path = "/singin")
+    public String singin2() {
+
+        return "redirect:/profile";
+    }
+
 
     @Transactional
     @PutMapping(path = "/pass", consumes ={"application/json"})

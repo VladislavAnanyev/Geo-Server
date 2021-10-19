@@ -53,10 +53,39 @@ function createGroup() {
         xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
         xhr.onreadystatechange = function () {
             if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-                let existDialog = document.getElementById(xhr.responseText)
-                existDialog.remove()
-                dialog.prepend(existDialog)
-                //document.getElementById("lastMsg" + x).textContent = message.content
+
+
+
+
+
+                console.log(xhr.responseText)
+
+                if (document.getElementById(xhr.responseText) === null) {
+
+                    let newDialog = document.createElement("div")
+                    newDialog.setAttribute('class', "chat_list")
+                    newDialog.setAttribute('id', xhr.responseText)
+
+
+
+                    newDialog.innerHTML = "<a id=" + xhr.responseText + "href\" href=\"/chat/" + xhr.responseText + "\">" +
+                        "                                    <div class=\"chat_people\">\n" +
+                        "                                        <div class=\"chat_img\"> <img class='rounded-circle' src=" + location.origin + "/img/default.jpg" + " alt=\"sunil\"> </div>\n" +
+                        "                                        <div class=\"chat_ib\">\n" +
+                        "                                            <h5 class=\"dialogsuser\">" + users[0].username + "<span class=\"chat_date\"></span></h5>\n" +
+                        "                                            <p id=\"lastMsg" + xhr.responseText + "\">" + "" + "</p>\n" +
+                        "                                        </div>\n" +
+                        "                                    </div></a>"
+
+                    dialog.prepend(newDialog)
+                } else {
+                    let existDialog = document.getElementById(xhr.responseText)
+                    existDialog.remove()
+                    dialog.prepend(existDialog)
+                    //document.getElementById("lastMsg" + x).textContent = message.content
+                }
+
+
 
                 //location.href='../chat/' + xhr.responseText
             }

@@ -37,6 +37,9 @@ function f(id) {
     }
 
 
+    console.log(JSON.stringify(json))
+
+
 
     let xhr = new XMLHttpRequest();
 

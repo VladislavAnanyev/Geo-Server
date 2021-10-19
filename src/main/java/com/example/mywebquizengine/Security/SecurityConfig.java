@@ -172,7 +172,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         @Override
         public void configure(WebSecurity web) throws Exception {
-            web.debug(true).ignoring().antMatchers("/img/**", "/static/**");
+            web.debug(true).ignoring().antMatchers("/img/**", "/static/**", "/ws/**");
         }
 
 
@@ -180,7 +180,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         protected void configure(HttpSecurity http) throws Exception {
 
             http.csrf().disable();
-
 
 
             http
@@ -196,7 +195,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .and()
                     .formLogin()
                         .loginPage("/signin")
+
                         .successHandler(myAuthenticationSuccessHandler)
+
+
+                        //.successForwardUrl("/profile")
                         //.defaultSuccessUrl("/profile")
                         //.failureUrl("/signin?error")
 

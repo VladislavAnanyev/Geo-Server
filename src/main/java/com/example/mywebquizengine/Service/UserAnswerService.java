@@ -123,7 +123,7 @@ public class UserAnswerService  {
         //userTestAnswer.setUserAnswerId(lastUserAnswer.getUserAnswerId());
         //userTestAnswer.setCompletedAt(lastUserAnswer.getCompletedAt());
 
-        //userTestAnswerRepository.save(lastUserAnswer);
+        userTestAnswerRepository.save(lastUserAnswer);
 
     }
 

@@ -179,8 +179,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.4.0/sockjs.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <script src="/static/session.js"></script>
+        <#if test_id.duration??>
     <script src="/static/downtimer.js"></script>
-
+        </#if>
     <script>connect()</script>
 
 

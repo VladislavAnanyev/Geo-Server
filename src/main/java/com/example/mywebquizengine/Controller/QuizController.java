@@ -295,18 +295,21 @@ public class QuizController {
 
         UserTestAnswer lastUserTestAnswer = userAnswerService.checkLastComplete(userService.loadUserByUsernameProxy(principal.getName()), id);
 
-        if (Boolean.parseBoolean(restore) && lastUserTestAnswer != null && lastUserTestAnswer.getCompletedAt() == null) {
+        if (Boolean.parseBoolean(restore) && lastUserTestAnswer != null && lastUserTestAnswer.getCompletedAt() == null
+                ) {
 
             model.addAttribute("lastAnswer", lastUserTestAnswer);
 
-            Calendar calendar2 = lastUserTestAnswer.getStartAt();
-            Calendar calendar = new GregorianCalendar();
-            calendar.setTime(calendar2.getTime());
-            calendar.set(Calendar.SECOND, calendar.get(Calendar.SECOND) + test.getDuration().getSecond());
-            calendar.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE) + test.getDuration().getMinute());
-            calendar.set(Calendar.HOUR, calendar.get(Calendar.HOUR) + test.getDuration().getHour());
+            if (test.getDuration() != null) {
+                Calendar calendar2 = lastUserTestAnswer.getStartAt();
+                Calendar calendar = new GregorianCalendar();
+                calendar.setTime(calendar2.getTime());
+                calendar.set(Calendar.SECOND, calendar.get(Calendar.SECOND) + test.getDuration().getSecond());
+                calendar.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE) + test.getDuration().getMinute());
+                calendar.set(Calendar.HOUR, calendar.get(Calendar.HOUR) + test.getDuration().getHour());
 
-            model.addAttribute("timeout", calendar.getTime());
+                model.addAttribute("timeout", calendar.getTime());
+            }
 
         } else {
             userTestAnswer = new UserTestAnswer();

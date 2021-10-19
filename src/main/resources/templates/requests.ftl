@@ -14,6 +14,8 @@
 
 
     <div class="row">
+
+        <#if meetings??>
         <#list meetings as request>
             <div class="col-sm-6" id="${request.id?c}">
 
@@ -50,6 +52,7 @@
 
             </div>
         </#list>
+        </#if>
         </div>
 
         <script>
