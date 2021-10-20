@@ -1,4 +1,5 @@
 <#import "parts/common.ftl" as c>
+<#include "parts/security.ftl">
 <@c.page>
     <title>Добавить викторину</title>
     <script src="/static/addTest.js"></script>
@@ -139,7 +140,12 @@
 
 
         <#--    <form method="get" action="/" >-->
+        <#if nowUser??>
         <button onclick="addTest()" type="submit" class="btn btn-primary mb-2 mt-2">Создать викторину</button>
+            <#else >
+                <button onclick="location.href='/signin'" type="submit" class="btn btn-primary mb-2 mt-2">Создать викторину</button>
+
+        </#if>
         <#--    </form>-->
     </div>
 

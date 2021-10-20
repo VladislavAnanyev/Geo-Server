@@ -2,6 +2,8 @@ package com.example.mywebquizengine.Model;
 
 import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Test.Test;
+import com.example.mywebquizengine.MywebquizengineApplication;
+import com.example.mywebquizengine.Service.UserService;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -181,8 +183,9 @@ public class User implements UserDetails, OAuth2User  {
         return true;
     }
 
-    public boolean isAdmin() {
-        return roles.contains(Role.ROLE_ADMIN);
+    public boolean isAdmin(String name) {
+        return MywebquizengineApplication.ctx.getBean(UserService.class)
+                .loadUserByUsername(name).getRoles().contains(Role.ROLE_ADMIN);
     }
 
     public void grantAuthority(Role authority) {

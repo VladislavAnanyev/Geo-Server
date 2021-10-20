@@ -43,7 +43,9 @@
 
 
 
-
+<#--    <!-- Yandex.RTB &ndash;&gt;
+    <script>window.yaContextCb=window.yaContextCb||[]</script>
+    <script src="https://yandex.ru/ads/system/context.js" async></script>-->
 
 
     <noscript><div><img src="https://mc.yandex.ru/watch/79355362" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
@@ -88,6 +90,15 @@
 <#--            <div class="col-9">-->
 
 <#--<div class="container mt-5">-->
+
+    <!-- Yandex.RTB R-A-959375-1 -->
+    <#--<div id="yandex_rtb_R-A-959375-1"></div>
+    <script>window.yaContextCb.push(()=>{
+            Ya.Context.AdvManager.render({
+                renderTo: 'yandex_rtb_R-A-959375-1',
+                blockId: 'R-A-959375-1'
+            })
+        })</script>-->
 
         <#nested>
 

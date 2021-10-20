@@ -34,11 +34,11 @@
                 <a data-barba-prevent class="nav-link" href="/chat">Сообщения</a>
             </li>
 
-            <#--<#if isAdmin>
+            <#if isAdmin??>
                 <li class="nav-item mt-1">
                     <a class="nav-link" href="/h2-console">База данных</a>
                 </li>
-            </#if>-->
+            </#if>
         </ul>
 
 

@@ -446,13 +446,20 @@ public class ApiController {
 
         Dialog dialog = new Dialog();
         dialog.setDialogId(dialogId);
-        request.getMessage().setDialog(dialog);
-        request.getMessage().setSender(userService.loadUserByUsernameProxy(principal.getName()));
-        request.getMessage().setStatus(MessageStatus.DELIVERED);
-        request.getMessage().setTimestamp(new Date());
+
+        if (request.getMessage() != null) {
+
+            request.getMessage().setDialog(dialog);
+            request.getMessage().setSender(userService.loadUserByUsernameProxy(principal.getName()));
+            request.getMessage().setStatus(MessageStatus.DELIVERED);
+            request.getMessage().setTimestamp(new Date());
+
+        }
 
         requestRepository.save(request);
+
         throw new ResponseStatusException(HttpStatus.OK);
+
     }
 
     @PostMapping(path = "/api/rejectRequest")

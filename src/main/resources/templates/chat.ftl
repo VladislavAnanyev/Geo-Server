@@ -341,6 +341,60 @@
 </div>
 
 
+    <#if dialog?? >
+
+
+        <#if dialogObj.users?first.username = myUsername.username >
+            <#assign c = dialogObj.users?last>
+        <#else>
+            <#assign c = dialogObj.users?first>
+        </#if>
+
+        <script>
+            let dialog = document.getElementById("dialogs")
+            let div2 = document.createElement("div")
+            let dialogsName = document.getElementsByClassName("chat_list")
+            let dialogsNameArr = []
+            div2.setAttribute('id', "${dialog?c}")
+            div2.setAttribute('class', "chat_list")
+            //div2.setAttribute('onclick', "location.href='/chat/${dialog?c}'")
+            for (let i = 0; i < dialogsName.length; i++) {
+                dialogsNameArr.push(dialogsName[i].id)
+                //console.log(dialogsName[i].id)
+            }
+            <#if dialogObj.users?size = 2 <#--|| (dialogObj.users?size = 1 && !dialogObj.name??)-->>
+            //div2.setAttribute('class', "inbox_chat")
+            if (dialogsNameArr.indexOf("${dialog?c}") == -1) {
+                div2.innerHTML =
+                    "                                    <a id='${dialog?c}href' href='/chat/${dialog?c}'><div class=\"chat_people\">\n" +
+                    "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" width=\"43.26px\" height=\"43.26px\" src=\"${c.avatar}\" alt=\"sunil\"> </div>\n" +
+                    "                                        <div class=\"chat_ib\">\n" +
+                    "                                            <h5 class=\"dialogsuser\">${c.username}<span class=\"chat_date\"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>\n" +
+                    "                                            <p id=\"lastMsg${dialog?c}\"></p>\n" +
+                    "                                        </div>\n" +
+                    "                                    </div>\n" +
+                    "                                </div></a>"
+                console.log(dialogsNameArr.indexOf("${dialog?c}"))
+                dialog.prepend(div2)
+            }
+            <#else>
+            //div2.setAttribute('class', "inbox_chat")
+            if (dialogsNameArr.indexOf("${dialog?c}") == -1) {
+                div2.innerHTML =
+                    "                                    <a id='${dialog?c}href' href='/chat/${dialog?c}'><div class=\"chat_people\">\n" +
+                    "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" width=\"43.26px\" height=\"43.26px\" src=\"<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialogObj.image}.jpg\" alt=\"sunil\"> </div>\n" +
+                    "                                        <div class=\"chat_ib\">\n" +
+                    "                                            <h5 class=\"dialogsuser\">${dialogObj.name}<span class=\"chat_date\"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>\n" +
+                    "                                            <p id=\"lastMsg${dialog?c}\"></p>\n" +
+                    "                                        </div>\n" +
+                    "                                    </div>\n" +
+                    "                                </div></a>"
+                console.log(dialogsNameArr.indexOf("${dialog?c}"))
+                dialog.prepend(div2)
+            }
+            </#if>
+        </script>
+    </#if>
 
 
 <#--<script src="../static/notification.js"></script>-->
@@ -818,6 +872,9 @@ if (location.href.includes('/chat/' + dia)) {
 
 window.onload = funonload;
 </script>-->
+
+
+
 
 
 

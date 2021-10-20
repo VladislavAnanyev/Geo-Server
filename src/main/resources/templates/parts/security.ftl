@@ -17,8 +17,6 @@
 <#--        nowUser = Session.SPRING_SECURITY_CONTEXT.authentication.principal.attributes-->
 <#--        <#if nowUser??> -->
         nowUser = Session.SPRING_SECURITY_CONTEXT.authentication
-<#--        isAdmin = nowUser.principal.isAdmin()-->
-
 <#--        name = nowUser.email?replace("@gmail.com","")-->
 <#--    name = nowUser.toString()-->
 
@@ -29,8 +27,17 @@
 <#--    <#if nowUser.principal.username??>-->
         <#assign
         name = nowUser.name
-<#--        balance = nowUser.principal.getBalance()-->
+
+
+        <#--        balance = nowUser.principal.getBalance()-->
             >
+
+    <#if nowUser.authorities?seq_contains("ROLE_ADMIN")>
+        <#assign
+        isAdmin = true
+        >
+    </#if>
+
 
 <#--        <#else>-->
 <#--            <#assign name = nowUser.principal.name>-->

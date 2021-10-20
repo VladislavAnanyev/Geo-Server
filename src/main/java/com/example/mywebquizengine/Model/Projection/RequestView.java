@@ -6,9 +6,9 @@ public interface RequestView {
 
     Long getId();
 
-    UserView getSender();
+    UserCommonView getSender();
 
-    UserView getTo();
+    //UserView getTo();
 
     String getStatus();
 
