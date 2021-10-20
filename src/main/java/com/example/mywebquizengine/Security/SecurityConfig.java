@@ -172,7 +172,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         @Override
         public void configure(WebSecurity web) throws Exception {
-            web.debug(true).ignoring().antMatchers("/img/**", "/static/**", "/ws/**");
+            web.debug(true).ignoring().antMatchers("/img/**", "/static/**");
         }
 
 
@@ -186,7 +186,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                     .authorizeRequests()
                     .antMatchers("/googlee45a32e3d6f7edf4.html", "/register", "/activate/*",
-                            "/quizzes", "/reg",  "/androidSign",
+                            "/quizzes", "/reg",  "/androidSign", "/ws/**",
                             "/", "/signin", "/checkyandex", "/h2-console/**", "/.well-known/pki-validation/**",
                             /*"/static/forgotPassword.js", "/static/changePassword.js", */"/update/userinfo/pswrdwithoutauth",
                             "/updatepass/**", "/testm", "/pass/**", "/updatepassword/{activationCode}", "/yandex_135f209071de02b1.html").permitAll()
