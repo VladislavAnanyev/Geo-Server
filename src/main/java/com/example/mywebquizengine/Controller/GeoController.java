@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class GeoController {
@@ -120,37 +121,20 @@ public class GeoController {
 
 
     @GetMapping(path = "/meetings")
-    public String getMyMeetings(Model model, @AuthenticationPrincipal Principal principal) {
-
-        User authUser = userService.loadUserByUsername(principal.getName());
-
-        model.addAttribute("myUsername", authUser.getUsername());
-        Calendar calendar = new GregorianCalendar();
-        Timestamp date = Timestamp.from(calendar.toInstant());
-
-        List<UserCommonView> friends = userRepository.findUsersByFriendsUsernameContains(authUser.getUsername());
+    public String getMyMeetings(Model model, @AuthenticationPrincipal Principal principal,
+                                @RequestParam(required = false) String date) {
 
 
+        model.addAttribute("myUsername", principal.getName());
 
-        List<String> friendsName = new ArrayList<>();
+        List<UserCommonView> friends = userRepository.findUsersByFriendsUsernameContains(principal.getName());
 
-        for (int i = 0; i < friends.size(); i++) {
-            friendsName.add(friends.get(i).getUsername());
-        }
+        List<String> friendsName = friends.stream().map(UserCommonView::getUsername).collect(Collectors.toList());
 
         model.addAttribute("friendsName", friendsName);
 
-        //ArrayList<Geolocation> peopleNearMe = findInSquare(SecurityContextHolder.getContext().getAuthentication(),"20");
+        model.addAttribute("meetings", apiController.getMyMeetings(principal, date));
 
-
-        //System.out.println(users.get(0).getUsername());
-        model.addAttribute("meetings", meetingRepository.getMyMeetingsToday(authUser.getUsername(),
-                date.toString().substring(0,10) + " 00:00:00",
-                date.toString().substring(0,10) + " 23:59:59"));
-        /*return (ArrayList<Meeting>) meetingRepository.getMyMeetingsToday(userService.getAuthUserNoProxy
-                (SecurityContextHolder.getContext().getAuthentication()).getUsername(),
-                        date.toString().substring(0,10) + " 00:00:00",
-                date.toString().substring(0,10) + " 23:59:59");*/
         return "meetings";
     }
 

@@ -7,7 +7,7 @@ import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Chat.MessageStatus;
 import com.example.mywebquizengine.Model.Geo.Geolocation;
 import com.example.mywebquizengine.Model.Geo.Meeting;
-import com.example.mywebquizengine.Model.Projection.Api.MeetingForApiViewCustomQuery;
+
 import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewCustomQuery;
 import com.example.mywebquizengine.Model.Request;
 import com.example.mywebquizengine.Model.UserInfo.AuthRequest;
@@ -300,25 +300,29 @@ public class ApiController {
     }
 
     @GetMapping(path = "/api/meetings")
-    public ArrayList<MeetingForApiViewCustomQuery> getMyMeetings(@AuthenticationPrincipal Principal principal) {
+    public ArrayList<MeetingViewCustomQuery> getMyMeetings(@AuthenticationPrincipal Principal principal,
+                                                                @RequestParam(required = false) String date) {
 
-        User authUser = userService.loadUserByUsername(principal.getName());
+        //User authUser = userService.loadUserByUsername(principal.getName());
 
-        Calendar calendar = new GregorianCalendar();
-        Timestamp date = Timestamp.from(calendar.toInstant());
+        if (date == null) {
+            Calendar calendar = new GregorianCalendar();
+            Timestamp timestamp = Timestamp.from(calendar.toInstant());
+
+            date = timestamp.toString().substring(0,10);
+        }
 
         //ArrayList<Geolocation> peopleNearMe = findInSquare(SecurityContextHolder.getContext().getAuthentication(),"20");
 
 
-        return (ArrayList<MeetingForApiViewCustomQuery>) meetingRepository.getMyMeetingsTodayApi(authUser.getUsername(),
-                date.toString().substring(0,10) + " 00:00:00",
-                date.toString().substring(0,10) + " 23:59:59");
+        return (ArrayList<MeetingViewCustomQuery>) meetingRepository.getMyMeetings(principal.getName(), date);
         /*return (ArrayList<Meeting>) meetingRepository.getMyMeetingsToday(userService.getAuthUserNoProxy
                 (SecurityContextHolder.getContext().getAuthentication()).getUsername(),
                         date.toString().substring(0,10) + " 00:00:00",
                 date.toString().substring(0,10) + " 23:59:59");*/
         //return "meetings";
     }
+
 
     @PostMapping(path = "/api/sendGeolocation")
     public void sendGeolocation(@AuthenticationPrincipal Principal principal, @RequestBody Geolocation myGeolocation) throws JsonProcessingException, ParseException {
@@ -505,6 +509,8 @@ public class ApiController {
     public ArrayList<RequestView> getMyRequests(@AuthenticationPrincipal Principal principal) {
 
         //User authUser = userService.loadUserByUsername(principal.getName());
+
+
 
         return requestRepository.findAllByToUsernameAndStatus(principal.getName(), "PENDING");
     }
