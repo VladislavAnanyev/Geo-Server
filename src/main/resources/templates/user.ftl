@@ -40,6 +40,12 @@
         <input type="text" class="form-control" id="validationDefault05" disabled value="${user.online}" name="online" required>
     </div>
 
-    <button onclick="writeMsg('${user.username}')" id="confirm" type="submit" class="btn btn-primary ml-2 my-1">Написать сообщение</button>
+    <#if nowUser??>
+        <button onclick="writeMsg('${user.username}')" id="confirm" type="submit" class="btn btn-primary ml-2 my-1">Написать сообщение</button
+    <#else >
+        <button onclick="location.href='/signin'" type="submit" class="btn btn-primary mb-2 mt-2">Написать сообщение</button>
+
+    </#if>
+
 
 </@e.page>

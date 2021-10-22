@@ -27,12 +27,14 @@
             <li class="nav-item mt-1">
                 <a data-barba-prevent class="nav-link" href="/add">Добавить викторину</a>
             </li>
+            <#if nowUser??>
             <li class="nav-item mt-1">
                 <a data-barba-prevent class="nav-link" href="/myquiz">Мои викторины</a>
             </li>
             <li class="nav-item mt-1">
                 <a data-barba-prevent class="nav-link" href="/chat">Сообщения</a>
             </li>
+            </#if>
 
             <#if isAdmin??>
                 <li class="nav-item mt-1">

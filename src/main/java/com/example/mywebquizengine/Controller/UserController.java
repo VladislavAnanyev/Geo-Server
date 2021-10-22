@@ -209,7 +209,8 @@ public class UserController {
 
 
 
-        if (username.equals(userService.loadUserByUsername(principal.getName()).getUsername())) {
+
+        if (principal != null && username.equals(userService.loadUserByUsername(principal.getName()).getUsername())) {
             return "redirect:/profile";
         } else {
             User user = userService.loadUserByUsername(username);
