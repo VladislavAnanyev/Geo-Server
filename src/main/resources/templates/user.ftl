@@ -1,4 +1,5 @@
 <#import "parts/common.ftl" as e>
+<#include "parts/security.ftl">
 
 <@e.page>
 
