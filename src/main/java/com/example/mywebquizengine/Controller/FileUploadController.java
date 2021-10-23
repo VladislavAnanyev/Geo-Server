@@ -2,6 +2,7 @@ package com.example.mywebquizengine.Controller;
 
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Service.UserService;
+import io.micrometer.core.instrument.util.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -13,9 +14,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.*;
+import java.nio.charset.Charset;
 import java.security.Principal;
 import java.util.Random;
 import java.util.UUID;
@@ -69,5 +69,7 @@ public class FileUploadController {
             return "Вам не удалось загрузить " + name + " потому что файл пустой.";
         }
     }
+
+
 
 }

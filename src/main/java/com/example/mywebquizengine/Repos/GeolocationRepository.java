@@ -16,8 +16,11 @@ public interface GeolocationRepository extends CrudRepository<Geolocation, Strin
     @Query(value = "SELECT * FROM GEOLOCATIONS WHERE USERNAME != :username", nativeQuery = true)
     List<GeolocationView> getAll(String username);
 
-    @Query(value = "select * from GEOLOCATIONS where LAT between :myLat - :aroundLat and :myLat + :aroundLat and LNG between :myLng - :aroundLng and :myLng + :aroundLng and TIME BETWEEN timestampadd(MINUTE, -1, now()) AND timestampadd(MINUTE, 1, now()) and USERNAME != :username", nativeQuery = true)
-    List<Geolocation> findInSquare(Double myLat, Double myLng, Double aroundLat, Double aroundLng, String username);
+    @Query(value = "select * from (SELECT * FROM GEOLOCATIONS WHERE TIME IN (SELECT MAX(TIME)\n" +
+            "                                   FROM GEOLOCATIONS\n" +
+            "                                   WHERE TIME <= timestampadd(MINUTE, 1, :time)\n" +
+            "                                    GROUP BY USERNAME)) where LAT between :myLat - :aroundLat and :myLat + :aroundLat and LNG between :myLng - :aroundLng and :myLng + :aroundLng and TIME BETWEEN timestampadd(MINUTE, -1, :time) AND timestampadd(MINUTE, 1, :time) and USERNAME != :username", nativeQuery = true)
+    List<Geolocation> findInSquare(Double myLat, Double myLng, Double aroundLat, Double aroundLng, String username, String time);
 
 
 

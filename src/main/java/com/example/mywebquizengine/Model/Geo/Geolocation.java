@@ -1,6 +1,9 @@
 package com.example.mywebquizengine.Model.Geo;
 
 import com.example.mywebquizengine.Model.User;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -12,11 +15,11 @@ import java.util.Date;
 public class Geolocation {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private Long id;
 
     //@JsonIgnore
     @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @MapsId
     @JoinColumn(name = "username")
     private User user;
 
@@ -24,6 +27,12 @@ public class Geolocation {
 
     private Double lng;
 
+
+    //@ColumnDefault(value = "CURRENT_TIMESTAMP()")
+    /*@Column(
+            columnDefinition = "DATETIME(6) DEFAULT CURRENT_TIMESTAMP"
+    )
+    @Generated(GenerationTime.INSERT)*/
     private Date time;
 
     public Geolocation() {}
@@ -52,11 +61,11 @@ public class Geolocation {
         this.user = user;
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

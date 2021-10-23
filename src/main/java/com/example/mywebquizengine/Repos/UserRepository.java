@@ -73,4 +73,6 @@ public interface UserRepository extends CrudRepository<User, String>, JpaReposit
     @Query(value = "select ONLINE from USERS WHERE USERNAME = :username", nativeQuery = true)
     String getOnline(String username);
 
+    //@Query(value = "SELECT * FROM ", nativeQuery = true)
+    List<UserCommonView> findUsersByFriendsUsername(String username);
 }

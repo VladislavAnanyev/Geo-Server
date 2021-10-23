@@ -15,8 +15,8 @@ public interface MeetingRepository extends CrudRepository<Meeting, Long> {
             "FROM MEETINGS\n" +
             "WHERE (FIRST_USER_USERNAME = :firstUsername \n" +
             "  AND SECOND_USER_USERNAME = :secondUsername or FIRST_USER_USERNAME = :secondUsername \n" +
-            "    AND SECOND_USER_USERNAME = :firstUsername) and TIME BETWEEN timestampadd(DAY, 0,CURDATE()) AND timestampadd(DAY, 1,CURDATE())", nativeQuery = true)
-    List<Meeting> getMeetings(String firstUsername, String secondUsername);
+            "    AND SECOND_USER_USERNAME = :firstUsername) and TIME BETWEEN timestampadd(DAY, 0,:date) AND timestampadd(DAY, 1,:date)", nativeQuery = true)
+    List<Meeting> getMeetings(String firstUsername, String secondUsername, String date);
 
 
 

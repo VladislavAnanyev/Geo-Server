@@ -103,13 +103,19 @@ public class UserService implements UserDetailsService {
     public void saveGeo(Geolocation geolocation) {
 
 
-            if (geolocationRepository.existsById(geolocation.getUser().getUsername())) {
+            /*if (geolocationRepository.existsById(geolocation.getUser().getUsername())) {
 
                 geolocationRepository.updateGeo(geolocation.getLat(), geolocation.getLng(), geolocation.getUser().getUsername());
             } else {
 
                 geolocationRepository.save(geolocation);
-            }
+            }*/
+
+
+            geolocationRepository.save(geolocation);
+
+
+        //geolocationRepository.insertGeo(geolocation.getLat(), geolocation.getLng(), geolocation.getUser().getUsername());
     }
 
 

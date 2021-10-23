@@ -91,7 +91,8 @@ public class GeoController {
     @GetMapping(path = "/square")
     @ResponseBody
     public ArrayList<Geolocation> findInSquare(String authUser, Geolocation myGeolocation,
-                                               @RequestParam(required = false, defaultValue = "1000") String size) {
+                                               @RequestParam(required = false, defaultValue = "1000") String size,
+                                               String time) {
 
         int DISTANCE = Integer.parseInt(size); // Интересующее нас расстояние
 
@@ -111,10 +112,12 @@ public class GeoController {
         //System.out.println(aroundLat + " " + aroundLng);
 
 
+
+
             return (ArrayList<Geolocation>) geolocationRepository
                     .findInSquare(myLatitude, myLongitude, aroundLat, aroundLng, userService
                             .loadUserByUsernameProxy(authUser)
-                            .getUsername());
+                            .getUsername(), time);
 
         //return aroundLat + " " + aroundLon;
     }

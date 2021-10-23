@@ -27,12 +27,16 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson.JacksonFactory;
+import io.micrometer.core.instrument.util.IOUtils;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -47,6 +51,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -60,6 +65,7 @@ import javax.transaction.Transactional;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.sql.Timestamp;
@@ -124,6 +130,9 @@ public class ApiController {
 
     @Autowired
     private ChatController chatController;
+
+    @Autowired
+    private GeolocationRepository geolocationRepository;
 
     @Transactional
     @GetMapping(path = "/api/messages")
@@ -333,16 +342,32 @@ public class ApiController {
 
         myGeolocation.setUser(userService.loadUserByUsernameProxy(principal.getName()));
 
+        String time = "";
+        Timestamp timestamp;
+        if (myGeolocation.getTime() == null) {
+            timestamp = Timestamp.from(new GregorianCalendar().toInstant());
+            myGeolocation.setTime(timestamp);
+            time = timestamp.toString();
+            System.out.println(time);
+        } else {
+            timestamp = Timestamp.from(myGeolocation.getTime().toInstant());
+
+            time = timestamp.toString();
+            System.out.println(time);
+            //time = myGeolocation.getTime()
+        }
+
 
         //geolocation.setId(geolocation.getUser().getUsername());
         userService.saveGeo(myGeolocation);
 
 
 
+
         //System.out.println(date.toString().substring(0,10));
 
         ArrayList<Geolocation> peopleNearMe = geoController
-                .findInSquare(principal.getName(),myGeolocation, "20");
+                .findInSquare(principal.getName(),myGeolocation, "20", time);
 
         if (peopleNearMe.size() > 0) {
 
@@ -350,7 +375,7 @@ public class ApiController {
 
                 if (meetingRepository.
                         getMeetings(myGeolocation.getUser().getUsername(),
-                                peopleNearMe.get(i).getUser().getUsername())
+                                peopleNearMe.get(i).getUser().getUsername(), time.substring(0,10))
                         .size() == 0 ) {
 
 
@@ -361,7 +386,7 @@ public class ApiController {
                         meeting.setSecondUser(peopleNearMe.get(i).getUser());
                         meeting.setLat(myGeolocation.getLat());
                         meeting.setLng(myGeolocation.getLng());
-                        meeting.setTime(new Date());
+                        meeting.setTime(timestamp);
 
                         meetingRepository.save(meeting);
 
@@ -389,7 +414,7 @@ public class ApiController {
 
             }
 
-            /*userController.testConnection(principal);*/
+            //userController.testConnection(principal);
 
 
         }
@@ -506,7 +531,7 @@ public class ApiController {
     }
 
     @GetMapping(path = "/api/requests")
-    public ArrayList<RequestView> getMyRequests(@AuthenticationPrincipal Principal principal) {
+    public ArrayList<ReceivedRequestView> getMyRequests(@AuthenticationPrincipal Principal principal) {
 
         //User authUser = userService.loadUserByUsername(principal.getName());
 
@@ -519,6 +544,78 @@ public class ApiController {
     public String test() {
         //throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         return "OK";
+    }
+
+
+
+    @PostMapping(path = "/api/loadGoogleHistory")
+    @ResponseBody
+    public String handleGoogleHistoryUpload(Model model, @RequestParam("file") MultipartFile file,
+                                            @AuthenticationPrincipal Principal principal) {
+        String name = file.getOriginalFilename();
+
+        //if (!file.isEmpty()) {
+        try {
+
+            ByteArrayInputStream stream = new ByteArrayInputStream(file.getBytes());
+            String myString = IOUtils.toString(stream, Charset.defaultCharset());
+
+            Object obj = new JSONParser().parse(myString); // Object obj = new JSONParser().parse(new FileReader("JSONExample.json"));
+// Кастим obj в JSONObject
+            JSONObject jo = (JSONObject) obj;
+
+
+
+// Достаем массив номеров
+            JSONArray phoneNumbersArr = (JSONArray) jo.get("locations");
+            Iterator phonesItr = phoneNumbersArr.iterator();
+            //System.out.println("phoneNumbers:");
+
+
+
+            while (phonesItr.hasNext()) {
+                Date date = new Date();
+
+                JSONObject test = (JSONObject) phonesItr.next();
+
+                Long time = Long.parseLong((String) test.get("timestampMs"));
+
+                date.setTime(time);
+                /*System.out.println("- lat: " + (Long)test.get("latitudeE7")/1e7 + ", lng: " + (Long)test.get("longitudeE7")/1e7
+                + ", time: " + date.toString());*/
+
+                Geolocation geolocation = new Geolocation();
+                geolocation.setLat((Long)test.get("latitudeE7")/1e7);
+                geolocation.setLng((Long)test.get("longitudeE7")/1e7);
+                geolocation.setTime(date);
+
+                Example<Geolocation> example = Example.of(geolocation);
+
+                if (!geolocationRepository.exists(example)) {
+                    sendGeolocation(principal, geolocation);
+                }
+
+
+
+            }
+            //System.out.println(myString);
+
+            return "OK";
+            //throw new ResponseStatusException(HttpStatus.OK);
+        } catch (Exception e) {
+            return "Вам не удалось загрузить " + " => " + e.getMessage();
+        }
+
+    }
+
+    @GetMapping(path = "/api/friends")
+    public List<UserCommonView> getFriends(@AuthenticationPrincipal Principal principal) {
+        return userRepository.findUsersByFriendsUsername(principal.getName());
+    }
+
+    @GetMapping(path = "/api/sentRequests")
+    public List<SentRequestView> getSentRequests(@AuthenticationPrincipal Principal principal) {
+        return requestRepository.findAllBySenderUsernameAndStatus(principal.getName(), "PENDING");
     }
 
 }
