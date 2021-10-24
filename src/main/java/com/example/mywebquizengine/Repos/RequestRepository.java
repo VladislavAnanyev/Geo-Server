@@ -11,6 +11,7 @@ import java.util.List;
 
 public interface RequestRepository extends CrudRepository<Request, Long> {
 
+    ReceivedRequestView findRequestById(Long id);
 
     ArrayList<ReceivedRequestView> findAllByToUsernameAndStatus(String username, String status);
 

@@ -10,7 +10,9 @@ import com.example.mywebquizengine.Security.ActiveUserStore;
 import com.example.mywebquizengine.Service.MessageService;
 import com.example.mywebquizengine.Service.PaymentServices;
 import com.example.mywebquizengine.Service.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import freemarker.template.TemplateModelException;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -247,7 +249,7 @@ public class UserController {
 
     @PostMapping(path = "/sendRequest")
     @ResponseBody
-    public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) {
+    public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
         apiController.sendRequest(request, principal);
     }
 

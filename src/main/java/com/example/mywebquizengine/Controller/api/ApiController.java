@@ -468,10 +468,11 @@ public class ApiController {
     @PostMapping(path = "/api/sendRequest")
     @ResponseBody
     //@ResponseStatus(HttpStatus.OK)
-    public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) {
+    public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
         request.setSender(userService.loadUserByUsername(principal.getName()));
         request.setStatus("PENDING");
         Long dialogId = chatController.checkDialog(request.getTo(), principal);
+
 
         Dialog dialog = new Dialog();
         dialog.setDialogId(dialogId);
@@ -486,6 +487,18 @@ public class ApiController {
         }
 
         requestRepository.save(request);
+
+        ReceivedRequestView requestView = requestRepository.findRequestById(request.getId());
+
+        JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper
+                .writeValueAsString(requestView));
+        jsonObject.put("type", "REQUEST");
+
+        rabbitTemplate.convertAndSend(request.getTo().getUsername(),
+                jsonObject);
+
+        simpMessagingTemplate.convertAndSend("/topic/" + request.getTo().getUsername(),
+                jsonObject);
 
         throw new ResponseStatusException(HttpStatus.OK);
 

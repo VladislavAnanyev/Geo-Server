@@ -92,7 +92,7 @@
 <#--<div class="container mt-5">-->
 
     <!-- Yandex.RTB R-A-959375-1 -->
-    <div id="yandex_rtb_R-A-959375-1"></div>
+    <div class="mb-3" id="yandex_rtb_R-A-959375-1"></div>
     <script>window.yaContextCb.push(()=>{
             Ya.Context.AdvManager.render({
                 renderTo: 'yandex_rtb_R-A-959375-1',
