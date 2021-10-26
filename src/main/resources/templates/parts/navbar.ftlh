@@ -1,5 +1,5 @@
-<#include "security.ftl">
-<#import "../singin.ftl" as e>
+<#include "security.ftlh">
+<#import "../singin.ftlh" as e>
 
 <main data-barba-namespace="navig">
 <nav class="navbar navbar-expand-lg navbar-light bg-light shadow p-3 mb-5 rounded">

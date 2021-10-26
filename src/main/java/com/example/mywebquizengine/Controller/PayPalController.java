@@ -66,7 +66,7 @@ public class PayPalController {
             //request.setAttribute("errorMessage", ex.getMessage());
             ex.printStackTrace();
             return "error";
-            //request.getRequestDispatcher("error.ftl").forward(request, response);
+            //request.getRequestDispatcher("error.ftlh").forward(request, response);
         }
     }*/
 
@@ -110,7 +110,7 @@ public class PayPalController {
             //request.setAttribute("errorMessage", ex.getMessage());
             ex.printStackTrace();
             return "error";
-            //request.getRequestDispatcher("error.ftl").forward(request, response);
+            //request.getRequestDispatcher("error.ftlh").forward(request, response);
         }
     }*/
 
@@ -140,7 +140,7 @@ public class PayPalController {
         } catch (PayPalRESTException ex) {
             //request.setAttribute("errorMessage", ex.getMessage());
             ex.printStackTrace();
-            //request.getRequestDispatcher("error.ftl").forward(request, response);
+            //request.getRequestDispatcher("error.ftlh").forward(request, response);
             return "error";
         }
     }*/

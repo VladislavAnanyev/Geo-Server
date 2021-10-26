@@ -42,6 +42,8 @@ import org.springframework.security.web.authentication.logout.LogoutSuccessHandl
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.session.SessionInformationExpiredStrategy;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 
 import javax.servlet.ServletContextListener;
@@ -53,7 +55,7 @@ import java.util.*;
 @Configuration
 @EnableWebSecurity(debug=true)
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+public class SecurityConfig extends WebSecurityConfigurerAdapter  {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -65,6 +67,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 
 
+    /*@Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/ws/**").allowedMethods("*").allowedOriginPatterns("https://localhost/ws/**");
+            }
+        };
+    }*/
 
 
     @Bean

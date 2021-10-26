@@ -100,6 +100,13 @@ public class ChatController {
     @GetMapping(path = "/chat")
     public String chat(Model model, @AuthenticationPrincipal Principal principal) {
 
+        /*String query = """
+               SELECT "EMP_ID", "LAST_NAME" FROM "EMPLOYEE_TB"
+               WHERE "CITY" = 'INDIANAPOLIS'
+               ORDER BY "EMP_ID", "LAST_NAME";
+               """;*/
+
+
         User user = userService.loadUserByUsernameProxy(principal.getName());
         model.addAttribute("myUsername", user);
         model.addAttribute("lastDialogs", messageService.getDialogs(user.getUsername()));

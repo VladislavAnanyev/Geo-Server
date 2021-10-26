@@ -88,7 +88,7 @@ public class MywebquizengineApplication {
         //cfg.setSharedVariable("balance", "Hellow World!");
         //Create first Data Model
 
-        /*Template template = cfg.getTemplate("parts/navbar.ftl");
+        /*Template template = cfg.getTemplate("parts/navbar.ftlh");
 
         Map<String, Object> templateData = new HashMap<>();
         templateData.put("msg", "Today is a beautiful day");

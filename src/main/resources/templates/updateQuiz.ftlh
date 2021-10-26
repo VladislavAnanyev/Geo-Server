@@ -1,4 +1,4 @@
-<#import "parts/common.ftl" as c>
+<#import "parts/common.ftlh" as c>
 <@c.page>
     <title>Изменить викторину</title>
     <script src="/static/putreq.js"></script>

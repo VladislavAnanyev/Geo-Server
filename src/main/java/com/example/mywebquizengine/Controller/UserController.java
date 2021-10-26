@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
-import javax.validation.Valid;
+/*import javax.validation.Valid;*/
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -95,7 +95,7 @@ public class UserController {
     }
 
     @PostMapping(path = "/register")
-    public String checkIn(@Valid User user) {
+    public String checkIn(/*@Valid */User user) {
         try {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             user.setEnabled(false);

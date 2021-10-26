@@ -1,6 +1,6 @@
 
-<#import "parts/common.ftl" as e>
-<#include "parts/security.ftl">
+<#import "parts/common.ftlh" as e>
+<#include "parts/security.ftlh">
 
 <@e.page>
 

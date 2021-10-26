@@ -3,6 +3,7 @@ package com.example.mywebquizengine.Security;
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.unit.DataSize;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -32,8 +33,8 @@ public class MvcConfig implements WebMvcConfigurer {
     @Bean
     MultipartConfigElement multipartConfigElement() {
         MultipartConfigFactory factory = new MultipartConfigFactory();
-        factory.setMaxFileSize("502400KB");
-        factory.setMaxRequestSize("502400KB");
+        factory.setMaxFileSize(DataSize.ofKilobytes(502400));
+        factory.setMaxRequestSize(DataSize.ofKilobytes(502400));
         return factory.createMultipartConfig();
     }
 
