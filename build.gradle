@@ -132,6 +132,9 @@ dependencies {
 // https://mvnrepository.com/artifact/javax.validation/validation-api
     implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
 
+    // https://mvnrepository.com/artifact/io.springfox/springfox-boot-starter
+    implementation group: 'io.springfox', name: 'springfox-boot-starter', version: '3.0.0'
+
 
     // https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api
 /*    compileOnly group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1'
@@ -141,6 +144,13 @@ dependencies {
 // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-reactor-netty
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-reactor-netty'
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
+
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-parent', version: '2.5.6', ext: 'pom'
+
+    // https://mvnrepository.com/artifact/io.springfox/springfox-swagger-ui
+    implementation 'io.springfox:springfox-swagger-ui:3.0.0'
+
     //implementation group: 'org.springframework.amqp', name: 'spring-rabbit', version: '2.3.10'
 
     implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'

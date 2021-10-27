@@ -1,4 +1,5 @@
 package com.example.mywebquizengine.Security;
+import com.example.mywebquizengine.Model.Role;
 import com.example.mywebquizengine.Service.JWTFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -19,6 +20,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
@@ -115,6 +117,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter  {
                     .authorizeRequests()
                     .antMatchers("/api/register", "/api/jwt", "/img/**",
                             "/api/quizzes", "/api/signin", "/api/googleauth", "/api/signup").permitAll()
+
+
                     .anyRequest().authenticated()
 
                     .and()
@@ -201,6 +205,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter  {
                             "/", "/signin", "/checkyandex", "/h2-console/**", "/.well-known/pki-validation/**",
                             /*"/static/forgotPassword.js", "/static/changePassword.js", */"/update/userinfo/pswrdwithoutauth",
                             "/updatepass/**", "/testm", "/pass/**", "/updatepassword/{activationCode}", "/yandex_135f209071de02b1.html").permitAll()
+                    .antMatchers("/swagger-ui/**").hasRole("ADMIN")
                     .anyRequest().authenticated()
 
                     .and()
