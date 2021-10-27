@@ -63,7 +63,7 @@
 
 
 
-<#include "navbar.ftl">
+<#include "navbar.ftlh">
 
 <#if nowUser??>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.4.0/sockjs.js"></script>

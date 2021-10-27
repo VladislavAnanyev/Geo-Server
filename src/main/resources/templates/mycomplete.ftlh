@@ -1,5 +1,5 @@
 
-<#import "parts/common.ftl" as e>
+<#import "parts/common.ftlh" as e>
 
 <@e.page>
     <div>

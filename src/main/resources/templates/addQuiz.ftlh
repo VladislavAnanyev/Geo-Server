@@ -1,5 +1,5 @@
-<#import "parts/common.ftl" as c>
-<#include "parts/security.ftl">
+<#import "parts/common.ftlh" as c>
+<#include "parts/security.ftlh">
 <@c.page>
     <title>Добавить викторину</title>
     <script src="/static/addTest.js"></script>

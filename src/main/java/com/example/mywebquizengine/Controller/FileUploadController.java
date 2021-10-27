@@ -45,6 +45,7 @@ public class FileUploadController {
                 String uuid = UUID.randomUUID().toString();
                 uuid = uuid.substring(0,8);
                 byte[] bytes = file.getBytes();
+                //fdfdf
 
                 BufferedOutputStream stream =
                         new BufferedOutputStream(new FileOutputStream(new File("img/" +

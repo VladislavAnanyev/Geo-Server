@@ -176,7 +176,7 @@ public class UserService implements UserDetailsService {
 
     public void tryToSaveUser(User user) {
 
-        if (!userRepository.findById(user.getUsername()).isPresent()) {
+        if (userRepository.findById(user.getUsername()).isEmpty()) {
             doInitialize(user);
             userRepository.save(user);
         }

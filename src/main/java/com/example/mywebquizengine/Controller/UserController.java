@@ -17,19 +17,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.web.DefaultRedirectStrategy;
+import org.springframework.security.web.RedirectStrategy;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
-import javax.validation.Valid;
+/*import javax.validation.Valid;*/
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -95,7 +100,7 @@ public class UserController {
     }
 
     @PostMapping(path = "/register")
-    public String checkIn(@Valid User user) {
+    public String checkIn(/*@Valid */User user) {
         try {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             user.setEnabled(false);
@@ -297,6 +302,19 @@ public class UserController {
 
         return "OK";
     }
+
+    /*private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
+
+    @GetMapping(path = "/swagger-ui")
+    public void getSwagger(@AuthenticationPrincipal Principal principal, HttpServletRequest httpServletRequest,
+                           HttpServletResponse httpServletResponse) throws IOException {
+
+        User user = userService.loadUserByUsername(principal.getName());
+
+        if (user.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            redirectStrategy.sendRedirect(httpServletRequest, httpServletResponse, httpServletRequest.getRequestURI());
+        }
+    }*/
 
 
 

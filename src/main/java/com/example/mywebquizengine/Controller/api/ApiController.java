@@ -138,8 +138,8 @@ public class ApiController {
     @GetMapping(path = "/api/messages")
     //@PreAuthorize(value = "@dialogRepository.findDialogByDialogId(#dialogId).users/*проверить содержание тут надо*/.contains(principal.name)")
     public DialogWithUsersViewPaging getMessages(@RequestParam Long dialogId,
-                                                 @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
-                                                 @RequestParam(required = false,defaultValue = "50") @Min(1) @Max(100) Integer pageSize,
+                                                 @RequestParam(required = false,defaultValue = "0") Integer page,
+                                                 @RequestParam(required = false,defaultValue = "50") Integer pageSize,
                                                  @RequestParam(defaultValue = "timestamp") String sortBy,
                                                  @AuthenticationPrincipal Principal principal) {
 

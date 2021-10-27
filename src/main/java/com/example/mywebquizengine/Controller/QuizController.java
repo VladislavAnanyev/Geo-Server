@@ -79,7 +79,8 @@ public class QuizController {
     }
 
     @GetMapping(path = "/myquiz")
-    public String getMyQuizzes(@AuthenticationPrincipal Principal principal, Model model, @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
+    public String getMyQuizzes(@AuthenticationPrincipal Principal principal, Model model,
+                               @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
                                @RequestParam(required = false,defaultValue = "10") @Min(1) @Max(10) Integer pageSize,
                                @RequestParam(defaultValue = "id") String sortBy) {
 
@@ -125,7 +126,7 @@ public class QuizController {
 
 
     @PostMapping(path = "/quizzes", consumes={"application/json"})
-    public String addQuiz(Model model, @RequestBody @Valid Test test, @AuthenticationPrincipal Principal principal) throws ResponseStatusException {
+    public String addQuiz(Model model, @RequestBody /*@Valid*/ Test test, @AuthenticationPrincipal Principal principal) throws ResponseStatusException {
         try {
 
             //User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -386,7 +387,7 @@ public class QuizController {
     @PutMapping(path = "/update/{id}", consumes={"application/json"})
     @ResponseBody
     @PreAuthorize(value = "@testService.findTest(#id).user.username.equals(#principal.name)")
-    public void changeTest(@PathVariable Integer id, @Valid @RequestBody Test test,
+    public void changeTest(@PathVariable Integer id, /*@Valid*/ @RequestBody Test test,
                            @AuthenticationPrincipal Principal principal) throws ResponseStatusException {
 
         /*for (int i = 0; i < test.getQuizzes().size(); i++) {
