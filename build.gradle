@@ -7,7 +7,6 @@ buildscript {
 }
 
 
-
 plugins {
 
     id 'org.springframework.boot' version '2.3.12.RELEASE'
@@ -23,10 +22,7 @@ plugins {
 
 sourceCompatibility='15'
 
-
-
 apply plugin: 'io.spring.dependency-management'
-
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
@@ -44,12 +40,8 @@ repositories {
 
 dependencyManagement {
     imports {
-        //mavenBom 'org.springframework.session:spring-session-bom:2020.0.3'
-    }
 
-    /*imports {
-        mavenBom "com.vaadin:vaadin-bom:${vaadinVersion}"
-    }*/
+    }
 
 }
 
@@ -57,43 +49,14 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter'
-    //implementation 'org.springframework.boot:spring-boot-starter-freemarker'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
-    //implementation 'org.springframework.session:spring-session-jdbc'
-    //implementation 'org.springframework.session:spring-session-core'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '2.5.0'
-// https://mvnrepository.com/artifact/commons-codec/commons-codec
     implementation group: 'commons-codec', name: 'commons-codec', version: '1.7'
-    // https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt
     implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
-
-
-    // https://mvnrepository.com/artifact/javax.inject/javax.inject
     implementation group: 'javax.inject', name: 'javax.inject', version: '1'
-
-    //implementation 'com.vaadin:vaadin-spring-boot-starter'
-    // https://mvnrepository.com/artifact/com.paypal.sdk/rest-api-sdk
-    //implementation group: 'com.paypal.sdk', name: 'rest-api-sdk', version: '1.14.0'
-    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-oauth2-client
-
-    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-oauth2-client
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-client', version: '2.5.4'
-
-
-// https://mvnrepository.com/artifact/org.quartz-scheduler/quartz
-    //implementation group: 'org.quartz-scheduler', name: 'quartz', version: '2.3.2'
-
-// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-quartz
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-quartz', version: '2.5.2'
-
-
-
-
-    // https://mvnrepository.com/artifact/org.springframework.security.oauth/spring-security-oauth2
-    //implementation group: 'org.springframework.security.oauth', name: 'spring-security-oauth2', version: '2.5.1.RELEASE'
-
-// https://mvnrepository.com/artifact/org.freemarker/freemarker
     implementation group: 'org.freemarker', name: 'freemarker', version: '2.3.31'
     implementation 'com.h2database:h2'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -103,56 +66,18 @@ dependencies {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
     compile("org.springframework.boot:spring-boot-starter-web")
-    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-security
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.5.4'
-
     compile("org.springframework.boot:spring-boot-starter-mail")
-    //compile 'com.paypal.sdk:rest-api-sdk:+'
-    //compile('org.springframework.security.oauth:spring-security-oauth2')
-// https://mvnrepository.com/artifact/com.maxmind.geoip2/geoip2
-    //implementation group: 'com.maxmind.geoip2', name: 'geoip2', version: '2.15.0'
-
-
-    //compile('redis.clients:jedis:2.9.0')
-    //compile('org.springframework.session:spring-session-data-redis')
-    //compile 'io.lettuce:lettuce-core:5.0.5.RELEASE'
-    //compile 'redis.clients:jedis'
-    //compile 'org.apache.commons:commons-pool2'
-    //compile 'org.springframework.session:spring-session-core:2.0.0.RELEASE'
-    //compile 'org.springframework.session:spring-session-jdbc:2.0.0.RELEASE'
     compile 'com.google.api-client:google-api-client:1.31.5'
-
-    // https://mvnrepository.com/artifact/com.google.api-client/google-api-client-jackson2
     implementation group: 'com.google.api-client', name: 'google-api-client-jackson2', version: '1.32.1'
     compile 'com.google.http-client:google-http-client-jackson:1.15.0-rc'
-
-    // https://mvnrepository.com/artifact/org.springframework.security.oauth.boot/spring-security-oauth2-autoconfigure
     implementation group: 'org.springframework.security.oauth.boot', name: 'spring-security-oauth2-autoconfigure', version: '2.5.2'
-
-// https://mvnrepository.com/artifact/javax.validation/validation-api
     implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
-
-    // https://mvnrepository.com/artifact/io.springfox/springfox-boot-starter
     implementation group: 'io.springfox', name: 'springfox-boot-starter', version: '3.0.0'
-
-
-    // https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api
-/*    compileOnly group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1'
-    compileOnly group: 'javax.servlet', name: 'servlet-api', version: '3.0-alpha-1'
-    compileOnly group: 'javax.servlet', name: 'servlet-api', version: '2.5'*/
-
-// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-reactor-netty
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-reactor-netty'
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
-
-    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-parent', version: '2.5.6', ext: 'pom'
-
-    // https://mvnrepository.com/artifact/io.springfox/springfox-swagger-ui
     implementation 'io.springfox:springfox-swagger-ui:3.0.0'
-
-    //implementation group: 'org.springframework.amqp', name: 'spring-rabbit', version: '2.3.10'
-
     implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
 
 }

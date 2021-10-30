@@ -5,25 +5,32 @@ import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Chat.Message;
 
 //import com.example.mywebquizengine.Model.Projection.MessageForStompView;
+import com.example.mywebquizengine.Model.Chat.MessageStatus;
 import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewCustomQuery;
+import com.example.mywebquizengine.Model.Projection.DialogWithUsersViewPaging;
 import com.example.mywebquizengine.Model.User;
 
 import com.example.mywebquizengine.Repos.DialogRepository;
 import com.example.mywebquizengine.Repos.MessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.transaction.Transactional;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MessageService {
 
     @Autowired
     MessageRepository messageRepository;
-
 
     @Autowired
     private DialogRepository dialogRepository;
@@ -50,22 +57,20 @@ public class MessageService {
 
     }
 
-    public Long checkDialog(User user, String authUsername) {
+    public Long checkDialog(String username, String authUsername) {
 
-        User authUser = userService.loadUserByUsername(authUsername);
+        //User authUser = userService.loadUserByUsername(authUsername);
 
-        if (!authUser.getUsername().equals(user.getUsername())) {
-            Long dialog_id = dialogRepository.findDialogByName(user.getUsername(),
-                    authUser.getUsername());
+        if (!authUsername.equals(username)) {
+            Long dialog_id = dialogRepository.findDialogByName(username,
+                    authUsername);
 
             if (dialog_id == null) {
                 Dialog dialog = new Dialog();
-                //  Set<User> users = new HashSet<>();
-                dialog.addUser(userService.loadUserByUsername(user.getUsername()));
-                dialog.addUser(userService.loadUserByUsername(authUser.getUsername()));
-//            users.add(userService.loadUserByUsername(user.getUsername()));
-//            users.add(userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()));
-                //dialog.setUsers(users);
+
+                dialog.addUser(userService.loadUserByUsername(username));
+                dialog.addUser(userService.loadUserByUsername(authUsername));
+
                 dialogRepository.save(dialog);
                 return dialog.getDialogId();
             } else {
@@ -103,6 +108,32 @@ public class MessageService {
         //return messageRepository.findAllById((ArrayList<Integer>) messageViews);
         //return messageForStompViews;
         return (ArrayList<MessageForApiViewCustomQuery>) messageViews;
+    }
+
+    public void deleteMessage(Long id) {
+        Optional<Message> optionalMessage = messageRepository.findById(id);
+        if (optionalMessage.isPresent()) {
+            Message message = optionalMessage.get();
+            message.setStatus(MessageStatus.DELETED);
+            messageRepository.save(message);
+        }
+    }
+
+    @Transactional
+    public DialogWithUsersViewPaging getMessages(Long dialogId, Integer page, Integer pageSize, String sortBy, Principal principal) {
+        Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
+        dialogRepository.findById(dialogId).get().setPaging(paging);
+        DialogWithUsersViewPaging dialog = dialogRepository.findAllDialogByDialogId(dialogId);
+
+        // If user contains in dialog
+        if (dialog.getUsers().stream().anyMatch(o -> o.getUsername()
+                .equals(principal.getName()))) {
+
+            dialogRepository.findById(dialogId).get().setPaging(paging);
+
+            return dialogRepository.findAllDialogByDialogId(dialogId);
+        } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+
     }
 
     /*public List<Message> getDialogs(String username) {

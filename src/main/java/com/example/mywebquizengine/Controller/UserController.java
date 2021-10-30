@@ -1,14 +1,10 @@
 package com.example.mywebquizengine.Controller;
 
-import com.example.mywebquizengine.Controller.api.ApiController;
+import com.example.mywebquizengine.Controller.api.ApiGeoController;
+import com.example.mywebquizengine.Controller.api.ApiRequestController;
 import com.example.mywebquizengine.Model.*;
-import com.example.mywebquizengine.Model.Chat.Dialog;
-import com.example.mywebquizengine.Model.Chat.MessageStatus;
-import com.example.mywebquizengine.MywebquizengineApplication;
 import com.example.mywebquizengine.Repos.*;
 import com.example.mywebquizengine.Security.ActiveUserStore;
-import com.example.mywebquizengine.Service.MessageService;
-import com.example.mywebquizengine.Service.PaymentServices;
 import com.example.mywebquizengine.Service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import freemarker.template.TemplateModelException;
@@ -17,29 +13,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.web.DefaultRedirectStrategy;
-import org.springframework.security.web.RedirectStrategy;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 /*import javax.validation.Valid;*/
 import java.io.IOException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
-import java.sql.Timestamp;
 import java.util.*;
 
 
@@ -63,7 +47,10 @@ public class UserController {
     private ActiveUserStore activeUserStore;
 
     @Autowired
-    private ApiController apiController;
+    private ApiGeoController apiGeoController;
+
+    @Autowired
+    private ApiRequestController apiRequestController;
 
 
     @GetMapping(path = "/profile")
@@ -142,9 +129,7 @@ public class UserController {
     //@After("signin()")
     public String getLoginInfo(Authentication authentication, Model model) throws TemplateModelException, IOException {
 
-        User user = userService.castToUser((OAuth2AuthenticationToken) authentication);
 
-        userService.tryToSaveUser(user); // save if not exist (registration)
 
         return "home";
     }
@@ -255,7 +240,7 @@ public class UserController {
     @PostMapping(path = "/sendRequest")
     @ResponseBody
     public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
-        apiController.sendRequest(request, principal);
+        apiRequestController.sendRequest(request, principal);
     }
 
     @GetMapping(path = "/requests")
@@ -276,14 +261,14 @@ public class UserController {
     @ResponseBody
     //@PreAuthorize(value = "!#principal.name.equals(#user.username)")
     public Long acceptRequest(@RequestBody Request requestId, @AuthenticationPrincipal Principal principal) {
-        return apiController.acceptRequest(requestId, principal);
+        return apiRequestController.acceptRequest(requestId, principal);
     }
 
     @PostMapping(path = "/rejectRequest")
     @ResponseBody
     //@PreAuthorize(value = "!#principal.name.equals(#user.username)")
     public void rejectRequest(@RequestBody Request requestId, @AuthenticationPrincipal Principal principal) {
-        apiController.rejectRequest(requestId, principal);
+        apiRequestController.rejectRequest(requestId, principal);
     }
 
 

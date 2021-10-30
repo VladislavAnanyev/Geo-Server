@@ -2,8 +2,10 @@ package com.example.mywebquizengine.Security;
 
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.UserRepository;
+import com.example.mywebquizengine.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -46,6 +48,9 @@ public class MyAuthenticationSuccessHandler implements AuthenticationSuccessHand
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UserService userService;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
@@ -77,6 +82,13 @@ public class MyAuthenticationSuccessHandler implements AuthenticationSuccessHand
 
 
 
+        if (authentication instanceof OAuth2AuthenticationToken) {
+            User toUser = userService.castToUser((OAuth2AuthenticationToken) authentication);
+
+            userService.tryToSaveUser(toUser); // save if not exist (registration)
+        }
+
+
 
         System.out.println("Саксес хендлер");
         HttpSession session = request.getSession(false);
@@ -101,6 +113,8 @@ public class MyAuthenticationSuccessHandler implements AuthenticationSuccessHand
         //setUseReferer(true);
         //setDefaultTargetUrl("/profile");
         //super.onAuthenticationSuccess(request, response, authentication);
+
+
 
 
         redirectStrategy.sendRedirect(request, response, "/profile");
