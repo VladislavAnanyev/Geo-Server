@@ -26,7 +26,7 @@ public class ApiChatController {
     }
 
     @PutMapping(path = "/message/{id}")
-    public void editMessage(@PathVariable Long id, Message message, @AuthenticationPrincipal Principal principal) {
+    public void editMessage(@PathVariable Long id, @RequestBody Message message, @AuthenticationPrincipal Principal principal) {
         messageService.editMessage(id, message, principal);
     }
 
