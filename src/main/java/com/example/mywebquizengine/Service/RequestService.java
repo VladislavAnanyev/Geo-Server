@@ -133,4 +133,8 @@ public class RequestService {
             return dialog_id;
         }
     }
+
+    public ArrayList<ReceivedRequestView> findAllMyRequestsViaStatus(String name, String status) {
+        return requestRepository.findAllByToUsernameAndStatus(name, status);
+    }
 }

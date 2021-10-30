@@ -214,6 +214,7 @@ function onMessageReceived(payload) {
         console.log("Успех")
         console.log(message)
 
+        if (!username === message.sender.username) {
         let dialog = document.getElementById("dialogs")
 
         //console.log(freme.headers['type'])
@@ -291,11 +292,13 @@ function onMessageReceived(payload) {
 
         let last = document.getElementById("msg");
 
-        last.append(div)
+
+            last.append(div)
+
 
         var div3 = $("#msg");
         div3.scrollTop(div3.prop('scrollHeight'));
-
+        }
     }
 }
 

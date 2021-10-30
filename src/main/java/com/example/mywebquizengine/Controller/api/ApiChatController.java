@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.Controller.api;
 
+import com.example.mywebquizengine.Model.Chat.Message;
 import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewCustomQuery;
 import com.example.mywebquizengine.Model.Projection.DialogWithUsersViewPaging;
 import com.example.mywebquizengine.Service.MessageService;
@@ -20,8 +21,13 @@ public class ApiChatController {
 
 
     @DeleteMapping(path = "/message/{id}")
-    public void deleteMessage(@PathVariable Long id) {
-        messageService.deleteMessage(id);
+    public void deleteMessage(@PathVariable Long id, @AuthenticationPrincipal Principal principal) {
+        messageService.deleteMessage(id, principal);
+    }
+
+    @PutMapping(path = "/message/{id}")
+    public void editMessage(@PathVariable Long id, Message message, @AuthenticationPrincipal Principal principal) {
+        messageService.editMessage(id, message, principal);
     }
 
 

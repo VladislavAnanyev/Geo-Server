@@ -1,11 +1,9 @@
 package com.example.mywebquizengine.Controller;
 
 
-import com.example.mywebquizengine.Controller.api.ApiChatController;
 import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Chat.Message;
 import com.example.mywebquizengine.Model.Chat.MessageStatus;
-import com.example.mywebquizengine.Model.Projection.Api.MessageWithDialog;
 import com.example.mywebquizengine.Model.Projection.DialogWithUsersViewPaging;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.DialogRepository;
@@ -23,11 +21,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -47,8 +41,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.security.Principal;
-import java.util.*;
-
+import java.util.Date;
 
 
 @Controller
@@ -57,26 +50,28 @@ import java.util.*;
 @Validated
 public class ChatController {
 
-    @Value("${hostname}")
-    private String hostname;
-
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
-
     @Autowired
     private UserService userService;
 
     @Autowired
     private MessageService messageService;
 
+
+
     @Autowired
-    private SimpMessagingTemplate simpMessagingTemplate;
+    MessageRepository messageRepository;
 
     @Autowired
     private DialogRepository dialogRepository;
 
+
+
     @Autowired
-    private MessageRepository messageRepository;
+    private RabbitTemplate rabbitTemplate;
+
+
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
 
     @Autowired
     SessionRegistry sessionRegistry;
@@ -84,9 +79,8 @@ public class ChatController {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private ApiChatController apiChatController;
-
+    @Value("${hostname}")
+    private String hostname;
 
 
     @GetMapping(path = "/chat")
@@ -104,34 +98,20 @@ public class ChatController {
     @PreAuthorize(value = "!#principal.name.equals(#user.username)")
     public Long checkDialog(@RequestBody User user, @AuthenticationPrincipal Principal principal) {
 
-        String s = principal.getName();
-        Long dialog_id = messageService.checkDialog(user.getUsername(), principal.getName());
+        return messageService.checkDialog(user.getUsername(), principal.getName());
 
-        if (dialog_id == null) {
-            Dialog dialog = new Dialog();
-            dialog.addUser(userService.loadUserByUsername(user.getUsername()));
-            dialog.addUser(userService.loadUserByUsername(principal.getName()));
-            dialogRepository.save(dialog);
-            return dialog.getDialogId();
-        } else {
-            return dialog_id;
-        }
     }
 
     @GetMapping(path = "/chat/{dialog_id}")
     @Transactional
-    public String chatWithUser(@RequestHeader HttpHeaders httpHeaders, Model model, @PathVariable String dialog_id,
+    public String chatWithUser(Model model, @PathVariable String dialog_id,
                                @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
                                @RequestParam(required = false,defaultValue = "50") @Min(1) @Max(100) Integer pageSize,
                                @RequestParam(defaultValue = "timestamp") String sortBy,
-                               @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
+                               @AuthenticationPrincipal Principal principal) {
 
 
-            Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
-
-            dialogRepository.findById(Long.valueOf(dialog_id)).get().setPaging(paging);
-            DialogWithUsersViewPaging dialog = dialogRepository.findAllDialogByDialogId(Long.valueOf(dialog_id));
-
+            DialogWithUsersViewPaging dialog = messageService.getDialogWithPaging(dialog_id, page, pageSize, sortBy);
 
             if (dialog.getUsers().stream().anyMatch(o -> o.getUsername()
                     .equals(principal.getName()))) {
@@ -161,65 +141,14 @@ public class ChatController {
                                @RequestParam(required = false,defaultValue = "50") @Min(1) @Max(100) Integer pageSize,
                                @RequestParam(defaultValue = "timestamp") String sortBy,
                                @AuthenticationPrincipal Principal principal) {
-        return apiChatController.getMessages(Long.valueOf(dialog_id), page, pageSize, sortBy, principal);
+        return messageService.getMessages(Long.valueOf(dialog_id), page, pageSize, sortBy, principal);
     }
 
     @PostMapping(path = "/createGroup")
     @ResponseBody
     public Long createGroup(@Valid @RequestBody Dialog newDialog, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
 
-
-
-        User authUser = new User();
-
-        authUser.setUsername(principal.getName());
-
-        newDialog.addUser(authUser);
-
-        if (newDialog.getUsers().stream().anyMatch(o -> o.getUsername()
-                .equals(principal.getName()))) {
-
-            Dialog dialog = new Dialog();
-
-            newDialog.getUsers().forEach(user -> dialog.addUser(userService.loadUserByUsername(user.getUsername())));
-
-            Message message = new Message();
-            message.setContent("Группа создана");
-            message.setSender(userService.loadUserByUsername(principal.getName()));
-            message.setStatus(MessageStatus.DELIVERED);
-            message.setTimestamp(new Date());
-            message.setDialog(dialog);
-
-            dialog.setMessages(new ArrayList<>());
-            dialog.getMessages().add(message);
-
-
-
-            if (newDialog.getName() == null || newDialog.getName().equals("")) {
-                dialog.setName("Конференция");
-            } else {
-                dialog.setName(newDialog.getName());
-            }
-
-            //group.setCreator(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()));
-            dialog.setImage("https://" + hostname + "/img/default.jpg");
-            dialogRepository.save(dialog);
-
-            MessageWithDialog messageDto = messageRepository.findMessageById(message.getId());
-            JSONObject jsonObject = (JSONObject) JSONValue
-                    .parseWithException(objectMapper.writeValueAsString(messageDto));
-            jsonObject.put("type", "MESSAGE");
-            for (User user : dialog.getUsers()) {
-                simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
-                        jsonObject);
-            }
-
-
-
-
-            return dialog.getDialogId();
-
-        } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        return messageService.createGroup(newDialog, principal);
 
 
     }
@@ -229,59 +158,14 @@ public class ChatController {
     @Modifying
     @Transactional
     @MessageMapping("/user/{dialogId}")
-    //@SendTo("/topic/{dialogId}")
-    //@PreAuthorize(value = "@message.sender.username.equals(@userService.getAuthUser(authentication).username)")
+    //@PreAuthorize(value = "@message.sender.username.equals(#principal.name)")
     public void sendMessage(@Valid @Payload Message message, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
-
-        String s = principal.getName();
-
-        User authUser = userService.loadUserByUsernameProxy(s);
-
-        if (message.getSender().getUsername().equals(authUser.getUsername())) {
-
-
-            message.setSender(authUser);
-
-            message.setDialog(dialogRepository.findById(message.getDialog().getDialogId()).get());
-
-            // Устанавливается часовой пояс для хранения времени в БД постоянно по Москве
-            // В БД будет сохраняться Московское время независимо от местоположения сервера/пользователя
-            /*TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
-            Calendar nowDate = new GregorianCalendar();
-            nowDate.setTimeZone(timeZone);*/
-            message.setTimestamp(new Date());
-
-            message.setStatus(MessageStatus.DELIVERED);
-            messageService.saveMessage(message);
-
-            Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
-            MessageWithDialog messageDto = messageRepository.findMessageById(message.getId());
-
-            for (User user :dialog.getUsers()) {
-
-                rabbitTemplate.setExchange("message-exchange");
-
-
-                JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(messageDto));
-                jsonObject.put("type", "MESSAGE");
-                jsonObject.put("client", "WEB");
-                if (message.getUniqueCode() != null) {
-                    jsonObject.put("uniqueCode", message.getUniqueCode());
-                }
-
-
-                rabbitTemplate.convertAndSend(user.getUsername(),
-                       jsonObject);
-
-                if (!user.getUsername().equals(authUser.getUsername())) {
-
-                    simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
-                            jsonObject);
-
-                }
-            }
-
+        if (message.getSender().getUsername().equals(principal.getName())) {
+            messageService.sendMessage(message, principal);
         } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+
+
+
 
     }
 
@@ -292,75 +176,8 @@ public class ChatController {
     @Transactional
     @RabbitListener(queues = "incoming-messages")
     public void getMessageFromAndroid(@Valid Message message) throws JsonProcessingException, ParseException {
-
-        try {
-            System.out.println("Сообщение получено из андройда");
-
-
-            User sender = userService.loadUserByUsername(message.getSender().getUsername());
-
-            // Persistence Bag. Используется костыль
-            // для корректного отображения (тесты не инициализируются автоматически)
-            //.setTests(new ArrayList<>());
-
-            message.setSender(sender);
-
-
-
-            message.setDialog(dialogRepository.findById(message.getDialog().getDialogId()).get());
-
-
-            // Устанавливается часовой пояс для хранения времени в БД постоянно по Москве
-            // В БД будет сохраняться Московское время независимо от местоположения сервера/пользователя
-            /*TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
-            Calendar nowDate = new GregorianCalendar();*/
-            //nowDate.setTimeZone(timeZone);
-            message.setTimestamp(new Date());
-
-
-            message.setStatus(MessageStatus.DELIVERED);
-            messageService.saveMessage(message);
-
-            Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
-
-
-            Hibernate.initialize(dialog.getUsers());
-            //User authUser = userService.getAuthUserNoProxy(authentication);
-
-            JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(messageRepository.findMessageById(message.getId())));
-            jsonObject.put("type", "MESSAGE");
-            jsonObject.put("client", "ANDROID");
-            if (message.getUniqueCode() != null) {
-                jsonObject.put("uniqueCode", message.getUniqueCode());
-            }
-
-            for (User user :dialog.getUsers()) {
-
-                //if (!user.getUsername().equals(authUser.getUsername())) {
-
-                simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
-                        jsonObject);
-
-                rabbitTemplate.convertAndSend(user.getUsername(),
-                        jsonObject);
-
-                //}
-            }
-        } catch (Exception e) {
-            System.out.println("BAD MESSAGE");
-        }
-
-
-        //}
+        messageService.sendMessage(message, null);
     }
-
-    /*@RabbitListener(queues = "AndroidMessageQueue")
-    public void getAndroidMessageFromRabbitMq(Message message) {
-        logger.info("123");
-        System.out.println("Сообщение получено на андройд, " + message.toString());
-        //sendMessage(message, SecurityContextHolder.getContext().getAuthentication());
-    }*/
-
 
 
     @GetMapping(path = "/error")
@@ -368,11 +185,6 @@ public class ChatController {
         return "error";
     }
 
-
-    /*@GetMapping(path = "/chat/**")
-    public String redirect() {
-        return "forward:/profile";
-    }*/
 
 
 

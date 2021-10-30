@@ -173,7 +173,6 @@ public class UserService implements UserDetailsService {
 
         if (mes == null) {
             mes = UUID.randomUUID().toString();
-            //user.setChangePasswordCode(mes);
             userRepository.setChangePasswordCode(user.getUsername(), mes);
 
         }
@@ -190,6 +189,8 @@ public class UserService implements UserDetailsService {
     }
 
     public void updatePassword(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setChangePasswordCode(UUID.randomUUID().toString());
         userRepository.changePassword(user.getPassword(), user.getUsername(), user.getChangePasswordCode());
     }
 
@@ -514,5 +515,13 @@ public class UserService implements UserDetailsService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
             }
         }
+    }
+
+    public void processCheckIn(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setEnabled(false);
+        user.setAvatar("https://" + hostname + "/img/default.jpg");
+        user.grantAuthority(Role.ROLE_USER);
+        userService.saveUser(user);
     }
 }
