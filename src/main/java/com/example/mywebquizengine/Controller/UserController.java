@@ -1,16 +1,13 @@
 package com.example.mywebquizengine.Controller;
 
-import com.example.mywebquizengine.Controller.api.ApiGeoController;
-import com.example.mywebquizengine.Controller.api.ApiRequestController;
 import com.example.mywebquizengine.Model.*;
-import com.example.mywebquizengine.Repos.*;
 import com.example.mywebquizengine.Security.ActiveUserStore;
+import com.example.mywebquizengine.Service.RequestService;
 import com.example.mywebquizengine.Service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import freemarker.template.TemplateModelException;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -38,19 +35,10 @@ public class UserController {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private RequestRepository requestRepository;
-
-    @Value("${hostname}")
-    private String hostname;
+    private RequestService requestService;
 
     @Autowired
     private ActiveUserStore activeUserStore;
-
-    @Autowired
-    private ApiGeoController apiGeoController;
-
-    @Autowired
-    private ApiRequestController apiRequestController;
 
 
     @GetMapping(path = "/profile")
@@ -66,9 +54,8 @@ public class UserController {
 
     @GetMapping(path = "/authuser")
     @ResponseBody
-    public String getAuthUser(@AuthenticationPrincipal Principal principal) {
-       // Authentication authentication2 = SecurityContextHolder.getContext().getAuthentication();
-        return userService.loadUserByUsernameProxy(principal.getName()).getUsername();
+    public String getAuthUsername(@AuthenticationPrincipal Principal principal) {
+        return principal.getName();
     }
 
 
@@ -87,17 +74,11 @@ public class UserController {
     }
 
     @PostMapping(path = "/register")
-    public String checkIn(/*@Valid */User user) {
-        try {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            user.setEnabled(false);
-            user.setAvatar("https://" + hostname + "/img/default.jpg");
-            user.grantAuthority(Role.ROLE_USER);
-            userService.saveUser(user);
-            return "reg";
-        } catch (Exception e){
-            return "error";
-        }
+    public String checkIn(User user) {
+
+        userService.processCheckIn(user);
+        return "reg";
+
     }
 
     @PostMapping(path = "/update/userinfo/password", consumes ={"application/json"} )
@@ -126,11 +107,7 @@ public class UserController {
     }
 
     @GetMapping("/loginSuccess")
-    //@After("signin()")
     public String getLoginInfo(Authentication authentication, Model model) throws TemplateModelException, IOException {
-
-
-
         return "home";
     }
 
@@ -141,33 +118,19 @@ public class UserController {
         return "changePassword";
     }
 
-    @RequestMapping(value = "/userss")
-    public Principal user(Principal principal) {
-        return principal;
-    }
 
     @GetMapping(path = "/signin")
     public String singin() {
-
         return "singin";
     }
 
-    @GetMapping(path = "/singin")
-    public String singin2() {
-
-        return "redirect:/profile";
-    }
 
 
     @Transactional
     @PutMapping(path = "/pass", consumes ={"application/json"})
+    @PreAuthorize(value = "#principal.name.equals(#user.username)")
     public String changePassword(@RequestBody User user, @AuthenticationPrincipal Principal principal) {
 
-        User userLogin = userService.loadUserByUsername(principal.getName());
-
-        user.setUsername(userLogin.getUsername());
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setChangePasswordCode(UUID.randomUUID().toString());
         userService.updatePassword(user);
 
         return "changePassword";
@@ -180,8 +143,6 @@ public class UserController {
 
         User user = userService.getUserViaChangePasswordCode(changePasswordCode);
 
-        user.setPassword(passwordEncoder.encode(in.getPassword()));
-        user.setChangePasswordCode(UUID.randomUUID().toString());
         userService.updatePassword(user);
 
         return "changePassword";
@@ -199,9 +160,6 @@ public class UserController {
     @GetMapping(path = "/about/{username}")
     public String getInfoAboutUser(Model model, @PathVariable String username, @AuthenticationPrincipal Principal principal) {
 
-
-
-
         if (principal != null && username.equals(userService.loadUserByUsername(principal.getName()).getUsername())) {
             return "redirect:/profile";
         } else {
@@ -209,7 +167,6 @@ public class UserController {
             model.addAttribute("user", user);
             return "user";
         }
-
 
     }
 
@@ -235,23 +192,18 @@ public class UserController {
     }
 
 
-    // UserService is required because this method is static, but UserService non-static
-
     @PostMapping(path = "/sendRequest")
     @ResponseBody
     public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
-        apiRequestController.sendRequest(request, principal);
+        requestService.sendRequest(request, principal);
     }
 
     @GetMapping(path = "/requests")
     public String getMyRequests(Model model, @AuthenticationPrincipal Principal principal) {
 
-        User authUser = userService.loadUserByUsername(principal.getName());
-
-        model.addAttribute("myUsername", authUser.getUsername());
-
+        model.addAttribute("myUsername", principal.getName());
         model.addAttribute("meetings",
-                requestRepository.findAllByToUsernameAndStatus(authUser.getUsername(), "PENDING"));
+                requestService.findAllMyRequestsViaStatus(principal.getName(), "PENDING"));
 
         return "requests";
     }
@@ -260,47 +212,24 @@ public class UserController {
     @PostMapping(path = "/acceptRequest")
     @ResponseBody
     //@PreAuthorize(value = "!#principal.name.equals(#user.username)")
-    public Long acceptRequest(@RequestBody Request requestId, @AuthenticationPrincipal Principal principal) {
-        return apiRequestController.acceptRequest(requestId, principal);
+    public Long acceptRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) {
+        return requestService.acceptRequest(request.getId(), principal);
     }
 
     @PostMapping(path = "/rejectRequest")
     @ResponseBody
     //@PreAuthorize(value = "!#principal.name.equals(#user.username)")
     public void rejectRequest(@RequestBody Request requestId, @AuthenticationPrincipal Principal principal) {
-        apiRequestController.rejectRequest(requestId, principal);
+        requestService.rejectRequest(requestId, principal);
     }
 
 
 
     @GetMapping(path = "/testConnection")
     @ResponseBody
-    public String testConnection(/*@AuthenticationPrincipal Principal principal*/) {
-/*        if (!activeUserStore.getUsers().contains(principal.getName())) {
-            activeUserStore.getUsers().add(principal.getName());
-            userRepository.setOnline(principal.getName(), "true");
-        }*/
-
-        /*if (userRepository.getOnline(principal.getName()).equals("false")) {
-            userRepository.setOnline(principal.getName(), "true");
-        }*/
-
+    public String testConnection() {
         return "OK";
     }
-
-    /*private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
-
-    @GetMapping(path = "/swagger-ui")
-    public void getSwagger(@AuthenticationPrincipal Principal principal, HttpServletRequest httpServletRequest,
-                           HttpServletResponse httpServletResponse) throws IOException {
-
-        User user = userService.loadUserByUsername(principal.getName());
-
-        if (user.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
-            redirectStrategy.sendRedirect(httpServletRequest, httpServletResponse, httpServletRequest.getRequestURI());
-        }
-    }*/
-
 
 
 }

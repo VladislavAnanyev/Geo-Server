@@ -186,4 +186,42 @@ public class GeoService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
     }
+
+    //https://en.wikipedia.org/wiki/Longitude#Length_of_a_degree_of_longitude
+    public double computeDelta(double degrees) {
+        int EARTH_RADIUS = 6371210; //Радиус земли
+        return Math.PI / 180 * EARTH_RADIUS * Math.cos(deg2rad(degrees));
+    }
+
+    public double deg2rad( double degrees) {
+        return degrees * Math.PI / 180;
+    }
+
+    public ArrayList<Geolocation> findInSquare(String authUser, Geolocation myGeolocation, String size, String time) {
+
+        int DISTANCE = Integer.parseInt(size); // Интересующее нас расстояние
+
+        //Geolocation myGeolocation = geolocationRepository.findById(authUser).get();
+        //Timestamp date = Timestamp.from(myGeolocation.getTime().toInstant());
+
+
+        double myLatitude = myGeolocation.getLat(); //Интересующие нас координаты широты
+        double myLongitude = myGeolocation.getLng();  //Интересующие нас координаты долготы
+
+        double deltaLat = computeDelta(myLatitude); //Получаем дельту по широте
+        double deltaLon = computeDelta(myLongitude); // Дельту по долготе
+
+        double aroundLat = DISTANCE / deltaLat; // Вычисляем диапазон координат по широте
+        double aroundLng = DISTANCE / deltaLon; // Вычисляем диапазон координат по долготе
+
+        //System.out.println(aroundLat + " " + aroundLng);
+
+
+
+
+        return (ArrayList<Geolocation>) geolocationRepository
+                .findInSquare(myLatitude, myLongitude, aroundLat, aroundLng, userService
+                        .loadUserByUsernameProxy(authUser)
+                        .getUsername(), time);
+    }
 }

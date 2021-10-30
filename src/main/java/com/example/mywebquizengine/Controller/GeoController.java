@@ -7,15 +7,18 @@ import com.example.mywebquizengine.Model.Projection.UserCommonView;
 import com.example.mywebquizengine.Repos.GeolocationRepository;
 import com.example.mywebquizengine.Repos.MeetingRepository;
 import com.example.mywebquizengine.Repos.UserRepository;
+import com.example.mywebquizengine.Service.GeoService;
 import com.example.mywebquizengine.Service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
 import java.util.ArrayList;
@@ -26,22 +29,10 @@ import java.util.stream.Collectors;
 public class GeoController {
 
     @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
     private UserService userService;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private GeolocationRepository geolocationRepository;
-
-    @Autowired
-    private MeetingRepository meetingRepository;
-
-    @Autowired
-    private ApiGeoController apiGeoController;
+    private GeoService geoService;
 
     @GetMapping("/geo")
     public String geo() {
@@ -50,10 +41,10 @@ public class GeoController {
 
     @PostMapping(path = "/sendGeolocation")
     @ResponseBody
-    public void sendGeolocation(@AuthenticationPrincipal Principal principal, @RequestBody Geolocation myGeolocation) throws Exception {
-       apiGeoController.sendGeolocation(principal, myGeolocation);
-       //userController.testConnection(/*principal*/);
-
+    public void sendGeolocation(@AuthenticationPrincipal Principal principal,
+                                @RequestBody Geolocation myGeolocation) throws Exception {
+       geoService.sendGeolocation(principal, myGeolocation);
+       throw new ResponseStatusException(HttpStatus.OK);
     }
 
     @GetMapping(path = "/getAllGeoWithoutMe")
@@ -64,15 +55,7 @@ public class GeoController {
                 loadUserByUsernameProxy(principal.getName()).getUsername());
     }
 
-    //https://en.wikipedia.org/wiki/Longitude#Length_of_a_degree_of_longitude
-    public double computeDelta(double degrees) {
-        int EARTH_RADIUS = 6371210; //Радиус земли
-        return Math.PI / 180 * EARTH_RADIUS * Math.cos(deg2rad(degrees));
-    }
 
-    public double deg2rad( double degrees) {
-        return degrees * Math.PI / 180;
-    }
 
     @GetMapping(path = "/square")
     @ResponseBody
@@ -80,32 +63,8 @@ public class GeoController {
                                                @RequestParam(required = false, defaultValue = "1000") String size,
                                                String time) {
 
-        int DISTANCE = Integer.parseInt(size); // Интересующее нас расстояние
+        return geoService.findInSquare(authUser, myGeolocation, size, time);
 
-        //Geolocation myGeolocation = geolocationRepository.findById(authUser).get();
-        //Timestamp date = Timestamp.from(myGeolocation.getTime().toInstant());
-
-
-        double myLatitude = myGeolocation.getLat(); //Интересующие нас координаты широты
-        double myLongitude = myGeolocation.getLng();  //Интересующие нас координаты долготы
-
-        double deltaLat = computeDelta(myLatitude); //Получаем дельту по широте
-        double deltaLon = computeDelta(myLongitude); // Дельту по долготе
-
-        double aroundLat = DISTANCE / deltaLat; // Вычисляем диапазон координат по широте
-        double aroundLng = DISTANCE / deltaLon; // Вычисляем диапазон координат по долготе
-
-        //System.out.println(aroundLat + " " + aroundLng);
-
-
-
-
-            return (ArrayList<Geolocation>) geolocationRepository
-                    .findInSquare(myLatitude, myLongitude, aroundLat, aroundLng, userService
-                            .loadUserByUsernameProxy(authUser)
-                            .getUsername(), time);
-
-        //return aroundLat + " " + aroundLon;
     }
 
 
@@ -116,13 +75,14 @@ public class GeoController {
 
         model.addAttribute("myUsername", principal.getName());
 
-        List<UserCommonView> friends = userRepository.findUsersByFriendsUsernameContains(principal.getName());
+        List<UserCommonView> friends = userService.findMyFriends(principal);
+        //userRepository.findUsersByFriendsUsernameContains(principal.getName());
 
         List<String> friendsName = friends.stream().map(UserCommonView::getUsername).collect(Collectors.toList());
 
         model.addAttribute("friendsName", friendsName);
 
-        model.addAttribute("meetings", apiGeoController.getMyMeetings(principal, date));
+        model.addAttribute("meetings", geoService.getMyMeetings(principal, date));
 
         return "meetings";
     }
