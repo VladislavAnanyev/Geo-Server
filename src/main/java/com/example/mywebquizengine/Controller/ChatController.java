@@ -1,27 +1,23 @@
 package com.example.mywebquizengine.Controller;
 
 
-import com.example.mywebquizengine.Controller.api.ApiController;
+import com.example.mywebquizengine.Controller.api.ApiChatController;
 import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Chat.Message;
 import com.example.mywebquizengine.Model.Chat.MessageStatus;
 import com.example.mywebquizengine.Model.Projection.Api.MessageWithDialog;
 import com.example.mywebquizengine.Model.Projection.DialogWithUsersViewPaging;
 import com.example.mywebquizengine.Model.User;
-import com.example.mywebquizengine.MywebquizengineApplication;
 import com.example.mywebquizengine.Repos.DialogRepository;
 import com.example.mywebquizengine.Repos.MessageRepository;
 import com.example.mywebquizengine.Service.MessageService;
 import com.example.mywebquizengine.Service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.html.HtmlEscapers;
 import org.hibernate.Hibernate;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -33,7 +29,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -47,8 +42,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.swing.text.html.HTML;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
@@ -88,24 +81,16 @@ public class ChatController {
     @Autowired
     SessionRegistry sessionRegistry;
 
-
-    Logger logger = LoggerFactory.getLogger("main");
-
-
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private ApiChatController apiChatController;
 
 
 
     @GetMapping(path = "/chat")
     public String chat(Model model, @AuthenticationPrincipal Principal principal) {
-
-        /*String query = """
-               SELECT "EMP_ID", "LAST_NAME" FROM "EMPLOYEE_TB"
-               WHERE "CITY" = 'INDIANAPOLIS'
-               ORDER BY "EMP_ID", "LAST_NAME";
-               """;*/
-
 
         User user = userService.loadUserByUsernameProxy(principal.getName());
         model.addAttribute("myUsername", user);
@@ -120,16 +105,12 @@ public class ChatController {
     public Long checkDialog(@RequestBody User user, @AuthenticationPrincipal Principal principal) {
 
         String s = principal.getName();
-        Long dialog_id = messageService.checkDialog(user, principal.getName());
+        Long dialog_id = messageService.checkDialog(user.getUsername(), principal.getName());
 
         if (dialog_id == null) {
             Dialog dialog = new Dialog();
-          //  Set<User> users = new HashSet<>();
             dialog.addUser(userService.loadUserByUsername(user.getUsername()));
             dialog.addUser(userService.loadUserByUsername(principal.getName()));
-//            users.add(userService.loadUserByUsername(user.getUsername()));
-//            users.add(userService.getAuthUserNoProxy(SecurityContextHolder.getContext().getAuthentication()));
-            //dialog.setUsers(users);
             dialogRepository.save(dialog);
             return dialog.getDialogId();
         } else {
@@ -146,27 +127,7 @@ public class ChatController {
                                @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
 
 
-
-
-        /*if (httpHeaders.get("referer") == null ) {
-
-            return "redirect:/chat";
-        } else if (httpHeaders.get("referer").get(0).contains(dialog_id) ||
-                httpHeaders.get("referer").get(0).contains("profile") ) {
-            List<String> list = httpHeaders.get("referer");
-            return "redirect:/chat";
-        } else {*/
-
             Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
-
-       /* if (dialog_id.equals("inbox")) {
-            User user = userService.loadUserByUsername(principal.getName());
-            model.addAttribute("myUsername", user);
-            model.addAttribute("lastDialogs", messageService.getDialogs(user.getUsername()));
-            model.addAttribute("userList", userService.getUserList());
-            return "chat";
-        } else {*/
-
 
             dialogRepository.findById(Long.valueOf(dialog_id)).get().setPaging(paging);
             DialogWithUsersViewPaging dialog = dialogRepository.findAllDialogByDialogId(Long.valueOf(dialog_id));
@@ -175,29 +136,15 @@ public class ChatController {
             if (dialog.getUsers().stream().anyMatch(o -> o.getUsername()
                     .equals(principal.getName()))) {
 
-                //Dialog dialog = dialogRepository.findById(Long.valueOf(dialog_id)).get();
-
                 User user = userService.loadUserByUsername(principal.getName());
 
                 model.addAttribute("myUsername", user);
                 model.addAttribute("lastDialogs", messageService.getDialogs(user.getUsername()));
-
                 model.addAttribute("dialog", dialog.getDialogId());
-
-                //DialogWithUsersViewPaging dialogWithUsersViewPaging = dialogRepository
-                // .findAllDialogByDialogId(dialog.getDialogId());
-
-
-
-                /*JSONObject jsonObject = (JSONObject) JSONValue
-                        .parseWithException(objectMapper.writeValueAsString(dialogWithUsersViewPaging));*/
-
                 model.addAttribute("messages", dialog.getMessages());
-
-
                 model.addAttribute("dialogObj", dialog);
-
                 model.addAttribute("userList", userService.getUserList());
+
                 return "chat";
 
             } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
@@ -214,7 +161,7 @@ public class ChatController {
                                @RequestParam(required = false,defaultValue = "50") @Min(1) @Max(100) Integer pageSize,
                                @RequestParam(defaultValue = "timestamp") String sortBy,
                                @AuthenticationPrincipal Principal principal) {
-        return MywebquizengineApplication.ctx.getBean(ApiController.class).getMessages(Long.valueOf(dialog_id), page, pageSize, sortBy, principal);
+        return apiChatController.getMessages(Long.valueOf(dialog_id), page, pageSize, sortBy, principal);
     }
 
     @PostMapping(path = "/createGroup")
@@ -275,10 +222,8 @@ public class ChatController {
         } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 
 
-
-
-
     }
+
 
 
     @Modifying
@@ -320,12 +265,15 @@ public class ChatController {
                 JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(messageDto));
                 jsonObject.put("type", "MESSAGE");
                 jsonObject.put("client", "WEB");
+                if (message.getUniqueCode() != null) {
+                    jsonObject.put("uniqueCode", message.getUniqueCode());
+                }
+
 
                 rabbitTemplate.convertAndSend(user.getUsername(),
                        jsonObject);
 
                 if (!user.getUsername().equals(authUser.getUsername())) {
-
 
                     simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
                             jsonObject);
@@ -382,6 +330,9 @@ public class ChatController {
             JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(messageRepository.findMessageById(message.getId())));
             jsonObject.put("type", "MESSAGE");
             jsonObject.put("client", "ANDROID");
+            if (message.getUniqueCode() != null) {
+                jsonObject.put("uniqueCode", message.getUniqueCode());
+            }
 
             for (User user :dialog.getUsers()) {
 

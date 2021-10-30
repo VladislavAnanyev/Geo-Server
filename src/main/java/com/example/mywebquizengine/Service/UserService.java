@@ -3,10 +3,21 @@ package com.example.mywebquizengine.Service;
 import com.example.mywebquizengine.Model.Geo.Geolocation;
 import com.example.mywebquizengine.Model.Order;
 import com.example.mywebquizengine.Model.Projection.GeolocationView;
+import com.example.mywebquizengine.Model.Projection.UserCommonView;
+import com.example.mywebquizengine.Model.Projection.UserView;
 import com.example.mywebquizengine.Model.Role;
 import com.example.mywebquizengine.Model.User;
+import com.example.mywebquizengine.Model.UserInfo.AuthRequest;
+import com.example.mywebquizengine.Model.UserInfo.AuthResponse;
+import com.example.mywebquizengine.Model.UserInfo.GoogleToken;
 import com.example.mywebquizengine.Repos.GeolocationRepository;
 import com.example.mywebquizengine.Repos.UserRepository;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson.JacksonFactory;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -14,34 +25,61 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Example;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.RememberMeAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.persistence.EntityNotFoundException;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.UUID;
+import java.security.Principal;
+import java.util.*;
 
 
 @Service
 public class UserService implements UserDetailsService {
 
+    private static final HttpTransport transport = new NetHttpTransport();
+    private static final JsonFactory jsonFactory = new JacksonFactory();
+
+    @Value("${androidGoogleClientId}")
+    private String CLIENT_ID;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private JWTUtil jwtTokenUtil;
+
     @Autowired
     private RabbitAdmin rabbitAdmin;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Autowired
     private MailSender mailSender;
@@ -362,5 +400,119 @@ public class UserService implements UserDetailsService {
 
     public ArrayList<User> getUserList() {
         return (ArrayList<User>) userRepository.findAll();
+    }
+
+    public List<UserCommonView> findMyFriends(Principal principal) {
+        return userRepository.findUsersByFriendsUsername(principal.getName());
+    }
+
+    public UserCommonView getUserView(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    public AuthResponse signInViaJwt(AuthRequest authRequest) {
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+            //System.out.println(authentication);
+        } catch (BadCredentialsException e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Имя или пароль неправильны", e);
+        }
+        // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
+        String jwt = jwtTokenUtil.generateToken((UserDetails) authentication.getPrincipal());
+        return new AuthResponse(jwt);
+    }
+
+    public AuthResponse signUpViaJwt(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        userService.saveUser(user);
+
+        // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
+        String jwt = jwtTokenUtil.generateToken(userService.loadUserByUsername(user.getUsername()));
+        return new AuthResponse(jwt);
+    }
+
+    public AuthResponse signinViaGoogleToken(GoogleToken token) throws GeneralSecurityException, IOException {
+        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory)
+                // Specify the CLIENT_ID of the app that accesses the backend:
+                .setAudience(Collections.singletonList(CLIENT_ID))
+                // Or, if multiple clients access the backend:
+                //.setAudience(Arrays.asList(CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3))
+                .build();
+
+        GoogleIdToken idToken = verifier.verify(token.getIdTokenString());
+        if (idToken != null) {
+            GoogleIdToken.Payload payload = idToken.getPayload();
+
+            // Print user identifier
+            String userId = payload.getSubject();
+            System.out.println("User ID: " + userId);
+
+            // Get profile information from payload
+            String email = payload.getEmail();
+            boolean emailVerified = Boolean.valueOf(payload.getEmailVerified());
+            String name = (String) payload.get("name");
+            String pictureUrl = (String) payload.get("picture");
+            String locale = (String) payload.get("locale");
+            String familyName = (String) payload.get("family_name");
+            String givenName = (String) payload.get("given_name");
+
+
+
+            String username = email.replace("@gmail.com", "");
+
+            User user = new User();
+            user.setUsername(username);
+            user.setEmail(email);
+            user.setFirstName(givenName);
+            user.setLastName(familyName);
+            user.setAvatar(pictureUrl);
+
+            userService.tryToSaveUser(user);
+
+            User savedUser = userService.loadUserByUsername(user.getUsername());
+
+            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+                    new UsernamePasswordAuthenticationToken(
+                            username, null, savedUser.getAuthorities()); // Проверить работу getAuthorities
+            SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+
+            String jwt = jwtTokenUtil.generateToken(savedUser);
+            return new AuthResponse(jwt);
+            // Use or store profile information
+            // ...
+
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+
+        }
+    }
+
+    public UserView getAuthUser(Principal principal) {
+        return userRepository.findAllByUsername(principal.getName());
+    }
+
+    public void uploadPhoto(MultipartFile file, Principal principal) {
+        if (!file.isEmpty()) {
+            try {
+                String uuid = UUID.randomUUID().toString();
+                uuid = uuid.substring(0, 8);
+                byte[] bytes = file.getBytes();
+
+                BufferedOutputStream stream =
+                        new BufferedOutputStream(new FileOutputStream(new File("img/" +
+                                uuid + ".jpg")));
+                stream.write(bytes);
+                stream.close();
+
+                User user = userService.loadUserByUsernameProxy(principal.getName());
+
+                userService.setAvatar("https://" + hostname + "/img/" + uuid + ".jpg", user);
+
+
+            } catch (IOException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            }
+        }
     }
 }

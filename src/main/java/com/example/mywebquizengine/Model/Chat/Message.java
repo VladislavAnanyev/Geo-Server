@@ -23,7 +23,7 @@ public class Message {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Integer id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User sender;
@@ -33,13 +33,15 @@ public class Message {
 
     private Date timestamp;
 
+    @Enumerated(EnumType.STRING)
     private MessageStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dialog_id")
     private Dialog dialog;
 
-
+    @Transient
+    private Integer uniqueCode;
 
     public Message() {}
 
@@ -55,15 +57,10 @@ public class Message {
     public void setContent(String content) {
         this.content = content;
     }
-
     public Date getTimestamp() {
-/*        TimeZone timeZone = TimeZone.getTimeZone("Europe/Moscow");
-
-
-        timestamp.setTimeZone(timeZone);*/
-
         return timestamp;
     }
+
     public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
     }
@@ -73,10 +70,10 @@ public class Message {
     public void setStatus(MessageStatus status) {
         this.status = status;
     }
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
     public void setDialog(Dialog dialog) {
@@ -86,17 +83,11 @@ public class Message {
         return dialog;
     }
 
-    @Override
-    public String toString() {
-        return "Message{" +
-                "id=" + id +
-                ", sender=" + sender +
-                ", content='" + content + '\'' +
-                ", timestamp=" + timestamp +
-                ", status=" + status +
-                ", dialog=" + dialog +
-                '}';
+    public Integer getUniqueCode() {
+        return uniqueCode;
     }
 
-
+    public void setUniqueCode(Integer uniqueCode) {
+        this.uniqueCode = uniqueCode;
+    }
 }

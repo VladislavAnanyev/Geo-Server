@@ -1,6 +1,7 @@
 package com.example.mywebquizengine.Repos;
 
 import com.example.mywebquizengine.Model.Chat.Message;
+import com.example.mywebquizengine.Model.Chat.MessageStatus;
 import com.example.mywebquizengine.Model.Projection.Api.MessageWithDialog;
 //import com.example.mywebquizengine.Model.Projection.MessageForStompView;
 import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewCustomQuery;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface MessageRepository extends CrudRepository<Message, Integer>, PagingAndSortingRepository<Message, Integer> {
+public interface MessageRepository extends CrudRepository<Message, Long>, PagingAndSortingRepository<Message, Long> {
 
 
     @Query(value = "SELECT * FROM MESSAGES WHERE TIMESTAMP = :time", nativeQuery = true)
@@ -30,12 +31,14 @@ public interface MessageRepository extends CrudRepository<Message, Integer>, Pag
             SELECT *
             FROM MESSAGES\s
             WHERE MESSAGES.TIMESTAMP IN (SELECT MAX(MESSAGES.TIMESTAMP)
-            FROM MESSAGES GROUP BY MESSAGES.DIALOG_ID) and MESSAGES.DIALOG_ID IN (SELECT USERS_DIALOGS.DIALOG_ID
-            FROM USERS_DIALOGS WHERE USERS_DIALOGS.USER_ID = :username) ORDER BY MESSAGES.TIMESTAMP DESC""", nativeQuery = true)
+                    FROM MESSAGES WHERE MESSAGES.STATUS != 'DELETED' GROUP BY MESSAGES.DIALOG_ID) 
+                AND MESSAGES.DIALOG_ID IN (SELECT USERS_DIALOGS.DIALOG_ID
+            FROM USERS_DIALOGS WHERE USERS_DIALOGS.USER_ID = :username) ORDER BY MESSAGES.TIMESTAMP DESC 
+            """, nativeQuery = true)
     List<Message> getDialogs(String username);
 
 
-    Page<MessageView> findAllByDialog_DialogId(Long dialogId, Pageable paging);
+    Page<MessageView> findAllByDialog_DialogIdAndStatusNot(Long dialogId, MessageStatus status, Pageable paging);
 
     @Query(value = """
             SELECT id, content, DIALOGS.dialog_id as dialogId, 
@@ -54,7 +57,7 @@ public interface MessageRepository extends CrudRepository<Message, Integer>, Pag
 
 
 
-    MessageWithDialog findMessageById(Integer id);
+    MessageWithDialog findMessageById(Long id);
 
 
 

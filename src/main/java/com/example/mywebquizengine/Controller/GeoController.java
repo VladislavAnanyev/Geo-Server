@@ -1,37 +1,24 @@
 package com.example.mywebquizengine.Controller;
 
-import com.example.mywebquizengine.Controller.api.ApiController;
+import com.example.mywebquizengine.Controller.api.ApiGeoController;
 import com.example.mywebquizengine.Model.Geo.Geolocation;
-import com.example.mywebquizengine.Model.Geo.Meeting;
 import com.example.mywebquizengine.Model.Projection.GeolocationView;
 import com.example.mywebquizengine.Model.Projection.UserCommonView;
-import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.GeolocationRepository;
 import com.example.mywebquizengine.Repos.MeetingRepository;
 import com.example.mywebquizengine.Repos.UserRepository;
 import com.example.mywebquizengine.Service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
-import org.springframework.amqp.AmqpException;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessagePostProcessor;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,9 +40,8 @@ public class GeoController {
     @Autowired
     private MeetingRepository meetingRepository;
 
-
     @Autowired
-    private ApiController apiController;
+    private ApiGeoController apiGeoController;
 
     @GetMapping("/geo")
     public String geo() {
@@ -64,8 +50,8 @@ public class GeoController {
 
     @PostMapping(path = "/sendGeolocation")
     @ResponseBody
-    public void sendGeolocation(@AuthenticationPrincipal Principal principal, @RequestBody Geolocation myGeolocation) throws JsonProcessingException, ParseException {
-       apiController.sendGeolocation(principal, myGeolocation);
+    public void sendGeolocation(@AuthenticationPrincipal Principal principal, @RequestBody Geolocation myGeolocation) throws Exception {
+       apiGeoController.sendGeolocation(principal, myGeolocation);
        //userController.testConnection(/*principal*/);
 
     }
@@ -136,7 +122,7 @@ public class GeoController {
 
         model.addAttribute("friendsName", friendsName);
 
-        model.addAttribute("meetings", apiController.getMyMeetings(principal, date));
+        model.addAttribute("meetings", apiGeoController.getMyMeetings(principal, date));
 
         return "meetings";
     }
