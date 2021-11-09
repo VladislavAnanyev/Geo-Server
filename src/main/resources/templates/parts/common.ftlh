@@ -81,36 +81,8 @@
 
 <div class="container">
 
-<#--    <div class="row">-->
-
-<#--        <div class="col-lg-3 &lt;#&ndash;d-none&ndash;&gt; &lt;#&ndash;d-lg-block&ndash;&gt;">-->
-<#--            <div class="col-9">-->
-
-<#--<div class="container mt-5">-->
-
-
 
         <#nested>
-
-<#--</div>-->
-<#--        </div>-->
-<#--        </div>-->
-<#--    </div>-->
-
-    <#--<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-        <div id="liveToast" class="toast fade show" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header">
-                <svg class="bd-placeholder-img rounded me-2" width="20" height="20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="100%" height="100%" fill="#007aff"></rect></svg>
-&lt;#&ndash;                <img src="..." class="rounded me-2" alt="...">&ndash;&gt;
-                <strong class="me-auto" id="toast-head"></strong>
-                <small>Только что</small>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Закрыть"></button>
-            </div>
-            <div class="toast-body" id="toast-text">
-
-            </div>
-        </div>
-    </div>-->
 
 
 
@@ -212,19 +184,7 @@
 
 </body>
 
-<#--<script>
-    barba.init({
-        transitions: [{
-            name: 'default-transition',
-            leave() {
-                // create your stunning leave animation here
-            },
-            enter() {
-                // create your amazing enter animation here
-            }
-        }]
-    });
-</script>-->
+
 
 </html>
 </#macro>
