@@ -1,7 +1,10 @@
 package com.example.mywebquizengine.Model.UserInfo;
 
+import javax.validation.constraints.Size;
+
 public class AuthRequest {
     private String username;
+
     private String password;
     // геттеры сеттеры
 

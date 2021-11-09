@@ -29,6 +29,7 @@ import java.util.*;
 public class User implements UserDetails, OAuth2User  {
 
     @Id
+    @NotBlank
     private String username;
 
     @NotBlank
@@ -314,6 +315,6 @@ public class User implements UserDetails, OAuth2User  {
 
     @Override
     public Map<String, Object> getAttributes() {
-        return getAttributes();
+        return null;
     }
 }

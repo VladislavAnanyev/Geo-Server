@@ -10,6 +10,7 @@ var colors2 = [
 
 function notificationConnect() {
 
+
     console.log("Go")
     var socket = new SockJS('/ws');
     stompClient = Stomp.over(socket);
@@ -33,6 +34,11 @@ function onConnectedNotif() {
 
 
     geo()
+
+   /* stompClient.disconnect(function(frame) {
+        //debug("STOMP Client disconnecting ...");
+        console.log("STOMP client succesfully disconnected.");
+    })*/
 }
 
 
@@ -214,7 +220,7 @@ function onMessageReceived(payload) {
         console.log("Успех")
         console.log(message)
 
-        if (!username === message.sender.username) {
+        if (username !== message.sender.username) {
         let dialog = document.getElementById("dialogs")
 
         //console.log(freme.headers['type'])

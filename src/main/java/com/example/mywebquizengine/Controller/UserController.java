@@ -14,10 +14,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
-/*import javax.validation.Valid;*/
+import javax.validation.Valid;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
@@ -74,7 +75,7 @@ public class UserController {
     }
 
     @PostMapping(path = "/register")
-    public String checkIn(User user) {
+    public String checkIn(@Valid User user) {
 
         userService.processCheckIn(user);
         return "reg";
@@ -126,24 +127,23 @@ public class UserController {
 
 
 
-    @Transactional
+/*    @Transactional
     @PutMapping(path = "/pass", consumes ={"application/json"})
     @PreAuthorize(value = "#principal.name.equals(#user.username)")
     public String changePassword(@RequestBody User user, @AuthenticationPrincipal Principal principal) {
 
-        userService.updatePassword(user);
+        userService.updatePassword(user, null);
 
         return "changePassword";
-    }
+    }*/
 
 
-    @Transactional
     @PutMapping(path = "/updatepass/{changePasswordCode}", consumes ={"application/json"})
     public String changePasswordUsingCode(@RequestBody User in, @PathVariable String changePasswordCode) {
 
-        User user = userService.getUserViaChangePasswordCode(changePasswordCode);
+        //User user = userService.getUserViaChangePasswordCode(changePasswordCode);
 
-        userService.updatePassword(user);
+        userService.updatePassword(in, changePasswordCode);
 
         return "changePassword";
     }

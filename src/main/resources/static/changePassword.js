@@ -23,14 +23,14 @@ function f(pass1, pass2) {
         xhrPut.setRequestHeader('Content-type','application/json; charset=utf-8');
         xhrPut.onreadystatechange = function () {
             if(xhrPut.readyState === XMLHttpRequest.DONE && xhrPut.status === 200) {
-
+                document.location.href= "../../signin"
             }
         };
         xhrPut.send(JSON.stringify(jsonPut));
         console.log("Успех");
         document.getElementById("password1").style.background = 'MediumSpringGreen';
         document.getElementById("password2").style.background = 'MediumSpringGreen';
-        document.location.href= "../../singin"
+
     } else {
         document.getElementById("password1").style.background = 'Salmon';
         document.getElementById("password2").style.background = 'Salmon';

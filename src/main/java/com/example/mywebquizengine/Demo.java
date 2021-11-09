@@ -26,15 +26,18 @@ public class Demo implements CommandLineRunner {
     @Autowired
     private UserRepository userRepository ;
 
-
     @Autowired
     private RabbitAdmin rabbitAdmin;
 
-
-
-
     @Override
-    public void run(String... args) throws UnknownHostException, SchedulerException, InterruptedException, NoSuchAlgorithmException {
+    public void run(String... args) {
+
+        /*List<User> users2 = userRepository.findAll();
+
+        for (User user : users2) {
+            rabbitAdmin.deleteQueue(user.getUsername());
+
+        }*/
 
         if (rabbitAdmin.getQueueProperties("application") == null) {
             List<User> users = userRepository.findAll();
