@@ -30,11 +30,6 @@ public class FileUploadController {
     @Value("${hostname}")
     private String hostname;
 
-    @GetMapping(path = "/upload")
-    @ResponseBody
-    public String provideUploadInfo() {
-        return "profile";
-    }
 
     @PostMapping(path = "/upload")
     public String handleFileUpload(Model model, @RequestParam("file") MultipartFile file, @AuthenticationPrincipal Principal principal) {

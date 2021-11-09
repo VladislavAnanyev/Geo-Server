@@ -7,17 +7,16 @@ import com.example.mywebquizengine.Model.UserInfo.AuthRequest;
 import com.example.mywebquizengine.Model.UserInfo.AuthResponse;
 import com.example.mywebquizengine.Model.UserInfo.GoogleToken;
 import com.example.mywebquizengine.Service.UserService;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson.JacksonFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
+import javax.validation.Valid;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
@@ -34,6 +33,7 @@ public class ApiUserController {
     @GetMapping(path = "/friends")
     public List<UserCommonView> getFriends(@AuthenticationPrincipal Principal principal) {
         return userService.findMyFriends(principal);
+        //return new ArrayList<>();
     }
 
     @GetMapping(path = "/findbyid")
@@ -44,17 +44,13 @@ public class ApiUserController {
 
     @PostMapping(path = "/signin")
     public AuthResponse jwtSignIn(@RequestBody AuthRequest authRequest) {
-
         return userService.signInViaJwt(authRequest);
-
-
     }
 
 
 
     @PostMapping(path = "/signup")
-    //@ResponseBody
-    public AuthResponse signup(@RequestBody User user) {
+    public AuthResponse signup(@Valid @RequestBody User user) {
         return userService.signUpViaJwt(user);
     }
 
@@ -68,9 +64,20 @@ public class ApiUserController {
 
 
     @GetMapping(path = "/authuser")
-    public UserView getApiAuthUser(@AuthenticationPrincipal Principal principal) {
-        return userService.getAuthUser(principal);
+    public UserView getApiAuthUser(@AuthenticationPrincipal Principal principal)  {
+        /*if (userService.getAuthUser(principal) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        } else {*/
+            return userService.getAuthUser(principal);
+        //}
+        //throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+
     }
+
+    /*@GetMapping(path = "/error")
+    public String errorApi() {
+        throw new ResponseStatusException(HttpStatus.BAD_GATEWAY);
+    }*/
 
 
     @PostMapping(path = "/upload")
@@ -84,5 +91,4 @@ public class ApiUserController {
                            @AuthenticationPrincipal Principal principal) {
         userService.updateUser(user.getLastName(), user.getFirstName(), principal.getName());
     }
-
 }

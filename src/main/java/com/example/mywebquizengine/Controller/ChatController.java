@@ -58,31 +58,6 @@ public class ChatController {
 
 
 
-    @Autowired
-    MessageRepository messageRepository;
-
-    @Autowired
-    private DialogRepository dialogRepository;
-
-
-
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
-
-
-    @Autowired
-    private SimpMessagingTemplate simpMessagingTemplate;
-
-    @Autowired
-    SessionRegistry sessionRegistry;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Value("${hostname}")
-    private String hostname;
-
-
     @GetMapping(path = "/chat")
     public String chat(Model model, @AuthenticationPrincipal Principal principal) {
 
@@ -163,8 +138,6 @@ public class ChatController {
         if (message.getSender().getUsername().equals(principal.getName())) {
             messageService.sendMessage(message, principal);
         } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-
-
 
 
     }

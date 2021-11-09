@@ -41,6 +41,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.session.SessionInformationExpiredStrategy;
@@ -65,6 +67,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter  {
     @Qualifier("userService")
     @Autowired
     protected UserDetailsService userDetailsService;
+
 
 
 
@@ -121,15 +124,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter  {
 
                     .anyRequest().authenticated()
 
-                    .and()
-                    .formLogin()
+                    /*.and()
+                    .formLogin()*/
 
-                    /*.loginPage("/api/jwt")*//*.successForwardUrl("/api/jwt")*/.and().logout().logoutUrl("/api/logout").permitAll()
+                    /*.loginPage("/api/jwt")*//*.successForwardUrl("/api/jwt")*/
+                    /*.and().logout().logoutUrl("/api/logout").permitAll()*/
 
                     //.and().oauth2Login().defaultSuccessUrl("/loginSuccess")
-                    .permitAll()
+                    /*.permitAll()*/
                     .and()
-                    .logout()
+                    .logout().logoutUrl("/api/logout").logoutSuccessHandler(new SimpleUrlLogoutSuccessHandler())
                     .permitAll()
                     .and()
                     .headers()
@@ -233,7 +237,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter  {
                         .tokenRepository(persistentTokenRepository()).authenticationSuccessHandler(myAuthenticationSuccessHandler)
 
                     .and()
-                    .logout()
+                    .logout().logoutUrl("/logout").addLogoutHandler(new SecurityContextLogoutHandler())
                     .logoutSuccessHandler(myLogoutSuccessHandler)
 
 
@@ -249,7 +253,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter  {
                     .anyRequest()
                     .requiresSecure().and()
 
-                    .sessionManagement().maximumSessions(1).sessionRegistry(sessionRegistry())
+                    .sessionManagement().maximumSessions(100).sessionRegistry(sessionRegistry())
                     .and().sessionCreationPolicy(SessionCreationPolicy.NEVER).sessionFixation().none();
     }
 

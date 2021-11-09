@@ -43,6 +43,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.persistence.EntityNotFoundException;
+import javax.transaction.Transactional;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -133,7 +134,11 @@ public class UserService implements UserDetailsService {
                     + "Для активации аккаунта перейдите по ссылке: https://" + hostname + "/activate/" + user.getActivationCode()
                     + " Если вы не регистрировались на данном ресурсе, то проигнорируйте это сообщение";
 
-            mailSender.send(user.getEmail(),"Активация аккаунта в WebQuizzes", mes);
+            try {
+                mailSender.send(user.getEmail(),"Активация аккаунта в WebQuizzes", mes);
+            } catch (Exception e) {
+                System.out.println("Отключено");
+            }
 
         }
     }
@@ -177,18 +182,24 @@ public class UserService implements UserDetailsService {
 
         }
 
-        mailSender.send(user.getEmail(),"Смена пароля в WebQuizzes", "Для смены пароля в WebQuizzes" +
-                " перейдите по ссылке: https://" + hostname + "/updatepass/" + mes + " Если вы не меняли пароль на данном ресурсе, то проигнорируйте сообщение");
+        try {
+            mailSender.send(user.getEmail(),"Смена пароля в WebQuizzes", "Для смены пароля в WebQuizzes" +
+                    " перейдите по ссылке: https://" + hostname + "/updatepass/" + mes + " Если вы не меняли пароль на данном ресурсе, то проигнорируйте сообщение");
+
+        } catch (Exception e) {
+            System.out.println("Не отправлено");
+        }
     }
 
 
+    @Transactional
+    public void updatePassword(User user, String changePasswordCode) {
 
 
-    public User getUserProxy(String username) {
-        return userRepository.getOne(username);
-    }
+        User savedUser = userService.getUserViaChangePasswordCode(changePasswordCode);
+        user.setUsername(savedUser.getUsername());
 
-    public void updatePassword(User user) {
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setChangePasswordCode(UUID.randomUUID().toString());
         userRepository.changePassword(user.getPassword(), user.getUsername(), user.getChangePasswordCode());
@@ -490,7 +501,11 @@ public class UserService implements UserDetailsService {
     }
 
     public UserView getAuthUser(Principal principal) {
-        return userRepository.findAllByUsername(principal.getName());
+        if (userRepository.findAllByUsername(principal.getName()) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        } else {
+            return userRepository.findAllByUsername(principal.getName());
+        }
     }
 
     public void uploadPhoto(MultipartFile file, Principal principal) {
