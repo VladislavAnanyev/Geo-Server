@@ -63,7 +63,7 @@ public class ChatController {
 
         User user = userService.loadUserByUsernameProxy(principal.getName());
         model.addAttribute("myUsername", user);
-        model.addAttribute("lastDialogs", messageService.getDialogs(user.getUsername()));
+        model.addAttribute("lastDialogs", messageService.getDialogsForApi(principal.getName()));
         model.addAttribute("userList", userService.getUserList());
         return "chat";
     }
@@ -91,10 +91,7 @@ public class ChatController {
             if (dialog.getUsers().stream().anyMatch(o -> o.getUsername()
                     .equals(principal.getName()))) {
 
-                User user = userService.loadUserByUsername(principal.getName());
-
-                model.addAttribute("myUsername", user);
-                model.addAttribute("lastDialogs", messageService.getDialogs(user.getUsername()));
+                model.addAttribute("lastDialogs", messageService.getDialogsForApi(principal.getName()));
                 model.addAttribute("dialog", dialog.getDialogId());
                 model.addAttribute("messages", dialog.getMessages());
                 model.addAttribute("dialogObj", dialog);

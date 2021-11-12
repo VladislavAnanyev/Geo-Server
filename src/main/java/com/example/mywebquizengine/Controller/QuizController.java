@@ -56,7 +56,6 @@ public class QuizController {
     @Autowired
     private UserAnswerService userAnswerService;
 
-
     @Autowired
     private UserService userService;
 
@@ -102,21 +101,6 @@ public class QuizController {
 
 
 
-    /*@GetMapping(path = "/api/quizzes/completed")
-    public String getCompleted (Model model,
-                                          @RequestParam(required = false,defaultValue = "0") @Min(0) Integer page,
-                                          @RequestParam(required = false,defaultValue = "10") @Min(1) @Max(10) Integer pageSize,
-                                          @RequestParam(defaultValue = "completed_At") String sortBy) {
-        //reloadQuizzes();
-        String name = userService.getThisUser().getUsername();
-        model.addAttribute("comp", userAnswerService
-                .getCompleted(name, page, pageSize, sortBy).getContent());
-        return "mycomplete";
-    }*/
-
-
-
-
     @GetMapping(path = "/add")
     public String addQuiz(Model model) {
         return "addQuiz";
@@ -126,12 +110,8 @@ public class QuizController {
     @PostMapping(path = "/quizzes", consumes={"application/json"})
     public String addQuiz(Model model, @RequestBody @Valid Test test, @AuthenticationPrincipal Principal principal) throws ResponseStatusException {
         try {
-
-            //User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
             User user = userService.loadUserByUsernameProxy(principal.getName());
 
-            //user.setTests(new ArrayList<>()); // Handle Persistance bug
             user.setRoles(new ArrayList<>());
             test.setDuration(test.getDuration());
             test.setUser(user);
@@ -139,7 +119,7 @@ public class QuizController {
                 test.getQuizzes().get(i).setTest(test);
             }
             testService.saveTest(test);
-            //quizService.saveQuiz(test.getQuizzes());
+
             return "redirect:/";
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -155,50 +135,7 @@ public class QuizController {
         return "home";
     }
 
-    /*@GetMapping("/loggedUsers")
-    @ResponseBody
-    public List<String> getLoggedUsers(Locale locale, Model model) {
 
-        List<String> list = loggedUser.getUsers();
-        return loggedUser.getUsers();
-    }*/
-
-    /*@GetMapping("/viewSessionData")
-    @ResponseBody// it will handle all request for /viewSessionData
-    public java.util.Map<String, Integer> start(HttpServletRequest request) {
-        if (request.getSession() != null) {
-            request.getSession().invalidate();
-        }
-        Integer integer = (Integer) request.getSession()
-                .getAttribute("hitCounter");        // create session if not exists and get attribute
-        if (integer == null) {
-            integer = new Integer(0);
-            integer++;
-            request.getSession().setAttribute("hitCounter", integer);           // replace session attribute
-        } else {
-            integer++;
-            request.getSession().setAttribute("hitCounter", integer);            // replace session attribute
-        }
-        java.util.Map<String, Integer> hitCounter = new HashMap<>();
-        hitCounter.put("Hit Counter", integer);
-        return hitCounter;
-    }
-
-    private static final Logger LOG = LoggerFactory.getLogger(QuizController.class);*/
-
-    /*@GetMapping("/get-session-count")
-    @ResponseBody
-    public String testSessionListner(HttpServletRequest request, HttpServletResponse response){
-
-        HttpSession session = null;
-        if(session == null){
-            LOG.info("Unable to find session. Creating a new session");
-            session = request.getSession(true);
-        }
-        LOG.info("Session exist");
-
-        return "Session Test completed";
-    }*/
 
 
 
@@ -274,14 +211,6 @@ public class QuizController {
     }
 
 
-
-    /*@GetMapping(path = "/api/quizzes/{id}/solve/info")
-    @ResponseBody
-    public int getCurrentAnswer(Model model, @PathVariable String id) {
-        //model.addAttribute(id);
-        //model.addAttribute("quiz", quizService.findQuiz(Integer.parseInt(id)));
-        return userAnswerService.getStat(Integer.parseInt(id));
-    }*/
 
 
     @GetMapping(path = "/quizzes/{id}/solve")
@@ -388,11 +317,6 @@ public class QuizController {
     public void changeTest(@PathVariable Integer id, @Valid @RequestBody Test test,
                            @AuthenticationPrincipal Principal principal) throws ResponseStatusException {
 
-        /*for (int i = 0; i < test.getQuizzes().size(); i++) {
-            Quiz oldQuiz = testService.findTest(id).getQuizzes().get(i);
-            Quiz quiz = test.getQuizzes().get(i);
-            quizService.updateQuiz(oldQuiz.getId(), quiz.getTitle(), quiz.getText(), (ArrayList<String>) quiz.getOptions(), (ArrayList<Integer>) quiz.getAnswer());
-        }*/
 
         testService.updateTest(id, test);
 
@@ -432,7 +356,6 @@ public class QuizController {
     @PostMapping(value = "/answersession/{id}")
     public void getAnswerSession(@AuthenticationPrincipal Principal principal,@RequestBody UserTestAnswer userTestAnswer, @PathVariable String id) {
         User user = userService.loadUserByUsernameProxy(principal.getName());
-
 
         userTestAnswer.setUser(user);
         userTestAnswer.setTest(testService.findTest(Integer.parseInt(id)));

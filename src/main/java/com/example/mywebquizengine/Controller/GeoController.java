@@ -51,7 +51,7 @@ public class GeoController {
     @ResponseBody
     public ArrayList<GeolocationView> getAllGeoWithoutMe(@AuthenticationPrincipal Principal principal) {
 
-        return userService.getAllGeo(userService.
+        return geoService.getAllGeo(userService.
                 loadUserByUsernameProxy(principal.getName()).getUsername());
     }
 

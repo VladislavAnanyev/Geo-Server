@@ -2,7 +2,9 @@ package com.example.mywebquizengine.Service;
 
 import com.example.mywebquizengine.Model.Geo.Geolocation;
 import com.example.mywebquizengine.Model.Order;
+import com.example.mywebquizengine.Model.Photo;
 import com.example.mywebquizengine.Model.Projection.GeolocationView;
+import com.example.mywebquizengine.Model.Projection.ProfileView;
 import com.example.mywebquizengine.Model.Projection.UserCommonView;
 import com.example.mywebquizengine.Model.Projection.UserView;
 import com.example.mywebquizengine.Model.Role;
@@ -11,6 +13,7 @@ import com.example.mywebquizengine.Model.UserInfo.AuthRequest;
 import com.example.mywebquizengine.Model.UserInfo.AuthResponse;
 import com.example.mywebquizengine.Model.UserInfo.GoogleToken;
 import com.example.mywebquizengine.Repos.GeolocationRepository;
+import com.example.mywebquizengine.Repos.PhotoRepository;
 import com.example.mywebquizengine.Repos.UserRepository;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
@@ -23,11 +26,9 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Example;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.RememberMeAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -37,12 +38,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -80,9 +79,6 @@ public class UserService implements UserDetailsService {
     private RabbitAdmin rabbitAdmin;
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
     private MailSender mailSender;
 
     @Value("${hostname}")
@@ -94,21 +90,14 @@ public class UserService implements UserDetailsService {
     @Autowired
     private PaymentServices paymentServices;
 
-    @Autowired
-    private GeolocationRepository geolocationRepository;
 
     @Override
-    public User /*UserDetails*/ loadUserByUsername(String username) throws UsernameNotFoundException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public User loadUserByUsername(String username) throws ResponseStatusException {
         Optional<User> user = userRepository.findById(username);
-
-
 
         if (user.isPresent()) {
             return user.get();
-        } /*else if (authentication != null){
-            return castToUser((OAuth2AuthenticationToken) authentication);
-        }*/ else throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND);
     }
 
 
@@ -116,9 +105,9 @@ public class UserService implements UserDetailsService {
         return userRepository.getOne(username);
     }
 
-    public void setAvatar(String avatar, User user) {
-        userRepository.setAvatar(avatar, user.getUsername());
-    }
+    /*public void setAvatar(String avatar, String username) {
+        userRepository.setAvatar(avatar, username);
+    }*/
 
     public void saveUser(User user){
         if (userRepository.findById(user.getUsername()).isPresent()){
@@ -143,34 +132,34 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public void saveGeo(Geolocation geolocation) {
-
-
-            /*if (geolocationRepository.existsById(geolocation.getUser().getUsername())) {
-
-                geolocationRepository.updateGeo(geolocation.getLat(), geolocation.getLng(), geolocation.getUser().getUsername());
-            } else {
-
-                geolocationRepository.save(geolocation);
-            }*/
-
-
-            geolocationRepository.save(geolocation);
-
-
-        //geolocationRepository.insertGeo(geolocation.getLat(), geolocation.getLng(), geolocation.getUser().getUsername());
-    }
-
-
-    public ArrayList<GeolocationView> getAllGeo(String username) {
-        return (ArrayList<GeolocationView>) geolocationRepository.getAll(username);
-    }
-
-
 
 
     public void updateUser(String lastName, String firstName, String username) {
         userRepository.updateUserInfo(firstName, lastName, username);
+    }
+
+    public void sendCodeForChangePasswordFromPhone(String username) {
+
+        User user = loadUserByUsername(username);
+
+        Random random = new Random();
+        int rage = 9999;
+        int code = 1000 + random.nextInt(rage - 1000);
+
+        userRepository.setChangePasswordCode(user.getUsername(), String.valueOf(code));
+
+        try {
+            mailSender.send(user.getEmail(),"Смена пароля в WebQuizzes",
+                    """
+                    Для смены пароля в WebQuizzes
+                    введите в приложении код: """ + code +
+                    """
+                    Если вы не меняли пароль на данном ресурсе, то проигнорируйте сообщение
+                    """);
+
+        } catch (Exception e) {
+            System.out.println("Не отправлено");
+        }
     }
 
     public void sendCodeForChangePassword(User user) {
@@ -195,14 +184,14 @@ public class UserService implements UserDetailsService {
     @Transactional
     public void updatePassword(User user, String changePasswordCode) {
 
+        User savedUser = getUserViaChangePasswordCode(changePasswordCode);
 
-        User savedUser = userService.getUserViaChangePasswordCode(changePasswordCode);
         user.setUsername(savedUser.getUsername());
-
-
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setChangePasswordCode(UUID.randomUUID().toString());
+
         userRepository.changePassword(user.getPassword(), user.getUsername(), user.getChangePasswordCode());
+        savedUser.setChangePasswordCode(UUID.randomUUID().toString());
     }
 
     public void activateAccount(String activationCode) {
@@ -230,24 +219,7 @@ public class UserService implements UserDetailsService {
             doInitialize(user);
             userRepository.save(user);
         }
-        if (userRepository.findById(user.getUsername()).get().getAvatar().contains("default")) {
 
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-            if (authentication instanceof OAuth2AuthenticationToken) {
-                if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("google")) {
-                    user.setAvatar(((DefaultOidcUser) authentication.getPrincipal()).getPicture());
-                    userRepository.setAvatar(user.getAvatar(), user.getUsername());
-
-                }  else if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("github")) {
-                    user.setAvatar(((OAuth2AuthenticationToken) authentication).getPrincipal().getAttributes().get("avatar_url").toString());
-                    userRepository.setAvatar(user.getAvatar(), user.getUsername());
-                }
-            }
-
-
-
-        }
 
 
     }
@@ -268,7 +240,7 @@ public class UserService implements UserDetailsService {
             user.setEmail((String) authentication.getPrincipal().getAttributes().get("email"));
             user.setFirstName((String) authentication.getPrincipal().getAttributes().get("given_name"));
             user.setLastName((String) authentication.getPrincipal().getAttributes().get("family_name"));
-            user.setAvatar((String) authentication.getPrincipal().getAttributes().get("picture"));
+            user.setPhotos(Collections.singletonList((String) authentication.getPrincipal().getAttributes().get("picture")));
 
             user.setUsername(((String) authentication.getPrincipal().getAttributes()
                     .get("email")).replace("@gmail.com", ""));
@@ -280,7 +252,7 @@ public class UserService implements UserDetailsService {
             user.setUsername(authentication.getPrincipal().getAttributes().get("login").toString());
             user.setFirstName(authentication.getPrincipal().getAttributes().get("name").toString());
             user.setLastName(authentication.getPrincipal().getAttributes().get("name").toString());
-            user.setAvatar(authentication.getPrincipal().getAttributes().get("avatar_url").toString());
+            user.setPhotos(Collections.singletonList(authentication.getPrincipal().getAttributes().get("avatar_url").toString()));
 
             if (authentication.getPrincipal().getAttributes().get("email") != null) {
                 user.setEmail(authentication.getPrincipal().getAttributes().get("email").toString());
@@ -305,8 +277,8 @@ public class UserService implements UserDetailsService {
         rabbitAdmin.declareQueue(queue);
         rabbitAdmin.declareBinding(binding);
 
-        if (user.getAvatar() == null) {
-            user.setAvatar("https://" + hostname + "/img/default.jpg");
+        if (user.getPhotos() == null) {
+            user.setPhotos(Collections.singletonList("https://" + hostname + "/img/default.jpg"));
         }
 
         user.setEnabled(true);
@@ -324,50 +296,6 @@ public class UserService implements UserDetailsService {
         user2.setBalance(user2.getBalance() + coins);
     }
 
-    /*public User getAuthUser(Authentication authentication) {
-        String name = getAuthUserCommon(authentication);
-        //String name;
-
-        return getUserProxy(name);
-    }
-
-
-    public User getAuthUserNoProxy(Authentication authentication) {
-        String name = getAuthUserCommon(authentication);
-
-        return loadUserByUsername(name);
-    }
-
-
-    private String getAuthUserCommon(Authentication authentication) {
-        String name = "";
-
-
-        if (authentication instanceof OAuth2AuthenticationToken) {
-
-            if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("google")) {
-
-                name = ((DefaultOidcUser) authentication.getPrincipal()).getAttributes().get("email")
-                        .toString().replace("@gmail.com", "");
-            } else if (((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId().equals("github")) {
-                name = ((DefaultOAuth2User) authentication.getPrincipal()).getAttributes().get("name")
-                        .toString();
-            }
-
-        }
-        else if (authentication instanceof UsernamePasswordAuthenticationToken) {
-            if (authentication.getCredentials() != null) {
-                name = (authentication).getPrincipal().toString();
-
-            } else {
-                User user = (User) authentication.getPrincipal();
-                name = user.getUsername();
-            }
-        } else if (authentication instanceof RememberMeAuthenticationToken) {
-            name = ((User) authentication.getPrincipal()).getUsername();
-        }
-        return name;
-    }*/
 
 
     public void processPayment(String notification_type, String operation_id, Number amount, Number withdraw_amount, String currency, String datetime, String sender, Boolean codepro, String label, String sha1_hash, Boolean test_notification, Boolean unaccepted, String lastname, String firstname, String fathersname, String email, String phone, String city, String street, String building, String suite, String flat, String zip) throws NoSuchAlgorithmException {
@@ -437,10 +365,10 @@ public class UserService implements UserDetailsService {
 
     public AuthResponse signUpViaJwt(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userService.saveUser(user);
+        saveUser(user);
 
         // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
-        String jwt = jwtTokenUtil.generateToken(userService.loadUserByUsername(user.getUsername()));
+        String jwt = jwtTokenUtil.generateToken(loadUserByUsername(user.getUsername()));
         return new AuthResponse(jwt);
     }
 
@@ -464,7 +392,7 @@ public class UserService implements UserDetailsService {
             String email = payload.getEmail();
             boolean emailVerified = Boolean.valueOf(payload.getEmailVerified());
             String name = (String) payload.get("name");
-            String pictureUrl = (String) payload.get("picture");
+            List<String> pictureUrl = Collections.singletonList((String) payload.get("picture"));
             String locale = (String) payload.get("locale");
             String familyName = (String) payload.get("family_name");
             String givenName = (String) payload.get("given_name");
@@ -478,11 +406,11 @@ public class UserService implements UserDetailsService {
             user.setEmail(email);
             user.setFirstName(givenName);
             user.setLastName(familyName);
-            user.setAvatar(pictureUrl);
+            user.setPhotos(pictureUrl);
 
-            userService.tryToSaveUser(user);
+            tryToSaveUser(user);
 
-            User savedUser = userService.loadUserByUsername(user.getUsername());
+            User savedUser = loadUserByUsername(user.getUsername());
 
             UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                     new UsernamePasswordAuthenticationToken(
@@ -508,6 +436,7 @@ public class UserService implements UserDetailsService {
         }
     }
 
+    @Transactional
     public void uploadPhoto(MultipartFile file, Principal principal) {
         if (!file.isEmpty()) {
             try {
@@ -521,9 +450,16 @@ public class UserService implements UserDetailsService {
                 stream.write(bytes);
                 stream.close();
 
-                User user = userService.loadUserByUsernameProxy(principal.getName());
 
-                userService.setAvatar("https://" + hostname + "/img/" + uuid + ".jpg", user);
+                String photoUrl = "https://" + hostname + "/img/" + uuid + ".jpg";
+
+
+                User user = loadUserByUsername(principal.getName());
+
+                Photo photo = new Photo();
+                photo.setUrl(photoUrl);
+                photo.setPosition(user.getPhotos().size());
+                user.addPhoto(photo);
 
 
             } catch (IOException e) {
@@ -535,8 +471,39 @@ public class UserService implements UserDetailsService {
     public void processCheckIn(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setEnabled(false);
-        user.setAvatar("https://" + hostname + "/img/default.jpg");
+        user.setPhotos(Collections.singletonList("https://" + hostname + "/img/default.jpg"));
         user.grantAuthority(Role.ROLE_USER);
-        userService.saveUser(user);
+        saveUser(user);
+    }
+
+    public Boolean checkForExistUser(String username) {
+        return userRepository.existsById(username);
+    }
+
+    @Transactional
+    public ProfileView getUserProfileById(String username) {
+        ProfileView profileView = userRepository.findUserByUsernameOrderByUsernameAscPhotosAsc(username);
+        Collections.sort(profileView.getPhotos());
+        return profileView;
+    }
+
+    @Autowired
+    private PhotoRepository photoRepository;
+
+
+    @Transactional
+    public void swapPhoto(Photo photo, String name) {
+
+        Photo savedPhoto = photoRepository.findById(photo.getId()).get();
+        List<Photo> photos = photoRepository.findByUser_Username(name);
+
+        photos.remove(((int) savedPhoto.getPosition()));
+        photos.add(photo.getPosition(), savedPhoto);
+
+        for (int i = 0; i < photos.size(); i++) {
+            photos.get(i).setPosition(i);
+        }
+
+
     }
 }

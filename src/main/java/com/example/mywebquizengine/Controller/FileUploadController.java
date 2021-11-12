@@ -32,38 +32,16 @@ public class FileUploadController {
 
 
     @PostMapping(path = "/upload")
-    public String handleFileUpload(Model model, @RequestParam("file") MultipartFile file, @AuthenticationPrincipal Principal principal) {
-        String name = file.getOriginalFilename();
+    public String handleFileUpload(Model model, @RequestParam("file") MultipartFile file,
+                                   @AuthenticationPrincipal Principal principal) {
 
-        if (!file.isEmpty()) {
-            try {
-                String uuid = UUID.randomUUID().toString();
-                uuid = uuid.substring(0,8);
-                byte[] bytes = file.getBytes();
-                //fdfdf
+        userService.uploadPhoto(file, principal);
 
-                BufferedOutputStream stream =
-                        new BufferedOutputStream(new FileOutputStream(new File("img/" +
-                                uuid + ".jpg")));
-                stream.write(bytes);
-                stream.close();
+        User userLogin = userService.loadUserByUsernameProxy(principal.getName());
+        //userLogin.setAvatar("https://" + hostname + "/img/" + uuid + ".jpg");
+        model.addAttribute("user", userLogin);
+        return "profile";
 
-                User user = userService.loadUserByUsernameProxy(principal.getName());
-
-                userService.setAvatar("https://" + hostname + "/img/" + uuid + ".jpg", user);
-
-                //file.transferTo(new File("C:/Users/avlad/IdeaProjects/WebQuiz" + name));
-
-                User userLogin = userService.loadUserByUsernameProxy(principal.getName());
-                //userLogin.setAvatar("https://" + hostname + "/img/" + uuid + ".jpg");
-                model.addAttribute("user", userLogin);
-                return "profile";
-            } catch (Exception e) {
-                return "Вам не удалось загрузить " + name + " => " + e.getMessage();
-            }
-        } else {
-            return "Вам не удалось загрузить " + name + " потому что файл пустой.";
-        }
     }
 
 

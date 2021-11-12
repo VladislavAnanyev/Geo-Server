@@ -103,9 +103,9 @@ public class MessageService {
 
 
 
-    public List<Message> getDialogs(String username) {
+    /*public List<Message> getDialogs(String username) {
         return messageRepository.getDialogs(username);
-    }
+    }*/
 
     public ArrayList<MessageForApiViewCustomQuery> getDialogsForApi(String username) {
 
@@ -116,12 +116,30 @@ public class MessageService {
 
 
     @Transactional
-    public void deleteMessage(Long id, @AuthenticationPrincipal Principal principal) {
+    public void deleteMessage(Long id, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
         Optional<Message> optionalMessage = messageRepository.findById(id);
         if (optionalMessage.isPresent()) {
             Message message = optionalMessage.get();
             if (message.getSender().getUsername().equals(principal.getName())) {
                 message.setStatus(MessageStatus.DELETED);
+
+                MessageWithDialog messageDto = messageRepository.findMessageById(message.getId());
+                JSONObject jsonObject = (JSONObject) JSONValue
+                        .parseWithException(objectMapper.writeValueAsString(messageDto));
+                jsonObject.put("type", "DELETE-MESSAGE");
+
+                for (User user :message.getDialog().getUsers()) {
+
+                    simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
+                            jsonObject);
+
+                    rabbitTemplate.convertAndSend(user.getUsername(),
+                            jsonObject);
+
+                }
+
+
+
             } else {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
             }
@@ -148,13 +166,29 @@ public class MessageService {
     }
 
     @Transactional
-    public void editMessage(Long id, Message newMessage, Principal principal) {
+    public void editMessage(Long id, Message newMessage, Principal principal) throws JsonProcessingException, ParseException {
         Optional<Message> optionalMessage = messageRepository.findById(id);
         if (optionalMessage.isPresent()) {
             Message message = optionalMessage.get();
             if (message.getSender().getUsername().equals(principal.getName())) {
                 message.setContent(newMessage.getContent());
                 message.setStatus(MessageStatus.EDIT);
+
+                MessageWithDialog messageDto = messageRepository.findMessageById(message.getId());
+                JSONObject jsonObject = (JSONObject) JSONValue
+                        .parseWithException(objectMapper.writeValueAsString(messageDto));
+                jsonObject.put("type", "EDIT-MESSAGE");
+
+                for (User user :message.getDialog().getUsers()) {
+
+                    simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
+                            jsonObject);
+
+                    rabbitTemplate.convertAndSend(user.getUsername(),
+                            jsonObject);
+
+                }
+
             } else {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
             }
@@ -168,12 +202,10 @@ public class MessageService {
         User sender = userService.loadUserByUsernameProxy(message.getSender().getUsername());
 
         message.setSender(sender);
-
         message.setDialog(dialogRepository.findById(message.getDialog().getDialogId()).get());
-
         message.setTimestamp(new Date());
-
         message.setStatus(MessageStatus.DELIVERED);
+        
         messageService.saveMessage(message);
 
         Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
@@ -187,7 +219,6 @@ public class MessageService {
         JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(messageDto));
         jsonObject.put("type", "MESSAGE");
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // При сообщениях от RabbitMq Authentication отсутствует
         if (principal == null) {

@@ -157,7 +157,23 @@ public class ApiUserControllerTest {
                     "email": "a.vlad.c@ya.ru",
                     "firstName": "Владислав",
                     "lastName": "Ананьев",
-                    "password": "12"}
+                    "password": "12345"}
+                """;
+
+        mockMvc.perform(post("https://localhost/api/signup")
+                .content(json)
+                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testSignUpWithBadUsername2() throws Exception {
+
+        String json = """
+                {"username": "appli cation",
+                    "email": "a.vlad.c@ya.ru",
+                    "firstName": "Владислав",
+                    "lastName": "Ананьев",
+                    "password": "12345"}
                 """;
 
         mockMvc.perform(post("https://localhost/api/signup")

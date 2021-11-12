@@ -1,5 +1,7 @@
 package com.example.mywebquizengine.Controller.api;
 
+import com.example.mywebquizengine.Model.Photo;
+import com.example.mywebquizengine.Model.Projection.ProfileView;
 import com.example.mywebquizengine.Model.Projection.UserCommonView;
 import com.example.mywebquizengine.Model.Projection.UserView;
 import com.example.mywebquizengine.Model.User;
@@ -33,7 +35,6 @@ public class ApiUserController {
     @GetMapping(path = "/friends")
     public List<UserCommonView> getFriends(@AuthenticationPrincipal Principal principal) {
         return userService.findMyFriends(principal);
-        //return new ArrayList<>();
     }
 
     @GetMapping(path = "/findbyid")
@@ -48,13 +49,10 @@ public class ApiUserController {
     }
 
 
-
     @PostMapping(path = "/signup")
     public AuthResponse signup(@Valid @RequestBody User user) {
         return userService.signUpViaJwt(user);
     }
-
-
 
 
     @PostMapping(path = "/googleauth")
@@ -65,19 +63,13 @@ public class ApiUserController {
 
     @GetMapping(path = "/authuser")
     public UserView getApiAuthUser(@AuthenticationPrincipal Principal principal)  {
-        /*if (userService.getAuthUser(principal) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        } else {*/
             return userService.getAuthUser(principal);
-        //}
-        //throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-
     }
 
-    /*@GetMapping(path = "/error")
-    public String errorApi() {
-        throw new ResponseStatusException(HttpStatus.BAD_GATEWAY);
-    }*/
+    @GetMapping(path = "/user/{username}/profile")
+    public ProfileView getProfile(@PathVariable String username) {
+        return userService.getUserProfileById(username);
+    }
 
 
     @PostMapping(path = "/upload")
@@ -85,10 +77,35 @@ public class ApiUserController {
         userService.uploadPhoto(file, principal);
     }
 
-    @Transactional
+
     @PutMapping(path = "/user", consumes={"application/json"})
     public void changeUser(@RequestBody User user,
                            @AuthenticationPrincipal Principal principal) {
         userService.updateUser(user.getLastName(), user.getFirstName(), principal.getName());
+    }
+
+    @PostMapping(path = "/user/no-auth/send-change-password-code")
+    public void sendChangePasswordCodeWithoutAuth(User user) {
+        userService.sendCodeForChangePasswordFromPhone(user.getUsername());
+    }
+
+    @PostMapping(path = "/user/send-change-password-code")
+    public void sendChangePasswordCodeWithAuth(@AuthenticationPrincipal Principal principal) {
+        userService.sendCodeForChangePasswordFromPhone(principal.getName());
+    }
+
+    @PutMapping(path = "/user/password/{code}")
+    public void changePassword(User user, @PathVariable String code) {
+        userService.updatePassword(user, code);
+    }
+
+    @GetMapping(path = "/user/check-username")
+    public Boolean checkExistUser(@RequestParam String username) {
+        return userService.checkForExistUser(username);
+    }
+
+    @PostMapping(path = "/user/swap-photo")
+    public void swapPhoto(@AuthenticationPrincipal Principal principal, @RequestBody Photo photo) {
+        userService.swapPhoto(photo, principal.getName());
     }
 }

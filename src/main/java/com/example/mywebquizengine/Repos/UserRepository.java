@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.Repos;
 
+import com.example.mywebquizengine.Model.Projection.ProfileView;
 import com.example.mywebquizengine.Model.Projection.UserCommonView;
 import com.example.mywebquizengine.Model.Projection.UserView;
 import com.example.mywebquizengine.Model.User;
@@ -22,6 +23,8 @@ public interface UserRepository extends CrudRepository<User, String>, JpaReposit
     UserCommonView findByUsername(String username);
 
     UserView findAllByUsername(String username);
+
+    ProfileView findUserByUsernameOrderByUsernameAscPhotosAsc(String username);
 
     @Modifying
     @Transactional

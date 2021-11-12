@@ -1,5 +1,6 @@
 package com.example.mywebquizengine;
 
+import com.example.mywebquizengine.Model.Photo;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.UserRepository;
 import com.example.mywebquizengine.Service.UserAnswerService;
@@ -13,6 +14,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -29,6 +31,7 @@ public class Demo implements CommandLineRunner {
     @Autowired
     private RabbitAdmin rabbitAdmin;
 
+    @Transactional
     @Override
     public void run(String... args) {
 
@@ -54,6 +57,21 @@ public class Demo implements CommandLineRunner {
 
             }
         }
+
+
+
+        List<User> users = userRepository.findAll();
+
+        if (users.get(0).getPhotos().size() == 0) {
+            for (User user : users) {
+                Photo photo = new Photo();
+                photo.setUrl(user.getAvatar());
+                photo.setPosition(0);
+                //photo.setUser(user);
+                user.addPhoto(photo);
+            }
+        }
+
 
         /*if (rabbitAdmin.getQueueProperties("applicationmeeting") == null ) {
 

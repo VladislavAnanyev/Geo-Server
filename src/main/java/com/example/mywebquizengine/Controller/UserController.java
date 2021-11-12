@@ -1,6 +1,8 @@
 package com.example.mywebquizengine.Controller;
 
 import com.example.mywebquizengine.Model.*;
+import com.example.mywebquizengine.Model.Projection.UserView;
+import com.example.mywebquizengine.Repos.UserRepository;
 import com.example.mywebquizengine.Security.ActiveUserStore;
 import com.example.mywebquizengine.Service.RequestService;
 import com.example.mywebquizengine.Service.UserService;
@@ -28,12 +30,8 @@ import java.util.*;
 @Controller
 public class UserController {
 
-
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private RequestService requestService;
@@ -42,10 +40,12 @@ public class UserController {
     private ActiveUserStore activeUserStore;
 
 
+
+
     @GetMapping(path = "/profile")
     public String getProfile(Model model , @AuthenticationPrincipal Principal principal) {
 
-        User user = userService.loadUserByUsername(principal.getName());
+        UserView user = userService.getAuthUser(principal);
         model.addAttribute("user", user);
 
         model.addAttribute("balance", user.getBalance());
@@ -102,7 +102,6 @@ public class UserController {
 
         User user = userService.loadUserByUsername(in.getUsername());
 
-
         userService.sendCodeForChangePassword(user);
 
     }
@@ -115,7 +114,7 @@ public class UserController {
 
     @GetMapping(path = "/updatepass/{changePasswordCode}")
     public String changePasswordPage(@PathVariable String changePasswordCode) {
-        User user = userService.getUserViaChangePasswordCode(changePasswordCode);
+        userService.getUserViaChangePasswordCode(changePasswordCode);
         return "changePassword";
     }
 
@@ -126,16 +125,6 @@ public class UserController {
     }
 
 
-
-/*    @Transactional
-    @PutMapping(path = "/pass", consumes ={"application/json"})
-    @PreAuthorize(value = "#principal.name.equals(#user.username)")
-    public String changePassword(@RequestBody User user, @AuthenticationPrincipal Principal principal) {
-
-        userService.updatePassword(user, null);
-
-        return "changePassword";
-    }*/
 
 
     @PutMapping(path = "/updatepass/{changePasswordCode}", consumes ={"application/json"})
@@ -211,7 +200,6 @@ public class UserController {
 
     @PostMapping(path = "/acceptRequest")
     @ResponseBody
-    //@PreAuthorize(value = "!#principal.name.equals(#user.username)")
     public Long acceptRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) {
         return requestService.acceptRequest(request.getId(), principal);
     }

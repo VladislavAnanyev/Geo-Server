@@ -5,6 +5,8 @@ import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewCustomQ
 import com.example.mywebquizengine.Model.Projection.DialogWithUsersViewPaging;
 import com.example.mywebquizengine.Service.MessageService;
 import com.example.mywebquizengine.Service.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -21,12 +23,12 @@ public class ApiChatController {
 
 
     @DeleteMapping(path = "/message/{id}")
-    public void deleteMessage(@PathVariable Long id, @AuthenticationPrincipal Principal principal) {
+    public void deleteMessage(@PathVariable Long id, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
         messageService.deleteMessage(id, principal);
     }
 
     @PutMapping(path = "/message/{id}")
-    public void editMessage(@PathVariable Long id, @RequestBody Message message, @AuthenticationPrincipal Principal principal) {
+    public void editMessage(@PathVariable Long id, @RequestBody Message message, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
         messageService.editMessage(id, message, principal);
     }
 

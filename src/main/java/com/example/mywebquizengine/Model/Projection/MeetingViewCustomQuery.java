@@ -11,10 +11,10 @@ import java.util.Date;
 public interface MeetingViewCustomQuery {
     Long getId();
 
-    @Value("#{new com.example.mywebquizengine.Model.User(target.first_username, target.first_firstName, target.first_lastName, target.first_avatar)}")
+    @Value("#{new com.example.mywebquizengine.Model.User(target.first_username, target.first_firstName, target.first_lastName, T(com.example.mywebquizengine.Model.Photo).getList(target.first_avatar))}")
     UserCommonView getFirstUser();
 
-    @Value("#{new com.example.mywebquizengine.Model.User(target.second_username, target.second_firstName, target.second_lastName, target.second_avatar)}")
+    @Value("#{new com.example.mywebquizengine.Model.User(target.second_username, target.second_firstName, target.second_lastName, T(com.example.mywebquizengine.Model.Photo).getList(target.second_avatar))}")
     UserCommonView getSecondUser();
 
     Double getLng();

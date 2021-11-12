@@ -113,13 +113,13 @@
 
                             <#--                            Переделать-->
 
-                                <#if dialog.sender.username != myUsername.username>
+                                <#if dialog.sender.username != name>
 
 
                                     <div id="${dialog.dialog.dialogId?c}" <#--последнее сообщение не от меня--> class="chat_list <#--active_chat-->">
                                         <a id="${dialog.dialog.dialogId?c}href" href="/chat/${dialog.dialog.dialogId?c}">
                                         <div class="chat_people">
-                                            <div class="chat_img"> <img class="rounded-circle" width="43.26px" height="43.26px" src="${dialog.sender.avatar}"  alt="sunil"> </div>
+                                            <div class="chat_img"> <img class="rounded-circle" width="43.26px" height="43.26px" src="${dialog.sender.avatar}" alt="sunil"> </div>
                                             <div class="chat_ib последнее сообщение не от меня">
                                                 <h5 class="dialogsuser">${dialog.sender.username}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
                                                 <p id="lastMsg${dialog.dialog.dialogId?c}">${dialog.content}</p>
@@ -131,7 +131,7 @@
 
 
     <#--                                Второй пользователь-->
-                                    <#if dialog.dialog.users?first.username = myUsername.username >
+                                    <#if dialog.dialog.users?first.username = name >
                                         <#assign o = dialog.dialog.users?last>
                                     <#else>
                                         <#assign o = dialog.dialog.users?first>
@@ -189,7 +189,7 @@
 
                     <#--<main data-barba="container">-->
                     <#list messages?if_exists as msg>
-                        <#if msg.sender.username == myUsername.username>
+                        <#if msg.sender.username == name>
 
 
 
@@ -344,7 +344,7 @@
     <#if dialog?? >
 
 
-        <#if dialogObj.users?first.username = myUsername.username >
+        <#if dialogObj.users?first.username = name >
             <#assign c = dialogObj.users?last>
         <#else>
             <#assign c = dialogObj.users?first>

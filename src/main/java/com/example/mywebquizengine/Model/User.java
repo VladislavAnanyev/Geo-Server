@@ -1,28 +1,15 @@
 package com.example.mywebquizengine.Model;
 
 import com.example.mywebquizengine.Model.Chat.Dialog;
-import com.example.mywebquizengine.Model.Test.Test;
 import com.example.mywebquizengine.MywebquizengineApplication;
 import com.example.mywebquizengine.Service.UserService;
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import java.security.Principal;
+import javax.validation.constraints.*;
 import java.util.*;
 
 @Entity(name = "USERS")
@@ -30,6 +17,9 @@ public class User implements UserDetails, OAuth2User  {
 
     @Id
     @NotBlank
+    /*@Pattern(regexp = """
+            [\S]{0,}
+            """) // без пробелов*/
     private String username;
 
     @NotBlank
@@ -52,31 +42,40 @@ public class User implements UserDetails, OAuth2User  {
     @Size(min = 5)
     private String password;
 
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_username")
+    @OrderBy("position ASC")
+    private List<Photo> photos;
+
     private String avatar;
-    /*@ManyToMany (cascade = {
-            CascadeType.PERSIST,
-            CascadeType.MERGE
-    })
-    @JoinTable(name = "users_groups",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "group_id")
-    )
-    private List<Group> groups;*/
+
+    private String description;
 
 
+    public String getDescription() {
+        return description;
+    }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
+    public String getAvatar() {
+        return avatar;
+    }
 
-    @ManyToMany (cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "users_dialogs",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "dialog_id")
     )
     private List<Dialog> dialogs = new ArrayList<>();
 
-    /*@OneToMany(mappedBy = "user")
-    private List<Test> tests;*/
-    //@JsonIgnore
+
     public List<Dialog> getDialogs() {
         return dialogs;
     }
@@ -120,11 +119,22 @@ public class User implements UserDetails, OAuth2User  {
         this.status = false;
     }
 
+    public User(String username, String firstName, String lastName, List<Photo> photos) {
+        this.username = username;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.photos = photos;
+    }
+
     public User(String username, String firstName, String lastName, String avatar) {
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.avatar = avatar;
+        Photo photo = new Photo();
+        photo.setUrl(avatar);
+        List<Photo> photos = new ArrayList<>();
+        photos.add(photo);
+        this.photos = photos;
     }
 
 
@@ -144,7 +154,6 @@ public class User implements UserDetails, OAuth2User  {
 
     @Enumerated(EnumType.STRING)
     @ElementCollection(fetch = FetchType.EAGER)
-    //@Fetch(value = FetchMode.JOIN)
     private List<Role> roles;
 
     @Override
@@ -153,8 +162,6 @@ public class User implements UserDetails, OAuth2User  {
         roles.forEach(role -> authorities.add(new SimpleGrantedAuthority(role.toString())));
         return authorities;
     }
-
-
 
     public String getActivationCode() {
         return activationCode;
@@ -193,7 +200,6 @@ public class User implements UserDetails, OAuth2User  {
         if ( roles == null ) roles = new ArrayList<>();
         this.roles.add(authority);
     }
-
 
 
     public void setEnabled(boolean enabled) {
@@ -250,21 +256,21 @@ public class User implements UserDetails, OAuth2User  {
         return status;
     }
 
-    public String getAvatar() {
-        return avatar;
+    public List<Photo> getPhotos() {
+        return photos;
     }
 
-    public void setAvatar(String avatarName) {
-        this.avatar = avatarName;
+    public void setPhotos(List<String> avatarName) {
+        Photo photo = new Photo();
+        photo.setUrl(avatarName.get(0));
+        this.photos = Collections.singletonList(photo);
     }
 
     public List<Role> getRoles() {
         return roles;
     }
 
-    /*public List<Test> getTests() {
-        return tests;
-    }*/
+
     public void setRoles(List<Role> roles) {
         this.roles = roles;
     }
@@ -284,15 +290,6 @@ public class User implements UserDetails, OAuth2User  {
         return balance;
     }
 
-/*    public List<Group> getGroups() {
-        return groups;
-    }
-    public void setGroups(List<Group> groups) {
-        this.groups = groups;
-    }*/
-    /*public void setTests(List<Test> tests) {
-        this.tests = tests;
-    }*/
 
     public List<User> getFriends() {
         return friends;
@@ -316,5 +313,11 @@ public class User implements UserDetails, OAuth2User  {
     @Override
     public Map<String, Object> getAttributes() {
         return null;
+    }
+
+    public void addPhoto(Photo photo) {
+        this.photos.add(photo);
+        //photo.setUser(this);
+        //photo.getUser().setPhotos(this.photos);
     }
 }

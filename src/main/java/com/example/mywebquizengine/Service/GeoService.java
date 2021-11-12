@@ -3,6 +3,7 @@ package com.example.mywebquizengine.Service;
 import com.example.mywebquizengine.Controller.GeoController;
 import com.example.mywebquizengine.Model.Geo.Geolocation;
 import com.example.mywebquizengine.Model.Geo.Meeting;
+import com.example.mywebquizengine.Model.Projection.GeolocationView;
 import com.example.mywebquizengine.Model.Projection.MeetingViewCustomQuery;
 import com.example.mywebquizengine.Repos.GeolocationRepository;
 import com.example.mywebquizengine.Repos.MeetingRepository;
@@ -53,8 +54,6 @@ public class GeoService {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private GeoController geoController;
 
 
     public ArrayList<MeetingViewCustomQuery> getMyMeetings(Principal principal, String date) {
@@ -87,15 +86,14 @@ public class GeoService {
 
 
         //geolocation.setId(geolocation.getUser().getUsername());
-        userService.saveGeo(myGeolocation);
+        saveGeo(myGeolocation);
 
 
 
 
         //System.out.println(date.toString().substring(0,10));
 
-        ArrayList<Geolocation> peopleNearMe = geoController
-                .findInSquare(principal.getName(),myGeolocation, "20", time);
+        ArrayList<Geolocation> peopleNearMe = findInSquare(principal.getName(),myGeolocation, "20", time);
 
         if (peopleNearMe.size() > 0) {
 
@@ -224,4 +222,29 @@ public class GeoService {
                         .loadUserByUsernameProxy(authUser)
                         .getUsername(), time);
     }
+
+
+    public void saveGeo(Geolocation geolocation) {
+
+
+            /*if (geolocationRepository.existsById(geolocation.getUser().getUsername())) {
+
+                geolocationRepository.updateGeo(geolocation.getLat(), geolocation.getLng(), geolocation.getUser().getUsername());
+            } else {
+
+                geolocationRepository.save(geolocation);
+            }*/
+
+
+        geolocationRepository.save(geolocation);
+
+
+        //geolocationRepository.insertGeo(geolocation.getLat(), geolocation.getLng(), geolocation.getUser().getUsername());
+    }
+
+
+    public ArrayList<GeolocationView> getAllGeo(String username) {
+        return (ArrayList<GeolocationView>) geolocationRepository.getAll(username);
+    }
+
 }
