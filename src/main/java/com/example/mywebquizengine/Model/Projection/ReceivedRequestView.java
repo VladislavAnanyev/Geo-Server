@@ -5,9 +5,6 @@ import org.springframework.beans.factory.annotation.Value;
 
 public interface ReceivedRequestView {
 
-
-
-
     Long getId();
 
     UserCommonView getSender();

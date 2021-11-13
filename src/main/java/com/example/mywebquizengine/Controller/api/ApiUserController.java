@@ -84,15 +84,15 @@ public class ApiUserController {
         userService.updateUser(user.getLastName(), user.getFirstName(), principal.getName());
     }
 
-    @PostMapping(path = "/user/no-auth/send-change-password-code")
-    public void sendChangePasswordCodeWithoutAuth(User user) {
-        userService.sendCodeForChangePasswordFromPhone(user.getUsername());
+    @PostMapping(path = "/user/send-change-password-code")
+    public void sendChangePasswordCodeWithoutAuth(@RequestParam String username) {
+        userService.sendCodeForChangePasswordFromPhone(username);
     }
 
-    @PostMapping(path = "/user/send-change-password-code")
+    /*@PostMapping(path = "/user/send-change-password-code")
     public void sendChangePasswordCodeWithAuth(@AuthenticationPrincipal Principal principal) {
         userService.sendCodeForChangePasswordFromPhone(principal.getName());
-    }
+    }*/
 
     @PutMapping(path = "/user/password/{code}")
     public void changePassword(User user, @PathVariable String code) {
