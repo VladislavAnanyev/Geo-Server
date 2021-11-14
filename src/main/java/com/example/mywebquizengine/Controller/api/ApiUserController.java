@@ -43,6 +43,7 @@ public class ApiUserController {
 
     }
 
+
     @PostMapping(path = "/signin")
     public AuthResponse jwtSignIn(@RequestBody AuthRequest authRequest) {
         return userService.signInViaJwt(authRequest);
@@ -95,8 +96,13 @@ public class ApiUserController {
     }*/
 
     @PutMapping(path = "/user/password/{code}")
-    public void changePassword(User user, @PathVariable String code) {
+    public void changePassword(@RequestBody User user, @PathVariable String code) {
         userService.updatePassword(user, code);
+    }
+
+    @GetMapping(path = "/user/verify-password-code/{code}")
+    public void verifyChangePasswordCode(@RequestBody User user, @PathVariable String code) {
+        userService.getUserViaChangePasswordCodePhoneApi(user.getUsername(), code);
     }
 
     @GetMapping(path = "/user/check-username")

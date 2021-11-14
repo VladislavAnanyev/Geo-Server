@@ -506,4 +506,15 @@ public class UserService implements UserDetailsService {
 
 
     }
+
+    public void getUserViaChangePasswordCodePhoneApi(String username, String code) {
+
+        Optional<User> user = userRepository.findByChangePasswordCode(code);
+
+        if (user.isPresent() && user.get().getUsername().equals(username)) {
+            return;
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+    }
 }
