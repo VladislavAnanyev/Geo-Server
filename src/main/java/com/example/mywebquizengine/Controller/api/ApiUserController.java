@@ -95,14 +95,14 @@ public class ApiUserController {
         userService.sendCodeForChangePasswordFromPhone(principal.getName());
     }*/
 
-    @PutMapping(path = "/user/password/{code}")
-    public void changePassword(@RequestBody User user, @PathVariable String code) {
-        userService.updatePassword(user, code);
+    @PutMapping(path = "/user/password")
+    public void changePassword(@RequestBody User user) {
+        userService.updatePassword(user, user.getChangePasswordCode());
     }
 
-    @GetMapping(path = "/user/verify-password-code/{code}")
-    public void verifyChangePasswordCode(@RequestBody User user, @PathVariable String code) {
-        userService.getUserViaChangePasswordCodePhoneApi(user.getUsername(), code);
+    @GetMapping(path = "/user/verify-password-code")
+    public void verifyChangePasswordCode(@RequestBody User user) {
+        userService.getUserViaChangePasswordCodePhoneApi(user.getUsername(), user.getChangePasswordCode());
     }
 
     @GetMapping(path = "/user/check-username")

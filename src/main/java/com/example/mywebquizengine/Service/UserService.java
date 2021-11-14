@@ -43,6 +43,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
+import javax.validation.Valid;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -193,6 +194,8 @@ public class UserService implements UserDetailsService {
         userRepository.changePassword(user.getPassword(), user.getUsername(), user.getChangePasswordCode());
         savedUser.setChangePasswordCode(UUID.randomUUID().toString());
     }
+
+
 
     public void activateAccount(String activationCode) {
         User user = userRepository.findByActivationCode(activationCode);
