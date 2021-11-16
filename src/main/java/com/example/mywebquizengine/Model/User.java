@@ -51,7 +51,6 @@ public class User implements UserDetails, OAuth2User  {
 
     private String description;
 
-
     public String getDescription() {
         return description;
     }
@@ -263,6 +262,7 @@ public class User implements UserDetails, OAuth2User  {
     public void setPhotos(List<String> avatarName) {
         Photo photo = new Photo();
         photo.setUrl(avatarName.get(0));
+        photo.setPosition(0);
         this.photos = Collections.singletonList(photo);
     }
 

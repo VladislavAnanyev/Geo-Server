@@ -10,14 +10,10 @@ import com.example.mywebquizengine.Model.UserInfo.AuthResponse;
 import com.example.mywebquizengine.Model.UserInfo.GoogleToken;
 import com.example.mywebquizengine.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
-import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -52,7 +48,8 @@ public class ApiUserController {
 
     @PostMapping(path = "/signup")
     public AuthResponse signup(@Valid @RequestBody User user) {
-        return userService.signUpViaJwt(user);
+        userService.processCheckIn(user, "BASIC");
+        return userService.getJwtToken(user);
     }
 
 

@@ -77,7 +77,7 @@ public class UserController {
     @PostMapping(path = "/register")
     public String checkIn(@Valid User user) {
 
-        userService.processCheckIn(user);
+        userService.processCheckIn(user, "BASIC");
         return "reg";
 
     }
@@ -85,8 +85,8 @@ public class UserController {
     @PostMapping(path = "/update/userinfo/password", consumes ={"application/json"} )
     public void tryToChangePassWithAuth(@AuthenticationPrincipal Principal principal) {
 
-        User user = userService.loadUserByUsernameProxy(principal.getName());
-        userService.sendCodeForChangePassword(user);
+        //User user = userService.loadUserByUsernameProxy(principal.getName());
+        userService.sendCodeForChangePassword(principal.getName());
 
     }
 
@@ -100,9 +100,9 @@ public class UserController {
     @PostMapping(path = "/update/userinfo/pswrdwithoutauth", consumes ={"application/json"} )
     public void tryToChangePassWithoutAuth(@RequestBody User in) {
 
-        User user = userService.loadUserByUsername(in.getUsername());
+        //User user = userService.loadUserByUsername(in.getUsername());
 
-        userService.sendCodeForChangePassword(user);
+        userService.sendCodeForChangePassword(in.getUsername());
 
     }
 

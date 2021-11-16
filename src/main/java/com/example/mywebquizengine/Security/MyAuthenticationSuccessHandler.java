@@ -9,21 +9,15 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
-import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.Enumeration;
 
 
 @Component("myAuthenticationSuccessHandler")
@@ -77,15 +71,15 @@ public class MyAuthenticationSuccessHandler implements AuthenticationSuccessHand
         while (headerNames.hasMoreElements()) {
             String key = headerNames.nextElement();
             System.out.println(key + ": " + request.getHeader(key));
-            System.out.println("ХУЙ");
+
         }*/
 
 
 
         if (authentication instanceof OAuth2AuthenticationToken) {
-            User toUser = userService.castToUser((OAuth2AuthenticationToken) authentication);
+            User user = userService.castToUserFromOauth((OAuth2AuthenticationToken) authentication);
 
-            userService.tryToSaveUser(toUser); // save if not exist (registration)
+            userService.processCheckIn(user, "OAUTH2"); // save if not exist (registration)
         }
 
 

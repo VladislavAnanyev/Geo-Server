@@ -33,6 +33,7 @@ import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -102,7 +103,7 @@ public class ApiUserControllerTest {
 
         String json = """
                 {"username": "application",
-                    "email": "a.vlad.c@ya.ru",
+                    "email": "a.vlad.v@ya.ru",
                     "firstName": "Владислав",
                     "lastName": "Ананьев",
                     "password": "12345"}
@@ -113,6 +114,13 @@ public class ApiUserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.jwtToken").isString());
+
+        User user = repository.findById("application").get();
+        assertNull(user.getChangePasswordCode());
+        assertNotNull(user.getPassword());
+        assertEquals("0", String.valueOf(user.getBalance()));
+
+
 
     }
 
@@ -165,7 +173,7 @@ public class ApiUserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
     }
 
-    @Test
+    /*@Test
     public void testSignUpWithBadUsername2() throws Exception {
 
         String json = """
@@ -180,7 +188,7 @@ public class ApiUserControllerTest {
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
     }
-
+*/
     @Test
     public void testSignUpWithoutEmail() throws Exception {
 
@@ -285,6 +293,7 @@ public class ApiUserControllerTest {
                 passwordEncoder.encode("12345"));
         person.grantAuthority(Role.ROLE_USER);
         person.setRoles(new ArrayList<>(Collections.singleton(Role.ROLE_USER)));
+        person.setPhotos(Collections.singletonList("https://localhost/img/default.jpg"));
         return repository.save(person);
     }
 

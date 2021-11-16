@@ -1,9 +1,7 @@
 package com.example.mywebquizengine.Service;
 
-import com.example.mywebquizengine.Model.Geo.Geolocation;
 import com.example.mywebquizengine.Model.Order;
 import com.example.mywebquizengine.Model.Photo;
-import com.example.mywebquizengine.Model.Projection.GeolocationView;
 import com.example.mywebquizengine.Model.Projection.ProfileView;
 import com.example.mywebquizengine.Model.Projection.UserCommonView;
 import com.example.mywebquizengine.Model.Projection.UserView;
@@ -12,7 +10,6 @@ import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Model.UserInfo.AuthRequest;
 import com.example.mywebquizengine.Model.UserInfo.AuthResponse;
 import com.example.mywebquizengine.Model.UserInfo.GoogleToken;
-import com.example.mywebquizengine.Repos.GeolocationRepository;
 import com.example.mywebquizengine.Repos.PhotoRepository;
 import com.example.mywebquizengine.Repos.UserRepository;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
@@ -37,13 +34,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
-import javax.validation.Valid;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -60,37 +55,28 @@ public class UserService implements UserDetailsService {
 
     private static final HttpTransport transport = new NetHttpTransport();
     private static final JsonFactory jsonFactory = new JacksonFactory();
-
-    @Value("${androidGoogleClientId}")
-    private String CLIENT_ID;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private JWTUtil jwtTokenUtil;
-
-    @Autowired
-    private RabbitAdmin rabbitAdmin;
-
-    @Autowired
-    private MailSender mailSender;
-
-    @Value("${hostname}")
-    private String hostname;
-
     @Value("${notification-secret}")
     String notification_secret;
-
+    @Value("${androidGoogleClientId}")
+    private String CLIENT_ID;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private JWTUtil jwtTokenUtil;
+    @Autowired
+    private RabbitAdmin rabbitAdmin;
+    @Autowired
+    private MailSender mailSender;
+    @Value("${hostname}")
+    private String hostname;
     @Autowired
     private PaymentServices paymentServices;
-
+    @Autowired
+    private PhotoRepository photoRepository;
 
     @Override
     public User loadUserByUsername(String username) throws ResponseStatusException {
@@ -102,38 +88,18 @@ public class UserService implements UserDetailsService {
     }
 
 
-    public User /*UserDetails*/ loadUserByUsernameProxy(String username) throws UsernameNotFoundException {
+
+    public User loadUserByUsernameProxy(String username) throws UsernameNotFoundException {
         return userRepository.getOne(username);
     }
 
-    /*public void setAvatar(String avatar, String username) {
-        userRepository.setAvatar(avatar, username);
-    }*/
-
-    public void saveUser(User user){
-        if (userRepository.findById(user.getUsername()).isPresent()){
+    private void saveUser(User user) {
+        if (userRepository.findById(user.getUsername()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         } else {
-            user.setActivationCode(UUID.randomUUID().toString());
-            user.setChangePasswordCode(UUID.randomUUID().toString());
-            doInitialize(user);
             userRepository.save(user);
-            loadUserByUsername(user.getUsername());
-
-            String mes = user.getFirstName() + " " + user.getLastName() + ", Добро пожаловать в WebQuizzes! "
-                    + "Для активации аккаунта перейдите по ссылке: https://" + hostname + "/activate/" + user.getActivationCode()
-                    + " Если вы не регистрировались на данном ресурсе, то проигнорируйте это сообщение";
-
-            try {
-                mailSender.send(user.getEmail(),"Активация аккаунта в WebQuizzes", mes);
-            } catch (Exception e) {
-                System.out.println("Отключено");
-            }
-
         }
     }
-
-
 
     public void updateUser(String lastName, String firstName, String username) {
         userRepository.updateUserInfo(firstName, lastName, username);
@@ -150,37 +116,35 @@ public class UserService implements UserDetailsService {
         userRepository.setChangePasswordCode(user.getUsername(), String.valueOf(code));
 
         try {
-            mailSender.send(user.getEmail(),"Смена пароля в WebQuizzes",
+            mailSender.send(user.getEmail(), "Смена пароля в WebQuizzes",
                     """
-                    Для смены пароля в WebQuizzes
-                    введите в приложении код: """ + code +
-                    """
-                    Если вы не меняли пароль на данном ресурсе, то проигнорируйте сообщение
-                    """);
+                            Для смены пароля в WebQuizzes
+                            введите в приложении код: """ + code +
+                            """
+                                    . 
+                                     Если вы не меняли пароль на данном ресурсе, то проигнорируйте сообщение
+                                    """);
 
         } catch (Exception e) {
             System.out.println("Не отправлено");
         }
     }
 
-    public void sendCodeForChangePassword(User user) {
-        String mes = user.getChangePasswordCode();
+    public void sendCodeForChangePassword(String username) {
 
-        if (mes == null) {
-            mes = UUID.randomUUID().toString();
-            userRepository.setChangePasswordCode(user.getUsername(), mes);
+        User user = loadUserByUsername(username);
 
-        }
+        String code = UUID.randomUUID().toString();
+        userRepository.setChangePasswordCode(user.getUsername(), code);
 
         try {
-            mailSender.send(user.getEmail(),"Смена пароля в WebQuizzes", "Для смены пароля в WebQuizzes" +
-                    " перейдите по ссылке: https://" + hostname + "/updatepass/" + mes + " Если вы не меняли пароль на данном ресурсе, то проигнорируйте сообщение");
+            mailSender.send(user.getEmail(), "Смена пароля в WebQuizzes", "Для смены пароля в WebQuizzes" +
+                    " перейдите по ссылке: https://" + hostname + "/updatepass/" + code + " Если вы не меняли пароль на данном ресурсе, то проигнорируйте сообщение");
 
         } catch (Exception e) {
-            System.out.println("Не отправлено");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
 
     @Transactional
     public void updatePassword(User user, String changePasswordCode) {
@@ -194,8 +158,6 @@ public class UserService implements UserDetailsService {
         userRepository.changePassword(user.getPassword(), user.getUsername(), user.getChangePasswordCode());
         savedUser.setChangePasswordCode(UUID.randomUUID().toString());
     }
-
-
 
     public void activateAccount(String activationCode) {
         User user = userRepository.findByActivationCode(activationCode);
@@ -216,18 +178,7 @@ public class UserService implements UserDetailsService {
 
     }
 
-    public void tryToSaveUser(User user) {
-
-        if (userRepository.findById(user.getUsername()).isEmpty()) {
-            doInitialize(user);
-            userRepository.save(user);
-        }
-
-
-
-    }
-
-    public User castToUser(OAuth2AuthenticationToken authentication) {
+    public User castToUserFromOauth(OAuth2AuthenticationToken authentication) {
 
         User user = new User();
 
@@ -240,18 +191,18 @@ public class UserService implements UserDetailsService {
                 user = userRepository.findById(username).get();
             } else {
 
-            user.setEmail((String) authentication.getPrincipal().getAttributes().get("email"));
-            user.setFirstName((String) authentication.getPrincipal().getAttributes().get("given_name"));
-            user.setLastName((String) authentication.getPrincipal().getAttributes().get("family_name"));
-            user.setPhotos(Collections.singletonList((String) authentication.getPrincipal().getAttributes().get("picture")));
+                user.setEmail((String) authentication.getPrincipal().getAttributes().get("email"));
+                user.setFirstName((String) authentication.getPrincipal().getAttributes().get("given_name"));
+                user.setLastName((String) authentication.getPrincipal().getAttributes().get("family_name"));
+                user.setPhotos(Collections.singletonList((String) authentication.getPrincipal().getAttributes().get("picture")));
 
-            user.setUsername(((String) authentication.getPrincipal().getAttributes()
-                    .get("email")).replace("@gmail.com", ""));
+                user.setUsername(((String) authentication.getPrincipal().getAttributes()
+                        .get("email")).replace("@gmail.com", ""));
 
-        }
+            }
 
 
-    } else if (authentication.getAuthorizedClientRegistrationId().equals("github")) {
+        } else if (authentication.getAuthorizedClientRegistrationId().equals("github")) {
             user.setUsername(authentication.getPrincipal().getAttributes().get("login").toString());
             user.setFirstName(authentication.getPrincipal().getAttributes().get("name").toString());
             user.setLastName(authentication.getPrincipal().getAttributes().get("name").toString());
@@ -264,13 +215,12 @@ public class UserService implements UserDetailsService {
             }
         }
 
-        user.setStatus(true);
         //doInitialize(user);
 
         return user;
     }
 
-    public void doInitialize(User user) {
+    public void doBasicUserInitializationBeforeSave(User user) {
 
         Queue queue = new Queue(user.getUsername(), true, false, false);
 
@@ -280,26 +230,21 @@ public class UserService implements UserDetailsService {
         rabbitAdmin.declareQueue(queue);
         rabbitAdmin.declareBinding(binding);
 
-        if (user.getPhotos() == null) {
-            user.setPhotos(Collections.singletonList("https://" + hostname + "/img/default.jpg"));
-        }
+        //if (user.getPhotos() == null) {
+
+        user.setPhotos(Collections.singletonList("https://" + hostname + "/img/default.jpg"));
+        //}
 
         user.setEnabled(true);
-        user.setStatus(false);
         user.setBalance(0);
-
         user.grantAuthority(Role.ROLE_USER);
-        user.setChangePasswordCode(UUID.randomUUID().toString());
-        //user.setActivationCode(UUID.randomUUID().toString());
+
     }
 
-
-    public void updateBalance(Integer coins, User user) {
-        User user2 = userRepository.findById(user.getUsername()).get();
-        user2.setBalance(user2.getBalance() + coins);
+    public void updateBalance(Integer coins, String username) {
+        User user = userRepository.findById(username).get();
+        user.setBalance(user.getBalance() + coins);
     }
-
-
 
     public void processPayment(String notification_type, String operation_id, Number amount, Number withdraw_amount, String currency, String datetime, String sender, Boolean codepro, String label, String sha1_hash, Boolean test_notification, Boolean unaccepted, String lastname, String firstname, String fathersname, String email, String phone, String city, String street, String building, String suite, String flat, String zip) throws NoSuchAlgorithmException {
         String mySha = notification_type + "&" + operation_id + "&" + amount + "&" + currency + "&" +
@@ -331,15 +276,12 @@ public class UserService implements UserDetailsService {
             order.setOrder_id(Integer.valueOf(label));
 
             order = paymentServices.saveFinalOrder(order);
-            updateBalance(order.getCoins(), order.getUser());
+            updateBalance(order.getCoins(), order.getUser().getUsername());
 
         } else {
             System.out.println("Неправильный хэш");
         }
     }
-
-
-
 
     public ArrayList<User> getUserList() {
         return (ArrayList<User>) userRepository.findAll();
@@ -366,10 +308,7 @@ public class UserService implements UserDetailsService {
         return new AuthResponse(jwt);
     }
 
-    public AuthResponse signUpViaJwt(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        saveUser(user);
-
+    public AuthResponse getJwtToken(User user) {
         // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
         String jwt = jwtTokenUtil.generateToken(loadUserByUsername(user.getUsername()));
         return new AuthResponse(jwt);
@@ -401,7 +340,6 @@ public class UserService implements UserDetailsService {
             String givenName = (String) payload.get("given_name");
 
 
-
             String username = email.replace("@gmail.com", "");
 
             User user = new User();
@@ -411,7 +349,7 @@ public class UserService implements UserDetailsService {
             user.setLastName(familyName);
             user.setPhotos(pictureUrl);
 
-            tryToSaveUser(user);
+            processCheckIn(user, "OAUTH2");
 
             User savedUser = loadUserByUsername(user.getUsername());
 
@@ -471,11 +409,25 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public void processCheckIn(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setEnabled(false);
-        user.setPhotos(Collections.singletonList("https://" + hostname + "/img/default.jpg"));
-        user.grantAuthority(Role.ROLE_USER);
+    public void processCheckIn(User user, String type) {
+        if (type.equals("BASIC")) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            user.setStatus(false);
+            user.setActivationCode(UUID.randomUUID().toString());
+            String mes = user.getFirstName() + " " + user.getLastName() + ", Добро пожаловать в WebQuizzes! "
+                    + "Для активации аккаунта перейдите по ссылке: https://" + hostname + "/activate/" + user.getActivationCode()
+                    + " Если вы не регистрировались на данном ресурсе, то проигнорируйте это сообщение";
+
+            try {
+                mailSender.send(user.getEmail(), "Активация аккаунта в WebQuizzes", mes);
+            } catch (Exception e) {
+                System.out.println("Отключено");
+            }
+
+        } else if (type.equals("OAUTH2")) {
+            user.setStatus(true);
+        }
+        doBasicUserInitializationBeforeSave(user);
         saveUser(user);
     }
 
@@ -489,10 +441,6 @@ public class UserService implements UserDetailsService {
         Collections.sort(profileView.getPhotos());
         return profileView;
     }
-
-    @Autowired
-    private PhotoRepository photoRepository;
-
 
     @Transactional
     public void swapPhoto(Photo photo, String name) {

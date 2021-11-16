@@ -60,7 +60,7 @@ public class Demo implements CommandLineRunner {
 
 
 
-        List<User> users = userRepository.findAll();
+        /*List<User> users = userRepository.findAll();
 
         if (users.get(0).getPhotos().size() == 0) {
             for (User user : users) {
@@ -70,7 +70,7 @@ public class Demo implements CommandLineRunner {
                 //photo.setUser(user);
                 user.addPhoto(photo);
             }
-        }
+        }*/
 
 
         /*if (rabbitAdmin.getQueueProperties("applicationmeeting") == null ) {
