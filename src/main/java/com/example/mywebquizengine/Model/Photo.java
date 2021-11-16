@@ -17,6 +17,7 @@ public class Photo implements Comparable<Photo> {
 
     private String url;
 
+    @NotNull
     private Integer position;
 
     public Integer getPosition() {
