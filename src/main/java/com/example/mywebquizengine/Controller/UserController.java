@@ -40,8 +40,6 @@ public class UserController {
     private ActiveUserStore activeUserStore;
 
 
-
-
     @GetMapping(path = "/profile")
     public String getProfile(Model model , @AuthenticationPrincipal Principal principal) {
 

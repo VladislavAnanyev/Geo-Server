@@ -36,7 +36,6 @@ public class Photo implements Comparable<Photo> {
         return photos;
     }
 
-
     public Long getId() {
         return id;
     }
@@ -44,7 +43,6 @@ public class Photo implements Comparable<Photo> {
     public String getUrl() {
         return url;
     }
-
 
     public void setId(Long id) {
         this.id = id;

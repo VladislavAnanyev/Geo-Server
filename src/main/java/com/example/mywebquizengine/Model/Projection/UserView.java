@@ -13,18 +13,11 @@ public interface UserView {
     String getUsername();
     String getFirstName();
     String getLastName();
-
     @Value("#{target.photos.get(0).url}")
     String getAvatar();
-
-    /*List<Photo> getPhotos();*/
-
     String getEmail();
     Integer getBalance();
     List<Role> getRoles();
-    List<GrantedAuthority> getAuthorities();
     boolean isStatus();
-    String getActivationCode();
-    String getChangePasswordCode();
     String getOnline();
 }
