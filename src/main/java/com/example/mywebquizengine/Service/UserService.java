@@ -93,12 +93,19 @@ public class UserService implements UserDetailsService {
         return userRepository.getOne(username);
     }
 
-    private void saveUser(User user) {
-        if (userRepository.findById(user.getUsername()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        } else {
-            userRepository.save(user);
+    private void saveUser(User user, String type) {
+
+        Optional<User> optionalUser = userRepository.findById(user.getUsername());
+        if (type.equals("OAUTH2")) {
+            if (optionalUser.isEmpty()) {
+                userRepository.save(user);
+            }
+        } else if (type.equals("BASIC")) {
+            if (optionalUser.isEmpty()) {
+                userRepository.save(user);
+            } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
+
     }
 
     public void updateUser(String lastName, String firstName, String username) {
@@ -428,7 +435,7 @@ public class UserService implements UserDetailsService {
             user.setStatus(true);
         }
         doBasicUserInitializationBeforeSave(user);
-        saveUser(user);
+        saveUser(user, type);
     }
 
     public Boolean checkForExistUser(String username) {

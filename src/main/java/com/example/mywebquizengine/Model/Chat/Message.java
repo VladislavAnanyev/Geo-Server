@@ -1,22 +1,12 @@
 package com.example.mywebquizengine.Model.Chat;
 
-
-//import com.example.mywebquizengine.Model.Projection.MessageForStompView;
+import com.example.mywebquizengine.Model.Photo;
 import com.example.mywebquizengine.Model.User;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import javax.persistence.*;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
+import java.util.List;
 
 @Entity(name = "MESSAGES")
 public class Message {
@@ -40,6 +30,16 @@ public class Message {
     @JoinColumn(name = "dialog_id")
     private Dialog dialog;
 
+    @ElementCollection
+    @CollectionTable(
+            name="MESSAGES_PHOTOS",
+            joinColumns=@JoinColumn(name="ID")
+    )
+    private List<MessagePhoto> photos;
+
+    @OneToMany
+    private List<Message> forwardedMessages;
+
     @Transient
     private Integer uniqueCode;
 
@@ -48,15 +48,19 @@ public class Message {
     public User getSender() {
         return sender;
     }
+
     public void setSender(User sender) {
         this.sender = sender;
     }
+
     public String getContent() {
         return content;
     }
+
     public void setContent(String content) {
         this.content = content;
     }
+
     public Date getTimestamp() {
         return timestamp;
     }
@@ -64,23 +68,37 @@ public class Message {
     public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
     }
+
     public MessageStatus getStatus() {
         return status;
     }
+
     public void setStatus(MessageStatus status) {
         this.status = status;
     }
+
     public Long getId() {
         return id;
     }
+
     public void setId(Long id) {
         this.id = id;
     }
+
+    public Dialog getDialog() {
+        return dialog;
+    }
+
     public void setDialog(Dialog dialog) {
         this.dialog = dialog;
     }
-    public Dialog getDialog() {
-        return dialog;
+
+    public List<Message> getForwardedMessages() {
+        return forwardedMessages;
+    }
+
+    public void setForwardedMessages(List<Message> forwardedMessages) {
+        this.forwardedMessages = forwardedMessages;
     }
 
     public Integer getUniqueCode() {
@@ -89,5 +107,13 @@ public class Message {
 
     public void setUniqueCode(Integer uniqueCode) {
         this.uniqueCode = uniqueCode;
+    }
+
+    public List<MessagePhoto> getPhotos() {
+        return photos;
+    }
+
+    public void setPhotos(List<MessagePhoto> photos) {
+        this.photos = photos;
     }
 }

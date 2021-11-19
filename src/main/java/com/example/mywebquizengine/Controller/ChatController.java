@@ -118,11 +118,10 @@ public class ChatController {
 
     @PostMapping(path = "/createGroup")
     @ResponseBody
-    public Long createGroup(@Valid @RequestBody Dialog newDialog, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
-
+    public Long createGroup(@Valid @RequestBody Dialog newDialog,
+                            @AuthenticationPrincipal Principal principal
+    ) throws JsonProcessingException, ParseException {
         return messageService.createGroup(newDialog, principal);
-
-
     }
 
 
@@ -131,12 +130,12 @@ public class ChatController {
     @Transactional
     @MessageMapping("/user/{dialogId}")
     //@PreAuthorize(value = "@message.sender.username.equals(#principal.name)")
-    public void sendMessage(@Valid @Payload Message message, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
+    public void sendMessage(@Valid @Payload Message message,
+                            @AuthenticationPrincipal Principal principal
+    ) throws JsonProcessingException, ParseException {
         if (message.getSender().getUsername().equals(principal.getName())) {
             messageService.sendMessage(message, principal);
         } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-
-
     }
 
 

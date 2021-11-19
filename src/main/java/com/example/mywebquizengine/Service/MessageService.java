@@ -59,9 +59,6 @@ public class MessageService {
     private RabbitTemplate rabbitTemplate;
 
     @Autowired
-    private MessageService messageService;
-
-    @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
     @Autowired
@@ -197,6 +194,7 @@ public class MessageService {
 
 
 
+
     public void sendMessage(Message message, Principal principal) throws JsonProcessingException, ParseException {
 
         User sender = userService.loadUserByUsernameProxy(message.getSender().getUsername());
@@ -206,7 +204,7 @@ public class MessageService {
         message.setTimestamp(new Date());
         message.setStatus(MessageStatus.DELIVERED);
         
-        messageService.saveMessage(message);
+        messageRepository.save(message);
 
         Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
 
@@ -240,8 +238,6 @@ public class MessageService {
                     jsonObject);
 
         }
-
-
 
     }
 

@@ -23,12 +23,17 @@ public class ApiChatController {
 
 
     @DeleteMapping(path = "/message/{id}")
-    public void deleteMessage(@PathVariable Long id, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
+    public void deleteMessage(@PathVariable Long id,
+                              @AuthenticationPrincipal Principal principal
+    ) throws JsonProcessingException, ParseException {
         messageService.deleteMessage(id, principal);
     }
 
     @PutMapping(path = "/message/{id}")
-    public void editMessage(@PathVariable Long id, @RequestBody Message message, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
+    public void editMessage(@PathVariable Long id,
+                            @RequestBody Message message,
+                            @AuthenticationPrincipal Principal principal
+    ) throws JsonProcessingException, ParseException {
         messageService.editMessage(id, message, principal);
     }
 
@@ -39,7 +44,6 @@ public class ApiChatController {
                                                  @RequestParam(required = false,defaultValue = "50") Integer pageSize,
                                                  @RequestParam(defaultValue = "timestamp") String sortBy,
                                                  @AuthenticationPrincipal Principal principal) {
-
         return messageService.getMessages(dialogId, page, pageSize, sortBy, principal);
     }
 
@@ -47,15 +51,14 @@ public class ApiChatController {
 
     @GetMapping(path = "/dialogs")
     public ArrayList<MessageForApiViewCustomQuery> getDialogs(@AuthenticationPrincipal Principal principal) {
-
         return messageService.getDialogsForApi(principal.getName());
     }
 
 
     @GetMapping(path = "/getDialogId")
     public Long checkDialog(@RequestParam String username, @AuthenticationPrincipal Principal principal) {
-
         return messageService.checkDialog(username, principal.getName());
     }
+
 
 }
