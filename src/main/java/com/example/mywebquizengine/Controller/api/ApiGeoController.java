@@ -23,18 +23,16 @@ public class ApiGeoController {
     @GetMapping(path = "/meetings")
     public ArrayList<MeetingViewCustomQuery> getMyMeetings(@AuthenticationPrincipal Principal principal,
                                                            @RequestParam(required = false) String date) {
-        return geoService.getMyMeetings(principal, date);
+        return geoService.getMyMeetings(principal.getName(), date);
     }
 
     @PostMapping(path = "/sendGeolocation")
     public void sendGeolocation(@AuthenticationPrincipal Principal principal, @RequestBody Geolocation myGeolocation) throws Exception {
-        geoService.sendGeolocation(principal, myGeolocation);
-        throw new ResponseStatusException(HttpStatus.OK);
+        geoService.sendGeolocation(principal.getName(), myGeolocation);
     }
 
     @GetMapping(path = "/test")
     public String test() {
-        //throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         return "OK";
     }
 
@@ -43,8 +41,7 @@ public class ApiGeoController {
     public void handleGoogleHistoryUpload(@RequestParam("file") MultipartFile file,
                                             @AuthenticationPrincipal Principal principal) {
 
-        geoService.loadGeolocationHistory(file, principal);
-        throw new ResponseStatusException(HttpStatus.OK);
+        geoService.loadGeolocationHistory(file, principal.getName());
     }
 
 }

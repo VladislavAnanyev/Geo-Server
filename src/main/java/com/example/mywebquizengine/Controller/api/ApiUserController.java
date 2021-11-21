@@ -61,7 +61,7 @@ public class ApiUserController {
 
     @GetMapping(path = "/authuser")
     public UserView getApiAuthUser(@AuthenticationPrincipal Principal principal)  {
-            return userService.getAuthUser(principal);
+            return userService.getAuthUser(principal.getName());
     }
 
     @GetMapping(path = "/user/{username}/profile")
@@ -72,7 +72,7 @@ public class ApiUserController {
 
     @PostMapping(path = "/upload")
     public void uploadPhoto(@RequestParam("file") MultipartFile file, @AuthenticationPrincipal Principal principal) {
-        userService.uploadPhoto(file, principal);
+        userService.uploadPhoto(file, principal.getName());
     }
 
 

@@ -57,7 +57,6 @@ public class ChatController {
     private MessageService messageService;
 
 
-
     @GetMapping(path = "/chat")
     public String chat(Model model, @AuthenticationPrincipal Principal principal) {
 
@@ -113,7 +112,7 @@ public class ChatController {
                                @RequestParam(required = false,defaultValue = "50") @Min(1) @Max(100) Integer pageSize,
                                @RequestParam(defaultValue = "timestamp") String sortBy,
                                @AuthenticationPrincipal Principal principal) {
-        return messageService.getMessages(Long.valueOf(dialog_id), page, pageSize, sortBy, principal);
+        return messageService.getMessages(Long.valueOf(dialog_id), page, pageSize, sortBy, principal.getName());
     }
 
     @PostMapping(path = "/createGroup")
@@ -121,7 +120,7 @@ public class ChatController {
     public Long createGroup(@Valid @RequestBody Dialog newDialog,
                             @AuthenticationPrincipal Principal principal
     ) throws JsonProcessingException, ParseException {
-        return messageService.createGroup(newDialog, principal);
+        return messageService.createGroup(newDialog, principal.getName());
     }
 
 
@@ -129,12 +128,11 @@ public class ChatController {
     @Modifying
     @Transactional
     @MessageMapping("/user/{dialogId}")
-    //@PreAuthorize(value = "@message.sender.username.equals(#principal.name)")
     public void sendMessage(@Valid @Payload Message message,
                             @AuthenticationPrincipal Principal principal
     ) throws JsonProcessingException, ParseException {
         if (message.getSender().getUsername().equals(principal.getName())) {
-            messageService.sendMessage(message, principal);
+            messageService.sendMessage(message, "WEB");
         } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 
@@ -145,7 +143,7 @@ public class ChatController {
     @Transactional
     @RabbitListener(queues = "incoming-messages")
     public void getMessageFromAndroid(@Valid Message message) throws JsonProcessingException, ParseException {
-        messageService.sendMessage(message, null);
+        messageService.sendMessage(message, "ANDROID");
     }
 
 

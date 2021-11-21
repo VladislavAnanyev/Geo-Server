@@ -56,18 +56,18 @@ public class GeoService {
 
 
 
-    public ArrayList<MeetingViewCustomQuery> getMyMeetings(Principal principal, String date) {
+    public ArrayList<MeetingViewCustomQuery> getMyMeetings(String username, String date) {
         if (date == null) {
             Calendar calendar = new GregorianCalendar();
             Timestamp timestamp = Timestamp.from(calendar.toInstant());
 
             date = timestamp.toString().substring(0,10);
         }
-        return (ArrayList<MeetingViewCustomQuery>) meetingRepository.getMyMeetings(principal.getName(), date);
+        return (ArrayList<MeetingViewCustomQuery>) meetingRepository.getMyMeetings(username, date);
     }
 
-    public void sendGeolocation(Principal principal, Geolocation myGeolocation) throws JsonProcessingException, ParseException {
-        myGeolocation.setUser(userService.loadUserByUsernameProxy(principal.getName()));
+    public void sendGeolocation(String username, Geolocation myGeolocation) throws JsonProcessingException, ParseException {
+        myGeolocation.setUser(userService.loadUserByUsernameProxy(username));
 
         String time = "";
         Timestamp timestamp;
@@ -93,7 +93,7 @@ public class GeoService {
 
         //System.out.println(date.toString().substring(0,10));
 
-        ArrayList<Geolocation> peopleNearMe = findInSquare(principal.getName(),myGeolocation, "20", time);
+        ArrayList<Geolocation> peopleNearMe = findInSquare(username,myGeolocation, "20", time);
 
         if (peopleNearMe.size() > 0) {
 
@@ -105,7 +105,7 @@ public class GeoService {
                         .size() == 0 ) {
 
 
-                    if (!principal.getName().equals(peopleNearMe.get(i).getUser().getUsername())) {
+                    if (!username.equals(peopleNearMe.get(i).getUser().getUsername())) {
 
                         Meeting meeting = new Meeting();
                         meeting.setFirstUser(myGeolocation.getUser());
@@ -142,7 +142,7 @@ public class GeoService {
     }
 }
 
-    public void loadGeolocationHistory(MultipartFile file, Principal principal) {
+    public void loadGeolocationHistory(MultipartFile file, String username) {
 
         try {
 
@@ -174,7 +174,7 @@ public class GeoService {
                 Example<Geolocation> example = Example.of(geolocation);
 
                 if (!geolocationRepository.exists(example)) {
-                    sendGeolocation(principal, geolocation);
+                    sendGeolocation(username, geolocation);
                 }
 
 

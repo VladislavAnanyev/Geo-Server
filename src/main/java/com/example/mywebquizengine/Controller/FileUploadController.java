@@ -27,15 +27,11 @@ public class FileUploadController {
     @Autowired
     private UserService userService;
 
-    @Value("${hostname}")
-    private String hostname;
-
-
     @PostMapping(path = "/upload")
     public String handleFileUpload(Model model, @RequestParam("file") MultipartFile file,
                                    @AuthenticationPrincipal Principal principal) {
 
-        userService.uploadPhoto(file, principal);
+        userService.uploadPhoto(file, principal.getName());
 
         User userLogin = userService.loadUserByUsernameProxy(principal.getName());
         //userLogin.setAvatar("https://" + hostname + "/img/" + uuid + ".jpg");

@@ -43,7 +43,7 @@ public class GeoController {
     @ResponseBody
     public void sendGeolocation(@AuthenticationPrincipal Principal principal,
                                 @RequestBody Geolocation myGeolocation) throws Exception {
-       geoService.sendGeolocation(principal, myGeolocation);
+       geoService.sendGeolocation(principal.getName(), myGeolocation);
        throw new ResponseStatusException(HttpStatus.OK);
     }
 
@@ -82,7 +82,7 @@ public class GeoController {
 
         model.addAttribute("friendsName", friendsName);
 
-        model.addAttribute("meetings", geoService.getMyMeetings(principal, date));
+        model.addAttribute("meetings", geoService.getMyMeetings(principal.getName(), date));
 
         return "meetings";
     }

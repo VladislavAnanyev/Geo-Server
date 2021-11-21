@@ -24,25 +24,25 @@ public class ApiRequestController {
     private RequestService requestService;
 
 
-    @PostMapping(path = "/sendRequest")
+    @PostMapping(path = "/request")
     @ResponseBody
     public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
         requestService.sendRequest(request, principal);
         throw new ResponseStatusException(HttpStatus.OK);
     }
 
-    @PostMapping(path = "/acceptRequest")
+    @PostMapping(path = "/request/{id}/accept")
     //@PreAuthorize(value = "!#principal.name.equals(#user.username)")
-    public Long acceptRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) {
-        return requestService.acceptRequest(request.getId(), principal);
+    public Long acceptRequest(@PathVariable Long id, @AuthenticationPrincipal Principal principal) {
+        return requestService.acceptRequest(id, principal.getName());
     }
 
     @GetMapping(path = "/requests")
     public ArrayList<ReceivedRequestView> getMyRequests(@AuthenticationPrincipal Principal principal) {
-        return requestService.getMyRequests(principal);
+        return requestService.getMyRequests(principal.getName());
     }
 
-    @PostMapping(path = "/rejectRequest")
+    @PostMapping(path = "/request/{id}/reject")
     public void rejectRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) {
         requestService.rejectRequest(request, principal);
         throw new ResponseStatusException(HttpStatus.OK);

@@ -106,12 +106,12 @@ public class RequestService {
 
     }
 
-    public ArrayList<ReceivedRequestView> getMyRequests(Principal principal) {
-        return requestRepository.findAllByToUsernameAndStatus(principal.getName(), "PENDING");
+    public ArrayList<ReceivedRequestView> getMyRequests(String username) {
+        return requestRepository.findAllByToUsernameAndStatus(username, "PENDING");
     }
 
-    public Long acceptRequest(Long requestId, Principal principal) {
-        User authUser = userService.loadUserByUsername(principal.getName());
+    public Long acceptRequest(Long requestId, String username) {
+        User authUser = userService.loadUserByUsername(username);
 
 
         Request request = requestRepository.findById(requestId).get();
@@ -119,7 +119,7 @@ public class RequestService {
 
         authUser.addFriend(request.getSender());
         requestRepository.save(request);
-        Long dialog_id = messageService.checkDialog(request.getSender().getUsername(), principal.getName());
+        Long dialog_id = messageService.checkDialog(request.getSender().getUsername(), username);
 
         if (dialog_id == null) {
             Dialog dialog = new Dialog();

@@ -376,16 +376,16 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public UserView getAuthUser(Principal principal) {
-        if (userRepository.findAllByUsername(principal.getName()) == null) {
+    public UserView getAuthUser(String username) {
+        if (userRepository.findAllByUsername(username) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         } else {
-            return userRepository.findAllByUsername(principal.getName());
+            return userRepository.findAllByUsername(username);
         }
     }
 
     @Transactional
-    public void uploadPhoto(MultipartFile file, Principal principal) {
+    public void uploadPhoto(MultipartFile file, String username) {
         if (!file.isEmpty()) {
             try {
                 String uuid = UUID.randomUUID().toString();
@@ -402,7 +402,7 @@ public class UserService implements UserDetailsService {
                 String photoUrl = "https://" + hostname + "/img/" + uuid + ".jpg";
 
 
-                User user = loadUserByUsername(principal.getName());
+                User user = loadUserByUsername(username);
 
                 Photo photo = new Photo();
                 photo.setUrl(photoUrl);

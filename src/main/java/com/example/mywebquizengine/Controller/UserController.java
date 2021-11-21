@@ -43,7 +43,7 @@ public class UserController {
     @GetMapping(path = "/profile")
     public String getProfile(Model model , @AuthenticationPrincipal Principal principal) {
 
-        UserView user = userService.getAuthUser(principal);
+        UserView user = userService.getAuthUser(principal.getName());
         model.addAttribute("user", user);
 
         model.addAttribute("balance", user.getBalance());
@@ -199,7 +199,7 @@ public class UserController {
     @PostMapping(path = "/acceptRequest")
     @ResponseBody
     public Long acceptRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) {
-        return requestService.acceptRequest(request.getId(), principal);
+        return requestService.acceptRequest(request.getId(), principal.getName());
     }
 
     @PostMapping(path = "/rejectRequest")

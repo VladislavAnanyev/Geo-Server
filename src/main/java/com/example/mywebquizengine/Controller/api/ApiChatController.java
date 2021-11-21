@@ -26,15 +26,14 @@ public class ApiChatController {
     public void deleteMessage(@PathVariable Long id,
                               @AuthenticationPrincipal Principal principal
     ) throws JsonProcessingException, ParseException {
-        messageService.deleteMessage(id, principal);
+        messageService.deleteMessage(id, principal.getName());
     }
 
     @PutMapping(path = "/message/{id}")
-    public void editMessage(@PathVariable Long id,
-                            @RequestBody Message message,
+    public void editMessage(@RequestBody Message message,
                             @AuthenticationPrincipal Principal principal
     ) throws JsonProcessingException, ParseException {
-        messageService.editMessage(id, message, principal);
+        messageService.editMessage(message, principal.getName());
     }
 
 
@@ -44,7 +43,7 @@ public class ApiChatController {
                                                  @RequestParam(required = false,defaultValue = "50") Integer pageSize,
                                                  @RequestParam(defaultValue = "timestamp") String sortBy,
                                                  @AuthenticationPrincipal Principal principal) {
-        return messageService.getMessages(dialogId, page, pageSize, sortBy, principal);
+        return messageService.getMessages(dialogId, page, pageSize, sortBy, principal.getName());
     }
 
 

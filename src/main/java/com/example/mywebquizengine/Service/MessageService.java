@@ -113,11 +113,11 @@ public class MessageService {
 
 
     @Transactional
-    public void deleteMessage(Long id, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
+    public void deleteMessage(Long id, String username) throws JsonProcessingException, ParseException {
         Optional<Message> optionalMessage = messageRepository.findById(id);
         if (optionalMessage.isPresent()) {
             Message message = optionalMessage.get();
-            if (message.getSender().getUsername().equals(principal.getName())) {
+            if (message.getSender().getUsername().equals(username)) {
                 message.setStatus(MessageStatus.DELETED);
 
                 MessageWithDialog messageDto = messageRepository.findMessageById(message.getId());
@@ -146,7 +146,11 @@ public class MessageService {
     }
 
     @Transactional
-    public DialogWithUsersViewPaging getMessages(Long dialogId, Integer page, Integer pageSize, String sortBy, Principal principal) {
+    public DialogWithUsersViewPaging getMessages(Long dialogId,
+                                                 Integer page,
+                                                 Integer pageSize,
+                                                 String sortBy,
+                                                 String username) {
         Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
         Optional<Dialog> optionalDialog = dialogRepository.findById(dialogId);
         optionalDialog.ifPresent(dialog -> dialog.setPaging(paging));
@@ -154,7 +158,7 @@ public class MessageService {
 
         // If user contains in dialog
         if (dialog.getUsers().stream().anyMatch(o -> o.getUsername()
-                .equals(principal.getName()))) {
+                .equals(username))) {
 
 
             return dialog;
@@ -163,11 +167,11 @@ public class MessageService {
     }
 
     @Transactional
-    public void editMessage(Long id, Message newMessage, Principal principal) throws JsonProcessingException, ParseException {
-        Optional<Message> optionalMessage = messageRepository.findById(id);
+    public void editMessage(Message newMessage, String username) throws JsonProcessingException, ParseException {
+        Optional<Message> optionalMessage = messageRepository.findById(newMessage.getId());
         if (optionalMessage.isPresent()) {
             Message message = optionalMessage.get();
-            if (message.getSender().getUsername().equals(principal.getName())) {
+            if (message.getSender().getUsername().equals(username)) {
                 message.setContent(newMessage.getContent());
                 message.setStatus(MessageStatus.EDIT);
 
@@ -195,7 +199,7 @@ public class MessageService {
 
 
 
-    public void sendMessage(Message message, Principal principal) throws JsonProcessingException, ParseException {
+    public void sendMessage(Message message, String client) throws JsonProcessingException, ParseException {
 
         User sender = userService.loadUserByUsernameProxy(message.getSender().getUsername());
 
@@ -218,12 +222,9 @@ public class MessageService {
         jsonObject.put("type", "MESSAGE");
 
 
-        // При сообщениях от RabbitMq Authentication отсутствует
-        if (principal == null) {
-            jsonObject.put("client", "ANDROID");
-        } else {
-            jsonObject.put("client", "WEB");
-        }
+
+
+        jsonObject.put("client", client);
 
         if (message.getUniqueCode() != null) {
             jsonObject.put("uniqueCode", message.getUniqueCode());
@@ -242,16 +243,16 @@ public class MessageService {
     }
 
 
-    public Long createGroup(Dialog newDialog, Principal principal) throws JsonProcessingException, ParseException {
+    public Long createGroup(Dialog newDialog, String username) throws JsonProcessingException, ParseException {
 
         User authUser = new User();
 
-        authUser.setUsername(principal.getName());
+        authUser.setUsername(username);
 
         newDialog.addUser(authUser);
 
         if (newDialog.getUsers().stream().anyMatch(o -> o.getUsername()
-                .equals(principal.getName()))) {
+                .equals(username))) {
 
             Dialog dialog = new Dialog();
 
@@ -259,7 +260,7 @@ public class MessageService {
 
             Message message = new Message();
             message.setContent("Группа создана");
-            message.setSender(userService.loadUserByUsername(principal.getName()));
+            message.setSender(userService.loadUserByUsername(username));
             message.setStatus(MessageStatus.DELIVERED);
             message.setTimestamp(new Date());
             message.setDialog(dialog);
