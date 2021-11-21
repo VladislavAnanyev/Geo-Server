@@ -94,7 +94,7 @@ public class ChatController {
                 model.addAttribute("dialog", dialog.getDialogId());
                 model.addAttribute("messages", dialog.getMessages());
                 model.addAttribute("dialogObj", dialog);
-                model.addAttribute("userList", userService.getUserList());
+                model.addAttribute("userList", userService.findMyFriends(principal.getName()));
 
                 return "chat";
 

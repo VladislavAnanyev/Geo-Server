@@ -10,9 +10,9 @@
 
     <#if nowUser??>
 
-        <form action="/signin" method="get">
+        <#--<form action="/signin" method="get">
             <button class="btn btn-primary mt-1 mr-3" type = "submit">Войти</button>
-        </form>
+        </form>-->
 
         <form action="/logout" method="post">
             <button class="btn btn-danger mt-1" type = "submit">Выйти</button>
