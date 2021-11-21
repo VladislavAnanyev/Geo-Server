@@ -15,21 +15,22 @@
 
     <div class="collapse navbar-collapse " id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
+            <#if nowUser??>
             <#--<li class="nav-item">
                 <a class="nav-link" href="/reg">Регистрация</a>
             </li>-->
             <li class="nav-item mt-1">
-                <a data-barba-prevent class="nav-link"  href="/quizzes">Все викторины</a>
+                <a data-barba-prevent class="nav-link"  href="/meetings">Встречи</a>
             </li>
             <#--<li class="nav-item">
                 <a class="nav-link" href="">Завершённые</a>
             </li>-->
             <li class="nav-item mt-1">
-                <a data-barba-prevent class="nav-link" href="/add">Добавить викторину</a>
+                <a data-barba-prevent class="nav-link" href="/requests">Заявки</a>
             </li>
-            <#if nowUser??>
+
             <li class="nav-item mt-1">
-                <a data-barba-prevent class="nav-link" href="/myquiz">Мои викторины</a>
+                <a data-barba-prevent class="nav-link" href="/geo">Карта</a>
             </li>
             <li class="nav-item mt-1">
                 <a data-barba-prevent class="nav-link" href="/chat">Сообщения</a>

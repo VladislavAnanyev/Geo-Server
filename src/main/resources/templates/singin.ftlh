@@ -20,6 +20,7 @@
     </#macro>
 
 
+    <#if nowUser??>
     <div><b>Другие способы входа: </b>
         <a href = "/oauth2/authorization/google">
             <svg height="40px" enable-background="new 0 0 512 512" id="Layer_1" version="1.1" viewBox="0 0 512 512" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -36,6 +37,7 @@
 
         </a>
     </div>
+    </#if>
 
 
 
@@ -54,10 +56,12 @@
             <label class="form-check-label" for="exampleCheck1">Запомнить меня</label>
         </div>-->
         <button type="submit" class="btn btn-primary">Войти</button>
+        <#if nowUser??>
         <button type="button" class="btn btn-primary my-1" data-toggle="modal" data-target="#staticBackdrop">
             Забыли пароль?
         </button>
         <a class="btn btn-primary " href="/reg" role="button">Регистрация</a>
+        </#if>
     </form>
 
 

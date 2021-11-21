@@ -1,26 +1,18 @@
 package com.example.mywebquizengine;
 
-import com.example.mywebquizengine.Model.Photo;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.UserRepository;
-import com.example.mywebquizengine.Service.UserAnswerService;
-import com.example.mywebquizengine.Service.UserService;
-import org.quartz.*;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
-import java.net.UnknownHostException;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
-import static org.quartz.CronScheduleBuilder.cronSchedule;
-import static org.quartz.JobBuilder.newJob;
+
 
 @Component
 public class Demo implements CommandLineRunner {

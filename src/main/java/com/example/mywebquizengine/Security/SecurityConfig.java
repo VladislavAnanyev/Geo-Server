@@ -206,18 +206,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter  {
             http
 
                     .authorizeRequests()
-                    .antMatchers("/googlee45a32e3d6f7edf4.html", "/register", "/activate/*",
-                            "/quizzes", "/reg",  "/androidSign", "/ws/**", "/add", "/about/**",
-                            "/", "/signin", "/checkyandex", "/h2-console/**", "/.well-known/pki-validation/**",
-                            /*"/static/forgotPassword.js", "/static/changePassword.js", */"/update/userinfo/pswrdwithoutauth",
-                            "/updatepass/**", "/testm", "/pass/**", "/updatepassword/{activationCode}", "/yandex_135f209071de02b1.html").permitAll()
+                    .antMatchers("/googlee45a32e3d6f7edf4.html", "/activate/*",
+                            "/androidSign", "/ws/**",
+                            "/signin", "/checkyandex", "/h2-console/**", "/.well-known/pki-validation/**",
+                            "/login",
+                            /*"/update/userinfo/pswrdwithoutauth",
+                            "/updatepass/**", "/testm", "/pass/**", "/updatepassword/{activationCode}", */"/yandex_135f209071de02b1.html").permitAll()
                     .antMatchers("/swagger-ui/**").hasRole("ADMIN")
                     .anyRequest().authenticated()
 
                     .and()
                     .formLogin()
                         .loginPage("/signin")
-
                         .successHandler(myAuthenticationSuccessHandler)
 
 
@@ -230,7 +230,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter  {
                     .oauth2Login().userInfoEndpoint()
                         .oidcUserService(this.oidcUserService()).userService(this.oAuth2UserService())
                         .userAuthoritiesMapper(this.userAuthoritiesMapper()).and()
-                        .defaultSuccessUrl("/loginSuccess").successHandler(myAuthenticationSuccessHandler).permitAll()/*.and().rememberMe().rememberMeParameter("remember-me")
+                        .defaultSuccessUrl("/loginSuccess").successHandler(myAuthenticationSuccessHandler).permitAll()
+                        .loginPage("/signin")
+                    /*.and().rememberMe().rememberMeParameter("remember-me")
                     //.and().key("secretkey").alwaysRemember(true).rememberMeServices(rememberMeServices())*/
 
                     .and()
