@@ -128,8 +128,6 @@ public class UserController {
     @PutMapping(path = "/updatepass/{changePasswordCode}", consumes ={"application/json"})
     public String changePasswordUsingCode(@RequestBody User in, @PathVariable String changePasswordCode) {
 
-        //User user = userService.getUserViaChangePasswordCode(changePasswordCode);
-
         userService.updatePassword(in, changePasswordCode);
 
         return "changePassword";
@@ -204,12 +202,9 @@ public class UserController {
 
     @PostMapping(path = "/rejectRequest")
     @ResponseBody
-    //@PreAuthorize(value = "!#principal.name.equals(#user.username)")
     public void rejectRequest(@RequestBody Request requestId, @AuthenticationPrincipal Principal principal) {
-        requestService.rejectRequest(requestId, principal);
+        requestService.rejectRequest(requestId.getId(), principal.getName());
     }
-
-
 
     @GetMapping(path = "/testConnection")
     @ResponseBody

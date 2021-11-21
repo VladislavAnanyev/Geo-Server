@@ -23,7 +23,6 @@ public class ApiRequestController {
     @Autowired
     private RequestService requestService;
 
-
     @PostMapping(path = "/request")
     @ResponseBody
     public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
@@ -43,15 +42,15 @@ public class ApiRequestController {
     }
 
     @PostMapping(path = "/request/{id}/reject")
-    public void rejectRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) {
-        requestService.rejectRequest(request, principal);
+    public void rejectRequest(@PathVariable Long id, @AuthenticationPrincipal Principal principal) {
+        requestService.rejectRequest(id, principal.getName());
         throw new ResponseStatusException(HttpStatus.OK);
     }
 
 
     @GetMapping(path = "/sentRequests")
     public List<SentRequestView> getSentRequests(@AuthenticationPrincipal Principal principal) {
-        return requestService.getSentRequests(principal);
+        return requestService.getSentRequests(principal.getName());
     }
 
 }

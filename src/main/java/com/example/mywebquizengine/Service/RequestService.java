@@ -88,16 +88,16 @@ public class RequestService {
                 jsonObject);
     }
 
-    public List<SentRequestView> getSentRequests(Principal principal) {
-        return requestRepository.findAllBySenderUsernameAndStatus(principal.getName(), "PENDING");
+    public List<SentRequestView> getSentRequests(String username) {
+        return requestRepository.findAllBySenderUsernameAndStatus(username, "PENDING");
     }
 
 
-    public void rejectRequest(Request request, @AuthenticationPrincipal Principal principal) {
-        Optional<Request> optionalRequest = requestRepository.findById(request.getId());
+    public void rejectRequest(Long id, String username) {
+        Optional<Request> optionalRequest = requestRepository.findById(id);
         if (optionalRequest.isPresent()) {
-            request = optionalRequest.get();
-            if (request.getTo().getUsername().equals(principal.getName())) {
+            Request request = optionalRequest.get();
+            if (request.getTo().getUsername().equals(username)) {
                 requestRepository.updateStatus(request.getId(), "REJECTED");
             } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         } else {

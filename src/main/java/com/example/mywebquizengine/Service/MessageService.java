@@ -159,8 +159,6 @@ public class MessageService {
         // If user contains in dialog
         if (dialog.getUsers().stream().anyMatch(o -> o.getUsername()
                 .equals(username))) {
-
-
             return dialog;
         } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 
