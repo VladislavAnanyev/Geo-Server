@@ -40,7 +40,7 @@ public interface MeetingRepository extends CrudRepository<Meeting, Long> {
                                FROM USERS_PHOTOS
                                         JOIN (SELECT min(id) AS idMin
                                               FROM USERS_PHOTOS
-                                              GROUP BY USER_USERNAME) ON ID = idMin) AS UP2 on S.USERNAME = UP.USER_USERNAME
+                                              GROUP BY USER_USERNAME) ON ID = idMin) AS UP2 on S.USERNAME = UP2.USER_USERNAME
                  WHERE (FIRST_USER_USERNAME = :username
                             AND SECOND_USER_USERNAME != :username or FIRST_USER_USERNAME != :username
                             AND SECOND_USER_USERNAME = :username)

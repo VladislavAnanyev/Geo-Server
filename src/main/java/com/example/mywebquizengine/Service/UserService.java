@@ -239,7 +239,7 @@ public class UserService implements UserDetailsService {
 
         //if (user.getPhotos() == null) {
 
-        user.setPhotos(Collections.singletonList("https://" + hostname + "/img/default.jpg"));
+
         //}
 
         user.setEnabled(true);
@@ -420,6 +420,7 @@ public class UserService implements UserDetailsService {
         if (type.equals("BASIC")) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             user.setStatus(false);
+            user.setPhotos(Collections.singletonList("https://" + hostname + "/img/default.jpg"));
             user.setActivationCode(UUID.randomUUID().toString());
             String mes = user.getFirstName() + " " + user.getLastName() + ", Добро пожаловать в WebQuizzes! "
                     + "Для активации аккаунта перейдите по ссылке: https://" + hostname + "/activate/" + user.getActivationCode()
