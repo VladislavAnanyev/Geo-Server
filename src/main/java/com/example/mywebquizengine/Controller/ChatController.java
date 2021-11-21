@@ -63,7 +63,7 @@ public class ChatController {
         User user = userService.loadUserByUsernameProxy(principal.getName());
         model.addAttribute("myUsername", user);
         model.addAttribute("lastDialogs", messageService.getDialogsForApi(principal.getName()));
-        model.addAttribute("userList", userService.getUserList());
+        model.addAttribute("userList", userService.findMyFriends(principal.getName()));
         return "chat";
     }
 

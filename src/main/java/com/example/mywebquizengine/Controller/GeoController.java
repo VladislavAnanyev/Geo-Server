@@ -75,7 +75,7 @@ public class GeoController {
 
         model.addAttribute("myUsername", principal.getName());
 
-        List<UserCommonView> friends = userService.findMyFriends(principal);
+        List<UserCommonView> friends = userService.findMyFriends(principal.getName());
         //userRepository.findUsersByFriendsUsernameContains(principal.getName());
 
         List<String> friendsName = friends.stream().map(UserCommonView::getUsername).collect(Collectors.toList());

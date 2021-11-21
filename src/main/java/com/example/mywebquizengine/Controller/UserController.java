@@ -212,5 +212,10 @@ public class UserController {
         return "OK";
     }
 
+    @GetMapping(path = "/")
+    public String getHome() {
+        return "home";
+    }
+
 
 }

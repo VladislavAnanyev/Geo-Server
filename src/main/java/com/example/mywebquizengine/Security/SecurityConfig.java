@@ -211,7 +211,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter  {
                             "/signin", "/checkyandex", "/h2-console/**", "/.well-known/pki-validation/**",
                             "/login",
                             /*"/update/userinfo/pswrdwithoutauth",
-                            "/updatepass/**", "/testm", "/pass/**", "/updatepassword/{activationCode}", */"/yandex_135f209071de02b1.html").permitAll()
+                            "/updatepass/**", "/testm", "/pass/**", "/updatepassword/{activationCode}", */
+                            "/yandex_135f209071de02b1.html").permitAll()
                     .antMatchers("/swagger-ui/**").hasRole("ADMIN")
                     .anyRequest().authenticated()
 

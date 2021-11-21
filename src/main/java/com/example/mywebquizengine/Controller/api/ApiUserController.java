@@ -30,7 +30,7 @@ public class ApiUserController {
 
     @GetMapping(path = "/friends")
     public List<UserCommonView> getFriends(@AuthenticationPrincipal Principal principal) {
-        return userService.findMyFriends(principal);
+        return userService.findMyFriends(principal.getName());
     }
 
     @GetMapping(path = "/findbyid")
