@@ -199,10 +199,6 @@ public class GeoService {
 
         int DISTANCE = Integer.parseInt(size); // Интересующее нас расстояние
 
-        //Geolocation myGeolocation = geolocationRepository.findById(authUser).get();
-        //Timestamp date = Timestamp.from(myGeolocation.getTime().toInstant());
-
-
         double myLatitude = myGeolocation.getLat(); //Интересующие нас координаты широты
         double myLongitude = myGeolocation.getLng();  //Интересующие нас координаты долготы
 
@@ -214,9 +210,6 @@ public class GeoService {
 
         //System.out.println(aroundLat + " " + aroundLng);
 
-
-
-
         return (ArrayList<Geolocation>) geolocationRepository
                 .findInSquare(myLatitude, myLongitude, aroundLat, aroundLng, userService
                         .loadUserByUsernameProxy(authUser)
@@ -225,21 +218,7 @@ public class GeoService {
 
 
     public void saveGeo(Geolocation geolocation) {
-
-
-            /*if (geolocationRepository.existsById(geolocation.getUser().getUsername())) {
-
-                geolocationRepository.updateGeo(geolocation.getLat(), geolocation.getLng(), geolocation.getUser().getUsername());
-            } else {
-
-                geolocationRepository.save(geolocation);
-            }*/
-
-
         geolocationRepository.save(geolocation);
-
-
-        //geolocationRepository.insertGeo(geolocation.getLat(), geolocation.getLng(), geolocation.getUser().getUsername());
     }
 
 

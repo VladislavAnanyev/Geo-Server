@@ -4,11 +4,10 @@ import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.MywebquizengineApplication;
 import com.example.mywebquizengine.Repos.UserRepository;
 import org.springframework.stereotype.Component;
-
-import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionBindingListener;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class LoggedUser implements HttpSessionBindingListener {
@@ -36,8 +35,6 @@ public class LoggedUser implements HttpSessionBindingListener {
             }
 
 
-        System.out.println("Начало");
-
             if (MywebquizengineApplication.ctx.getBean(UserRepository.class).findById(user.getUsername()).isPresent()) {
                 User authUser = MywebquizengineApplication.ctx.getBean(UserRepository.class).findById(user.getUsername()).get();
                 authUser.setOnline("true");
@@ -52,14 +49,19 @@ public class LoggedUser implements HttpSessionBindingListener {
 
         List<String> users = activeUserStore.getUsers();
         LoggedUser user = (LoggedUser) event.getValue();
-        if (users != null && users.contains(user.getUsername())) {
+        if (users != null) {
             users.remove(user.getUsername());
-
         }
 
-        System.out.println("Конец");
-        if (MywebquizengineApplication.ctx.getBean(UserRepository.class).findById(user.getUsername()).isPresent()) {
-            User authUser = MywebquizengineApplication.ctx.getBean(UserRepository.class).findById(user.getUsername()).get();
+        Optional<User> optionalUser = MywebquizengineApplication
+                .ctx
+                .getBean(UserRepository.class)
+                .findById(user
+                        .getUsername()
+                );
+
+        if (optionalUser.isPresent()) {
+            User authUser = optionalUser.get();
             authUser.setOnline("false");
             MywebquizengineApplication.ctx.getBean(UserRepository.class).save(authUser);
         }

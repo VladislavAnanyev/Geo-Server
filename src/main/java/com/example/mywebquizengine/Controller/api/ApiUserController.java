@@ -4,6 +4,7 @@ import com.example.mywebquizengine.Model.Photo;
 import com.example.mywebquizengine.Model.Projection.ProfileView;
 import com.example.mywebquizengine.Model.Projection.UserCommonView;
 import com.example.mywebquizengine.Model.Projection.UserView;
+import com.example.mywebquizengine.Model.RegistrationType;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Model.UserInfo.AuthRequest;
 import com.example.mywebquizengine.Model.UserInfo.AuthResponse;
@@ -48,7 +49,7 @@ public class ApiUserController {
 
     @PostMapping(path = "/signup")
     public AuthResponse signup(@Valid @RequestBody User user) {
-        userService.processCheckIn(user, "BASIC");
+        userService.processCheckIn(user, RegistrationType.BASIC);
         return userService.getJwtToken(user);
     }
 

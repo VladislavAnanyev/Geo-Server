@@ -119,7 +119,7 @@ public class ApiUserControllerTest {
         assertNull(user.getChangePasswordCode());
         assertNotNull(user.getPassword());
         assertEquals("0", String.valueOf(user.getBalance()));
-
+        assertNotNull(user.getOnline());
 
 
     }

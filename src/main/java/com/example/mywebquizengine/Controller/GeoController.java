@@ -1,24 +1,15 @@
 package com.example.mywebquizengine.Controller;
 
-import com.example.mywebquizengine.Controller.api.ApiGeoController;
 import com.example.mywebquizengine.Model.Geo.Geolocation;
 import com.example.mywebquizengine.Model.Projection.GeolocationView;
 import com.example.mywebquizengine.Model.Projection.UserCommonView;
-import com.example.mywebquizengine.Repos.GeolocationRepository;
-import com.example.mywebquizengine.Repos.MeetingRepository;
-import com.example.mywebquizengine.Repos.UserRepository;
 import com.example.mywebquizengine.Service.GeoService;
 import com.example.mywebquizengine.Service.UserService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
 import java.util.ArrayList;
@@ -44,7 +35,6 @@ public class GeoController {
     public void sendGeolocation(@AuthenticationPrincipal Principal principal,
                                 @RequestBody Geolocation myGeolocation) throws Exception {
        geoService.sendGeolocation(principal.getName(), myGeolocation);
-       throw new ResponseStatusException(HttpStatus.OK);
     }
 
     @GetMapping(path = "/getAllGeoWithoutMe")
@@ -76,7 +66,6 @@ public class GeoController {
         model.addAttribute("myUsername", principal.getName());
 
         List<UserCommonView> friends = userService.findMyFriends(principal.getName());
-        //userRepository.findUsersByFriendsUsernameContains(principal.getName());
 
         List<String> friendsName = friends.stream().map(UserCommonView::getUsername).collect(Collectors.toList());
 

@@ -1,8 +1,9 @@
 package com.example.mywebquizengine.Controller;
 
-import com.example.mywebquizengine.Model.*;
 import com.example.mywebquizengine.Model.Projection.UserView;
-import com.example.mywebquizengine.Repos.UserRepository;
+import com.example.mywebquizengine.Model.RegistrationType;
+import com.example.mywebquizengine.Model.Request;
+import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Security.ActiveUserStore;
 import com.example.mywebquizengine.Service.RequestService;
 import com.example.mywebquizengine.Service.UserService;
@@ -13,10 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
@@ -24,7 +23,8 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Locale;
 
 
 @Controller
@@ -41,7 +41,7 @@ public class UserController {
 
 
     @GetMapping(path = "/profile")
-    public String getProfile(Model model , @AuthenticationPrincipal Principal principal) {
+    public String getProfile(Model model, @AuthenticationPrincipal Principal principal) {
 
         UserView user = userService.getAuthUser(principal.getName());
         model.addAttribute("user", user);
@@ -75,12 +75,12 @@ public class UserController {
     @PostMapping(path = "/register")
     public String checkIn(@Valid User user) {
 
-        userService.processCheckIn(user, "BASIC");
+        userService.processCheckIn(user, RegistrationType.BASIC);
         return "reg";
 
     }
 
-    @PostMapping(path = "/update/userinfo/password", consumes ={"application/json"} )
+    @PostMapping(path = "/update/userinfo/password", consumes = {"application/json"})
     public void tryToChangePassWithAuth(@AuthenticationPrincipal Principal principal) {
 
         //User user = userService.loadUserByUsernameProxy(principal.getName());
@@ -95,7 +95,7 @@ public class UserController {
         return (ArrayList<String>) activeUserStore.getUsers();
     }
 
-    @PostMapping(path = "/update/userinfo/pswrdwithoutauth", consumes ={"application/json"} )
+    @PostMapping(path = "/update/userinfo/pswrdwithoutauth", consumes = {"application/json"})
     public void tryToChangePassWithoutAuth(@RequestBody User in) {
 
         //User user = userService.loadUserByUsername(in.getUsername());
@@ -118,14 +118,17 @@ public class UserController {
 
 
     @GetMapping(path = "/signin")
-    public String singin() {
+    public String signIn() {
         return "singin";
     }
 
+/*    @GetMapping(path = "/signin#")
+    public String singIn() {
+        return "redirect:/signin";
+    }*/
 
 
-
-    @PutMapping(path = "/updatepass/{changePasswordCode}", consumes ={"application/json"})
+    @PutMapping(path = "/updatepass/{changePasswordCode}", consumes = {"application/json"})
     public String changePasswordUsingCode(@RequestBody User in, @PathVariable String changePasswordCode) {
 
         userService.updatePassword(in, changePasswordCode);
@@ -134,9 +137,8 @@ public class UserController {
     }
 
 
-
     @Transactional
-    @PutMapping(path = "/update/user/{username}", consumes={"application/json"})
+    @PutMapping(path = "/update/user/{username}", consumes = {"application/json"})
     @PreAuthorize(value = "#principal.name.equals(#username)")
     public void changeUser(@PathVariable String username, @RequestBody User user, @AuthenticationPrincipal Principal principal) {
         userService.updateUser(user.getLastName(), user.getFirstName(), username);
@@ -167,7 +169,6 @@ public class UserController {
         userService.processPayment(notification_type, operation_id, amount, withdraw_amount, currency, datetime, sender, codepro, label, sha1_hash, test_notification, unaccepted, lastname, firstname, fathersname, email, phone, city, street, building, suite, flat, zip);
 
     }
-
 
 
     @GetMapping(path = "/getUserList")

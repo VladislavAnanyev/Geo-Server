@@ -1,12 +1,9 @@
 package com.example.mywebquizengine.Service;
 
-import com.example.mywebquizengine.Model.Order;
-import com.example.mywebquizengine.Model.Photo;
+import com.example.mywebquizengine.Model.*;
 import com.example.mywebquizengine.Model.Projection.ProfileView;
 import com.example.mywebquizengine.Model.Projection.UserCommonView;
 import com.example.mywebquizengine.Model.Projection.UserView;
-import com.example.mywebquizengine.Model.Role;
-import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Model.UserInfo.AuthRequest;
 import com.example.mywebquizengine.Model.UserInfo.AuthResponse;
 import com.example.mywebquizengine.Model.UserInfo.GoogleToken;
@@ -46,7 +43,6 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.Principal;
 import java.util.*;
 
 
@@ -93,14 +89,14 @@ public class UserService implements UserDetailsService {
         return userRepository.getOne(username);
     }
 
-    private void saveUser(User user, String type) {
+    private void saveUser(User user, RegistrationType type) {
 
         Optional<User> optionalUser = userRepository.findById(user.getUsername());
-        if (type.equals("OAUTH2")) {
+        if (type.equals(RegistrationType.OAUTH2)) {
             if (optionalUser.isEmpty()) {
                 userRepository.save(user);
             }
-        } else if (type.equals("BASIC")) {
+        } else if (type.equals(RegistrationType.BASIC)) {
             if (optionalUser.isEmpty()) {
                 userRepository.save(user);
             } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -245,6 +241,7 @@ public class UserService implements UserDetailsService {
         user.setEnabled(true);
         user.setBalance(0);
         user.grantAuthority(Role.ROLE_USER);
+        user.setOnline("false");
 
     }
 
@@ -356,7 +353,7 @@ public class UserService implements UserDetailsService {
             user.setLastName(familyName);
             user.setPhotos(pictureUrl);
 
-            processCheckIn(user, "OAUTH2");
+            processCheckIn(user, RegistrationType.OAUTH2);
 
             User savedUser = loadUserByUsername(user.getUsername());
 
@@ -416,8 +413,8 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public void processCheckIn(User user, String type) {
-        if (type.equals("BASIC")) {
+    public void processCheckIn(User user, RegistrationType type) {
+        if (type.equals(RegistrationType.BASIC)) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             user.setStatus(false);
             user.setPhotos(Collections.singletonList("https://" + hostname + "/img/default.jpg"));
@@ -432,7 +429,7 @@ public class UserService implements UserDetailsService {
                 System.out.println("Отключено");
             }
 
-        } else if (type.equals("OAUTH2")) {
+        } else if (type.equals(RegistrationType.OAUTH2)) {
             user.setStatus(true);
         }
         doBasicUserInitializationBeforeSave(user);
