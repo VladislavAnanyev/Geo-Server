@@ -13,7 +13,14 @@ import java.util.Optional;
 
 public interface GeolocationRepository extends CrudRepository<Geolocation, String>, JpaRepository<Geolocation, String> {
 
-    @Query(value = "SELECT * FROM GEOLOCATIONS WHERE USERNAME != :username", nativeQuery = true)
+    @Query(value = """
+SELECT *
+FROM GEOLOCATIONS
+WHERE TIME IN (
+    SELECT MAX(TIME)
+    FROM GEOLOCATIONS
+    WHERE USERNAME != :username GROUP BY USERNAME)
+""", nativeQuery = true)
     List<GeolocationView> getAll(String username);
 
     @Query(value = """
