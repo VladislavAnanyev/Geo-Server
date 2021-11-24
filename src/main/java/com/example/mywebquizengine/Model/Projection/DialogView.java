@@ -11,12 +11,16 @@ import javax.inject.Named;
 import java.util.List;
 import java.util.Set;
 
-public interface DialogWithUsersViewPaging {
+public interface DialogView {
     Long getDialogId();
-    String getName();
+
+    @Value("#{@messageService.getCompanionAvatar(target.image ,target.users)}")
     String getImage();
+
     Set<UserCommonView> getUsers();
 
+    @Value("#{@messageService.getCompanion(target.name ,target.users)}")
+    String getName();
 
     //@Named(value = "messages")
     //@JsonProperty(value = "messages")

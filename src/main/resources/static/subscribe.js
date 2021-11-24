@@ -35,10 +35,10 @@ function onConnectedNotif() {
 
     geo()
 
-   /* stompClient.disconnect(function(frame) {
-        //debug("STOMP Client disconnecting ...");
-        console.log("STOMP client succesfully disconnected.");
-    })*/
+    /* stompClient.disconnect(function(frame) {
+         //debug("STOMP Client disconnecting ...");
+         console.log("STOMP client succesfully disconnected.");
+     })*/
 }
 
 
@@ -101,7 +101,7 @@ function onMessageReceived(payload) {
     }
 
     if (message.type === "MESSAGE" && !location.pathname.includes(message.dialog.dialogId)
-            && location.pathname.includes("/chat")) {
+        && location.pathname.includes("/chat")) {
 
 
         if (message.dialog.name !== null) {
@@ -146,10 +146,10 @@ function onMessageReceived(payload) {
                 }
 
                 //if (dialogsNameArr.indexOf(message.dialog.name) === 0) {
-                    let existDialog = document.getElementById(message.dialog.dialogId)
-                    existDialog.remove()
-                    dialog.prepend(existDialog)
-                    document.getElementById("lastMsg" + message.dialog.dialogId).textContent = message.content
+                let existDialog = document.getElementById(message.dialog.dialogId)
+                existDialog.remove()
+                dialog.prepend(existDialog)
+                document.getElementById("lastMsg" + message.dialog.dialogId).textContent = message.content
                 //}
 
             }
@@ -221,89 +221,89 @@ function onMessageReceived(payload) {
         console.log(message)
 
         if (username !== message.sender.username) {
-        let dialog = document.getElementById("dialogs")
+            let dialog = document.getElementById("dialogs")
 
-        //console.log(freme.headers['type'])
+            //console.log(freme.headers['type'])
 
-        let dialogsName = document.getElementsByClassName("dialogsuser")
-        let dialogsNameArr = []
+            let dialogsName = document.getElementsByClassName("dialogsuser")
+            let dialogsNameArr = []
 
-        for (let i = 0; i < dialogsName.length; i++) {
-            dialogsNameArr.push(dialogsName[i].textContent)
-            //  console.log(dialogsName[i].textContent)
-        }
-
-
-        let div2 = document.createElement("div")
-        div2.setAttribute('class', "chat_list")
-        div2.setAttribute('id', message.dialog.dialogId)
-        //div2.setAttribute('onclick', "activeChat(" + message.sender.username + ")")
-        //div2.setAttribute('data-barba-prevent', "")
-
-        if (username !== message.sender.username) {
-
-            div2.innerHTML="<a data-barba-prevent id="+ message.dialog.dialogId + "href\" href=\"/chat/" + message.dialog.dialogId + "\">" +
-                "                                    <div class=\"chat_people\">\n" +
-                "                                        <div class=\"chat_img\"> <img class='rounded-circle' src=" + message.sender.avatar + " alt=\"sunil\"> </div>\n" +
-                "                                        <div class=\"chat_ib\">\n" +
-                "                                            <h5 class=\"dialogsuser\">" + message.sender.username + "<span class=\"chat_date\"></span></h5>\n" +
-                "                                            <p id=\"lastMsg" + message.dialog.dialogId + "\">" + message.content + "</p>\n" +
-                "                                        </div>\n" +
-                "                                    </div></a>"
-
-
-            if (dialogsNameArr.indexOf(message.sender.username) === -1) {
-                dialog.prepend(div2)
+            for (let i = 0; i < dialogsName.length; i++) {
+                dialogsNameArr.push(dialogsName[i].textContent)
+                //  console.log(dialogsName[i].textContent)
             }
 
 
-            //if (dialogsNameArr.indexOf(message.sender.username) === 0) {
+            let div2 = document.createElement("div")
+            div2.setAttribute('class', "chat_list")
+            div2.setAttribute('id', message.dialog.dialogId)
+            //div2.setAttribute('onclick', "activeChat(" + message.sender.username + ")")
+            //div2.setAttribute('data-barba-prevent', "")
+
+            if (username !== message.sender.username) {
+
+                div2.innerHTML="<a data-barba-prevent id="+ message.dialog.dialogId + "href\" href=\"/chat/" + message.dialog.dialogId + "\">" +
+                    "                                    <div class=\"chat_people\">\n" +
+                    "                                        <div class=\"chat_img\"> <img class='rounded-circle' src=" + message.sender.avatar + " alt=\"sunil\"> </div>\n" +
+                    "                                        <div class=\"chat_ib\">\n" +
+                    "                                            <h5 class=\"dialogsuser\">" + message.sender.username + "<span class=\"chat_date\"></span></h5>\n" +
+                    "                                            <p id=\"lastMsg" + message.dialog.dialogId + "\">" + message.content + "</p>\n" +
+                    "                                        </div>\n" +
+                    "                                    </div></a>"
+
+
+                if (dialogsNameArr.indexOf(message.sender.username) === -1) {
+                    dialog.prepend(div2)
+                }
+
+
+                //if (dialogsNameArr.indexOf(message.sender.username) === 0) {
                 //document.getElementById("lastMsg" + message.dialog.dialogId).textContent = message.content
-            //}
-            let existDialog = document.getElementById(message.dialog.dialogId)
-            existDialog.remove()
-            dialog.prepend(existDialog)
-            document.getElementById("lastMsg" + message.dialog.dialogId).textContent = message.content
+                //}
+                let existDialog = document.getElementById(message.dialog.dialogId)
+                existDialog.remove()
+                dialog.prepend(existDialog)
+                document.getElementById("lastMsg" + message.dialog.dialogId).textContent = message.content
 
 
-        }
+            }
 
 
-        let div = document.createElement("div");
+            let div = document.createElement("div");
 
-        if (username !== message.sender.username) {
-            div.setAttribute('class', "incoming_msg")
-            let date = new Date(message.timestamp)
-            div.innerHTML =
-                "<div class=\"incoming_msg_img\"> <img class='rounded-circle' src=" + message.sender.avatar + " alt=\"sunil\"> </div>" +
-                "                        <div class=\"received_msg\">\n" +
-                "                        <div class=\"received_withd_msg\">\n" +
-                "                            <p>" + message.content + "</p>\n" +
-                "                            <span class=\"time_date\">" + date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div> </div>\n"
+            if (username !== message.sender.username) {
+                div.setAttribute('class', "incoming_msg")
+                let date = new Date(message.timestamp)
+                div.innerHTML =
+                    "<div class=\"incoming_msg_img\"> <img class='rounded-circle' src=" + message.sender.avatar + " alt=\"sunil\"> </div>" +
+                    "                        <div class=\"received_msg\">\n" +
+                    "                        <div class=\"received_withd_msg\">\n" +
+                    "                            <p>" + message.content + "</p>\n" +
+                    "                            <span class=\"time_date\">" + date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div> </div>\n"
 
-        } else {
-            div.setAttribute('class', "outgoing_msg")
-            let date = new Date(message.timestamp)
-            div.innerHTML = "<div class=\"sent_msg\">\n" +
-                "                                    <p>" + message.content + "</p>\n" +
-                "                                    <span class=\"time_date\">" + date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div>\n" +
-                "                            "
-
-
-            //if (dialogsNameArr.indexOf(message.sender.username) === 0) {
-            document.getElementById("lastMsg" + message.dialog.dialogId).textContent = message.content
-            //}
-        }
+            } else {
+                div.setAttribute('class', "outgoing_msg")
+                let date = new Date(message.timestamp)
+                div.innerHTML = "<div class=\"sent_msg\">\n" +
+                    "                                    <p>" + message.content + "</p>\n" +
+                    "                                    <span class=\"time_date\">" + date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div>\n" +
+                    "                            "
 
 
-        let last = document.getElementById("msg");
+                //if (dialogsNameArr.indexOf(message.sender.username) === 0) {
+                document.getElementById("lastMsg" + message.dialog.dialogId).textContent = message.content
+                //}
+            }
+
+
+            let last = document.getElementById("msg");
 
 
             last.append(div)
 
 
-        var div3 = $("#msg");
-        div3.scrollTop(div3.prop('scrollHeight'));
+            var div3 = $("#msg");
+            div3.scrollTop(div3.prop('scrollHeight'));
         }
     }
 }
@@ -362,6 +362,5 @@ function sendMessage(dialog) {
 
     }
 }
-
 
 

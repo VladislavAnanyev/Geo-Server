@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.Repos;
 
 import com.example.mywebquizengine.Model.Chat.Dialog;
-import com.example.mywebquizengine.Model.Projection.DialogWithUsersViewPaging;
+import com.example.mywebquizengine.Model.Projection.DialogView;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -24,7 +24,7 @@ public interface DialogRepository extends CrudRepository<Dialog, Long>, JpaRepos
     Long findDialogByName(String firstUser, String secondUser);
 
 
-    DialogWithUsersViewPaging findAllDialogByDialogId(Long id);
+    DialogView findAllDialogByDialogId(Long id);
 
 
 

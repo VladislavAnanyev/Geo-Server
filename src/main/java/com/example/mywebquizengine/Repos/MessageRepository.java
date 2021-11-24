@@ -4,7 +4,7 @@ import com.example.mywebquizengine.Model.Chat.Message;
 import com.example.mywebquizengine.Model.Chat.MessageStatus;
 import com.example.mywebquizengine.Model.Projection.Api.MessageWithDialog;
 //import com.example.mywebquizengine.Model.Projection.MessageForStompView;
-import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewCustomQuery;
+import com.example.mywebquizengine.Model.Projection.LastDialog;
 import com.example.mywebquizengine.Model.Projection.MessageView;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -63,7 +63,7 @@ public interface MessageRepository extends CrudRepository<Message, Long>, Paging
             GROUP BY MESSAGES.ID
             ORDER BY MESSAGES.TIMESTAMP DESC;
             """, nativeQuery = true)
-    List<MessageForApiViewCustomQuery> getDialogsForApi(String username);
+    List<LastDialog> getDialogsForApi(String username);
 
 
 

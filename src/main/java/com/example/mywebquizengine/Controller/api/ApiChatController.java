@@ -1,10 +1,9 @@
 package com.example.mywebquizengine.Controller.api;
 
 import com.example.mywebquizengine.Model.Chat.Message;
-import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewCustomQuery;
-import com.example.mywebquizengine.Model.Projection.DialogWithUsersViewPaging;
+import com.example.mywebquizengine.Model.Projection.LastDialog;
+import com.example.mywebquizengine.Model.Projection.DialogView;
 import com.example.mywebquizengine.Service.MessageService;
-import com.example.mywebquizengine.Service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,18 +37,18 @@ public class ApiChatController {
 
 
     @GetMapping(path = "/messages")
-    public DialogWithUsersViewPaging getMessages(@RequestParam Long dialogId,
-                                                 @RequestParam(required = false,defaultValue = "0") Integer page,
-                                                 @RequestParam(required = false,defaultValue = "50") Integer pageSize,
-                                                 @RequestParam(defaultValue = "timestamp") String sortBy,
-                                                 @AuthenticationPrincipal Principal principal) {
+    public DialogView getMessages(@RequestParam Long dialogId,
+                                  @RequestParam(required = false,defaultValue = "0") Integer page,
+                                  @RequestParam(required = false,defaultValue = "50") Integer pageSize,
+                                  @RequestParam(defaultValue = "timestamp") String sortBy,
+                                  @AuthenticationPrincipal Principal principal) {
         return messageService.getMessages(dialogId, page, pageSize, sortBy, principal.getName());
     }
 
 
 
     @GetMapping(path = "/dialogs")
-    public ArrayList<MessageForApiViewCustomQuery> getDialogs(@AuthenticationPrincipal Principal principal) {
+    public ArrayList<LastDialog> getDialogs(@AuthenticationPrincipal Principal principal) {
         return messageService.getDialogsForApi(principal.getName());
     }
 

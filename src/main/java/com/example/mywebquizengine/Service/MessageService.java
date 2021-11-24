@@ -1,15 +1,14 @@
 package com.example.mywebquizengine.Service;
 
 
-import com.example.mywebquizengine.Controller.api.ApiChatController;
 import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Chat.Message;
 
 //import com.example.mywebquizengine.Model.Projection.MessageForStompView;
 import com.example.mywebquizengine.Model.Chat.MessageStatus;
-import com.example.mywebquizengine.Model.Projection.Api.MessageForApiViewCustomQuery;
+import com.example.mywebquizengine.Model.Projection.LastDialog;
 import com.example.mywebquizengine.Model.Projection.Api.MessageWithDialog;
-import com.example.mywebquizengine.Model.Projection.DialogWithUsersViewPaging;
+import com.example.mywebquizengine.Model.Projection.DialogView;
 import com.example.mywebquizengine.Model.User;
 
 import com.example.mywebquizengine.Repos.DialogRepository;
@@ -28,20 +27,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class MessageService {
@@ -98,17 +90,90 @@ public class MessageService {
 
     }
 
+    public String getCompanion(String name, Set<User> users) {
+
+
+            if (users.size() > 2) {
+                return name;
+            } else if (users.size() == 2) {
+                String username = SecurityContextHolder.getContext().getAuthentication().getName();
+                users.removeIf(user -> user.getUsername().equals(username));
+                return users.iterator().next().getFirstName() + " " + users.iterator().next().getLastName();
+            } else if (users.size() == 1) {
+                return users.iterator().next().getFirstName() + " " + users.iterator().next().getLastName();
+            } else {
+                return "Пустой диалог";
+            }
+
+    }
+
+    public String getCompanionAvatar(String image, Set<User> users) {
+
+            if (users.size() > 2) {
+                return image;
+            } else if (users.size() == 2) {
+                String username = SecurityContextHolder.getContext().getAuthentication().getName();
+                users.removeIf(user -> user.getUsername().equals(username));
+                return users.iterator().next().getPhotos().get(0).getUrl();
+            } else if (users.size() == 1) {
+                return users.iterator().next().getPhotos().get(0).getUrl();
+            } else {
+                return "Пустой диалог";
+            }
+
+    }
+
+    public String getCompanionForLastDialogs(Long dialog_id) {
+        Optional<Dialog> optionalDialog = dialogRepository.findById(dialog_id);
+        if (optionalDialog.isPresent()) {
+            Dialog dialog = optionalDialog.get();
+            Set<User> users = dialog.getUsers();
+
+            if (users.size() > 2) {
+                return dialog.getName();
+            } else if (users.size() == 2) {
+                String username = SecurityContextHolder.getContext().getAuthentication().getName();
+                users.removeIf(user -> user.getUsername().equals(username));
+                return users.iterator().next().getFirstName() + " " + users.iterator().next().getLastName();
+            } else if (users.size() == 1) {
+                return users.iterator().next().getFirstName() + " " + users.iterator().next().getLastName();
+            } else {
+                return "Пустой диалог";
+            }
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+    }
+
+
+    public String getCompanionAvatarForLastDialogs(Long dialog_id) {
+        Optional<Dialog> optionalDialog = dialogRepository.findById(dialog_id);
+        if (optionalDialog.isPresent()) {
+            Dialog dialog = optionalDialog.get();
+            Set<User> users = dialog.getUsers();
+
+            if (users.size() > 2) {
+                return dialog.getImage();
+            } else if (users.size() == 2) {
+                String username = SecurityContextHolder.getContext().getAuthentication().getName();
+                users.removeIf(user -> user.getUsername().equals(username));
+                return users.iterator().next().getPhotos().get(0).getUrl();
+            } else if (users.size() == 1) {
+                return users.iterator().next().getPhotos().get(0).getUrl();
+            } else {
+                return "Пустой диалог";
+            }
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+    }
 
 
     /*public List<Message> getDialogs(String username) {
         return messageRepository.getDialogs(username);
     }*/
 
-    public ArrayList<MessageForApiViewCustomQuery> getDialogsForApi(String username) {
+    public ArrayList<LastDialog> getDialogsForApi(String username) {
 
-        List<MessageForApiViewCustomQuery> messageViews = messageRepository.getDialogsForApi(username);
+        List<LastDialog> messageViews = messageRepository.getDialogsForApi(username);
 
-        return (ArrayList<MessageForApiViewCustomQuery>) messageViews;
+        return (ArrayList<LastDialog>) messageViews;
     }
 
 
@@ -146,15 +211,15 @@ public class MessageService {
     }
 
     @Transactional
-    public DialogWithUsersViewPaging getMessages(Long dialogId,
-                                                 Integer page,
-                                                 Integer pageSize,
-                                                 String sortBy,
-                                                 String username) {
+    public DialogView getMessages(Long dialogId,
+                                  Integer page,
+                                  Integer pageSize,
+                                  String sortBy,
+                                  String username) {
         Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
         Optional<Dialog> optionalDialog = dialogRepository.findById(dialogId);
         optionalDialog.ifPresent(dialog -> dialog.setPaging(paging));
-        DialogWithUsersViewPaging dialog = dialogRepository.findAllDialogByDialogId(dialogId);
+        DialogView dialog = dialogRepository.findAllDialogByDialogId(dialogId);
 
         // If user contains in dialog
         if (dialog.getUsers().stream().anyMatch(o -> o.getUsername()
@@ -293,7 +358,7 @@ public class MessageService {
         } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 
-    public DialogWithUsersViewPaging getDialogWithPaging(String dialog_id, Integer page, Integer pageSize, String sortBy) {
+    public DialogView getDialogWithPaging(String dialog_id, Integer page, Integer pageSize, String sortBy) {
         Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
 
         dialogRepository.findById(Long.valueOf(dialog_id)).get().setPaging(paging);

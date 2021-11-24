@@ -7,46 +7,11 @@
 <@e.page>
 
 
-
-
-
-<#--    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">-->
-
-<!------ Include the above in your HEAD tag ---------->
-
-
     <title>Сообщения</title>
-
-<#--    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" type="text/css" rel="stylesheet">-->
 
     <link rel="stylesheet" href="../static/chatcss.css">
 
 
-
-    <script>
-
-
-
-        /*if (location.pathname.replace("/chat/", "") !== "/chat" &&
-            location.pathname.replace("/chat/", "") !== "") {
-            document.location.href = "/chat"
-        }*/
-
-
-
-        /*if (document.referrer.includes("about")) {
-            console.log("123")
-            barba.go("/chat")
-        }*/
-
-    </script>
-
-
-
-<#--<#if dialog??>-->
-
-<#--<input id="dialogId" type="hidden" value="${dialog?c}">-->
-<#--</#if>-->
 <div class="container">
 
 
@@ -105,71 +70,21 @@
                 </div>
                 <div class="inbox_chat" id="dialogs">
 
-                        <#list lastDialogs?if_exists as dialog>
+                    <#list lastDialogs?if_exists as dialog>
 
-
-                            <#if dialog.dialog.users?size = 2 <#--|| (dialogObj.users?size = 1 && !dialogObj.name??)-->>
-
-
-                            <#--                            Переделать-->
-
-                                <#if dialog.sender.username != name>
-
-
-                                    <div id="${dialog.dialog.dialogId?c}" <#--последнее сообщение не от меня--> class="chat_list <#--active_chat-->">
-                                        <a id="${dialog.dialog.dialogId?c}href" href="/chat/${dialog.dialog.dialogId?c}">
-                                        <div class="chat_people">
-                                            <div class="chat_img"> <img class="rounded-circle" width="43.26px" height="43.26px" src="${dialog.sender.avatar}" alt="sunil"> </div>
-                                            <div class="chat_ib последнее сообщение не от меня">
-                                                <h5 class="dialogsuser">${dialog.sender.username}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
-                                                <p id="lastMsg${dialog.dialog.dialogId?c}">${dialog.content}</p>
-                                            </div>
-                                        </div>
-                                        </a>
-                                    </div>
-                                <#else>
-
-
-    <#--                                Второй пользователь-->
-                                    <#if dialog.dialog.users?first.username = name >
-                                        <#assign o = dialog.dialog.users?last>
-                                    <#else>
-                                        <#assign o = dialog.dialog.users?first>
-                                    </#if>
-
-                                    <div id="${dialog.dialog.dialogId?c}" <#--последнее сообщение от меня-->  class="chat_list <#--active_chat-->">
-                                        <a id="${dialog.dialog.dialogId?c}href" href="/chat/${dialog.dialog.dialogId?c}">
-                                        <div class="chat_people">
-                                            <div class="chat_img"> <img class="rounded-circle" width="43.26px" height="43.26px" src="${o.avatar}" alt="sunil"> </div>
-                                            <div class="chat_ib последнее сообщение от меня">
-                                                <h5 class="dialogsuser">${o.username}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
-                                                <p id="lastMsg${dialog.dialog.dialogId?c}">${dialog.content}</p>
-                                            </div>
-                                        </div>
-                                        </a>
-                                    </div>
-
-                                </#if>
-
-                            <#else>
-
-                                <div id="${dialog.dialog.dialogId?c}"  class="chat_list <#--active_chat-->">
-                                    <a id="${dialog.dialog.dialogId?c}href" href="/chat/${dialog.dialog.dialogId?c}">
-                                    <div class="chat_people">
-                                        <div class="chat_img"> <#if dialog.dialog.image??><img class="rounded-circle" width="43.26px" height="43.26px" src="${dialog.dialog.image}"  alt="sunil"> </#if></div>
-                                        <div class="chat_ib группа">
-                                            <h5 class="dialogsuser"><#if dialog.dialog.name??>${dialog.dialog.name?string}</#if><span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
-                                            <p id="lastMsg${dialog.dialog.dialogId?c}">${dialog.content}</p>
-                                        </div>
-                                    </div>
-                                    </a>
+                        <div id="${dialog.dialogId?c}" <#--последнее сообщение не от меня--> class="chat_list <#--active_chat-->">
+                            <a id="${dialog.dialogId?c}href" href="/chat/${dialog.dialogId?c}">
+                            <div class="chat_people">
+                                <div class="chat_img"> <img class="rounded-circle" width="43.26px" height="43.26px" src="${dialog.image}" alt="sunil"> </div>
+                                <div class="chat_ib последнее сообщение не от меня">
+                                    <h5 class="dialogsuser">${dialog.name}<span class="chat_date"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>
+                                    <p id="lastMsg${dialog.dialogId?c}">${dialog.content}</p>
                                 </div>
+                            </div>
+                            </a>
+                        </div>
 
-                           </#if>
-
-
-
-                        </#list>
+                    </#list>
 
 <#--                </div>-->
 
@@ -239,32 +154,6 @@
 
 
 
-
-
-<#--<script>
-
-
-
-                            function setTime(time, id) {
-                            let userTime = new Date(time)
-                            document.getElementById(id).textContent = userTime.toLocaleDateString() + " " + userTime.toLocaleTimeString()
-                            }
-
-                            <#list messages as mes>
-
-                                setTime(${mes.timestamp?long?c}, ${mes.id?c})
-
-                            </#list>
-
-                        </script>-->
-
-
-
-
-
-
-
-<#--                    </main>-->
                 </div>
 
 
@@ -302,24 +191,6 @@
                         }
 
 
-                    /*if (location.pathname.replace("/chat/", "") !== "" && location.pathname !== "/chat") {
-
-                        let textArea = document.createElement('div')
-                        textArea.setAttribute("id", "msgArea")
-                        textArea.classList.add("type_msg")
-                        textArea.innerHTML = "<div class=\"input_msg_write\">\n" +
-                            "                        <input type=\"text\" class=\"write_msg\" id=\"inputtextarea\" placeholder=\"Напишите сообщение\"/>\n" +
-                            "                        <button onclick=\"sendMessage(location.pathname.replace('/chat/', ''))\" class=\"msg_send_btn\" type=\"button\"><i class=\"fa fa-paper-plane-o\" aria-hidden=\"true\"></i></button>\n" +
-                            "                    </div>"
-
-
-
-                        let msgsById = document.getElementById("msg");
-
-                        console.log(location.pathname.replace("/chat/", ""))
-
-                        msgsById.after(textArea)
-                    }*/
 
                 </script>
 
@@ -344,11 +215,11 @@
     <#if dialog?? >
 
 
-        <#if dialogObj.users?first.username = name >
-            <#assign c = dialogObj.users?last>
-        <#else>
-            <#assign c = dialogObj.users?first>
-        </#if>
+<#--        <#if dialogObj.users?first.username = name >-->
+            <#assign c = dialogObj.name>
+<#--        <#else>-->
+<#--            <#assign c = dialogObj.users?first>-->
+<#--        </#if>-->
 
         <script>
             let dialog = document.getElementById("dialogs")
@@ -362,14 +233,14 @@
                 dialogsNameArr.push(dialogsName[i].id)
                 //console.log(dialogsName[i].id)
             }
-            <#if dialogObj.users?size = 2 <#--|| (dialogObj.users?size = 1 && !dialogObj.name??)-->>
+
             //div2.setAttribute('class', "inbox_chat")
             if (dialogsNameArr.indexOf("${dialog?c}") == -1) {
                 div2.innerHTML =
                     "                                    <a id='${dialog?c}href' href='/chat/${dialog?c}'><div class=\"chat_people\">\n" +
-                    "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" width=\"43.26px\" height=\"43.26px\" src=\"${c.avatar}\" alt=\"sunil\"> </div>\n" +
+                    "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" width=\"43.26px\" height=\"43.26px\" src=\"${dialogObj.image}\" alt=\"sunil\"> </div>\n" +
                     "                                        <div class=\"chat_ib\">\n" +
-                    "                                            <h5 class=\"dialogsuser\">${c.username}<span class=\"chat_date\"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>\n" +
+                    "                                            <h5 class=\"dialogsuser\">${c}<span class=\"chat_date\"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>\n" +
                     "                                            <p id=\"lastMsg${dialog?c}\"></p>\n" +
                     "                                        </div>\n" +
                     "                                    </div>\n" +
@@ -377,22 +248,7 @@
                 console.log(dialogsNameArr.indexOf("${dialog?c}"))
                 dialog.prepend(div2)
             }
-            <#else>
-            //div2.setAttribute('class', "inbox_chat")
-            if (dialogsNameArr.indexOf("${dialog?c}") == -1) {
-                div2.innerHTML =
-                    "                                    <a id='${dialog?c}href' href='/chat/${dialog?c}'><div class=\"chat_people\">\n" +
-                    "                                        <div class=\"chat_img\"> <img class=\"rounded-circle\" width=\"43.26px\" height=\"43.26px\" src=\"<#--https://ptetutorials.com/images/user-profile.png-->../../../../img/${dialogObj.image}.jpg\" alt=\"sunil\"> </div>\n" +
-                    "                                        <div class=\"chat_ib\">\n" +
-                    "                                            <h5 class=\"dialogsuser\">${dialogObj.name}<span class=\"chat_date\"><#--${messages[messages?size - 1].timestamp.time?date}--></span></h5>\n" +
-                    "                                            <p id=\"lastMsg${dialog?c}\"></p>\n" +
-                    "                                        </div>\n" +
-                    "                                    </div>\n" +
-                    "                                </div></a>"
-                console.log(dialogsNameArr.indexOf("${dialog?c}"))
-                dialog.prepend(div2)
-            }
-            </#if>
+
         </script>
     </#if>
 
@@ -414,14 +270,6 @@
 
 <#--<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>-->
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-
-
-
-
-
-
-
-
 
 
 
@@ -574,16 +422,7 @@
             transitions: [{
                 name: 'default-transition',
 
-                /*beforeOnce(data) {
 
-
-                    console.log(location.pathname.replace("/chat/", ""))
-                },*/
-                /*path: "/chat/!**",*/
-
-                //from: {namespace: ['home']},
-                //both: {namespace: ['home']},
-                //to: {namespace: ['msgs']},
                 once(){
                     console.log("111111111111111111110")
                     setScroll()
@@ -593,16 +432,7 @@
                 before(data) {
                     console.log(data)
 
-                    /*if (document.getElementsByClassName('active_chat').length !==0) {
-                        let active = document.getElementsByClassName('active_chat')[0]
-                        active.classList.remove('active_chat')
-                    }*/
 
-
-
-                    /*count = 0
-                    page = 0;
-                    currentCount = 0;*/
                     delete count
                     delete page
                     delete currentCount
@@ -624,12 +454,7 @@
 
 
                         let idHref2 = document.getElementById(prevDialog + "href")
-                        //console.log(idHref)
-                        // console.log("ДДДДДДДДДДДДДДДДДДДДДДДд")
-                        //idHref2.setAttribute('href', prevDialogPath)
 
-
-                        //stompClient.unsubscribe("sub-0")
 
                     }
 
@@ -650,122 +475,8 @@
                     // create your amazing enter animation here
                 },*/
                 after(data) {
-                    console.log(data)
-
-
-
-
-                    console.log("12321312312321")
-
-
-
-
-
-
-
-                    /*let count = 0
-                    let page = 0;
-                    let currentCount = 0;
-
-
-
-                        //writeMsgs()
-                    if (count ===0 ) {
-
-                        count++
-
-
-                        let dia123 = location.pathname.replace("/chat/", "")
-                        let xhr = new XMLHttpRequest();
-                        xhr.open('GET', '/chat/nextPages?dialog_id=' + dia123 + '&page=' + page);
-                        xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
-                        xhr.onreadystatechange = function () {
-                            if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-                                let json = JSON.parse(xhr.response)
-
-
-                                if (json.messages.length !== 0) {
-
-
-                                    //console.log("123")
-
-
-                                    for (let i = json.messages.length - 1; i >= 0; i--) {
-                                        //console.log(11)
-                                        //console.log(json.messages[i].sender.username)
-                                        //console.log('')
-                                        if (json.messages[i].sender.username === '${name}') {
-
-                                            let divChat = document.createElement("div")
-                                            divChat.setAttribute('class', "outgoing_msg")
-                                            divChat.innerHTML =
-                                                "                        <div class=\"sent_msg\">\n" +
-                                                "                            <p>" + json.messages[i].content + "</p>\n" +
-                                                "                            <span id=" + json.messages[i].id + " class=\"time_date\">" + new Date(json.messages[i].timestamp).toLocaleDateString() + " " + new Date(json.messages[i].timestamp).toLocaleTimeString() + "</span> </div>\n"
-
-
-                                            let last = document.getElementById("msg");
-
-                                            last.prepend(divChat)
-                                        } else {
-                                            let divChat = document.createElement("div")
-                                            divChat.setAttribute('class', "incoming_msg")
-                                            divChat.innerHTML =
-                                                "<div class=\"incoming_msg_img\"> <img class='rounded-circle' src=" + json.messages[i].sender.avatar + " alt=\"sunil\"> </div>" +
-                                                "                        <div class=\"received_msg\">\n" +
-                                                "                        <div class=\"received_withd_msg\">\n" +
-                                                "                            <p>" + json.messages[i].content + "</p>\n" +
-                                                "                            <span class=\"time_date\">" + new Date(json.messages[i].timestamp).toLocaleDateString() + " " + new Date(json.messages[i].timestamp).toLocaleTimeString() + "</span> </div> </div>\n"
-
-
-                                            let last = document.getElementById("msg");
-
-                                            last.prepend(divChat)
-
-
-                                        }
-                                    }
-                                }
-
-
-                                count--
-                                var div10 = $("#msg");
-                                div10.scrollTop(div10.prop('scrollHeight'));
-                            }
-                        };
-                        xhr.send();
-                    }*/
 
                     setScroll()
-
-                                /*var div10 = $("#msg");
-                                div10.scrollTop(div10.prop('scrollHeight'));*/
-
-                            /*if (data.next.url.path.replace("/chat/", "") !== "" ||
-                                data.next.url.path.replace("/chat/", "") !== "/chat") {
-
-                                let textArea = document.createElement('div')
-                                textArea.setAttribute("id", "msgArea")
-                                textArea.classList.add("type_msg")
-                                textArea.innerHTML = "<div class=\"input_msg_write\">\n" +
-                                    "                        <input type=\"text\" class=\"write_msg\" id=\"inputtextarea\" placeholder=\"Напишите сообщение\"/>\n" +
-                                    "                        <button onclick=\"sendMessage(location.pathname.replace('/chat/', ''))\" class=\"msg_send_btn\" type=\"button\"><i class=\"fa fa-paper-plane-o\" aria-hidden=\"true\"></i></button>\n" +
-                                    "                    </div>"
-
-                                let last2 = document.getElementById("msg");
-
-                                last2.after(textArea)
-
-
-                            }*/
-
-
-
-
-                    //let diaActual = location.pathname.replace("/chat/", "")
-                    //let idHref= document.getElementById(diaActual + "href")
-                    //console.log(idHref)
-                    //idHref.removeAttribute('href')
 
 
 
@@ -800,10 +511,7 @@
 
                     $('#setTimeAll').remove().appendTo('body');
 
-                    //document.getElementById("setTime").remove()
-                    //document.getElementById("setTimeAll")
 
-                    /*$('script').run()*/
 
                     let dia = location.pathname.replace("/chat/", "")
                     let id2 = document.getElementById(dia);
@@ -820,62 +528,18 @@
 
 
 
-
                     setOnScrollPagesLoad()
-
-
-
-
-
-
 
 
     }
 
 }], cacheIgnore: true,
-            prefetchIgnore: true/*,
-            prefetchIgnore: true*/
-
-/*prevent: (el, event, href) => {
-
-    if (href.includes("/quizzes")) {
-return true
-} else return false},*/
-//debug: true,
+            prefetchIgnore: true
 });
-
-
-/*barba.hooks.after((data) => {
-
-
-
-});*/
 
 
 
 </script>
-
-<#--<script type="text/javascript">
-function funonload() {
-
-let dia = location.pathname.replace("/chat/", "")
-
-if (location.href.includes('/chat/' + dia)) {
-    let id = document.getElementById(dia);
-    id.setAttribute('class', "chat_list active_chat")
-
-    let idHref= document.getElementById(dia + "href")
-    //console.log(idHref)
-    idHref.removeAttribute('href')
-}
-}
-
-window.onload = funonload;
-</script>-->
-
-
-
-
 
 
 </@e.page>

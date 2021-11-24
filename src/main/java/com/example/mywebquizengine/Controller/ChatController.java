@@ -3,7 +3,7 @@ package com.example.mywebquizengine.Controller;
 
 import com.example.mywebquizengine.Model.Chat.Dialog;
 import com.example.mywebquizengine.Model.Chat.Message;
-import com.example.mywebquizengine.Model.Projection.DialogWithUsersViewPaging;
+import com.example.mywebquizengine.Model.Projection.DialogView;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Service.MessageService;
 import com.example.mywebquizengine.Service.UserService;
@@ -73,7 +73,7 @@ public class ChatController {
                                @AuthenticationPrincipal Principal principal) {
 
 
-        DialogWithUsersViewPaging dialog = messageService.getDialogWithPaging(dialog_id, page, pageSize, sortBy);
+        DialogView dialog = messageService.getDialogWithPaging(dialog_id, page, pageSize, sortBy);
 
         if (dialog.getUsers().stream().anyMatch(o -> o.getUsername()
                 .equals(principal.getName()))) {
@@ -94,11 +94,11 @@ public class ChatController {
     @GetMapping(path = "/chat/nextPages")
     @Transactional
     @ResponseBody
-    public DialogWithUsersViewPaging chatWithUserPages(@RequestParam String dialog_id,
-                                                       @RequestParam(required = false, defaultValue = "0") @Min(0) Integer page,
-                                                       @RequestParam(required = false, defaultValue = "50") @Min(1) @Max(100) Integer pageSize,
-                                                       @RequestParam(defaultValue = "timestamp") String sortBy,
-                                                       @AuthenticationPrincipal Principal principal) {
+    public DialogView chatWithUserPages(@RequestParam String dialog_id,
+                                        @RequestParam(required = false, defaultValue = "0") @Min(0) Integer page,
+                                        @RequestParam(required = false, defaultValue = "50") @Min(1) @Max(100) Integer pageSize,
+                                        @RequestParam(defaultValue = "timestamp") String sortBy,
+                                        @AuthenticationPrincipal Principal principal) {
         return messageService.getMessages(Long.valueOf(dialog_id), page, pageSize, sortBy, principal.getName());
     }
 
