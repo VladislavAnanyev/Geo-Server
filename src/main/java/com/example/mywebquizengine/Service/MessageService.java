@@ -98,9 +98,9 @@ public class MessageService {
             } else if (users.size() == 2) {
                 String username = SecurityContextHolder.getContext().getAuthentication().getName();
                 users.removeIf(user -> user.getUsername().equals(username));
-                return users.iterator().next().getFirstName() + " " + users.iterator().next().getLastName();
+                return users.iterator().next().getUsername();
             } else if (users.size() == 1) {
-                return users.iterator().next().getFirstName() + " " + users.iterator().next().getLastName();
+                return users.iterator().next().getUsername();
             } else {
                 return "Пустой диалог";
             }
@@ -134,9 +134,9 @@ public class MessageService {
             } else if (users.size() == 2) {
                 String username = SecurityContextHolder.getContext().getAuthentication().getName();
                 users.removeIf(user -> user.getUsername().equals(username));
-                return users.iterator().next().getFirstName() + " " + users.iterator().next().getLastName();
+                return users.iterator().next().getUsername();
             } else if (users.size() == 1) {
-                return users.iterator().next().getFirstName() + " " + users.iterator().next().getLastName();
+                return users.iterator().next().getUsername();
             } else {
                 return "Пустой диалог";
             }

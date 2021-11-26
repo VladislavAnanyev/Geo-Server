@@ -220,7 +220,8 @@ function onMessageReceived(payload) {
         console.log("Успех")
         console.log(message)
 
-        if (username !== message.sender.username) {
+        if (username !== message.sender.username ||
+            (username === message.sender.username && message.client === "ANDROID")) {
             let dialog = document.getElementById("dialogs")
 
             //console.log(freme.headers['type'])
