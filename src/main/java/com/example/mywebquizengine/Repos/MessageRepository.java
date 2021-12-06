@@ -2,8 +2,7 @@ package com.example.mywebquizengine.Repos;
 
 import com.example.mywebquizengine.Model.Chat.Message;
 import com.example.mywebquizengine.Model.Chat.MessageStatus;
-import com.example.mywebquizengine.Model.Projection.Api.MessageWithDialog;
-//import com.example.mywebquizengine.Model.Projection.MessageForStompView;
+
 import com.example.mywebquizengine.Model.Projection.LastDialog;
 import com.example.mywebquizengine.Model.Projection.MessageView;
 import org.springframework.data.domain.Page;
@@ -21,7 +20,6 @@ public interface MessageRepository extends CrudRepository<Message, Long>, Paging
 
     @Query(value = "SELECT * FROM MESSAGES WHERE TIMESTAMP = :time", nativeQuery = true)
     Message getDialogsByTimestamp(String time);
-
 
 
     @Query(value = "SELECT DIALOG_ID FROM USERS_DIALOGS WHERE USER_ID = :username", nativeQuery = true)
@@ -66,14 +64,7 @@ public interface MessageRepository extends CrudRepository<Message, Long>, Paging
     List<LastDialog> getDialogsForApi(String username);
 
 
-
-    MessageWithDialog findMessageById(Long id);
-
-
-
     Message getById(Integer id);
-
-
 
 
 }

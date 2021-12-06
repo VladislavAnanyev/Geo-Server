@@ -256,7 +256,7 @@ public class MessageService {
     }
 
 
-    public void sendMessage(Message message, String client) throws JsonProcessingException, ParseException {
+    public void sendMessage(Message message) throws JsonProcessingException, ParseException {
 
         User sender = userService.loadUserByUsernameProxy(message.getSender().getUsername());
 
@@ -278,22 +278,14 @@ public class MessageService {
 
         JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(messageDto));
         jsonObject.put("type", "MESSAGE");
+        jsonObject.put("uniqueCode", message.getUniqueCode());
 
-
-        jsonObject.put("client", client);
-
-        if (message.getUniqueCode() != null) {
-            jsonObject.put("uniqueCode", message.getUniqueCode());
-        }
 
         for (User user : dialog.getUsers()) {
-
             simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
                     jsonObject);
-
             rabbitTemplate.convertAndSend(user.getUsername(),
                     jsonObject);
-
         }
 
     }

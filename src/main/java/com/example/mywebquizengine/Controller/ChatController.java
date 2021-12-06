@@ -118,7 +118,7 @@ public class ChatController {
                             @AuthenticationPrincipal Principal principal
     ) throws JsonProcessingException, ParseException {
         if (message.getSender().getUsername().equals(principal.getName())) {
-            messageService.sendMessage(message, "WEB");
+            messageService.sendMessage(message);
         } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 
@@ -127,7 +127,7 @@ public class ChatController {
     @Transactional
     @RabbitListener(queues = "incoming-messages")
     public void getMessageFromAndroid(@Valid Message message) throws JsonProcessingException, ParseException {
-        messageService.sendMessage(message, "ANDROID");
+        messageService.sendMessage(message);
     }
 
 

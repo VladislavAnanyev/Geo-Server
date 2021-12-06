@@ -170,8 +170,16 @@ function onMessageReceived(payload) {
         console.log("Успех")
         console.log(message)
 
+        let uniqueCodeFromMsg = message.uniqueCode
+
+        let msgWithUniqueCode = document.getElementById(uniqueCodeFromMsg)
+
+        if (msgWithUniqueCode !== null) {
+          msgWithUniqueCode.id = message.id
+        }
+
         if (username !== message.sender.username ||
-            (username === message.sender.username && message.client === "ANDROID")) {
+            (username === message.sender.username && msgWithUniqueCode === null)) {
             let dialog = document.getElementById("dialogs")
 
             //console.log(freme.headers['type'])
@@ -230,14 +238,14 @@ function onMessageReceived(payload) {
                     "                        <div class=\"received_msg\">\n" +
                     "                        <div class=\"received_withd_msg\">\n" +
                     "                            <p>" + message.content + "</p>\n" +
-                    "                            <span class=\"time_date\">" + date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div> </div>\n"
+                    "                            <span id=\"" + message.id + "\" class=\"time_date\">" + date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div> </div>\n"
 
             } else {
                 div.setAttribute('class', "outgoing_msg")
                 let date = new Date(message.timestamp)
                 div.innerHTML = "<div class=\"sent_msg\">\n" +
                     "                                    <p>" + message.content + "</p>\n" +
-                    "                                    <span class=\"time_date\">" + date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div>\n" +
+                    "                                    <span id=\"" + message.id + "\" class=\"time_date\">" + date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div>\n" +
                     "                            "
 
 
@@ -267,18 +275,22 @@ function sendMessage(dialog) {
     console.log(messageInput.value)
     if (messageInput.value.length !== 0) {
 
+        let date = new Date()
+        let uniqueCode = date.valueOf()
         var messageContent = messageInput.value.trim();
+        //console.log(date.valueOf())
         if(messageContent && stompClient) {
             var chatMessage = {
                 sender: {username: username},
                 content: messageContent,
-                dialog: {dialogId: dialog}
+                dialog: {dialogId: dialog},
+                uniqueCode: uniqueCode
             };
             stompClient.send("/app/user/" + dialog, {}, JSON.stringify(chatMessage));
 
         }
 
-        let date = new Date()
+
         console.log(Intl.DateTimeFormat().resolvedOptions().timeZone)
 
         let div = document.createElement("div");
@@ -287,7 +299,7 @@ function sendMessage(dialog) {
         div.innerHTML =
             "                        <div class=\"sent_msg\">\n" +
             "                            <p>" + messageContent + "</p>\n" +
-            "                            <span class=\"time_date\">" +  date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div>\n"
+            "                            <span id=\"" + uniqueCode + "\" class=\"time_date\">" +  date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div>\n"
 
 
         let last = document.getElementById("msg");

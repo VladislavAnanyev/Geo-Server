@@ -21,4 +21,5 @@ public interface MessageView {
     List<MessagePhoto> getPhotos();
     @Value("#{target.dialog.dialogId}")
     Long getDialogId();
+    //Long getUniqueCode();
 }
