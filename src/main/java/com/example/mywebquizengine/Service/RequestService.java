@@ -56,8 +56,22 @@ public class RequestService {
 
 
     public void sendRequest(Request request, Principal principal) throws JsonProcessingException, ParseException {
+
+
         request.setSender(userService.loadUserByUsername(principal.getName()));
         request.setStatus("PENDING");
+
+        ArrayList<Request> requests = requestRepository
+                .findAllByToUsernameAndSenderUsernameAndMeetingId(
+                        request.getTo().getUsername(),
+                        request.getSender().getUsername(),
+                        request.getMeeting().getId()
+                );
+
+        if (requests.size() > 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
         Long dialogId = messageService.checkDialog(request.getTo().getUsername(), principal.getName());
 
 
