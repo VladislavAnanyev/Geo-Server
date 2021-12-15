@@ -282,8 +282,8 @@ public class MessageService {
 
 
         for (User user : dialog.getUsers()) {
-            simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
-                    jsonObject);
+            //simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
+            //        jsonObject);
             rabbitTemplate.convertAndSend(user.getUsername(),
                     jsonObject);
         }

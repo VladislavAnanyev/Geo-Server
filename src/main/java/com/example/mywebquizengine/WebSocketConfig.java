@@ -44,7 +44,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         //config.setApplicationDestinationPrefixes("/app");
                     //config.setUserDestinationPrefix("/topic");
     registry.setApplicationDestinationPrefixes("/app");
-    registry.enableStompBrokerRelay("/topic")
+    registry.enableStompBrokerRelay("/topic", "/queue")
             .setRelayHost(hostname)
             .setRelayPort(61613)
             .setClientLogin(login)

@@ -30,8 +30,8 @@ function onConnectedNotif() {
     }
     xhr.send();
 
-    stompClient.subscribe('/topic/' + username, onMessageReceived);
-
+    //stompClient.subscribe('/topic/' + username, onMessageReceived);
+    stompClient.subscribe('/queue/' + username, onMessageReceived);
 
     geo()
 

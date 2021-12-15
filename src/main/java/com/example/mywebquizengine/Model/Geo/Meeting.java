@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.Model.Geo;
 
+import com.example.mywebquizengine.Model.Request;
 import com.example.mywebquizengine.Model.User;
 
 import javax.persistence.*;
@@ -18,6 +19,9 @@ public class Meeting {
 
     @ManyToOne
     private User secondUser;
+
+    @OneToOne(mappedBy = "meeting")
+    private Request request;
 
     private Double lat;
     private Double lng;
@@ -72,4 +76,11 @@ public class Meeting {
         return firstUser;
     }
 
+    public Request getRequest() {
+        return request;
+    }
+
+    public void setRequest(Request request) {
+        this.request = request;
+    }
 }

@@ -55,6 +55,7 @@ public class RequestService {
     private SimpMessagingTemplate simpMessagingTemplate;
 
 
+    @Transactional
     public void sendRequest(Request request, Principal principal) throws JsonProcessingException, ParseException {
 
 
@@ -62,9 +63,7 @@ public class RequestService {
         request.setStatus("PENDING");
 
         ArrayList<Request> requests = requestRepository
-                .findAllByToUsernameAndSenderUsernameAndMeetingId(
-                        request.getTo().getUsername(),
-                        request.getSender().getUsername(),
+                .findAllByMeetingId(
                         request.getMeeting().getId()
                 );
 

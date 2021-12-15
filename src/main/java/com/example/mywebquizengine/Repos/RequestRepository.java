@@ -19,7 +19,7 @@ public interface RequestRepository extends CrudRepository<Request, Long>, JpaRep
 
     ArrayList<ReceivedRequestView> findAllByToUsernameAndStatus(String username, String status);
 
-    ArrayList<Request> findAllByToUsernameAndSenderUsernameAndMeetingId(String to, String sender, Long meetingId);
+    ArrayList<Request> findAllByMeetingId(Long meetingId);
 
     ArrayList<SentRequestView> findAllBySenderUsernameAndStatus(String username, String status);
 
