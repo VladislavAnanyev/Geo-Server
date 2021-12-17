@@ -256,6 +256,7 @@ public class MessageService {
     }
 
 
+    @Transactional
     public void sendMessage(Message message) throws JsonProcessingException, ParseException {
 
         User sender = userService.loadUserByUsernameProxy(message.getSender().getUsername());
@@ -269,25 +270,16 @@ public class MessageService {
 
         Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
 
-        Hibernate.initialize(dialog.getUsers());
-
         ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
         MessageView messageDto = pf.createProjection(MessageView.class, message);
 
-        rabbitTemplate.setExchange("message-exchange");
-
         JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(messageDto));
         jsonObject.put("type", "MESSAGE");
-        jsonObject.put("uniqueCode", message.getUniqueCode());
-
 
         for (User user : dialog.getUsers()) {
-            simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
-                    jsonObject);
-            rabbitTemplate.convertAndSend(user.getUsername(),
-                    jsonObject);
+            simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(), jsonObject);
+            rabbitTemplate.convertAndSend(user.getUsername(), "", jsonObject);
         }
-
     }
 
 

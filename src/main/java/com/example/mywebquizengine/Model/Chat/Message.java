@@ -41,7 +41,7 @@ public class Message {
     private List<Message> forwardedMessages;
 
     @Transient
-    private Long uniqueCode;
+    private String uniqueCode;
 
     public Message() {}
 
@@ -101,11 +101,11 @@ public class Message {
         this.forwardedMessages = forwardedMessages;
     }
 
-    public Long getUniqueCode() {
+    public String getUniqueCode() {
         return uniqueCode;
     }
 
-    public void setUniqueCode(Long uniqueCode) {
+    public void setUniqueCode(String uniqueCode) {
         this.uniqueCode = uniqueCode;
     }
 

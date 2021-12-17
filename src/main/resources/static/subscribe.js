@@ -16,7 +16,7 @@ function notificationConnect() {
     stompClient = Stomp.over(socket);
     stompClient.heartbeat.outgoing = 20000; // client will send heartbeats every 20000ms
     stompClient.heartbeat.incoming = 20000;
-    stompClient.reconnect_delay = 5000;
+    //stompClient.reconnect_delay = 5000;
     stompClient.connect({}, onConnectedNotif, onErrorNotif)
 
 }
@@ -33,10 +33,9 @@ function onConnectedNotif() {
     xhr.send();
 
 
-    stompClient.subscribe('/topic/' + username, onMessageReceived/*,
-        {"x-expires": 60000,
-        "auto-delete": false}*/);
+    let subName = stompClient.subscribe('/topic/' + username, onMessageReceived);
     //stompClient.subscribe('/queue/' + username, onMessageReceived);
+    console.log(subName)
 
    // geo()
 
@@ -50,7 +49,12 @@ function onConnectedNotif() {
 function onErrorNotif(error) {
     console.log("fail")
     console.log('STOMP: ' + error);
-    setTimeout(notificationConnect, 5000);
+    stompClient.unsubscribe("sub-0")
+    setTimeout( () => {
+
+            notificationConnect()
+        }
+    , 5000);
     console.log('STOMP: Reconecting in 5 seconds');
     //notificationConnect()
     console.log("try")

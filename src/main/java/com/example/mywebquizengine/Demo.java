@@ -3,6 +3,7 @@ package com.example.mywebquizengine;
 import com.example.mywebquizengine.Model.User;
 import com.example.mywebquizengine.Repos.UserRepository;
 import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,13 +39,14 @@ public class Demo implements CommandLineRunner {
             List<User> users = userRepository.findAll();
 
             for (User user : users) {
-                Queue queue = new Queue(user.getUsername(), true, false, false);
+                rabbitAdmin.declareExchange(new FanoutExchange(user.getUsername(), true, false));
+                /*Queue queue = new Queue(user.getUsername(), true, false, false);
 
                 Binding binding = new Binding(user.getUsername(), Binding.DestinationType.QUEUE,
                         "message-exchange", user.getUsername(), null);
 
                 rabbitAdmin.declareQueue(queue);
-                rabbitAdmin.declareBinding(binding);
+                rabbitAdmin.declareBinding(binding);*/
 
 
             }

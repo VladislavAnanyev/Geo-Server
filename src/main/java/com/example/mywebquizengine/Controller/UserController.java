@@ -218,5 +218,9 @@ public class UserController {
         return "home";
     }
 
+    @GetMapping(path = "/reg")
+    public String reg() {
+        return "reg";
+    }
 
 }

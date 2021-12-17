@@ -16,6 +16,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson.JacksonFactory;
 import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -225,18 +226,13 @@ public class UserService implements UserDetailsService {
 
     public void doBasicUserInitializationBeforeSave(User user) {
 
-        Queue queue = new Queue(user.getUsername(), true, false, false);
+        rabbitAdmin.declareExchange(new FanoutExchange(user.getUsername(), true, false));
+        //Queue queue = new Queue("", true, false, false);
+        /*String queueName = rabbitAdmin.declareQueue(queue);
+        Binding binding = new Binding(queueName, Binding.DestinationType.QUEUE,
+                user.getUsername(), null, null);
 
-        Binding binding = new Binding(user.getUsername(), Binding.DestinationType.QUEUE,
-                "message-exchange", user.getUsername(), null);
-
-        rabbitAdmin.declareQueue(queue);
-        rabbitAdmin.declareBinding(binding);
-
-        //if (user.getPhotos() == null) {
-
-
-        //}
+        rabbitAdmin.declareBinding(binding);*/
 
         user.setEnabled(true);
         user.setBalance(0);
@@ -302,14 +298,31 @@ public class UserService implements UserDetailsService {
     public AuthResponse signInViaJwt(AuthRequest authRequest) {
         Authentication authentication;
         try {
-            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
-            //System.out.println(authentication);
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            authRequest.getUsername(),
+                            authRequest.getPassword()
+                    )
+            );
         } catch (BadCredentialsException e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Имя или пароль неправильны", e);
         }
         // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
         String jwt = jwtTokenUtil.generateToken((UserDetails) authentication.getPrincipal());
-        return new AuthResponse(jwt);
+
+        Queue queue = new Queue("", true, false, false);
+        queue.addArgument("x-expires", 2419200000L);
+        String queueName = rabbitAdmin.declareQueue(queue);
+        Binding binding = new Binding(
+                queueName,
+                Binding.DestinationType.QUEUE,
+                authRequest.getUsername(),
+                "",
+                null
+        );
+        rabbitAdmin.declareBinding(binding);
+
+        return new AuthResponse(jwt, queueName);
     }
 
     public AuthResponse getJwtToken(User user) {

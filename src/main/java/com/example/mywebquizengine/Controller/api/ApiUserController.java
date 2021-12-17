@@ -37,15 +37,12 @@ public class ApiUserController {
     @GetMapping(path = "/findbyid")
     public UserCommonView getUserById(@RequestParam String username) {
         return userService.getUserView(username);
-
     }
-
 
     @PostMapping(path = "/signin")
     public AuthResponse jwtSignIn(@RequestBody AuthRequest authRequest) {
         return userService.signInViaJwt(authRequest);
     }
-
 
     @PostMapping(path = "/signup")
     public AuthResponse signup(@Valid @RequestBody User user) {
@@ -53,12 +50,10 @@ public class ApiUserController {
         return userService.getJwtToken(user);
     }
 
-
     @PostMapping(path = "/googleauth")
     public AuthResponse googleJwt(@RequestBody GoogleToken token) throws GeneralSecurityException, IOException {
         return userService.signinViaGoogleToken(token);
     }
-
 
     @GetMapping(path = "/authuser")
     public UserView getApiAuthUser(@AuthenticationPrincipal Principal principal)  {
@@ -70,12 +65,10 @@ public class ApiUserController {
         return userService.getUserProfileById(username);
     }
 
-
     @PostMapping(path = "/upload")
     public void uploadPhoto(@RequestParam("file") MultipartFile file, @AuthenticationPrincipal Principal principal) {
         userService.uploadPhoto(file, principal.getName());
     }
-
 
     @PutMapping(path = "/user", consumes={"application/json"})
     public void changeUser(@RequestBody User user,
