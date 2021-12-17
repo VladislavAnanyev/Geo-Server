@@ -1,6 +1,7 @@
 function geo() {
     //var findMeButton = document.getElementById("findme")
 
+    console.log("123")
     let lat
     let lng
     let jsonBack
@@ -102,6 +103,7 @@ function geo() {
         navigator.geolocation.watchPosition(position => {
             if (position.timestamp/1000 - lastTimestamp/1000 > 5) {
 
+                console.log("1234")
                 console.log(position)
                 lat = position.coords.latitude;
                 lng = position.coords.longitude;
