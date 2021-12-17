@@ -14,12 +14,14 @@ function notificationConnect() {
     console.log("Go")
     var socket = new SockJS('/ws');
     stompClient = Stomp.over(socket);
+    stompClient.heartbeat.outgoing = 20000; // client will send heartbeats every 20000ms
+    stompClient.heartbeat.incoming = 20000;
+    stompClient.reconnect_delay = 5000;
     stompClient.connect({}, onConnectedNotif, onErrorNotif)
 
 }
 
 function onConnectedNotif() {
-
 
     let xhr = new XMLHttpRequest();
     xhr.open('GET', '/authuser', false);
@@ -30,10 +32,13 @@ function onConnectedNotif() {
     }
     xhr.send();
 
-    //stompClient.subscribe('/topic/' + username, onMessageReceived);
-    stompClient.subscribe('/queue/' + username, onMessageReceived);
 
-    geo()
+    stompClient.subscribe('/topic/' + username, onMessageReceived/*,
+        {"x-expires": 60000,
+        "auto-delete": false}*/);
+    //stompClient.subscribe('/queue/' + username, onMessageReceived);
+
+   // geo()
 
     /* stompClient.disconnect(function(frame) {
          //debug("STOMP Client disconnecting ...");
@@ -44,7 +49,10 @@ function onConnectedNotif() {
 
 function onErrorNotif(error) {
     console.log("fail")
-    notificationConnect()
+    console.log('STOMP: ' + error);
+    setTimeout(notificationConnect, 5000);
+    console.log('STOMP: Reconecting in 5 seconds');
+    //notificationConnect()
     console.log("try")
 }
 
