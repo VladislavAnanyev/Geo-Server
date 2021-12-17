@@ -74,8 +74,8 @@
 
 
 
-<#--<script src="/static/testConnect.js"></script>
-<script>setInterval(() => testConnect(), 30000);</script>-->
+<script src="/static/testConnect.js"></script>
+<script>setTimeout(() => geo(), 3000);</script>
 
 </#if>
 
