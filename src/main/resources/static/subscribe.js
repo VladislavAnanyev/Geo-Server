@@ -2,7 +2,7 @@
 
 var stompClient = null;
 var username = null;
-
+let uniqueQueueName = new Date().valueOf() + ""
 var colors2 = [
     '#2196F3', '#32c787', '#00BCD4', '#ff5652',
     '#ffc107', '#ff85af', '#FF9800', '#39bbb0'
@@ -32,11 +32,16 @@ function onConnectedNotif() {
     }
     xhr.send();
 
-
-    let subName = stompClient.subscribe('/topic/' + username, onMessageReceived);
+    if (location.pathname.includes("chat")) {
+        stompClient.subscribe('/exchange/' + username, onMessageReceived,
+            {
+                "id": "sub", "auto-delete": false, "x-queue-name": uniqueQueueName,
+                "x-expires": 300000
+            });
+    } else {
+        stompClient.subscribe('/exchange/' + username, onMessageReceived)
+    }
     //stompClient.subscribe('/queue/' + username, onMessageReceived);
-    console.log(subName)
-
    // geo()
 
     /* stompClient.disconnect(function(frame) {
@@ -49,7 +54,8 @@ function onConnectedNotif() {
 function onErrorNotif(error) {
     console.log("fail")
     console.log('STOMP: ' + error);
-    stompClient.unsubscribe("sub-0")
+    stompClient.disconnect()
+    //stompClient.unsubscribe("sub")
     setTimeout( () => {
 
             notificationConnect()
@@ -75,7 +81,6 @@ function onMessageReceived(payload) {
 
     if (message.type === "MESSAGE" && !location.pathname.includes(message.dialogId)) {
 
-
         if (username !== message.sender.username) {
 
             toastLiveExample = document.getElementById('liveToastMessage')
@@ -87,10 +92,7 @@ function onMessageReceived(payload) {
             head.textContent = message.sender.username
 
             toast = new bootstrap.Toast(toastLiveExample, null)
-
             toast.show()
-
-
         }
     }
 
@@ -296,9 +298,10 @@ function sendMessage(dialog) {
                 sender: {username: username},
                 content: messageContent,
                 dialog: {dialogId: dialog},
+                /*type: "MESSAGE",*/
                 uniqueCode: uniqueCode
             };
-            stompClient.send("/app/user/" + dialog, {}, JSON.stringify(chatMessage));
+            stompClient.send("/app/user/" + dialog, {/*"x-message-ttl": 15000*/}, JSON.stringify(chatMessage));
 
         }
 
@@ -337,5 +340,7 @@ function sendMessage(dialog) {
 
     }
 }
+
+
 
 

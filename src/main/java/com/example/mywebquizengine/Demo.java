@@ -1,10 +1,8 @@
 package com.example.mywebquizengine;
 
-import com.example.mywebquizengine.Model.User;
-import com.example.mywebquizengine.Repos.UserRepository;
-import org.springframework.amqp.core.Binding;
+import com.example.mywebquizengine.model.User;
+import com.example.mywebquizengine.repos.UserRepository;
 import org.springframework.amqp.core.FanoutExchange;
-import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;

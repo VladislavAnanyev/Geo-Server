@@ -16,10 +16,6 @@ plugins {
 
 }
 
-/*wrapper {
-    gradleVersion = '7.0'
-}*/
-
 sourceCompatibility='15'
 
 apply plugin: 'io.spring.dependency-management'
@@ -92,22 +88,3 @@ dependencies {
 
 
 }
-
-
-/*test {
-    useJUnitPlatform()
-}*/
-
-
-flyway {
-    url = 'jdbc:h2:file:C:\\Users\\avlad\\IdeaProjects\\quizdb'
-    user = 'sa'
-    password = 'password'
-}
-
-flyway {
-    url = 'jdbc:h2:file:C:\\Users\\avlad\\IdeaProjects\\quizdbtest'
-    user = 'sa'
-    password = 'password'
-}
-
