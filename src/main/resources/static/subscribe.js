@@ -36,7 +36,7 @@ function onConnectedNotif() {
         stompClient.subscribe('/exchange/' + username, onMessageReceived,
             {
                 "id": "sub", "auto-delete": false, "x-queue-name": uniqueQueueName,
-                "x-expires": 300000
+                "x-expires": 300000, "ack": "client"
             });
     } else {
         stompClient.subscribe('/exchange/' + username, onMessageReceived)
@@ -71,7 +71,7 @@ function onErrorNotif(error) {
 
 
 function onMessageReceived(payload) {
-
+    payload.ack()
     let message = JSON.parse(payload.body);
     let toastLiveExample
 
