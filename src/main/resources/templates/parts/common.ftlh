@@ -75,7 +75,7 @@
 
 
 <script src="/static/testConnect.js"></script>
-<script>setTimeout(() => geo(), 3000);</script>
+<#--<script>geo()</script>-->
 
 </#if>
 

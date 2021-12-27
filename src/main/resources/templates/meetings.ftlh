@@ -15,85 +15,29 @@
     <div class="row">
     <#list meetings as meeting>
         <div class="col-sm-6">
-        <#if meeting.secondUser.username != myUsername>
+
             <div class="card mt-2" style="width: 18rem;">
-            <img class="rounded-circle" src="${meeting.secondUser.avatar}" alt="...">
+            <img class="rounded-circle" src="${meeting.user.avatar}" alt="...">
             <div class="card-body">
-                <h5 class="card-title">${meeting.secondUser.firstName} ${meeting.secondUser.lastName}</h5>
+                <h5 class="card-title">${meeting.user.firstName} ${meeting.user.lastName}</h5>
                 <p id="${meeting.id?c}" class="card-text"></p>
-
-                <script>
-
-                    function setTime(time, id) {
-                        let userTime = new Date(time)
-                        document.getElementById(id).textContent = userTime.toLocaleDateString() + " " + userTime.toLocaleTimeString()
-                    }
+                <p class="card-text">${meeting.time?datetime?string["dd.MM.yyyy HH:mm:ss"]}</p>
 
 
-                    <#if meeting.time??>
-                    setTime(${meeting.time?long?c}, ${meeting.id?c})
-
-
-                    <#else >
-                    console.log("nulllllllllll")
-                    </#if>
-
-
-
-
-                </script>
-
-<#--                <div class="input-group mb-2">-->
-
-<#--                </div>-->
-
-                <#if friendsName?seq_contains(meeting.secondUser.username)>
-                    <a  onclick="writeMsg('${meeting.secondUser.username}')" href="#" id="button${meeting.secondUser.username}" class="btn btn-primary">Написать сообщение</a>
+                <#if friendsName?seq_contains(meeting.user.username)>
+                    <a  onclick="writeMsg('${meeting.user.username}')" href="#" id="button${meeting.user.username}" class="btn btn-primary">Написать сообщение</a>
 
                 <#else>
 
                     <span class="input-group-text mb-1">Сообщение</span>
-                    <textarea class="form-control mb-2" id="${meeting.secondUser.username}msg" aria-label="With textarea"></textarea>
+                    <textarea class="form-control mb-2" id="${meeting.user.username}msg" aria-label="With textarea"></textarea>
 
-                    <a  onclick="sendRequest('${meeting.secondUser.username}', '${meeting.id?c}')" href="#" id="button${meeting.secondUser.username}" class="btn btn-primary">Отправить запрос</a>
+                    <a  onclick="sendRequest('${meeting.user.username}', '${meeting.id?c}')" href="#" id="button${meeting.user.username}" class="btn btn-primary">Отправить запрос</a>
 
 
                 </#if>
 
             </div>
-
-
-
-        <#else>
-
-            <div class="card" style="width: 18rem;">
-                <img class="rounded-circle" src="${meeting.firstUser.avatar}" alt="...">
-                <div class="card-body">
-                    <h5 class="card-title">${meeting.firstUser.firstName} ${meeting.firstUser.lastName}</h5>
-                    <p class="card-text">${meeting.time?datetime?string["dd.MM.yyyy HH:mm:ss"]}</p>
-
-
-
-                    <#if friendsName?seq_contains(meeting.firstUser.username)>
-                        <a  onclick="writeMsg('${meeting.firstUser.username}')" href="#" id="button${meeting.firstUser.username}" class="btn btn-primary">Написать сообщение</a>
-
-                    <#else>
-
-                        <span class="input-group-text mb-1">Сообщение</span>
-                        <textarea class="form-control mb-2" id="${meeting.firstUser.username}msg" aria-label="With textarea"></textarea>
-
-                        <a  onclick="sendRequest('${meeting.firstUser.username}', '${meeting.id?c}')" href="#" id="button${meeting.firstUser.username}" class="btn btn-primary">Отправить запрос</a>
-
-
-                    </#if>
-
-
-                </div>
-
-<#--                </div>-->
-
-        </#if>
-
 
 
         <ul class="list-group list-group-flush">

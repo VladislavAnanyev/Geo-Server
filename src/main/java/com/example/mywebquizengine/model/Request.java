@@ -66,7 +66,6 @@ public class Request {
         this.meeting = meeting;
     }
 
-
     public Message getMessage() {
         return message;
     }

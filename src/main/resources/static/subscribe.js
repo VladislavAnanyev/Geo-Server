@@ -14,8 +14,8 @@ function notificationConnect() {
     console.log("Go")
     var socket = new SockJS('/ws');
     stompClient = Stomp.over(socket);
-    stompClient.heartbeat.outgoing = 20000; // client will send heartbeats every 20000ms
-    stompClient.heartbeat.incoming = 20000;
+    stompClient.heartbeat.outgoing = 10000; // client will send heartbeats every 20000ms
+    stompClient.heartbeat.incoming = 10000;
     //stompClient.reconnect_delay = 5000;
     stompClient.connect({}, onConnectedNotif, onErrorNotif)
 
@@ -42,7 +42,7 @@ function onConnectedNotif() {
         stompClient.subscribe('/exchange/' + username, onMessageReceived)
     }
     //stompClient.subscribe('/queue/' + username, onMessageReceived);
-   // geo()
+    geo()
 
     /* stompClient.disconnect(function(frame) {
          //debug("STOMP Client disconnecting ...");
@@ -57,7 +57,6 @@ function onErrorNotif(error) {
     stompClient.disconnect()
     //stompClient.unsubscribe("sub")
     setTimeout( () => {
-
             notificationConnect()
         }
     , 5000);

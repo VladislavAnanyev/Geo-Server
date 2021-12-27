@@ -1,12 +1,12 @@
 package com.example.mywebquizengine.model.projection;
 
-public interface ReceivedRequestView {
+public interface RequestView {
 
     Long getId();
 
     UserCommonView getSender();
 
-    //UserView getTo();
+    UserCommonView getTo();
 
     String getStatus();
 
@@ -14,6 +14,4 @@ public interface ReceivedRequestView {
 
     MessageView getMessage();
 
-    /*@Value("REQUEST")
-    String getType();*/
 }

@@ -2,6 +2,7 @@ function geo() {
     //var findMeButton = document.getElementById("findme")
 
     console.log("123")
+    console.log("23")
     let lat
     let lng
     let jsonBack

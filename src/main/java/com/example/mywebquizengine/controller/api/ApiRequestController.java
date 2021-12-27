@@ -1,7 +1,6 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.model.projection.ReceivedRequestView;
-import com.example.mywebquizengine.model.projection.SentRequestView;
+import com.example.mywebquizengine.model.projection.RequestView;
 import com.example.mywebquizengine.model.Request;
 import com.example.mywebquizengine.service.RequestService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -37,7 +36,7 @@ public class ApiRequestController {
     }
 
     @GetMapping(path = "/requests")
-    public ArrayList<ReceivedRequestView> getMyRequests(@AuthenticationPrincipal Principal principal) {
+    public ArrayList<RequestView> getMyRequests(@AuthenticationPrincipal Principal principal) {
         return requestService.getMyRequests(principal.getName());
     }
 
@@ -47,10 +46,8 @@ public class ApiRequestController {
         throw new ResponseStatusException(HttpStatus.OK);
     }
 
-
     @GetMapping(path = "/sentRequests")
-    public List<SentRequestView> getSentRequests(@AuthenticationPrincipal Principal principal) {
+    public List<RequestView> getSentRequests(@AuthenticationPrincipal Principal principal) {
         return requestService.getSentRequests(principal.getName());
     }
-
 }

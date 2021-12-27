@@ -2,8 +2,7 @@ package com.example.mywebquizengine.service;
 
 import com.example.mywebquizengine.model.chat.Dialog;
 import com.example.mywebquizengine.model.chat.MessageStatus;
-import com.example.mywebquizengine.model.projection.ReceivedRequestView;
-import com.example.mywebquizengine.model.projection.SentRequestView;
+import com.example.mywebquizengine.model.projection.RequestView;
 import com.example.mywebquizengine.model.Request;
 import com.example.mywebquizengine.model.User;
 import com.example.mywebquizengine.repos.DialogRepository;
@@ -85,7 +84,7 @@ public class RequestService {
 
         requestRepository.save(request);
 
-        ReceivedRequestView requestView = requestRepository.findRequestById(request.getId());
+        RequestView requestView = requestRepository.findRequestById(request.getId());
 
         JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper
                 .writeValueAsString(requestView));
@@ -98,7 +97,7 @@ public class RequestService {
                 jsonObject);
     }
 
-    public List<SentRequestView> getSentRequests(String username) {
+    public List<RequestView> getSentRequests(String username) {
         return requestRepository.findAllBySenderUsernameAndStatus(username, "PENDING");
     }
 
@@ -116,7 +115,7 @@ public class RequestService {
 
     }
 
-    public ArrayList<ReceivedRequestView> getMyRequests(String username) {
+    public ArrayList<RequestView> getMyRequests(String username) {
         return requestRepository.findAllByToUsernameAndStatus(username, "PENDING");
     }
 
@@ -144,7 +143,7 @@ public class RequestService {
         }
     }
 
-    public ArrayList<ReceivedRequestView> findAllMyRequestsViaStatus(String name, String status) {
+    public ArrayList<RequestView> findAllMyRequestsViaStatus(String name, String status) {
         return requestRepository.findAllByToUsernameAndStatus(name, status);
     }
 }

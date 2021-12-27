@@ -7,11 +7,8 @@ import java.util.Date;
 public interface MeetingViewCustomQuery {
     Long getId();
 
-    @Value("#{new com.example.mywebquizengine.model.User(target.first_username, target.first_firstName, target.first_lastName, T(com.example.mywebquizengine.model.Photo).getList(target.first_avatar))}")
-    UserCommonView getFirstUser();
-
-    @Value("#{new com.example.mywebquizengine.model.User(target.second_username, target.second_firstName, target.second_lastName, T(com.example.mywebquizengine.model.Photo).getList(target.second_avatar))}")
-    UserCommonView getSecondUser();
+    @Value("#{@geoService.getUserForMeeting(target.first_username, target.second_username)}")
+    UserCommonView getUser();
 
     Double getLng();
     Double getLat();

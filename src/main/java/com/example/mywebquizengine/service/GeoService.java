@@ -1,9 +1,9 @@
 package com.example.mywebquizengine.service;
 
+import com.example.mywebquizengine.model.User;
 import com.example.mywebquizengine.model.geo.Geolocation;
 import com.example.mywebquizengine.model.geo.Meeting;
-import com.example.mywebquizengine.model.projection.GeolocationView;
-import com.example.mywebquizengine.model.projection.MeetingViewCustomQuery;
+import com.example.mywebquizengine.model.projection.*;
 import com.example.mywebquizengine.repos.GeolocationRepository;
 import com.example.mywebquizengine.repos.MeetingRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -17,8 +17,11 @@ import org.json.simple.parser.ParseException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
+import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -114,9 +117,11 @@ public class GeoService {
 
                         meetingRepository.save(meeting);
 
+                        ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
+                        MeetingView meetingView = pf.createProjection(MeetingView.class, meeting);
 
                         JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper
-                                .writeValueAsString(meetingRepository.findMeetingById(meeting.getId())));
+                                .writeValueAsString(meetingView));
                         jsonObject.put("type", "MEETING");
 
 
@@ -224,4 +229,19 @@ public class GeoService {
         return (ArrayList<GeolocationView>) geolocationRepository.getAll(username);
     }
 
+    public UserCommonView getUserForMeeting(String firstUsername, String secondUsername) {
+        String authName = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user;
+        if (authName.equals(firstUsername)) {
+            user = userService.loadUserByUsername(secondUsername);
+        } else if (authName.equals(secondUsername)) {
+            user = userService.loadUserByUsername(firstUsername);
+        } else  {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
+        ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
+
+        return pf.createProjection(UserCommonView.class, user);
+    }
 }
