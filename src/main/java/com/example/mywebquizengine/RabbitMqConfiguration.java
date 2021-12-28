@@ -3,6 +3,7 @@ package com.example.mywebquizengine;
 
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.annotation.RabbitListenerConfigurer;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -11,6 +12,7 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.handler.annotation.support.DefaultMessageHandlerMethodFactory;
 import org.springframework.messaging.handler.annotation.support.MessageHandlerMethodFactory;
@@ -31,21 +33,14 @@ public class RabbitMqConfiguration implements RabbitListenerConfigurer {
     }
 
     @Bean
-    Queue deadLetterQueue() {
-        return QueueBuilder.durable(QUEUE_DEAD_ORDERS).build();
-    }
-
-    @Bean
     DirectExchange ordersExchange() {
         return new DirectExchange(EXCHANGE);
     }
-
 
     @Bean
     public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
         return new RabbitAdmin(connectionFactory);
     }
-
 
     @Bean
     public RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory) {
@@ -59,6 +54,7 @@ public class RabbitMqConfiguration implements RabbitListenerConfigurer {
         return new Jackson2JsonMessageConverter();
     }
 
+    @Profile("!test")
     @Override
     public void configureRabbitListeners(RabbitListenerEndpointRegistrar registrar) {
         registrar.setMessageHandlerMethodFactory(messageHandlerMethodFactory());
@@ -74,6 +70,5 @@ public class RabbitMqConfiguration implements RabbitListenerConfigurer {
     public MappingJackson2MessageConverter consumerJackson2MessageConverter() {
         return new MappingJackson2MessageConverter();
     }
-
 
 }

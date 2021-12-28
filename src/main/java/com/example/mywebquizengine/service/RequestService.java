@@ -47,8 +47,6 @@ public class RequestService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private SimpMessagingTemplate simpMessagingTemplate;
 
 
     @Transactional
@@ -93,8 +91,6 @@ public class RequestService {
         rabbitTemplate.convertAndSend(request.getTo().getUsername(),
                 jsonObject);
 
-        simpMessagingTemplate.convertAndSend("/topic/" + request.getTo().getUsername(),
-                jsonObject);
     }
 
     public List<RequestView> getSentRequests(String username) {

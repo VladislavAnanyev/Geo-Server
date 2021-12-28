@@ -44,9 +44,6 @@ public class GeoService {
     private RabbitTemplate rabbitTemplate;
 
     @Autowired
-    private SimpMessagingTemplate simpMessagingTemplate;
-
-    @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
@@ -124,12 +121,6 @@ public class GeoService {
                                 .writeValueAsString(meetingView));
                         jsonObject.put("type", "MEETING");
 
-
-                        simpMessagingTemplate.convertAndSend("/topic/" +
-                                meeting.getFirstUser().getUsername(), jsonObject);
-
-                        simpMessagingTemplate.convertAndSend("/topic/" +
-                                meeting.getSecondUser().getUsername(), jsonObject);
 
                         rabbitTemplate.setExchange("message-exchange");
 

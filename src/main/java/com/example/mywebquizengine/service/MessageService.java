@@ -48,8 +48,6 @@ public class MessageService {
     @Autowired
     private RabbitTemplate rabbitTemplate;
     @Autowired
-    private SimpMessagingTemplate simpMessagingTemplate;
-    @Autowired
     private ObjectMapper objectMapper;
     @Value("${hostname}")
     private String hostname;
@@ -182,9 +180,6 @@ public class MessageService {
 
                 for (User user : message.getDialog().getUsers()) {
 
-                    simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
-                            jsonObject);
-
                     rabbitTemplate.convertAndSend(user.getUsername(),
                             jsonObject);
 
@@ -235,8 +230,6 @@ public class MessageService {
                 jsonObject.put("type", "EDIT-MESSAGE");
 
                 for (User user : message.getDialog().getUsers()) {
-                    simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
-                            jsonObject);
 
                     rabbitTemplate.convertAndSend(user.getUsername(),
                             jsonObject);
@@ -297,7 +290,6 @@ public class MessageService {
         jsonObject.put("type", "MESSAGE");
 
         for (User user : dialog.getUsers()) {
-            simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(), jsonObject);
             rabbitTemplate.convertAndSend(user.getUsername(), "", jsonObject);
         }
 
@@ -349,8 +341,8 @@ public class MessageService {
                     .parseWithException(objectMapper.writeValueAsString(messageDto));
             jsonObject.put("type", "MESSAGE");
             for (User user : dialog.getUsers()) {
-                simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
-                        jsonObject);
+/*                simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
+                        jsonObject);*/
             }
 
 
