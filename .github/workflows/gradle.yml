@@ -26,7 +26,7 @@ jobs:
         java-version: '15'
         distribution: 'adopt'
     - name: Build and Run Tests
-      run: gradle build -x test
+      run: gradle test
     - name: Publish Test Report
       if: ${{ always() }}
       uses: scacap/action-surefire-report@v1
