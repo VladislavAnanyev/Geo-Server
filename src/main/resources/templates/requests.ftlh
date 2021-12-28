@@ -17,6 +17,7 @@
 
         <#if meetings??>
         <#list meetings as request>
+<#--            <#if request.to.username = myUsername>-->
             <div class="col-sm-6" id="${request.id?c}">
 
             <div class="card mt-2" style="width: 18rem;">
@@ -53,6 +54,7 @@
 
 
             </div>
+<#--            </#if>-->
         </#list>
         </#if>
         </div>

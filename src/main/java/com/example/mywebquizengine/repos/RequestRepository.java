@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
 
 public interface RequestRepository extends CrudRepository<Request, Long>, JpaRepository<Request, Long> {
@@ -16,6 +17,10 @@ public interface RequestRepository extends CrudRepository<Request, Long>, JpaRep
     RequestView findRequestById(Long id);
 
     ArrayList<RequestView> findAllByToUsernameAndStatus(String username, String status);
+
+    /*A and (B or C) <=> (A and B) or (A and C)
+    * FindByStatusAnd(ToUsernameOrSenderUsername)*/
+    ArrayList<RequestView> findByStatusAndToUsernameOrStatusAndSenderUsername(String status, @NotBlank String to_username, String status2, @NotBlank String sender_username);
 
     ArrayList<Request> findAllByMeetingId(Long meetingId);
 

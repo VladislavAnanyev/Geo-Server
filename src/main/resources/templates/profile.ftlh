@@ -58,13 +58,7 @@
         </div>
 
         <div>
-
-
-                <img class="rounded-circle" width="100px" height="100px" src="${user.avatar}" alt="${user.avatar}.jpg">
-
-
-
-
+                <img class="rounded-circle" width="100px" height="100px" src="${user.photos[0].url}" alt="${user.photos[0].url}">
         </div>
 
 

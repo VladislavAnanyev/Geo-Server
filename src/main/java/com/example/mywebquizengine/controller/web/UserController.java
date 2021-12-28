@@ -175,8 +175,7 @@ public class UserController {
     public String getMyRequests(Model model, @AuthenticationPrincipal Principal principal) {
 
         model.addAttribute("myUsername", principal.getName());
-        model.addAttribute("meetings",
-                requestService.findAllMyRequestsViaStatus(principal.getName(), "PENDING"));
+        model.addAttribute("meetings", requestService.getMyRequests(principal.getName()));
 
         return "requests";
     }

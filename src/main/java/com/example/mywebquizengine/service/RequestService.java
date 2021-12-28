@@ -116,12 +116,13 @@ public class RequestService {
     }
 
     public ArrayList<RequestView> getMyRequests(String username) {
-        return requestRepository.findAllByToUsernameAndStatus(username, "PENDING");
+        return requestRepository.findByStatusAndToUsernameOrStatusAndSenderUsername(
+                "PENDING", username, "PENDING", username
+        );
     }
 
     public Long acceptRequest(Long requestId, String username) {
         User authUser = userService.loadUserByUsername(username);
-
 
         Request request = requestRepository.findById(requestId).get();
         request.setStatus("ACCEPTED");
@@ -143,7 +144,5 @@ public class RequestService {
         }
     }
 
-    public ArrayList<RequestView> findAllMyRequestsViaStatus(String name, String status) {
-        return requestRepository.findAllByToUsernameAndStatus(name, status);
-    }
+
 }
