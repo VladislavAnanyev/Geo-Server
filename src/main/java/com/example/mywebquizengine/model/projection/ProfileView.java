@@ -9,5 +9,4 @@ public interface ProfileView {
     String getFirstName();
     String getLastName();
     List<Photo> getPhotos();
-
 }

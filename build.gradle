@@ -64,12 +64,12 @@ dependencies {
     /*implementation 'org.junit.jupiter:junit-jupiter:5.4.2'*/
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
-    compile("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.5.4'
-    compile("org.springframework.boot:spring-boot-starter-mail")
-    compile 'com.google.api-client:google-api-client:1.31.5'
+    implementation("org.springframework.boot:spring-boot-starter-mail")
+    implementation 'com.google.api-client:google-api-client:1.31.5'
     implementation group: 'com.google.api-client', name: 'google-api-client-jackson2', version: '1.32.1'
-    compile 'com.google.http-client:google-http-client-jackson:1.15.0-rc'
+    implementation 'com.google.http-client:google-http-client-jackson:1.15.0-rc'
     implementation group: 'org.springframework.security.oauth.boot', name: 'spring-security-oauth2-autoconfigure', version: '2.5.2'
     implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
     implementation group: 'io.springfox', name: 'springfox-boot-starter', version: '3.0.0'
