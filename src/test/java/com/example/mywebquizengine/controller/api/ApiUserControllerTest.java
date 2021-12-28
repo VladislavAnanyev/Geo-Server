@@ -8,11 +8,13 @@ import org.junit.After;
 import org.junit.Test;
 
 import org.junit.runner.RunWith;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -24,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.anyObject;
+import static org.mockito.Mockito.doAnswer;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -49,6 +53,8 @@ public class ApiUserControllerTest {
     @Autowired
     private JWTUtil jwtUtil;
 
+    @MockBean
+    private RabbitAdmin rabbitAdmin;
 
     @After
     public void resetDb() {
@@ -90,6 +96,10 @@ public class ApiUserControllerTest {
     @Test
     public void testSignUp() throws Exception {
 
+        doAnswer(i -> {
+            return null;
+        }).when(rabbitAdmin).declareExchange(anyObject());
+
         String json = """
                 {"username": "application",
                     "email": "a.vlad.v@ya.ru",
@@ -115,6 +125,10 @@ public class ApiUserControllerTest {
 
     @Test
     public void testSignUpWithExistUsername() throws Exception {
+
+        doAnswer(i -> {
+            return null;
+        }).when(rabbitAdmin).declareExchange(anyObject());
 
         createTestPerson("application");
         String json = """
@@ -244,6 +258,10 @@ public class ApiUserControllerTest {
 
     @Test
     public void testSignIn() throws Exception {
+
+        doAnswer(i -> {
+            return null;
+        }).when(rabbitAdmin).declareQueue(anyObject());
 
         createTestPerson("application");
 
