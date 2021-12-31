@@ -24,7 +24,6 @@ import java.util.List;
 @Profile("!test")
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-
     @Value("${hostname}")
     private String hostname;
 
@@ -40,11 +39,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
      *//*
 
     */
-@Override
+    @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        //config.enableSimpleBroker( "/topic");
-        //config.setApplicationDestinationPrefixes("/app");
-                    //config.setUserDestinationPrefix("/topic");
+
     registry.setApplicationDestinationPrefixes("/app");
     registry.enableStompBrokerRelay("/topic", "/exchange")
             .setRelayHost(hostname)
@@ -53,21 +50,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             .setClientPasscode(password)
             .setSystemLogin(login)
             .setSystemPasscode(password);
-
-
-    /*ReactorNettyTcpClient<byte[]> client = new ReactorNettyTcpClient<>(tcpClient -> tcpClient
-            //.host("localhost")
-            .port(61614)
-            .secure(SslProvider.defaultClientProvider()), new StompReactorNettyCodec());
-
-    registry.setApplicationDestinationPrefixes("/app");
-    registry.enableStompBrokerRelay("/queue", "/topic")
-            .setAutoStartup(true)
-            .setSystemLogin("guest")
-            .setSystemPasscode("guest")
-            .setClientLogin("guest")
-            .setClientPasscode("guest")
-            .setTcpClient(client);*/
 
     }
 
@@ -80,7 +62,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
      *//*
 
     */
-@Override
+    @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry
                 .addEndpoint("/ws")
@@ -95,7 +77,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
      *//*
 
     */
-@Override
+    @Override
     public boolean configureMessageConverters(List<MessageConverter> messageConverters) {
         DefaultContentTypeResolver resolver = new DefaultContentTypeResolver();
         resolver.setDefaultMimeType(MimeTypeUtils.APPLICATION_JSON);

@@ -25,8 +25,6 @@ public class RabbitMqConfiguration implements RabbitListenerConfigurer {
 
     public static final String INCOMING_MESSAGES = "incoming-messages";
 
-    public static final String QUEUE_DEAD_ORDERS = "orders-dead";
-
     @Bean
     Queue QueueInMessages() {
         return QueueBuilder.durable(INCOMING_MESSAGES).build();
@@ -54,7 +52,6 @@ public class RabbitMqConfiguration implements RabbitListenerConfigurer {
         return new Jackson2JsonMessageConverter();
     }
 
-    @Profile("!test")
     @Override
     public void configureRabbitListeners(RabbitListenerEndpointRegistrar registrar) {
         registrar.setMessageHandlerMethodFactory(messageHandlerMethodFactory());
