@@ -180,7 +180,7 @@ public class MessageService {
 
                 for (User user : message.getDialog().getUsers()) {
 
-                    rabbitTemplate.convertAndSend(user.getUsername(),
+                    rabbitTemplate.convertAndSend(user.getUsername(), "",
                             jsonObject);
 
                 }
@@ -231,7 +231,7 @@ public class MessageService {
 
                 for (User user : message.getDialog().getUsers()) {
 
-                    rabbitTemplate.convertAndSend(user.getUsername(),
+                    rabbitTemplate.convertAndSend(user.getUsername(), "",
                             jsonObject);
                 }
             } else {
@@ -243,34 +243,6 @@ public class MessageService {
 
     @Transactional
     public void sendMessage(Message message) throws JsonProcessingException, ParseException {
-        /*Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
-        User sender = userService.loadUserByUsernameProxy(message.getSender().getUsername());
-        message.setSender(sender);
-        message.setDialog(dialog);
-
-        JSONObject jsonObject;
-
-        if (message.getType().equals("MESSAGE")) {
-            message.setTimestamp(new Date());
-            message.setStatus(MessageStatus.DELIVERED);
-
-            messageRepository.save(message);
-
-            ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
-            MessageView messageView = pf.createProjection(MessageView.class, message);
-            jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(messageView));
-        } else if (message.getType().equals("TYPING")) {
-            ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
-            TypingView typingView = pf.createProjection(TypingView.class, message);
-            jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(typingView));
-        } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
-
-        for (User user : dialog.getUsers()) {
-            simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(), jsonObject);
-            rabbitTemplate.convertAndSend(user.getUsername(), "", jsonObject);
-        }*/
 
         User sender = userService.loadUserByUsernameProxy(message.getSender().getUsername());
 
@@ -292,8 +264,6 @@ public class MessageService {
         for (User user : dialog.getUsers()) {
             rabbitTemplate.convertAndSend(user.getUsername(), "", jsonObject);
         }
-
-
 
     }
 

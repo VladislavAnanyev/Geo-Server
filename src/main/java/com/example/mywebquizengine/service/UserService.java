@@ -225,12 +225,6 @@ public class UserService implements UserDetailsService {
     public void doBasicUserInitializationBeforeSave(User user) {
 
         rabbitAdmin.declareExchange(new FanoutExchange(user.getUsername(), true, false));
-        //Queue queue = new Queue("", true, false, false);
-        /*String queueName = rabbitAdmin.declareQueue(queue);
-        Binding binding = new Binding(queueName, Binding.DestinationType.QUEUE,
-                user.getUsername(), null, null);
-
-        rabbitAdmin.declareBinding(binding);*/
 
         user.setEnabled(true);
         user.setBalance(0);

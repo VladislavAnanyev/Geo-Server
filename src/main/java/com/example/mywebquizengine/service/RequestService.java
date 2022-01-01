@@ -48,7 +48,6 @@ public class RequestService {
     private ObjectMapper objectMapper;
 
 
-
     @Transactional
     public void sendRequest(Request request, Principal principal) throws JsonProcessingException, ParseException {
 
@@ -88,7 +87,7 @@ public class RequestService {
                 .writeValueAsString(requestView));
         jsonObject.put("type", "REQUEST");
 
-        rabbitTemplate.convertAndSend(request.getTo().getUsername(),
+        rabbitTemplate.convertAndSend(request.getTo().getUsername(), "",
                 jsonObject);
 
     }

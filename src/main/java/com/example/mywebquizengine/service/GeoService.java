@@ -76,20 +76,10 @@ public class GeoService {
             System.out.println(time);
         } else {
             timestamp = Timestamp.from(myGeolocation.getTime().toInstant());
-
             time = timestamp.toString();
-            System.out.println(time);
-            //time = myGeolocation.getTime()
         }
 
-
-        //geolocation.setId(geolocation.getUser().getUsername());
         saveGeo(myGeolocation);
-
-
-
-
-        //System.out.println(date.toString().substring(0,10));
 
         ArrayList<Geolocation> peopleNearMe = findInSquare(username,myGeolocation, "20", time);
 
@@ -101,7 +91,6 @@ public class GeoService {
                         getMeetings(myGeolocation.getUser().getUsername(),
                                 peopleNearMe.get(i).getUser().getUsername(), time.substring(0,10))
                         .size() == 0 ) {
-
 
                     if (!username.equals(peopleNearMe.get(i).getUser().getUsername())) {
 
@@ -121,17 +110,11 @@ public class GeoService {
                                 .writeValueAsString(meetingView));
                         jsonObject.put("type", "MEETING");
 
-
-                        rabbitTemplate.setExchange("message-exchange");
-
-                        rabbitTemplate.convertAndSend(meeting.getFirstUser().getUsername(), jsonObject);
-                        rabbitTemplate.convertAndSend(meeting.getSecondUser().getUsername(), jsonObject);
-
+                        rabbitTemplate.convertAndSend(meeting.getFirstUser().getUsername(), "", jsonObject);
+                        rabbitTemplate.convertAndSend(meeting.getSecondUser().getUsername(),"", jsonObject);
 
                     }
-
                 }
-
             }
     }
 }
@@ -157,8 +140,6 @@ public class GeoService {
                 Long time = Long.parseLong((String) test.get("timestampMs"));
 
                 date.setTime(time);
-                /*System.out.println("- lat: " + (Long)test.get("latitudeE7")/1e7 + ", lng: " + (Long)test.get("longitudeE7")/1e7
-                + ", time: " + date.toString());*/
 
                 Geolocation geolocation = new Geolocation();
                 geolocation.setLat((Long) test.get("latitudeE7") / 1e7);
