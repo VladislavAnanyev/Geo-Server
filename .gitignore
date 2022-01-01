@@ -27,6 +27,7 @@ build/
 *.iml
 *.ipr
 *.gz
+*.properties
 
 out/
 !**/src/main/**/out/
@@ -63,3 +64,7 @@ logs/logging.log
 
 #!/img/4fe8efec.jpg
 
+img/009ac8f9.jpg
+src/test/java/com/example/mywebquizengine/model/
+src/test/java/com/example/mywebquizengine/service/
+src/test/java/resources/
