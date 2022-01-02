@@ -142,6 +142,7 @@ public class UserService implements UserDetailsService {
         }
     }
 
+    // проверить что тут вообще происходит
     @Transactional
     public void updatePassword(User user, String changePasswordCode) {
 
@@ -429,8 +430,7 @@ public class UserService implements UserDetailsService {
 
         Optional<User> user = userRepository.findByChangePasswordCode(code);
 
-        if (user.isPresent() && user.get().getUsername().equals(username)) {
-        } else {
+        if (!(user.isPresent() && user.get().getUsername().equals(username))) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
     }

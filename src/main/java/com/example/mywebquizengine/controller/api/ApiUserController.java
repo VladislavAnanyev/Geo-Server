@@ -91,7 +91,7 @@ public class ApiUserController {
         userService.updatePassword(user, user.getChangePasswordCode());
     }
 
-    @GetMapping(path = "/user/verify-password-code")
+    @PostMapping(path = "/user/verify-password-code")
     public void verifyChangePasswordCode(@RequestBody User user) {
         userService.getUserViaChangePasswordCodePhoneApi(user.getUsername(), user.getChangePasswordCode());
     }
