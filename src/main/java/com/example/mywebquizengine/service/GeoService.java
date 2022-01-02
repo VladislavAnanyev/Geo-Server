@@ -1,11 +1,13 @@
 package com.example.mywebquizengine.service;
 
+import com.example.mywebquizengine.MywebquizengineApplication;
 import com.example.mywebquizengine.model.User;
 import com.example.mywebquizengine.model.geo.Geolocation;
 import com.example.mywebquizengine.model.geo.Meeting;
 import com.example.mywebquizengine.model.projection.*;
 import com.example.mywebquizengine.repos.GeolocationRepository;
 import com.example.mywebquizengine.repos.MeetingRepository;
+import com.example.mywebquizengine.repos.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.util.IOUtils;
@@ -51,7 +53,6 @@ public class GeoService {
 
     @Autowired
     private UserService userService;
-
 
 
     public ArrayList<MeetingViewCustomQuery> getMyMeetings(String username, String date) {
@@ -103,8 +104,7 @@ public class GeoService {
 
                         meetingRepository.save(meeting);
 
-                        ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
-                        MeetingView meetingView = pf.createProjection(MeetingView.class, meeting);
+                        MeetingView meetingView = ProjectionUtil.parseToProjection(meeting, MeetingView.class);
 
                         JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper
                                 .writeValueAsString(meetingView));
@@ -201,19 +201,5 @@ public class GeoService {
         return (ArrayList<GeolocationView>) geolocationRepository.getAll(username);
     }
 
-    public UserCommonView getUserForMeeting(String firstUsername, String secondUsername) {
-        String authName = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user;
-        if (authName.equals(firstUsername)) {
-            user = userService.loadUserByUsername(secondUsername);
-        } else if (authName.equals(secondUsername)) {
-            user = userService.loadUserByUsername(firstUsername);
-        } else  {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
 
-        ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
-
-        return pf.createProjection(UserCommonView.class, user);
-    }
 }

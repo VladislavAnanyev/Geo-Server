@@ -13,6 +13,8 @@ import org.springframework.context.ApplicationContext;
 
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 
 
 import java.io.*;
@@ -114,8 +116,6 @@ public class MywebquizengineApplication {
     private void setApplicationContext(ApplicationContext applicationContext) {
         ctx = applicationContext;
     }
-
-
 
 
 }

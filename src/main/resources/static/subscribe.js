@@ -39,7 +39,7 @@ function onConnectedNotif() {
                 "x-expires": 300000, "ack": "client"
             });
     } else {
-        stompClient.subscribe('/exchange/' + username, onMessageReceived)
+        stompClient.subscribe('/exchange/' + username, onMessageReceived, {"ack": "client"})
     }
     //stompClient.subscribe('/queue/' + username, onMessageReceived);
     geo()

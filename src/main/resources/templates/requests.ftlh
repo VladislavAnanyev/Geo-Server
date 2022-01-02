@@ -33,25 +33,15 @@
 
                 </div>
 
-
-
-
-
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item">
                             <div class="map-overlay">
                                 <div class="map" id="map${request_index}"></div>
                             </div>
                         </li>
-
-
                     </ul>
 
-
-
             </div>
-
-
 
             </div>
 <#--            </#if>-->
