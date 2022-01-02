@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.model;
+package com.example.mywebquizengine.model.userinfo;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;

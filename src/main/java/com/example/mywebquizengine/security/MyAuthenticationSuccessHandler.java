@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.security;
 
-import com.example.mywebquizengine.model.RegistrationType;
+import com.example.mywebquizengine.model.userinfo.RegistrationType;
 import com.example.mywebquizengine.model.User;
 import com.example.mywebquizengine.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

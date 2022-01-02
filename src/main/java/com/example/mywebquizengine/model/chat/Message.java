@@ -42,18 +42,18 @@ public class Message {
     @Transient
     private String uniqueCode;
 
-    /*@Transient
-    private String type;*/
+    @Transient
+    private String type;
 
     public Message() {}
 
-    /*public String getType() {
+    public String getType() {
         return type;
     }
 
     public void setType(String type) {
         this.type = type;
-    }*/
+    }
 
     public User getSender() {
         return sender;

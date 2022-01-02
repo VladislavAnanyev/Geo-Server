@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.repos;
 
-import com.example.mywebquizengine.model.Photo;
+import com.example.mywebquizengine.model.userinfo.Photo;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;

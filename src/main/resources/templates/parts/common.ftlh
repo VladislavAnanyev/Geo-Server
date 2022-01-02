@@ -74,7 +74,7 @@
 
 
 
-<script src="/static/testConnect.js"></script>
+<#--<script src="/static/testConnect.js"></script>-->
 <#--<script>geo()</script>-->
 
 </#if>

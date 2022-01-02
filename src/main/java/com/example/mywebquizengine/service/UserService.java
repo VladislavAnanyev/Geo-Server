@@ -4,9 +4,7 @@ import com.example.mywebquizengine.model.*;
 import com.example.mywebquizengine.model.projection.ProfileView;
 import com.example.mywebquizengine.model.projection.UserCommonView;
 import com.example.mywebquizengine.model.projection.UserView;
-import com.example.mywebquizengine.model.userinfo.AuthRequest;
-import com.example.mywebquizengine.model.userinfo.AuthResponse;
-import com.example.mywebquizengine.model.userinfo.GoogleToken;
+import com.example.mywebquizengine.model.userinfo.*;
 import com.example.mywebquizengine.repos.PhotoRepository;
 import com.example.mywebquizengine.repos.UserRepository;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
@@ -42,8 +40,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 
@@ -81,8 +77,6 @@ public class UserService implements UserDetailsService {
             return user.get();
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND);
     }
-
-
 
     public User loadUserByUsernameProxy(String username) throws UsernameNotFoundException {
         return userRepository.getOne(username);

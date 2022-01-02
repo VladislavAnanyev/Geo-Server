@@ -31,7 +31,7 @@ public class ApiRequestController {
 
     @PostMapping(path = "/request/{id}/accept")
     //@PreAuthorize(value = "!#principal.name.equals(#user.username)")
-    public Long acceptRequest(@PathVariable Long id, @AuthenticationPrincipal Principal principal) {
+    public Long acceptRequest(@PathVariable Long id, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
         return requestService.acceptRequest(id, principal.getName());
     }
 

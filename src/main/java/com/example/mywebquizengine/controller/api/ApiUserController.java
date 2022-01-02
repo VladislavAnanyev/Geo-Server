@@ -1,10 +1,10 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.model.Photo;
+import com.example.mywebquizengine.model.userinfo.Photo;
 import com.example.mywebquizengine.model.projection.ProfileView;
 import com.example.mywebquizengine.model.projection.UserCommonView;
 import com.example.mywebquizengine.model.projection.UserView;
-import com.example.mywebquizengine.model.RegistrationType;
+import com.example.mywebquizengine.model.userinfo.RegistrationType;
 import com.example.mywebquizengine.model.User;
 import com.example.mywebquizengine.model.userinfo.AuthRequest;
 import com.example.mywebquizengine.model.userinfo.AuthResponse;

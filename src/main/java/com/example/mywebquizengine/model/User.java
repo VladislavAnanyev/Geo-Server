@@ -2,6 +2,7 @@ package com.example.mywebquizengine.model;
 
 import com.example.mywebquizengine.model.chat.Dialog;
 import com.example.mywebquizengine.MywebquizengineApplication;
+import com.example.mywebquizengine.model.userinfo.Photo;
 import com.example.mywebquizengine.service.UserService;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

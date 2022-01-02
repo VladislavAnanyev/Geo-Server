@@ -4,11 +4,8 @@ package com.example.mywebquizengine.service;
 import com.example.mywebquizengine.model.chat.Dialog;
 import com.example.mywebquizengine.model.chat.Message;
 import com.example.mywebquizengine.model.chat.MessageStatus;
-import com.example.mywebquizengine.model.projection.DialogView;
-import com.example.mywebquizengine.model.projection.LastDialog;
-import com.example.mywebquizengine.model.projection.MessageView;
+import com.example.mywebquizengine.model.projection.*;
 import com.example.mywebquizengine.model.User;
-import com.example.mywebquizengine.model.projection.TypingView;
 import com.example.mywebquizengine.repos.DialogRepository;
 import com.example.mywebquizengine.repos.MessageRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -171,8 +168,7 @@ public class MessageService {
             if (message.getSender().getUsername().equals(username)) {
                 message.setStatus(MessageStatus.DELETED);
 
-                ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
-                MessageView messageDto = pf.createProjection(MessageView.class, message);
+                MessageView messageDto = ProjectionUtil.parseToProjection(message, MessageView.class);
 
                 JSONObject jsonObject = (JSONObject) JSONValue
                         .parseWithException(objectMapper.writeValueAsString(messageDto));
@@ -222,8 +218,7 @@ public class MessageService {
                 message.setContent(newMessage.getContent());
                 message.setStatus(MessageStatus.EDIT);
 
-                ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
-                MessageView messageDto = pf.createProjection(MessageView.class, message);
+                MessageView messageDto = ProjectionUtil.parseToProjection(message, MessageView.class);
 
                 JSONObject jsonObject = (JSONObject) JSONValue
                         .parseWithException(objectMapper.writeValueAsString(messageDto));
@@ -255,8 +250,7 @@ public class MessageService {
 
         Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
 
-        ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
-        MessageView messageDto = pf.createProjection(MessageView.class, message);
+        MessageView messageDto = ProjectionUtil.parseToProjection(message, MessageView.class);
 
         JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(messageDto));
         jsonObject.put("type", "MESSAGE");
@@ -304,8 +298,7 @@ public class MessageService {
             dialog.setImage("https://" + hostname + "/img/default.jpg");
             dialogRepository.save(dialog);
 
-            ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
-            MessageView messageDto = pf.createProjection(MessageView.class, message);
+            MessageView messageDto = ProjectionUtil.parseToProjection(message, MessageView.class);
 
             JSONObject jsonObject = (JSONObject) JSONValue
                     .parseWithException(objectMapper.writeValueAsString(messageDto));
@@ -314,7 +307,6 @@ public class MessageService {
 /*                simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
                         jsonObject);*/
             }
-
 
             return dialog.getDialogId();
 

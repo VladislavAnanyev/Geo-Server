@@ -1,8 +1,7 @@
 package com.example.mywebquizengine.model.projection;
 
-import com.example.mywebquizengine.model.Photo;
+import com.example.mywebquizengine.model.userinfo.Photo;
 import com.example.mywebquizengine.model.Role;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.controller.web;
 
 import com.example.mywebquizengine.model.projection.UserView;
-import com.example.mywebquizengine.model.RegistrationType;
+import com.example.mywebquizengine.model.userinfo.RegistrationType;
 import com.example.mywebquizengine.model.Request;
 import com.example.mywebquizengine.model.User;
 import com.example.mywebquizengine.security.ActiveUserStore;
@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -183,7 +182,7 @@ public class UserController {
 
     @PostMapping(path = "/acceptRequest")
     @ResponseBody
-    public Long acceptRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) {
+    public Long acceptRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
         return requestService.acceptRequest(request.getId(), principal.getName());
     }
 

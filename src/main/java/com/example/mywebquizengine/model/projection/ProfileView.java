@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.model.projection;
 
-import com.example.mywebquizengine.model.Photo;
+import com.example.mywebquizengine.model.userinfo.Photo;
 
 import java.util.List;
 

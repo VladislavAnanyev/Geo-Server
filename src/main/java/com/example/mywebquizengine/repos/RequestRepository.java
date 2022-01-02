@@ -22,7 +22,10 @@ public interface RequestRepository extends CrudRepository<Request, Long>, JpaRep
     * FindByStatusAnd(ToUsernameOrSenderUsername)*/
     ArrayList<RequestView> findByStatusAndToUsernameOrStatusAndSenderUsername(String status, @NotBlank String to_username, String status2, @NotBlank String sender_username);
 
+    ArrayList<Request> findAllByMeetingIdAndStatus(Long meetingId, String status);
+
     ArrayList<Request> findAllByMeetingId(Long meetingId);
+
 
     ArrayList<RequestView> findAllBySenderUsernameAndStatus(String username, String status);
 
