@@ -65,7 +65,7 @@ public class ApiUserController {
         return userService.getUserProfileById(username);
     }
 
-    @PostMapping(path = "/upload")
+    @PostMapping(path = "/user/upload")
     public void uploadPhoto(@RequestParam("file") MultipartFile file, @AuthenticationPrincipal Principal principal) {
         userService.uploadPhoto(file, principal.getName());
     }
@@ -80,11 +80,6 @@ public class ApiUserController {
     public void sendChangePasswordCodeWithoutAuth(@RequestParam String username) {
         userService.sendCodeForChangePasswordFromPhone(username);
     }
-
-    /*@PostMapping(path = "/user/send-change-password-code")
-    public void sendChangePasswordCodeWithAuth(@AuthenticationPrincipal Principal principal) {
-        userService.sendCodeForChangePasswordFromPhone(principal.getName());
-    }*/
 
     @PutMapping(path = "/user/password")
     public void changePassword(@RequestBody User user) {

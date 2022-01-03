@@ -112,13 +112,14 @@ public class UserService implements UserDetailsService {
         userRepository.setChangePasswordCode(user.getUsername(), String.valueOf(code));
 
         try {
-            mailSender.send(user.getEmail(), "Смена пароля в WebQuizzes",
+            mailSender.send(user.getEmail(), "Смена пароля в " + hostname,
                     """
-                            Для смены пароля в WebQuizzes
+                            Для смены пароля в """ + hostname +
+                            """
                             введите в приложении код: """ + code +
                             """
                                     . 
-                                     Если вы не меняли пароль на данном ресурсе, то проигнорируйте сообщение
+                                    Если вы не меняли пароль на данном ресурсе, то проигнорируйте сообщение
                                     """);
 
         } catch (Exception e) {
@@ -134,7 +135,7 @@ public class UserService implements UserDetailsService {
         userRepository.setChangePasswordCode(user.getUsername(), code);
 
         try {
-            mailSender.send(user.getEmail(), "Смена пароля в WebQuizzes", "Для смены пароля в WebQuizzes" +
+            mailSender.send(user.getEmail(), "Смена пароля в " + hostname, "Для смены пароля в " + hostname +
                     " перейдите по ссылке: https://" + hostname + "/updatepass/" + code + " Если вы не меняли пароль на данном ресурсе, то проигнорируйте сообщение");
 
         } catch (Exception e) {
@@ -142,18 +143,12 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    // проверить что тут вообще происходит
+
     @Transactional
     public void updatePassword(User user, String changePasswordCode) {
-
         User savedUser = getUserViaChangePasswordCode(changePasswordCode);
-
-        user.setUsername(savedUser.getUsername());
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setChangePasswordCode(UUID.randomUUID().toString());
-
-        userRepository.changePassword(user.getPassword(), user.getUsername(), user.getChangePasswordCode());
-        savedUser.setChangePasswordCode(UUID.randomUUID().toString());
+        savedUser.setPassword(passwordEncoder.encode(user.getPassword()));
+        savedUser.setChangePasswordCode(null);
     }
 
     public void activateAccount(String activationCode) {
@@ -162,13 +157,13 @@ public class UserService implements UserDetailsService {
             user.setStatus(true);
             userRepository.activateAccount(user.getUsername());
         }
-
     }
 
     public User getUserViaChangePasswordCode(String changePasswordCode) {
 
-        if (userRepository.findByChangePasswordCode(changePasswordCode).isPresent()) {
-            return userRepository.findByChangePasswordCode(changePasswordCode).get();
+        Optional<User> optionalUser = userRepository.findByChangePasswordCode(changePasswordCode);
+        if (optionalUser.isPresent()) {
+            return optionalUser.get();
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
@@ -422,7 +417,6 @@ public class UserService implements UserDetailsService {
         for (int i = 0; i < photos.size(); i++) {
             photos.get(i).setPosition(i);
         }
-
 
     }
 
