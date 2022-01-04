@@ -8,7 +8,7 @@ public interface MeetingView {
 
     Long getId();
 
-    @Value("#{T(com.example.mywebquizengine.service.UserUtil).getUserForMeeting(target.firstUser.username, target.secondUser.username)}")
+    @Value("#{target.secondUser}")
     UserCommonView getUser();
 
     Double getLng();

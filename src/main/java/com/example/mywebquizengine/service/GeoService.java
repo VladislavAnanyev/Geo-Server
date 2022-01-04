@@ -66,7 +66,7 @@ public class GeoService {
     }
 
     public void sendGeolocation(String username, Geolocation myGeolocation) throws JsonProcessingException, ParseException {
-        myGeolocation.setUser(userService.loadUserByUsernameProxy(username));
+        myGeolocation.setUser(userService.loadUserByUsername(username));
 
         String time = "";
         Timestamp timestamp;
@@ -104,14 +104,45 @@ public class GeoService {
 
                         meetingRepository.save(meeting);
 
-                        MeetingView meetingView = ProjectionUtil.parseToProjection(meeting, MeetingView.class);
 
-                        JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper
-                                .writeValueAsString(meetingView));
-                        jsonObject.put("type", "MEETING");
+                        /*
+                        * Так как первый пользователь это аутентифированный пользователь, то
+                        * ему возвращается второй пользователь в качестве user в встрече, а
+                        * второму пользователю возвращается первый. Это достигается при помощи
+                        * одной модели, путем смены местами первого и второго пользователя
+                        * */
 
-                        rabbitTemplate.convertAndSend(meeting.getFirstUser().getUsername(), "", jsonObject);
-                        rabbitTemplate.convertAndSend(meeting.getSecondUser().getUsername(),"", jsonObject);
+                        MeetingView meetingViewForFirstUser = ProjectionUtil
+                                .parseToProjection(
+                                        meeting,
+                                        MeetingView.class
+                                );
+
+                        JSONObject jsonObjectForFirstUser = (JSONObject) JSONValue.parseWithException(objectMapper
+                                .writeValueAsString(meetingViewForFirstUser));
+                        jsonObjectForFirstUser.put("type", "MEETING");
+
+
+                        User initialFirstUser = meeting.getFirstUser();
+                        User initialSecondUser = meeting.getSecondUser();
+
+                        rabbitTemplate.convertAndSend(initialFirstUser.getUsername(), "", meetingViewForFirstUser);
+
+                        meeting.setFirstUser(meeting.getSecondUser());
+                        meeting.setSecondUser(initialFirstUser);
+
+                        MeetingView meetingViewForSecondUser = ProjectionUtil
+                                .parseToProjection(
+                                        meeting,
+                                        MeetingView.class
+                                );
+
+                        JSONObject jsonObjectForSecondUser = (JSONObject) JSONValue.parseWithException(objectMapper
+                                .writeValueAsString(meetingViewForSecondUser));
+                        jsonObjectForSecondUser.put("type", "MEETING");
+
+
+                        rabbitTemplate.convertAndSend(initialSecondUser.getUsername(),"", jsonObjectForSecondUser);
 
                     }
                 }
