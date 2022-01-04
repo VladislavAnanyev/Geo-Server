@@ -18,9 +18,6 @@ public class User implements UserDetails, OAuth2User  {
 
     @Id
     @NotBlank
-    /*@Pattern(regexp = """
-            [\S]{0,}
-            """) // без пробелов*/
     private String username;
 
     @NotBlank
@@ -48,25 +45,7 @@ public class User implements UserDetails, OAuth2User  {
     @OrderBy("position ASC")
     private List<Photo> photos;
 
-    private String avatar;
-
     private String description;
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getAvatar() {
-        return avatar;
-    }
-
-    public void setAvatar(String avatar) {
-        this.avatar = avatar;
-    }
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "users_dialogs",
@@ -74,15 +53,6 @@ public class User implements UserDetails, OAuth2User  {
             inverseJoinColumns = @JoinColumn(name = "dialog_id")
     )
     private List<Dialog> dialogs = new ArrayList<>();
-
-
-    public List<Dialog> getDialogs() {
-        return dialogs;
-    }
-
-    public void setDialogs(List<Dialog> dialogs) {
-        this.dialogs = dialogs;
-    }
 
     @Transient
     private boolean accountNonExpired;
@@ -102,8 +72,16 @@ public class User implements UserDetails, OAuth2User  {
 
     private static final long serialVersionUID = -7422293274841574951L;
 
-    public User(){
+    @ManyToMany
+    private List<User> friends;
 
+    @Enumerated(EnumType.STRING)
+    @ElementCollection(fetch = FetchType.EAGER)
+    private List<Role> roles;
+
+    private String online;
+
+    public User(){
         this.accountNonExpired = true;
         this.accountNonLocked = true;
         this.credentialsNonExpired = true;
@@ -137,10 +115,6 @@ public class User implements UserDetails, OAuth2User  {
         this.photos = photos;
     }
 
-
-    private String online;
-
-
     public void setOnline(String online) {
         this.online = online;
     }
@@ -148,13 +122,6 @@ public class User implements UserDetails, OAuth2User  {
     public String getOnline() {
         return online;
     }
-
-    @ManyToMany
-    private List<User> friends;
-
-    @Enumerated(EnumType.STRING)
-    @ElementCollection(fetch = FetchType.EAGER)
-    private List<Role> roles;
 
     @Override
     public List<GrantedAuthority> getAuthorities(){
@@ -291,7 +258,6 @@ public class User implements UserDetails, OAuth2User  {
         return balance;
     }
 
-
     public List<User> getFriends() {
         return friends;
     }
@@ -320,5 +286,21 @@ public class User implements UserDetails, OAuth2User  {
         this.photos.add(photo);
         //photo.setUser(this);
         //photo.getUser().setPhotos(this.photos);
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public List<Dialog> getDialogs() {
+        return dialogs;
+    }
+
+    public void setDialogs(List<Dialog> dialogs) {
+        this.dialogs = dialogs;
     }
 }

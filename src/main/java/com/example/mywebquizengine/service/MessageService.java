@@ -198,7 +198,13 @@ public class MessageService {
                                   String username) {
         Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
         Optional<Dialog> optionalDialog = dialogRepository.findById(dialogId);
-        optionalDialog.ifPresent(dialog -> dialog.setPaging(paging));
+
+        if (optionalDialog.isPresent()) {
+            optionalDialog.get().setPaging(paging);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
         DialogView dialog = dialogRepository.findAllDialogByDialogId(dialogId);
 
         // If user contains in dialog
@@ -232,31 +238,34 @@ public class MessageService {
             } else {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
             }
-        }
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND);
     }
 
 
     @Transactional
     public void sendMessage(Message message) throws JsonProcessingException, ParseException {
 
-        User sender = userService.loadUserByUsernameProxy(message.getSender().getUsername());
-
-        message.setSender(sender);
-        message.setDialog(dialogRepository.findById(message.getDialog().getDialogId()).get());
-        message.setTimestamp(new Date());
-        message.setStatus(MessageStatus.DELIVERED);
-
-        messageRepository.save(message);
-
         Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
+        if (dialog.getUsers().stream().anyMatch(user -> user.getUsername()
+                .equals(message.getSender().getUsername()))) {
 
-        MessageView messageDto = ProjectionUtil.parseToProjection(message, MessageView.class);
+            User sender = userService.loadUserByUsernameProxy(message.getSender().getUsername());
 
-        JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(messageDto));
-        jsonObject.put("type", "MESSAGE");
+            message.setSender(sender);
+            message.setDialog(dialogRepository.findById(message.getDialog().getDialogId()).get());
+            message.setTimestamp(new Date());
+            message.setStatus(MessageStatus.DELIVERED);
 
-        for (User user : dialog.getUsers()) {
-            rabbitTemplate.convertAndSend(user.getUsername(), "", jsonObject);
+            messageRepository.save(message);
+
+            MessageView messageDto = ProjectionUtil.parseToProjection(message, MessageView.class);
+
+            JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(messageDto));
+            jsonObject.put("type", "MESSAGE");
+
+            for (User user : dialog.getUsers()) {
+                rabbitTemplate.convertAndSend(user.getUsername(), "", jsonObject);
+            }
         }
 
     }

@@ -98,7 +98,9 @@ public class UserService implements UserDetailsService {
     }
 
     public void updateUser(String lastName, String firstName, String username) {
-        userRepository.updateUserInfo(firstName, lastName, username);
+        if (lastName != null && !lastName.trim().equals("") && firstName != null && !firstName.trim().equals("")) {
+            userRepository.updateUserInfo(firstName, lastName, username);
+        } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
     }
 
     public void sendCodeForChangePasswordFromPhone(String username) {
@@ -145,10 +147,23 @@ public class UserService implements UserDetailsService {
 
 
     @Transactional
-    public void updatePassword(User user, String changePasswordCode) {
-        User savedUser = getUserViaChangePasswordCode(changePasswordCode);
+    public void updatePassword(User user) {
+        User savedUser = getUserViaChangePasswordCodeFromPhone(user.getUsername(), user.getChangePasswordCode());
         savedUser.setPassword(passwordEncoder.encode(user.getPassword()));
         savedUser.setChangePasswordCode(null);
+    }
+
+    private User getUserViaChangePasswordCodeFromPhone(String username, String changePasswordCode) {
+        Optional<User> optionalUser = userRepository
+                .findByChangePasswordCodeAndUsername(
+                        changePasswordCode,
+                        username
+                );
+        if (optionalUser.isPresent()) {
+            return optionalUser.get();
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
     }
 
     public void activateAccount(String activationCode) {
@@ -321,7 +336,20 @@ public class UserService implements UserDetailsService {
             SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
 
             String jwt = jwtTokenUtil.generateToken(savedUser);
-            return new AuthResponse(jwt);
+
+            Queue queue = new Queue("", true, false, false);
+            queue.addArgument("x-expires", 2419200000L);
+            String queueName = rabbitAdmin.declareQueue(queue);
+            Binding binding = new Binding(
+                    queueName,
+                    Binding.DestinationType.QUEUE,
+                    user.getUsername(),
+                    "",
+                    null
+            );
+            rabbitAdmin.declareBinding(binding);
+
+            return new AuthResponse(jwt, queueName);
             // Use or store profile information
             // ...
 
@@ -372,26 +400,30 @@ public class UserService implements UserDetailsService {
     }
 
     public void processCheckIn(User user, RegistrationType type) {
-        if (type.equals(RegistrationType.BASIC)) {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            user.setStatus(false);
-            user.setPhotos(Collections.singletonList("https://" + hostname + "/img/default.jpg"));
-            user.setActivationCode(UUID.randomUUID().toString());
-            String mes = user.getFirstName() + " " + user.getLastName() + ", Добро пожаловать в WebQuizzes! "
-                    + "Для активации аккаунта перейдите по ссылке: https://" + hostname + "/activate/" + user.getActivationCode()
-                    + " Если вы не регистрировались на данном ресурсе, то проигнорируйте это сообщение";
+        if (user.getUsername().contains(" ")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        } else {
+            if (type.equals(RegistrationType.BASIC)) {
+                user.setPassword(passwordEncoder.encode(user.getPassword()));
+                user.setStatus(false);
+                user.setPhotos(Collections.singletonList("https://" + hostname + "/img/default.jpg"));
+                user.setActivationCode(UUID.randomUUID().toString());
+                String mes = user.getFirstName() + " " + user.getLastName() + ", Добро пожаловать в WebQuizzes! "
+                        + "Для активации аккаунта перейдите по ссылке: https://" + hostname + "/activate/" + user.getActivationCode()
+                        + " Если вы не регистрировались на данном ресурсе, то проигнорируйте это сообщение";
 
-            try {
-                mailSender.send(user.getEmail(), "Активация аккаунта в WebQuizzes", mes);
-            } catch (Exception e) {
-                System.out.println("Отключено");
+                try {
+                    mailSender.send(user.getEmail(), "Активация аккаунта в WebQuizzes", mes);
+                } catch (Exception e) {
+                    System.out.println("Отключено");
+                }
+
+            } else if (type.equals(RegistrationType.OAUTH2)) {
+                user.setStatus(true);
             }
-
-        } else if (type.equals(RegistrationType.OAUTH2)) {
-            user.setStatus(true);
+            doBasicUserInitializationBeforeSave(user);
+            saveUser(user, type);
         }
-        doBasicUserInitializationBeforeSave(user);
-        saveUser(user, type);
     }
 
     public Boolean checkForExistUser(String username) {

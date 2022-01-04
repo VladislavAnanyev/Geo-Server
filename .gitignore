@@ -28,6 +28,7 @@ build/
 *.ipr
 *.gz
 *.properties
+*.db
 
 out/
 !**/src/main/**/out/

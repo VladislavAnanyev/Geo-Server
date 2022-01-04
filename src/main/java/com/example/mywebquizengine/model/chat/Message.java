@@ -3,6 +3,7 @@ package com.example.mywebquizengine.model.chat;
 import com.example.mywebquizengine.model.User;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Date;
 import java.util.List;
@@ -18,6 +19,7 @@ public class Message {
     private User sender;
 
     @Size(min = 1)
+    @NotNull
     private String content;
 
     private Date timestamp;

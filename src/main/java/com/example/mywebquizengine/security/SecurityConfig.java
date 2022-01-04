@@ -168,7 +168,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .authorizeRequests()
                     .antMatchers(
-                            "/googlee45a32e3d6f7edf4.html", "/activate/*",
+                            "/googlee45a32e3d6f7edf4.html", "/activate/*", "/reg", "/register",
                             "/androidSign", "/ws/**",
                             "/signin", "/checkyandex", "/h2-console/**", "/.well-known/pki-validation/**",
                             "/login",

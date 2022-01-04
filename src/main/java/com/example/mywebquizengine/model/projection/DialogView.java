@@ -16,8 +16,6 @@ public interface DialogView {
     @Value("#{@messageService.getCompanion(target.name ,target.users)}")
     String getName();
 
-    //@Named(value = "messages")
-    //@JsonProperty(value = "messages")
     @Value("#{T(com.google.common.collect.Lists).reverse(@messageRepository.findAllByDialog_DialogIdAndStatusNot(target.dialogId, T(com.example.mywebquizengine.model.chat.MessageStatus).DELETED, target.paging ).content)}")
     List<MessageView> getMessages();
 }

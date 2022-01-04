@@ -115,22 +115,15 @@ public class UserController {
         return "changePassword";
     }
 
-
     @GetMapping(path = "/signin")
     public String signIn() {
         return "singin";
     }
 
-/*    @GetMapping(path = "/signin#")
-    public String singIn() {
-        return "redirect:/signin";
-    }*/
-
-
     @PutMapping(path = "/updatepass/{changePasswordCode}", consumes = {"application/json"})
     public String changePasswordUsingCode(@RequestBody User in, @PathVariable String changePasswordCode) {
-
-        userService.updatePassword(in, changePasswordCode);
+        in.setChangePasswordCode(changePasswordCode);
+        userService.updatePassword(in);
 
         return "changePassword";
     }

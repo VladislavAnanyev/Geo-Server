@@ -83,7 +83,7 @@ public class ApiUserController {
 
     @PutMapping(path = "/user/password")
     public void changePassword(@RequestBody User user) {
-        userService.updatePassword(user, user.getChangePasswordCode());
+        userService.updatePassword(user);
     }
 
     @PostMapping(path = "/user/verify-password-code")

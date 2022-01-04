@@ -1,36 +1,27 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.model.Role;
 import com.example.mywebquizengine.model.User;
 import com.example.mywebquizengine.repos.UserRepository;
-import com.example.mywebquizengine.service.JWTUtil;
-import org.junit.After;
 import org.junit.Test;
-
 import org.junit.runner.RunWith;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.ArrayList;
-import java.util.Collections;
-
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.Mockito.doAnswer;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 @RunWith(SpringRunner.class)
@@ -38,60 +29,30 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles({"test"})
 @TestPropertySource(locations = "classpath:application-test.properties")
-/*@EnableAutoConfiguration(exclude = RabbitAutoConfiguration.class)*/
 public class ApiUserControllerTest {
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private UserRepository repository;
-
-    @Autowired
-    private JWTUtil jwtUtil;
+    private UserRepository userRepository;
 
     @MockBean
     private RabbitAdmin rabbitAdmin;
 
-    @After
-    public void resetDb() {
-        repository.deleteAll();
-    }
-
     @Test
     public void testGetAuthUserWithoutAuth() throws Exception {
-        mockMvc.perform(get("https://localhost/api/authuser"))
+        mockMvc.perform(get("/api/user/auth").secure(true))
                 .andExpect(status().isForbidden());
     }
 
     @Test
+    @WithUserDetails("user1")
     public void testGetAuthUserWithAuth() throws Exception {
-
-        User user = createTestPerson("application");
-        String token = jwtUtil.generateToken(user);
-        System.out.println(token);
-        mockMvc.perform(get("https://localhost/api/authuser")
-                .header("Authorization",
-        "Bearer " + token))
+        mockMvc.perform(get("/api/authuser").secure(true))
                 .andExpect(status().isOk());
     }
 
-    // Try to retrieve user which not exist in database
-    @Test
-    public void testFailAuthUser() throws Exception {
-
-        User user = createTestPersonWithoutSave("NotApplication");
-        String token = jwtUtil.generateToken(user);
-        System.out.println(token);
-        mockMvc.perform(get("https://localhost/api/authuser")
-                .header("Authorization",
-                        "Bearer " + token))
-                .andExpect(status().isNotFound());
-        //.andExpect(conte);
-    }
 
     @Test
     public void testSignUp() throws Exception {
@@ -100,46 +61,42 @@ public class ApiUserControllerTest {
             return null;
         }).when(rabbitAdmin).declareExchange(anyObject());
 
-        String json = """
-                {"username": "application",
-                    "email": "a.vlad.v@ya.ru",
-                    "firstName": "Владислав",
-                    "lastName": "Ананьев",
-                    "password": "12345"}
-                """;
+        String json =
+                """
+                        {
+                            "username": "application",
+                            "email": "a.vlad.v@ya.ru",
+                            "firstName": "Владислав",
+                            "lastName": "Ананьев",
+                            "password": "12345"
+                        }
+                        """;
 
-        mockMvc.perform(post("https://localhost/api/signup")
+        mockMvc.perform(post("/api/signup").secure(true)
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.jwtToken").isString());
 
-        User user = repository.findById("application").get();
-        assertNull(user.getChangePasswordCode());
+        User user = userRepository.findById("application").get();
         assertNotNull(user.getPassword());
-        assertEquals("0", String.valueOf(user.getBalance()));
-        assertNotNull(user.getOnline());
-
 
     }
 
     @Test
     public void testSignUpWithExistUsername() throws Exception {
 
-        doAnswer(i -> {
-            return null;
-        }).when(rabbitAdmin).declareExchange(anyObject());
-
-        createTestPerson("application");
         String json = """
-                {"username": "application",
+                {   
+                    "username": "user1",
                     "email": "a.vlad.c@ya.ru",
                     "firstName": "Владислав",
                     "lastName": "Ананьев",
-                    "password": "12345"}
+                    "password": "12345"
+                }
                 """;
 
-        mockMvc.perform(post("https://localhost/api/signup")
+        mockMvc.perform(post("/api/signup").secure(true)
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
     }
@@ -148,14 +105,16 @@ public class ApiUserControllerTest {
     public void testSignUpWithBadPassword() throws Exception {
 
         String json = """
-                {"username": "application",
+                {
+                    "username": "application",
                     "email": "a.vlad.c@ya.ru",
                     "firstName": "Владислав",
                     "lastName": "Ананьев",
-                    "password": "12"}
+                    "password": "12"
+                }
                 """;
 
-        mockMvc.perform(post("https://localhost/api/signup")
+        mockMvc.perform(post("/api/signup").secure(true)
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
     }
@@ -164,45 +123,51 @@ public class ApiUserControllerTest {
     public void testSignUpWithBadUsername() throws Exception {
 
         String json = """
-                {"username": "    ",
+                {
+                    "username": "    ",
                     "email": "a.vlad.c@ya.ru",
                     "firstName": "Владислав",
                     "lastName": "Ананьев",
-                    "password": "12345"}
+                    "password": "12345"
+                }
                 """;
 
-        mockMvc.perform(post("https://localhost/api/signup")
+        mockMvc.perform(post("/api/signup").secure(true)
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
     }
 
-    /*@Test
-    public void testSignUpWithBadUsername2() throws Exception {
+    @Test
+    public void testSignUpWithSpaceInUsername() throws Exception {
 
         String json = """
-                {"username": "appli cation",
+                {
+                    "username": "appli cation",
                     "email": "a.vlad.c@ya.ru",
                     "firstName": "Владислав",
                     "lastName": "Ананьев",
-                    "password": "12345"}
+                    "password": "12345"
+                }
                 """;
 
-        mockMvc.perform(post("https://localhost/api/signup")
+        mockMvc.perform(post("/api/signup").secure(true)
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
     }
-*/
+
     @Test
     public void testSignUpWithoutEmail() throws Exception {
 
         String json = """
-                {"username": "application",
+                {
+                    "username": "application",
                     "firstName": "Владислав",
                     "lastName": "Ананьев",
-                    "password": "12345"}
+                    "password": "12345"
+                }
                 """;
 
-        mockMvc.perform(post("https://localhost/api/signup")
+        mockMvc.perform(post("/api/signup").secure(true)
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
     }
@@ -211,14 +176,16 @@ public class ApiUserControllerTest {
     public void testSignUpWithBadEmail() throws Exception {
 
         String json = """
-                {"username": "application",
+                {   
+                    "username": "application",
                     "email": "a.vlad.c@ya.",
                     "firstName": "Владислав",
                     "lastName": "Ананьев",
-                    "password": "12345"}
+                    "password": "12345"
+                }
                 """;
 
-        mockMvc.perform(post("https://localhost/api/signup")
+        mockMvc.perform(post("/api/signup").secure(true)
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
     }
@@ -227,14 +194,16 @@ public class ApiUserControllerTest {
     public void testSignUpWithBlankEmail() throws Exception {
 
         String json = """
-                {"username": "application",
+                {   
+                    "username": "application",
                     "email": "",
                     "firstName": "Владислав",
                     "lastName": "Ананьев",
-                    "password": "12345"}
+                    "password": "12345"
+                }
                 """;
 
-        mockMvc.perform(post("https://localhost/api/signup")
+        mockMvc.perform(post("/api/signup").secure(true)
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
     }
@@ -243,14 +212,16 @@ public class ApiUserControllerTest {
     public void testSignUpWithoutFirstName() throws Exception {
 
         String json = """
-                {"username": "application",
+                {   
+                    "username": "application",
                     "email": "a.vlad.c@ya.ru",
                     "firstName": "",
                     "lastName": "Ананьев",
-                    "password": "12345"}
+                    "password": "12345"
+                }
                 """;
 
-        mockMvc.perform(post("https://localhost/api/signup")
+        mockMvc.perform(post("/api/signup").secure(true)
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
     }
@@ -260,80 +231,100 @@ public class ApiUserControllerTest {
     public void testSignIn() throws Exception {
 
         doAnswer(i -> {
-            return null;
+            return "123";
         }).when(rabbitAdmin).declareQueue(anyObject());
 
-        createTestPerson("application");
+        doAnswer(i -> {
+            return null;
+        }).when(rabbitAdmin).declareBinding(anyObject());
 
-        String json = """
-                {"username": "application",
-                 "password": "12345"}
-                      """;
+        String json =
+                """
+                        {
+                            "username": "user1",
+                            "password": "user1"
+                        }
+                """;
 
-        mockMvc.perform(post("https://localhost/api/signin")
+        mockMvc.perform(post("/api/signin").secure(true)
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.jwtToken").isString());
+                .andExpect(jsonPath("$.jwtToken").isString())
+                .andExpect(jsonPath("$.queueName").isString());
     }
 
 
     @Test
     public void testSignInFail() throws Exception {
 
-        createTestPerson("application");
+        String json =
+                """
+                        {
+                            "username": "user1",
+                            "password": "12345"
+                        }
+                """;
 
-        String json = """
-                {"username": "application",
-                 "password": "12346"}
-                      """;
-
-        mockMvc.perform(post("https://localhost/api/signin")
+        mockMvc.perform(post("/api/signin").secure(true)
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    public void testCheckExistUsername() throws Exception {
+        String status = mockMvc.perform(get("/api/user/check-username?username=user1").secure(true))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-    private User createTestPerson(String name) {
-        User person = new User(name, "a.vlad.v@ya.ru", "Vladislav", "Ananyev",
-                passwordEncoder.encode("12345"));
-        person.grantAuthority(Role.ROLE_USER);
-        person.setRoles(new ArrayList<>(Collections.singleton(Role.ROLE_USER)));
-        person.setPhotos(Collections.singletonList("https://localhost/img/default.jpg"));
-        return repository.save(person);
+        assertTrue(Boolean.parseBoolean(status));
     }
 
-    private User createTestPersonWithoutSave(String name) {
-        User person = new User(name, "a.vlad.v@ya.ru", "Vladislav", "Ananyev",
-                passwordEncoder.encode("12345"));
-        person.grantAuthority(Role.ROLE_USER);
-        //return repository.save(person);
-        return person;
+    @Test
+    public void testCheckNotExistUsername() throws Exception {
+        String status = mockMvc.perform(get("/api/user/check-username?username=user100").secure(true))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        assertFalse(Boolean.parseBoolean(status));
     }
 
-    /*@Test
-    public void testGetFriends2() throws Exception {
-        User person = new User("application", "a.vlad.v@ya.ru", "Vladislav", "Ananyev", "12345");
-        Mockito.when(repository.save(Mockito.any())).thenReturn(person);
 
-    }*/
+    @Test
+    @WithUserDetails("user1")
+    public void testChangeUserData() throws Exception {
+        String json =
+                """
+                    {
+                        "firstName": "rename",
+                        "lastName": "user"
+                    }
+                """;
+        mockMvc.perform(put("/api/user").secure(true).contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().isOk());
 
+        User user = userRepository.findById("user1").get();
+        assertEquals("rename", user.getFirstName());
+        assertEquals("user", user.getLastName());
+    }
 
+    @Test
+    @WithUserDetails("user1")
+    public void testFailChangeUserData() throws Exception {
+        String json =
+                """
+                    {
+                        "firstName": "",
+                        "lastName": "user"
+                    }
+                """;
+        mockMvc.perform(put("/api/user").secure(true).contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().isBadRequest());
 
-/*    @MockBean
-    private JWTUtil jwtUtil;
+        User user = userRepository.findById("user1").get();
+        assertEquals("user1", user.getFirstName());
+        assertEquals("user1", user.getLastName());
+    }
 
-    @MockBean
-    private PasswordEncoder passwordEncoder;
-
-    @MockBean
-    private UserDetailsService userDetailsService;*/
-
-    /*@Test
-    public void getUserById() throws Exception {
-        mockMvc.perform(get("/api/test2"))
-                .andExpect(status().is2xxSuccessful());
-                //.andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }*/
 }

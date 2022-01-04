@@ -59,6 +59,13 @@ public interface UserRepository extends CrudRepository<User, String>, JpaReposit
     @Query(value = "SELECT * FROM USERS WHERE CHANGE_PASSWORD_CODE = :changePasswordCode", nativeQuery = true )
     Optional<User> findByChangePasswordCode(String changePasswordCode);
 
+    @Query(nativeQuery = true,
+            value =
+            """
+            SELECT * FROM USERS WHERE CHANGE_PASSWORD_CODE = :changePasswordCode AND USERNAME = :username
+            """)
+    Optional<User> findByChangePasswordCodeAndUsername(String changePasswordCode, String username);
+
     @Modifying
     @Transactional
     @Query(value = "UPDATE USERS SET CHANGE_PASSWORD_CODE = :mes WHERE USERNAME = :username", nativeQuery = true)
