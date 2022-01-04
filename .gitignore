@@ -27,7 +27,6 @@ build/
 *.iml
 *.ipr
 *.gz
-*.properties
 *.db
 
 out/
