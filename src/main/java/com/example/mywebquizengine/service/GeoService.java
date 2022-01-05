@@ -126,7 +126,7 @@ public class GeoService {
                         User initialFirstUser = meeting.getFirstUser();
                         User initialSecondUser = meeting.getSecondUser();
 
-                        rabbitTemplate.convertAndSend(initialFirstUser.getUsername(), "", meetingViewForFirstUser);
+                        rabbitTemplate.convertAndSend(initialFirstUser.getUsername(), "", jsonObjectForFirstUser);
 
                         meeting.setFirstUser(meeting.getSecondUser());
                         meeting.setSecondUser(initialFirstUser);

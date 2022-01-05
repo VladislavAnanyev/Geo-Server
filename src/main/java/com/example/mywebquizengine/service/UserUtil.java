@@ -10,8 +10,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.server.ResponseStatusException;
 
 public class UserUtil {
-    public static UserCommonView getUserForMeeting(String usernameForOutput) {
-        User user = MywebquizengineApplication.ctx.getBean(UserService.class).loadUserByUsername(usernameForOutput);
+    public static UserCommonView getUserForMeeting(String firstUsername, String secondUsername) {
+
+        String authName = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user;
+        if (authName.equals(firstUsername)) {
+            user = MywebquizengineApplication.ctx.getBean(UserService.class).loadUserByUsername(secondUsername);
+        } else if (authName.equals(secondUsername)) {
+            user = MywebquizengineApplication.ctx.getBean(UserService.class).loadUserByUsername(firstUsername);
+        } else  {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
 
         ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
 

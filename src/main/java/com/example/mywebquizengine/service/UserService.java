@@ -368,7 +368,7 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public void uploadPhoto(MultipartFile file, String username) {
+    public String uploadPhoto(MultipartFile file, String username) {
         if (!file.isEmpty()) {
             try {
                 String uuid = UUID.randomUUID().toString();
@@ -381,9 +381,7 @@ public class UserService implements UserDetailsService {
                 stream.write(bytes);
                 stream.close();
 
-
                 String photoUrl = "https://" + hostname + "/img/" + uuid + ".jpg";
-
 
                 User user = loadUserByUsername(username);
 
@@ -392,11 +390,12 @@ public class UserService implements UserDetailsService {
                 photo.setPosition(user.getPhotos().size());
                 user.addPhoto(photo);
 
+                return photoUrl;
 
             } catch (IOException e) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
             }
-        }
+        } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File is empty");
     }
 
     public void processCheckIn(User user, RegistrationType type) {
