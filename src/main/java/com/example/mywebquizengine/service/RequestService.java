@@ -10,10 +10,11 @@ import com.example.mywebquizengine.model.rabbit.RequestType;
 import com.example.mywebquizengine.repos.RequestRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.json.BasicJsonParser;
+import org.springframework.boot.json.JsonParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -43,9 +44,10 @@ public class RequestService {
     @Autowired
     private ObjectMapper objectMapper;
 
+    private final JsonParser jsonParser = new BasicJsonParser();
 
     @Transactional
-    public void sendRequest(Request request, Principal principal) throws JsonProcessingException, ParseException {
+    public void sendRequest(Request request, Principal principal) throws JsonProcessingException {
 
         request.setSender(userService.loadUserByUsername(principal.getName()));
         request.setTo(userService.loadUserByUsername(request.getTo().getUsername()));
@@ -83,7 +85,7 @@ public class RequestService {
         rabbitMessage.setPayload(requestView);
 
         rabbitTemplate.convertAndSend(request.getTo().getUsername(), "",
-                JSONValue.parseWithException(objectMapper.writeValueAsString(rabbitMessage)));
+                jsonParser.parseMap(objectMapper.writeValueAsString(rabbitMessage)));
     }
 
     public List<RequestView> getSentRequests(String username) {
@@ -126,9 +128,9 @@ public class RequestService {
         rabbitMessage.setPayload(requestView);
 
         rabbitTemplate.convertAndSend(request.getSender().getUsername(), "",
-                JSONValue.parseWithException(objectMapper.writeValueAsString(rabbitMessage)));
+                jsonParser.parseMap(objectMapper.writeValueAsString(rabbitMessage)));
         rabbitTemplate.convertAndSend(request.getTo().getUsername(), "",
-                JSONValue.parseWithException(objectMapper.writeValueAsString(rabbitMessage)));
+                jsonParser.parseMap(objectMapper.writeValueAsString(rabbitMessage)));
 
         return messageService.checkDialog(request.getSender().getUsername(), username);
     }

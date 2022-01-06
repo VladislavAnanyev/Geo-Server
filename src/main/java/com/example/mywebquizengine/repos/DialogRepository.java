@@ -26,7 +26,4 @@ public interface DialogRepository extends CrudRepository<Dialog, Long>, JpaRepos
 
     DialogView findAllDialogByDialogId(Long id);
 
-
-
-
 }

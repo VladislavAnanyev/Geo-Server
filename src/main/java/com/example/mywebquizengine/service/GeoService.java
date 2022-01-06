@@ -21,6 +21,8 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.json.BasicJsonParser;
+import org.springframework.boot.json.JsonParser;
 import org.springframework.data.domain.Example;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -52,6 +54,8 @@ public class GeoService {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    private final JsonParser jsonParser = new BasicJsonParser();
 
 
     public ArrayList<MeetingViewCustomQuery> getMyMeetings(String username, String date) {
@@ -118,7 +122,7 @@ public class GeoService {
                                 );
 
                         RabbitMessage<MeetingView> rabbitMessageForFirstUser = new RabbitMessage<>();
-                        rabbitMessageForFirstUser.setType(RequestType.REQUEST);
+                        rabbitMessageForFirstUser.setType(MeetingType.MEETING);
                         rabbitMessageForFirstUser.setPayload(meetingViewForFirstUser);
 
 
@@ -126,7 +130,7 @@ public class GeoService {
                         User initialSecondUser = meeting.getSecondUser();
 
                         rabbitTemplate.convertAndSend(initialFirstUser.getUsername(), "",
-                                JSONValue.parseWithException(objectMapper.writeValueAsString(rabbitMessageForFirstUser)));
+                                jsonParser.parseMap(objectMapper.writeValueAsString(rabbitMessageForFirstUser)));
 
                         meeting.setFirstUser(meeting.getSecondUser());
                         meeting.setSecondUser(initialFirstUser);
@@ -143,7 +147,7 @@ public class GeoService {
 
 
                         rabbitTemplate.convertAndSend(initialSecondUser.getUsername(), "",
-                                JSONValue.parseWithException(objectMapper.writeValueAsString(rabbitMessageForSecondUser)));
+                                jsonParser.parseMap(objectMapper.writeValueAsString(rabbitMessageForSecondUser)));
 
                     }
                 }

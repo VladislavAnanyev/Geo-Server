@@ -29,7 +29,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.boot.json.*;
 
 import javax.transaction.Transactional;
 import java.util.*;
@@ -51,6 +53,7 @@ public class MessageService {
     private String hostname;
     @Autowired
     private ObjectMapper objectMapper;
+    private final JsonParser jsonParser = new BasicJsonParser();
 
     public void saveMessage(Message message) {
         messageRepository.save(message);
@@ -178,7 +181,7 @@ public class MessageService {
 
                 for (User user : message.getDialog().getUsers()) {
                     rabbitTemplate.convertAndSend(user.getUsername(), "",
-                            JSONValue.parseWithException(objectMapper.writeValueAsString(rabbitMessage)));
+                            jsonParser.parseMap(objectMapper.writeValueAsString(rabbitMessage)));
                 }
 
             } else {
@@ -190,11 +193,7 @@ public class MessageService {
     }
 
     @Transactional
-    public DialogView getMessages(Long dialogId,
-                                  Integer page,
-                                  Integer pageSize,
-                                  String sortBy,
-                                  String username) {
+    public DialogView getMessages(Long dialogId, Integer page, Integer pageSize, String sortBy, String username) {
         Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
         Optional<Dialog> optionalDialog = dialogRepository.findById(dialogId);
 
@@ -205,6 +204,8 @@ public class MessageService {
         }
 
         DialogView dialog = dialogRepository.findAllDialogByDialogId(dialogId);
+
+
 
         // If user contains in dialog
         if (dialog.getUsers().stream().anyMatch(o -> o.getUsername()
@@ -231,7 +232,7 @@ public class MessageService {
 
                 for (User user : message.getDialog().getUsers()) {
                     rabbitTemplate.convertAndSend(user.getUsername(), "",
-                            JSONValue.parseWithException(objectMapper.writeValueAsString(rabbitMessage)));
+                            jsonParser.parseMap(objectMapper.writeValueAsString(rabbitMessage)));
                 }
             } else {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
@@ -261,10 +262,9 @@ public class MessageService {
             rabbitMessage.setType(MessageType.MESSAGE);
             rabbitMessage.setPayload(messageDto);
 
-
             for (User user : dialog.getUsers()) {
                 rabbitTemplate.convertAndSend(user.getUsername(), "",
-                        JSONValue.parseWithException(objectMapper.writeValueAsString(rabbitMessage)));
+                        jsonParser.parseMap(objectMapper.writeValueAsString(rabbitMessage)));
             }
         }
 
@@ -314,7 +314,7 @@ public class MessageService {
             rabbitMessage.setPayload(messageDto);
             for (User user : dialog.getUsers()) {
                 rabbitTemplate.convertAndSend(user.getUsername(), "",
-                        JSONValue.parseWithException(objectMapper.writeValueAsString(rabbitMessage)));
+                        jsonParser.parseMap(objectMapper.writeValueAsString(rabbitMessage)));
             }
 
             return dialog.getDialogId();
@@ -348,7 +348,7 @@ public class MessageService {
 
         for (User user : dialog.getUsers()) {
             rabbitTemplate.convertAndSend(user.getUsername(), "",
-                    JSONValue.parseWithException(objectMapper.writeValueAsString(rabbitMessageWithTTL)));
+                    jsonParser.parseMap(objectMapper.writeValueAsString(rabbitMessageWithTTL)));
         }
     }
 }

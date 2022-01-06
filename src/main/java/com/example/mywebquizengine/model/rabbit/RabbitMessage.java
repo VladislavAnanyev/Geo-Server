@@ -3,8 +3,16 @@ package com.example.mywebquizengine.model.rabbit;
 public class RabbitMessage<T> {
 
     private Type type;
-
     private T payload;
+
+
+    public T getPayload() {
+        return payload;
+    }
+
+    public void setPayload(T payload) {
+        this.payload = payload;
+    }
 
     public Type getType() {
         return type;
@@ -14,11 +22,5 @@ public class RabbitMessage<T> {
         this.type = type;
     }
 
-    public T getPayload() {
-        return payload;
-    }
 
-    public void setPayload(T payload) {
-        this.payload = payload;
-    }
 }
