@@ -130,7 +130,7 @@ public class GeoService {
                         User initialSecondUser = meeting.getSecondUser();
 
                         rabbitTemplate.convertAndSend(initialFirstUser.getUsername(), "",
-                                jsonParser.parseMap(objectMapper.writeValueAsString(rabbitMessageForFirstUser)));
+                                JSONValue.parse(objectMapper.writeValueAsString(rabbitMessageForFirstUser)));
 
                         meeting.setFirstUser(meeting.getSecondUser());
                         meeting.setSecondUser(initialFirstUser);
@@ -147,7 +147,7 @@ public class GeoService {
 
 
                         rabbitTemplate.convertAndSend(initialSecondUser.getUsername(), "",
-                                jsonParser.parseMap(objectMapper.writeValueAsString(rabbitMessageForSecondUser)));
+                                JSONValue.parse(objectMapper.writeValueAsString(rabbitMessageForSecondUser)));
 
                     }
                 }

@@ -53,7 +53,6 @@ public class MessageService {
     private String hostname;
     @Autowired
     private ObjectMapper objectMapper;
-    private final JsonParser jsonParser = new BasicJsonParser();
 
     public void saveMessage(Message message) {
         messageRepository.save(message);
@@ -181,7 +180,7 @@ public class MessageService {
 
                 for (User user : message.getDialog().getUsers()) {
                     rabbitTemplate.convertAndSend(user.getUsername(), "",
-                            jsonParser.parseMap(objectMapper.writeValueAsString(rabbitMessage)));
+                            JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
                 }
 
             } else {
@@ -232,7 +231,7 @@ public class MessageService {
 
                 for (User user : message.getDialog().getUsers()) {
                     rabbitTemplate.convertAndSend(user.getUsername(), "",
-                            jsonParser.parseMap(objectMapper.writeValueAsString(rabbitMessage)));
+                            JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
                 }
             } else {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
@@ -264,7 +263,7 @@ public class MessageService {
 
             for (User user : dialog.getUsers()) {
                 rabbitTemplate.convertAndSend(user.getUsername(), "",
-                        jsonParser.parseMap(objectMapper.writeValueAsString(rabbitMessage)));
+                        JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
             }
         }
 
@@ -314,7 +313,7 @@ public class MessageService {
             rabbitMessage.setPayload(messageDto);
             for (User user : dialog.getUsers()) {
                 rabbitTemplate.convertAndSend(user.getUsername(), "",
-                        jsonParser.parseMap(objectMapper.writeValueAsString(rabbitMessage)));
+                        JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
             }
 
             return dialog.getDialogId();
@@ -348,7 +347,7 @@ public class MessageService {
 
         for (User user : dialog.getUsers()) {
             rabbitTemplate.convertAndSend(user.getUsername(), "",
-                    jsonParser.parseMap(objectMapper.writeValueAsString(rabbitMessageWithTTL)));
+                    JSONValue.parse(objectMapper.writeValueAsString(rabbitMessageWithTTL)));
         }
     }
 }

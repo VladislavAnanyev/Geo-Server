@@ -10,6 +10,7 @@ import com.example.mywebquizengine.model.rabbit.RequestType;
 import com.example.mywebquizengine.repos.RequestRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,7 +86,7 @@ public class RequestService {
         rabbitMessage.setPayload(requestView);
 
         rabbitTemplate.convertAndSend(request.getTo().getUsername(), "",
-                jsonParser.parseMap(objectMapper.writeValueAsString(rabbitMessage)));
+                JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
     }
 
     public List<RequestView> getSentRequests(String username) {
@@ -128,9 +129,9 @@ public class RequestService {
         rabbitMessage.setPayload(requestView);
 
         rabbitTemplate.convertAndSend(request.getSender().getUsername(), "",
-                jsonParser.parseMap(objectMapper.writeValueAsString(rabbitMessage)));
+                JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
         rabbitTemplate.convertAndSend(request.getTo().getUsername(), "",
-                jsonParser.parseMap(objectMapper.writeValueAsString(rabbitMessage)));
+                JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
 
         return messageService.checkDialog(request.getSender().getUsername(), username);
     }
