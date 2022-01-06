@@ -75,7 +75,7 @@ public class ApiChatControllerTest {
     private RabbitController rabbitController;
 
     @Test
-    public void sendMessageTest() throws JsonProcessingException, ParseException {
+    public void sendMessageTest() throws JsonProcessingException {
 
         String json = """
                 { 

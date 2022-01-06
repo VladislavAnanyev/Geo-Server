@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.controller.web;
 
 import com.example.mywebquizengine.model.User;
-import com.example.mywebquizengine.model.exception.EmptyFileException;
+import com.example.mywebquizengine.model.exception.LogicException;
 import com.example.mywebquizengine.service.PhotoService;
 import com.example.mywebquizengine.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ public class PhotoController {
 
     @PostMapping(path = "/upload")
     public String handleFileUpload(Model model, @RequestParam("file") MultipartFile file,
-                                   @AuthenticationPrincipal Principal principal) throws EmptyFileException, IOException {
+                                   @AuthenticationPrincipal Principal principal) throws LogicException, IOException {
 
         photoService.uploadPhoto(file, principal.getName());
 

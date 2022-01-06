@@ -16,6 +16,8 @@ import com.example.mywebquizengine.repos.DialogRepository;
 import com.example.mywebquizengine.repos.MessageRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -161,7 +163,7 @@ public class MessageService {
 
 
     @Transactional
-    public void deleteMessage(Long id, String username) {
+    public void deleteMessage(Long id, String username) throws JsonProcessingException, ParseException {
         Optional<Message> optionalMessage = messageRepository.findById(id);
         if (optionalMessage.isPresent()) {
             Message message = optionalMessage.get();
@@ -175,7 +177,8 @@ public class MessageService {
                 rabbitMessage.setPayload(messageDto);
 
                 for (User user : message.getDialog().getUsers()) {
-                    rabbitTemplate.convertAndSend(user.getUsername(), "", rabbitMessage);
+                    rabbitTemplate.convertAndSend(user.getUsername(), "",
+                            JSONValue.parseWithException(objectMapper.writeValueAsString(rabbitMessage)));
                 }
 
             } else {
@@ -212,7 +215,7 @@ public class MessageService {
     }
 
     @Transactional
-    public void editMessage(Message newMessage, String username) {
+    public void editMessage(Message newMessage, String username) throws JsonProcessingException, ParseException {
         Optional<Message> optionalMessage = messageRepository.findById(newMessage.getId());
         if (optionalMessage.isPresent()) {
             Message message = optionalMessage.get();
@@ -227,7 +230,8 @@ public class MessageService {
                 rabbitMessage.setPayload(messageDto);
 
                 for (User user : message.getDialog().getUsers()) {
-                    rabbitTemplate.convertAndSend(user.getUsername(), "", rabbitMessage);
+                    rabbitTemplate.convertAndSend(user.getUsername(), "",
+                            JSONValue.parseWithException(objectMapper.writeValueAsString(rabbitMessage)));
                 }
             } else {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
@@ -236,7 +240,7 @@ public class MessageService {
     }
 
     @Transactional
-    public void sendMessage(Message message) {
+    public void sendMessage(Message message) throws JsonProcessingException, ParseException {
 
         Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
         if (dialog.getUsers().stream().anyMatch(user -> user.getUsername()
@@ -257,15 +261,17 @@ public class MessageService {
             rabbitMessage.setType(MessageType.MESSAGE);
             rabbitMessage.setPayload(messageDto);
 
+
             for (User user : dialog.getUsers()) {
-                rabbitTemplate.convertAndSend(user.getUsername(), "", rabbitMessage);
+                rabbitTemplate.convertAndSend(user.getUsername(), "",
+                        JSONValue.parseWithException(objectMapper.writeValueAsString(rabbitMessage)));
             }
         }
 
     }
 
 
-    public Long createGroup(Dialog newDialog, String username) {
+    public Long createGroup(Dialog newDialog, String username) throws JsonProcessingException, ParseException {
 
         User authUser = new User();
 
@@ -307,7 +313,8 @@ public class MessageService {
             rabbitMessage.setType(MessageType.MESSAGE);
             rabbitMessage.setPayload(messageDto);
             for (User user : dialog.getUsers()) {
-                rabbitTemplate.convertAndSend(user.getUsername(), "", rabbitMessage);
+                rabbitTemplate.convertAndSend(user.getUsername(), "",
+                        JSONValue.parseWithException(objectMapper.writeValueAsString(rabbitMessage)));
             }
 
             return dialog.getDialogId();
@@ -324,7 +331,7 @@ public class MessageService {
 
 
     // протестить
-    public void typingMessage(Typing typing) throws JsonProcessingException {
+    public void typingMessage(Typing typing) throws JsonProcessingException, ParseException {
 
         Dialog dialog = dialogRepository.findById(typing.getDialogId()).get();
 
@@ -340,7 +347,8 @@ public class MessageService {
                 new org.springframework.amqp.core.Message(objectMapper.writeValueAsString(rabbitMessage).getBytes(), props);
 
         for (User user : dialog.getUsers()) {
-            rabbitTemplate.convertAndSend(user.getUsername(), "", rabbitMessageWithTTL);
+            rabbitTemplate.convertAndSend(user.getUsername(), "",
+                    JSONValue.parseWithException(objectMapper.writeValueAsString(rabbitMessageWithTTL)));
         }
     }
 }

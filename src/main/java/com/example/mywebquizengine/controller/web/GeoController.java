@@ -6,6 +6,7 @@ import com.example.mywebquizengine.model.projection.UserCommonView;
 import com.example.mywebquizengine.service.GeoService;
 import com.example.mywebquizengine.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.error.DefaultErrorAttributes;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

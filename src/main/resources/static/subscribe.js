@@ -70,8 +70,10 @@ function onErrorNotif(error) {
 
 
 function onMessageReceived(payload) {
+
     payload.ack()
     let message = JSON.parse(payload.body);
+    console.log(message)
     let toastLiveExample
 
     let toast

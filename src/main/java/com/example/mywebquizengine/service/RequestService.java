@@ -8,6 +8,10 @@ import com.example.mywebquizengine.model.projection.RequestView;
 import com.example.mywebquizengine.model.rabbit.RabbitMessage;
 import com.example.mywebquizengine.model.rabbit.RequestType;
 import com.example.mywebquizengine.repos.RequestRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,9 +40,12 @@ public class RequestService {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
 
     @Transactional
-    public void sendRequest(Request request, Principal principal) {
+    public void sendRequest(Request request, Principal principal) throws JsonProcessingException, ParseException {
 
         request.setSender(userService.loadUserByUsername(principal.getName()));
         request.setTo(userService.loadUserByUsername(request.getTo().getUsername()));
@@ -75,7 +82,8 @@ public class RequestService {
         rabbitMessage.setType(RequestType.REQUEST);
         rabbitMessage.setPayload(requestView);
 
-        rabbitTemplate.convertAndSend(request.getTo().getUsername(), "", rabbitMessage);
+        rabbitTemplate.convertAndSend(request.getTo().getUsername(), "",
+                JSONValue.parseWithException(objectMapper.writeValueAsString(rabbitMessage)));
     }
 
     public List<RequestView> getSentRequests(String username) {
@@ -102,7 +110,7 @@ public class RequestService {
         );
     }
 
-    public Long acceptRequest(Long requestId, String username) {
+    public Long acceptRequest(Long requestId, String username) throws JsonProcessingException, ParseException {
         User authUser = userService.loadUserByUsername(username);
 
         Request request = requestRepository.findById(requestId).get();
@@ -117,8 +125,10 @@ public class RequestService {
         rabbitMessage.setType(RequestType.ACCEPT_REQUEST);
         rabbitMessage.setPayload(requestView);
 
-        rabbitTemplate.convertAndSend(request.getSender().getUsername(), "", rabbitMessage);
-        rabbitTemplate.convertAndSend(request.getTo().getUsername(), "", rabbitMessage);
+        rabbitTemplate.convertAndSend(request.getSender().getUsername(), "",
+                JSONValue.parseWithException(objectMapper.writeValueAsString(rabbitMessage)));
+        rabbitTemplate.convertAndSend(request.getTo().getUsername(), "",
+                JSONValue.parseWithException(objectMapper.writeValueAsString(rabbitMessage)));
 
         return messageService.checkDialog(request.getSender().getUsername(), username);
     }

@@ -24,5 +24,7 @@ public interface PhotoRepository extends CrudRepository<Photo, Long> {
     @Query(nativeQuery = true, value = "SELECT USER_USERNAME FROM USERS_PHOTOS WHERE ID = :photoId")
     String getPhotoLoaderUsername(Long photoId);
 
+    @Query(nativeQuery = true, value = "SELECT COUNT(*) FROM USERS_PHOTOS WHERE USER_USERNAME = :username")
+    Integer getPhotoCountByUsername(String username);
 
 }
