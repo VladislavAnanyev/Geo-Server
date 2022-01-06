@@ -20,4 +20,9 @@ public interface PhotoRepository extends CrudRepository<Photo, Long> {
     @Transactional
     @Query(nativeQuery = true, value = "UPDATE USERS_PHOTOS SET POSITION = :i WHERE ID=:id")
     void updatePosition(Long id, int i);
+
+    @Query(nativeQuery = true, value = "SELECT USER_USERNAME FROM USERS_PHOTOS WHERE ID = :photoId")
+    String getPhotoLoaderUsername(Long photoId);
+
+
 }

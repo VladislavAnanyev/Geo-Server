@@ -78,17 +78,17 @@ function onMessageReceived(payload) {
     // username = frame.headers['type'];
 
 
-    if (message.type === "MESSAGE" && !location.pathname.includes(message.dialogId)) {
+    if (message.type === "MESSAGE" && !location.pathname.includes(message.payload.dialogId)) {
 
-        if (username !== message.sender.username) {
+        if (username !== message.payload.sender.username) {
 
             toastLiveExample = document.getElementById('liveToastMessage')
 
             let body = document.getElementById("toast-text-msg")
             let head = document.getElementById("toast-head-msg")
 
-            body.textContent = message.content
-            head.textContent = message.sender.username
+            body.textContent = message.payload.content
+            head.textContent = message.payload.sender.username
 
             toast = new bootstrap.Toast(toastLiveExample, null)
             toast.show()
@@ -113,7 +113,7 @@ function onMessageReceived(payload) {
         toast.show()
     }
 
-    if (message.type === "MESSAGE" && !location.pathname.includes(message.dialogId)
+    if (message.type === "MESSAGE" && !location.pathname.includes(message.payload.dialogId)
         && location.pathname.includes("/chat")) {
 
 
@@ -136,33 +136,33 @@ function onMessageReceived(payload) {
 
             let div2 = document.createElement("div")
             div2.setAttribute('class', "chat_list")
-            div2.setAttribute('id', message.dialogId)
-            //div2.setAttribute('onclick', "activeChat(" + message.dialogId + ")")
+            div2.setAttribute('id', message.payload.dialogId)
+            //div2.setAttribute('onclick', "activeChat(" + message.payload.dialogId + ")")
 
 
-            if (username !== message.sender.username) {
+            if (username !== message.payload.sender.username) {
 
-                div2.innerHTML = "<a id="+ message.dialogId + "href\" href=\"/chat/" + message.dialogId + "\">" +
+                div2.innerHTML = "<a id="+ message.payload.dialogId + "href\" href=\"/chat/" + message.payload.dialogId + "\">" +
                     "                                    <div class=\"chat_people\">\n" +
-                    "                                        <div class=\"chat_img\"> <img class='rounded-circle' src=" + message.sender.avatar + " alt=\"sunil\"> </div>\n" +
+                    "                                        <div class=\"chat_img\"> <img class='rounded-circle' src=" + message.payload.sender.avatar + " alt=\"sunil\"> </div>\n" +
                     "                                        <div class=\"chat_ib\">\n" +
-                    "                                            <h5 class=\"dialogsuser\">" + message.sender.username + "<span class=\"chat_date\"></span></h5>\n" +
-                    "                                            <p id=\"lastMsg" + message.dialogId + "\">" + message.content + "</p>\n" +
+                    "                                            <h5 class=\"dialogsuser\">" + message.payload.sender.username + "<span class=\"chat_date\"></span></h5>\n" +
+                    "                                            <p id=\"lastMsg" + message.payload.dialogId + "\">" + message.payload.content + "</p>\n" +
                     "                                        </div>\n" +
                     "                                    </div></a>"
 
 
 
-                if (dialogsNameArr.indexOf(message.sender.username) === -1) {
+                if (dialogsNameArr.indexOf(message.payload.sender.username) === -1) {
                     dialog.prepend(div2)
                 }
 
 
-                //if (dialogsNameArr.indexOf(message.sender.username) === 0) {
-                let existDialog = document.getElementById(message.dialogId)
+                //if (dialogsNameArr.indexOf(message.payload.sender.username) === 0) {
+                let existDialog = document.getElementById(message.payload.dialogId)
                 existDialog.remove()
                 dialog.prepend(existDialog)
-                document.getElementById("lastMsg" + message.dialogId).textContent = message.content
+                document.getElementById("lastMsg" + message.payload.dialogId).textContent = message.payload.content
                 //}
 
 
@@ -179,20 +179,20 @@ function onMessageReceived(payload) {
     }
 
 
-    if (message.type === "MESSAGE" && location.pathname.includes(message.dialogId)) {
+    if (message.type === "MESSAGE" && location.pathname.includes(message.payload.dialogId)) {
         console.log("Успех")
         console.log(message)
 
-        let uniqueCodeFromMsg = message.uniqueCode
+        let uniqueCodeFromMsg = message.payload.uniqueCode
 
         let msgWithUniqueCode = document.getElementById(uniqueCodeFromMsg)
 
         if (msgWithUniqueCode !== null) {
-          msgWithUniqueCode.id = message.id
+          msgWithUniqueCode.id = message.payload.id
         }
 
-        if (username !== message.sender.username ||
-            (username === message.sender.username && msgWithUniqueCode === null)) {
+        if (username !== message.payload.sender.username ||
+            (username === message.payload.sender.username && msgWithUniqueCode === null)) {
             let dialog = document.getElementById("dialogs")
 
             //console.log(freme.headers['type'])
@@ -208,34 +208,34 @@ function onMessageReceived(payload) {
 
             let div2 = document.createElement("div")
             div2.setAttribute('class', "chat_list")
-            div2.setAttribute('id', message.dialogId)
-            //div2.setAttribute('onclick', "activeChat(" + message.sender.username + ")")
+            div2.setAttribute('id', message.payload.dialogId)
+            //div2.setAttribute('onclick', "activeChat(" + message.payload.sender.username + ")")
             //div2.setAttribute('data-barba-prevent', "")
 
-            if (username !== message.sender.username) {
+            if (username !== message.payload.sender.username) {
 
-                div2.innerHTML="<a data-barba-prevent id="+ message.dialogId + "href\" href=\"/chat/" + message.dialogId + "\">" +
+                div2.innerHTML="<a data-barba-prevent id="+ message.payload.dialogId + "href\" href=\"/chat/" + message.payload.dialogId + "\">" +
                     "                                    <div class=\"chat_people\">\n" +
-                    "                                        <div class=\"chat_img\"> <img class='rounded-circle' src=" + message.sender.avatar + " alt=\"sunil\"> </div>\n" +
+                    "                                        <div class=\"chat_img\"> <img class='rounded-circle' src=" + message.payload.sender.avatar + " alt=\"sunil\"> </div>\n" +
                     "                                        <div class=\"chat_ib\">\n" +
-                    "                                            <h5 class=\"dialogsuser\">" + message.sender.username + "<span class=\"chat_date\"></span></h5>\n" +
-                    "                                            <p id=\"lastMsg" + message.dialogId + "\">" + message.content + "</p>\n" +
+                    "                                            <h5 class=\"dialogsuser\">" + message.payload.sender.username + "<span class=\"chat_date\"></span></h5>\n" +
+                    "                                            <p id=\"lastMsg" + message.payload.dialogId + "\">" + message.payload.content + "</p>\n" +
                     "                                        </div>\n" +
                     "                                    </div></a>"
 
 
-                if (dialogsNameArr.indexOf(message.sender.username) === -1) {
+                if (dialogsNameArr.indexOf(message.payload.sender.username) === -1) {
                     dialog.prepend(div2)
                 }
 
 
-                //if (dialogsNameArr.indexOf(message.sender.username) === 0) {
-                //document.getElementById("lastMsg" + message.dialogId).textContent = message.content
+                //if (dialogsNameArr.indexOf(message.payload.sender.username) === 0) {
+                //document.getElementById("lastMsg" + message.payload.dialogId).textContent = message.payload.content
                 //}
-                let existDialog = document.getElementById(message.dialogId)
+                let existDialog = document.getElementById(message.payload.dialogId)
                 existDialog.remove()
                 dialog.prepend(existDialog)
-                document.getElementById("lastMsg" + message.dialogId).textContent = message.content
+                document.getElementById("lastMsg" + message.payload.dialogId).textContent = message.payload.content
 
 
             }
@@ -243,27 +243,27 @@ function onMessageReceived(payload) {
 
             let div = document.createElement("div");
 
-            if (username !== message.sender.username) {
+            if (username !== message.payload.sender.username) {
                 div.setAttribute('class', "incoming_msg")
-                let date = new Date(message.timestamp)
+                let date = new Date(message.payload.timestamp)
                 div.innerHTML =
-                    "<div class=\"incoming_msg_img\"> <img class='rounded-circle' src=" + message.sender.avatar + " alt=\"sunil\"> </div>" +
+                    "<div class=\"incoming_msg_img\"> <img class='rounded-circle' src=" + message.payload.sender.avatar + " alt=\"sunil\"> </div>" +
                     "                        <div class=\"received_msg\">\n" +
                     "                        <div class=\"received_withd_msg\">\n" +
-                    "                            <p>" + message.content + "</p>\n" +
-                    "                            <span id=\"" + message.id + "\" class=\"time_date\">" + date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div> </div>\n"
+                    "                            <p>" + message.payload.content + "</p>\n" +
+                    "                            <span id=\"" + message.payload.id + "\" class=\"time_date\">" + date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div> </div>\n"
 
             } else {
                 div.setAttribute('class', "outgoing_msg")
-                let date = new Date(message.timestamp)
+                let date = new Date(message.payload.timestamp)
                 div.innerHTML = "<div class=\"sent_msg\">\n" +
-                    "                                    <p>" + message.content + "</p>\n" +
-                    "                                    <span id=\"" + message.id + "\" class=\"time_date\">" + date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div>\n" +
+                    "                                    <p>" + message.payload.content + "</p>\n" +
+                    "                                    <span id=\"" + message.payload.id + "\" class=\"time_date\">" + date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div>\n" +
                     "                            "
 
 
-                //if (dialogsNameArr.indexOf(message.sender.username) === 0) {
-                document.getElementById("lastMsg" + message.dialogId).textContent = message.content
+                //if (dialogsNameArr.indexOf(message.payload.sender.username) === 0) {
+                document.getElementById("lastMsg" + message.payload.dialogId).textContent = message.payload.content
                 //}
             }
 
@@ -331,7 +331,7 @@ function sendMessage(dialog) {
         let existDialog = document.getElementById(dialog)
         existDialog.remove()
         dialogList.prepend(existDialog)
-        //document.getElementById("lastMsg" + dialog).textContent = message.content
+        //document.getElementById("lastMsg" + dialog).textContent = message.payload.content
 
 
         messageInput.value = ''

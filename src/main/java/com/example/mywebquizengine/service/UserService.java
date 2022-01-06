@@ -1,11 +1,14 @@
 package com.example.mywebquizengine.service;
 
-import com.example.mywebquizengine.model.*;
+import com.example.mywebquizengine.model.Role;
+import com.example.mywebquizengine.model.User;
 import com.example.mywebquizengine.model.projection.ProfileView;
 import com.example.mywebquizengine.model.projection.UserCommonView;
 import com.example.mywebquizengine.model.projection.UserView;
-import com.example.mywebquizengine.model.userinfo.*;
-import com.example.mywebquizengine.repos.PhotoRepository;
+import com.example.mywebquizengine.model.userinfo.AuthRequest;
+import com.example.mywebquizengine.model.userinfo.AuthResponse;
+import com.example.mywebquizengine.model.userinfo.GoogleToken;
+import com.example.mywebquizengine.model.userinfo.RegistrationType;
 import com.example.mywebquizengine.repos.UserRepository;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
@@ -31,13 +34,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.*;
@@ -66,8 +65,6 @@ public class UserService implements UserDetailsService {
     @Value("${hostname}")
     private String hostname;
 
-    @Autowired
-    private PhotoRepository photoRepository;
 
     @Override
     public User loadUserByUsername(String username) throws ResponseStatusException {
@@ -118,7 +115,7 @@ public class UserService implements UserDetailsService {
                     """
                             Для смены пароля в """ + hostname +
                             """
-                            введите в приложении код: """ + code +
+                                    введите в приложении код: """ + code +
                             """
                                     . 
                                     Если вы не меняли пароль на данном ресурсе, то проигнорируйте сообщение
@@ -367,36 +364,6 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    @Transactional
-    public String uploadPhoto(MultipartFile file, String username) {
-        if (!file.isEmpty()) {
-            try {
-                String uuid = UUID.randomUUID().toString();
-                uuid = uuid.substring(0, 8);
-                byte[] bytes = file.getBytes();
-
-                BufferedOutputStream stream =
-                        new BufferedOutputStream(new FileOutputStream(new File("img/" +
-                                uuid + ".jpg")));
-                stream.write(bytes);
-                stream.close();
-
-                String photoUrl = "https://" + hostname + "/img/" + uuid + ".jpg";
-
-                User user = loadUserByUsername(username);
-
-                Photo photo = new Photo();
-                photo.setUrl(photoUrl);
-                photo.setPosition(user.getPhotos().size());
-                user.addPhoto(photo);
-
-                return photoUrl;
-
-            } catch (IOException e) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-            }
-        } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File is empty");
-    }
 
     public void processCheckIn(User user, RegistrationType type) {
         if (user.getUsername().contains(" ")) {
@@ -436,20 +403,6 @@ public class UserService implements UserDetailsService {
         return profileView;
     }
 
-    @Transactional
-    public void swapPhoto(Photo photo, String name) {
-
-        Photo savedPhoto = photoRepository.findById(photo.getId()).get();
-        List<Photo> photos = photoRepository.findByUser_Username(name);
-
-        photos.remove(((int) savedPhoto.getPosition()));
-        photos.add(photo.getPosition(), savedPhoto);
-
-        for (int i = 0; i < photos.size(); i++) {
-            photos.get(i).setPosition(i);
-        }
-
-    }
 
     public void getUserViaChangePasswordCodePhoneApi(String username, String code) {
 

@@ -1,22 +1,19 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.model.userinfo.Photo;
+import com.example.mywebquizengine.model.User;
 import com.example.mywebquizengine.model.projection.ProfileView;
 import com.example.mywebquizengine.model.projection.UserCommonView;
 import com.example.mywebquizengine.model.projection.UserView;
-import com.example.mywebquizengine.model.userinfo.RegistrationType;
-import com.example.mywebquizengine.model.User;
 import com.example.mywebquizengine.model.userinfo.AuthRequest;
 import com.example.mywebquizengine.model.userinfo.AuthResponse;
 import com.example.mywebquizengine.model.userinfo.GoogleToken;
+import com.example.mywebquizengine.model.userinfo.RegistrationType;
 import com.example.mywebquizengine.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
@@ -28,7 +25,6 @@ public class ApiUserController {
 
     @Autowired
     private UserService userService;
-
 
     @GetMapping(path = "/friends")
     public List<UserCommonView> getFriends(@AuthenticationPrincipal Principal principal) {
@@ -57,8 +53,8 @@ public class ApiUserController {
     }
 
     @GetMapping(path = "/authuser")
-    public UserView getApiAuthUser(@AuthenticationPrincipal Principal principal)  {
-            return userService.getAuthUser(principal.getName());
+    public UserView getApiAuthUser(@AuthenticationPrincipal Principal principal) {
+        return userService.getAuthUser(principal.getName());
     }
 
     @GetMapping(path = "/user/{username}/profile")
@@ -66,12 +62,8 @@ public class ApiUserController {
         return userService.getUserProfileById(username);
     }
 
-    @PostMapping(path = "/user/upload")
-    public String uploadPhoto(@RequestParam("file") MultipartFile file, @AuthenticationPrincipal Principal principal) {
-        return userService.uploadPhoto(file, principal.getName());
-    }
 
-    @PutMapping(path = "/user", consumes={"application/json"})
+    @PutMapping(path = "/user", consumes = {"application/json"})
     public void changeUser(@RequestBody User user,
                            @AuthenticationPrincipal Principal principal) {
         userService.updateUser(user.getLastName(), user.getFirstName(), principal.getName());
@@ -97,8 +89,5 @@ public class ApiUserController {
         return userService.checkForExistUser(username);
     }
 
-    @PostMapping(path = "/user/swap-photo")
-    public void swapPhoto(@AuthenticationPrincipal Principal principal, @RequestBody Photo photo) {
-        userService.swapPhoto(photo, principal.getName());
-    }
+
 }

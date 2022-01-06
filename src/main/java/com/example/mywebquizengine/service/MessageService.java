@@ -1,28 +1,29 @@
 package com.example.mywebquizengine.service;
 
 
+import com.example.mywebquizengine.model.User;
 import com.example.mywebquizengine.model.chat.Dialog;
 import com.example.mywebquizengine.model.chat.Message;
 import com.example.mywebquizengine.model.chat.MessageStatus;
-import com.example.mywebquizengine.model.projection.*;
-import com.example.mywebquizengine.model.User;
+import com.example.mywebquizengine.model.projection.DialogView;
+import com.example.mywebquizengine.model.projection.LastDialog;
+import com.example.mywebquizengine.model.projection.MessageView;
+import com.example.mywebquizengine.model.projection.TypingView;
+import com.example.mywebquizengine.model.rabbit.MessageType;
+import com.example.mywebquizengine.model.rabbit.RabbitMessage;
+import com.example.mywebquizengine.model.rabbit.Typing;
 import com.example.mywebquizengine.repos.DialogRepository;
 import com.example.mywebquizengine.repos.MessageRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-import org.json.simple.parser.ParseException;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.projection.ProjectionFactory;
-import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
@@ -35,20 +36,19 @@ import java.util.*;
 public class MessageService {
 
     @Autowired
-    private MessageRepository messageRepository;
-    @Autowired
     SessionRegistry sessionRegistry;
+    @Autowired
+    private MessageRepository messageRepository;
     @Autowired
     private DialogRepository dialogRepository;
     @Autowired
     private UserService userService;
     @Autowired
     private RabbitTemplate rabbitTemplate;
-    @Autowired
-    private ObjectMapper objectMapper;
     @Value("${hostname}")
     private String hostname;
-
+    @Autowired
+    private ObjectMapper objectMapper;
 
     public void saveMessage(Message message) {
         messageRepository.save(message);
@@ -161,7 +161,7 @@ public class MessageService {
 
 
     @Transactional
-    public void deleteMessage(Long id, String username) throws JsonProcessingException, ParseException {
+    public void deleteMessage(Long id, String username) {
         Optional<Message> optionalMessage = messageRepository.findById(id);
         if (optionalMessage.isPresent()) {
             Message message = optionalMessage.get();
@@ -170,17 +170,13 @@ public class MessageService {
 
                 MessageView messageDto = ProjectionUtil.parseToProjection(message, MessageView.class);
 
-                JSONObject jsonObject = (JSONObject) JSONValue
-                        .parseWithException(objectMapper.writeValueAsString(messageDto));
-                jsonObject.put("type", "DELETE-MESSAGE");
+                RabbitMessage<MessageView> rabbitMessage = new RabbitMessage<>();
+                rabbitMessage.setType(MessageType.DELETE_MESSAGE);
+                rabbitMessage.setPayload(messageDto);
 
                 for (User user : message.getDialog().getUsers()) {
-
-                    rabbitTemplate.convertAndSend(user.getUsername(), "",
-                            jsonObject);
-
+                    rabbitTemplate.convertAndSend(user.getUsername(), "", rabbitMessage);
                 }
-
 
             } else {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
@@ -216,7 +212,7 @@ public class MessageService {
     }
 
     @Transactional
-    public void editMessage(Message newMessage, String username) throws JsonProcessingException, ParseException {
+    public void editMessage(Message newMessage, String username) {
         Optional<Message> optionalMessage = messageRepository.findById(newMessage.getId());
         if (optionalMessage.isPresent()) {
             Message message = optionalMessage.get();
@@ -226,14 +222,12 @@ public class MessageService {
 
                 MessageView messageDto = ProjectionUtil.parseToProjection(message, MessageView.class);
 
-                JSONObject jsonObject = (JSONObject) JSONValue
-                        .parseWithException(objectMapper.writeValueAsString(messageDto));
-                jsonObject.put("type", "EDIT-MESSAGE");
+                RabbitMessage<MessageView> rabbitMessage = new RabbitMessage<>();
+                rabbitMessage.setType(MessageType.EDIT_MESSAGE);
+                rabbitMessage.setPayload(messageDto);
 
                 for (User user : message.getDialog().getUsers()) {
-
-                    rabbitTemplate.convertAndSend(user.getUsername(), "",
-                            jsonObject);
+                    rabbitTemplate.convertAndSend(user.getUsername(), "", rabbitMessage);
                 }
             } else {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
@@ -241,9 +235,8 @@ public class MessageService {
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND);
     }
 
-
     @Transactional
-    public void sendMessage(Message message) throws JsonProcessingException, ParseException {
+    public void sendMessage(Message message) {
 
         Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
         if (dialog.getUsers().stream().anyMatch(user -> user.getUsername()
@@ -260,18 +253,19 @@ public class MessageService {
 
             MessageView messageDto = ProjectionUtil.parseToProjection(message, MessageView.class);
 
-            JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(objectMapper.writeValueAsString(messageDto));
-            jsonObject.put("type", "MESSAGE");
+            RabbitMessage<MessageView> rabbitMessage = new RabbitMessage<>();
+            rabbitMessage.setType(MessageType.MESSAGE);
+            rabbitMessage.setPayload(messageDto);
 
             for (User user : dialog.getUsers()) {
-                rabbitTemplate.convertAndSend(user.getUsername(), "", jsonObject);
+                rabbitTemplate.convertAndSend(user.getUsername(), "", rabbitMessage);
             }
         }
 
     }
 
 
-    public Long createGroup(Dialog newDialog, String username) throws JsonProcessingException, ParseException {
+    public Long createGroup(Dialog newDialog, String username) {
 
         User authUser = new User();
 
@@ -309,12 +303,11 @@ public class MessageService {
 
             MessageView messageDto = ProjectionUtil.parseToProjection(message, MessageView.class);
 
-            JSONObject jsonObject = (JSONObject) JSONValue
-                    .parseWithException(objectMapper.writeValueAsString(messageDto));
-            jsonObject.put("type", "MESSAGE");
+            RabbitMessage<MessageView> rabbitMessage = new RabbitMessage<>();
+            rabbitMessage.setType(MessageType.MESSAGE);
+            rabbitMessage.setPayload(messageDto);
             for (User user : dialog.getUsers()) {
-/*                simpMessagingTemplate.convertAndSend("/topic/" + user.getUsername(),
-                        jsonObject);*/
+                rabbitTemplate.convertAndSend(user.getUsername(), "", rabbitMessage);
             }
 
             return dialog.getDialogId();
@@ -327,5 +320,27 @@ public class MessageService {
 
         dialogRepository.findById(Long.valueOf(dialog_id)).get().setPaging(paging);
         return dialogRepository.findAllDialogByDialogId(Long.valueOf(dialog_id));
+    }
+
+
+    // протестить
+    public void typingMessage(Typing typing) throws JsonProcessingException {
+
+        Dialog dialog = dialogRepository.findById(typing.getDialogId()).get();
+
+        TypingView typingView = ProjectionUtil.parseToProjection(typing, TypingView.class);
+
+        RabbitMessage<TypingView> rabbitMessage = new RabbitMessage<>();
+        rabbitMessage.setType(MessageType.TYPING);
+        rabbitMessage.setPayload(typingView);
+
+        MessageProperties props = new MessageProperties();
+        props.setExpiration(String.valueOf(0));
+        org.springframework.amqp.core.Message rabbitMessageWithTTL =
+                new org.springframework.amqp.core.Message(objectMapper.writeValueAsString(rabbitMessage).getBytes(), props);
+
+        for (User user : dialog.getUsers()) {
+            rabbitTemplate.convertAndSend(user.getUsername(), "", rabbitMessageWithTTL);
+        }
     }
 }

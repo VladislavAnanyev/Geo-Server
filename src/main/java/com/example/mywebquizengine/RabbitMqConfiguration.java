@@ -25,9 +25,16 @@ public class RabbitMqConfiguration implements RabbitListenerConfigurer {
 
     public static final String INCOMING_MESSAGES = "incoming-messages";
 
+    public static final String TYPING = "typing";
+
     @Bean
     Queue QueueInMessages() {
         return QueueBuilder.durable(INCOMING_MESSAGES).build();
+    }
+
+    @Bean
+    Queue TypingQueueInMessages() {
+        return QueueBuilder.durable(TYPING).build();
     }
 
     @Bean

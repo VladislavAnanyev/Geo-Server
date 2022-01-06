@@ -1,9 +1,9 @@
 package com.example.mywebquizengine.controller.rabbit;
 
 import com.example.mywebquizengine.model.chat.Message;
+import com.example.mywebquizengine.model.rabbit.Typing;
 import com.example.mywebquizengine.service.MessageService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.json.simple.parser.ParseException;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,23 +28,23 @@ public class RabbitController {
     @Autowired
     private MessageService messageService;
 
-    @Modifying
-    @Transactional
     @MessageMapping("/user/{dialogId}")
     public void sendMessage(@Valid @Payload Message message,
                             @AuthenticationPrincipal Principal principal
-    ) throws JsonProcessingException, ParseException {
+    ) {
         if (message.getSender().getUsername().equals(principal.getName())) {
             messageService.sendMessage(message);
         } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 
-
-    @Modifying
-    @Transactional
     @RabbitListener(queues = "incoming-messages")
-    public void getMessageFromAndroid(@Valid Message message) throws JsonProcessingException, ParseException {
+    public void sendMessageFromAMQPClient(@Valid Message message) {
         messageService.sendMessage(message);
+    }
+
+    @RabbitListener(queues = "typing")
+    public void typing(Typing typing) throws JsonProcessingException {
+        messageService.typingMessage(typing);
     }
 
 }

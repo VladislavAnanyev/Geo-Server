@@ -1,12 +1,8 @@
 package com.example.mywebquizengine.model.projection;
 
-import org.springframework.beans.factory.annotation.Value;
-
 public interface TypingView {
-    UserCommonView getSender();
-
-    @Value("#{target.dialog.dialogId}")
+    String getUsername();
+    String getFirstName();
+    String getLastName();
     Long getDialogId();
-
-    String getType();
 }

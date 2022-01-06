@@ -1,29 +1,24 @@
 package com.example.mywebquizengine.service;
 
-import com.example.mywebquizengine.MywebquizengineApplication;
 import com.example.mywebquizengine.model.User;
 import com.example.mywebquizengine.model.geo.Geolocation;
 import com.example.mywebquizengine.model.geo.Meeting;
-import com.example.mywebquizengine.model.projection.*;
+import com.example.mywebquizengine.model.projection.GeolocationView;
+import com.example.mywebquizengine.model.projection.MeetingView;
+import com.example.mywebquizengine.model.projection.MeetingViewCustomQuery;
+import com.example.mywebquizengine.model.rabbit.MeetingType;
+import com.example.mywebquizengine.model.rabbit.RabbitMessage;
+import com.example.mywebquizengine.model.rabbit.RequestType;
 import com.example.mywebquizengine.repos.GeolocationRepository;
 import com.example.mywebquizengine.repos.MeetingRepository;
-import com.example.mywebquizengine.repos.UserRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.util.IOUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
-import org.springframework.data.projection.ProjectionFactory;
-import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -46,9 +41,6 @@ public class GeoService {
     private RabbitTemplate rabbitTemplate;
 
     @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
     private GeolocationRepository geolocationRepository;
 
     @Autowired
@@ -60,12 +52,12 @@ public class GeoService {
             Calendar calendar = new GregorianCalendar();
             Timestamp timestamp = Timestamp.from(calendar.toInstant());
 
-            date = timestamp.toString().substring(0,10);
+            date = timestamp.toString().substring(0, 10);
         }
         return (ArrayList<MeetingViewCustomQuery>) meetingRepository.getMyMeetings(username, date);
     }
 
-    public void sendGeolocation(String username, Geolocation myGeolocation) throws JsonProcessingException, ParseException {
+    public void sendGeolocation(String username, Geolocation myGeolocation) {
         myGeolocation.setUser(userService.loadUserByUsername(username));
 
         String time = "";
@@ -80,9 +72,9 @@ public class GeoService {
             time = timestamp.toString();
         }
 
-        saveGeo(myGeolocation);
+        geolocationRepository.save(myGeolocation);
 
-        ArrayList<Geolocation> peopleNearMe = findInSquare(username,myGeolocation, "20", time);
+        ArrayList<Geolocation> peopleNearMe = findInSquare(username, myGeolocation, "20", time);
 
         if (peopleNearMe.size() > 0) {
 
@@ -90,8 +82,8 @@ public class GeoService {
 
                 if (meetingRepository.
                         getMeetings(myGeolocation.getUser().getUsername(),
-                                peopleNearMe.get(i).getUser().getUsername(), time.substring(0,10))
-                        .size() == 0 ) {
+                                peopleNearMe.get(i).getUser().getUsername(), time.substring(0, 10))
+                        .size() == 0) {
 
                     if (!username.equals(peopleNearMe.get(i).getUser().getUsername())) {
 
@@ -106,11 +98,11 @@ public class GeoService {
 
 
                         /*
-                        * Так как первый пользователь это аутентифированный пользователь, то
-                        * ему возвращается второй пользователь в качестве user в встрече, а
-                        * второму пользователю возвращается первый. Это достигается при помощи
-                        * одной модели, путем смены местами первого и второго пользователя
-                        * */
+                         * Так как первый пользователь это аутентифированный пользователь, то
+                         * ему возвращается второй пользователь в качестве user в встрече, а
+                         * второму пользователю возвращается первый. Это достигается при помощи
+                         * одной модели, путем смены местами первого и второго пользователя
+                         * */
 
                         MeetingView meetingViewForFirstUser = ProjectionUtil
                                 .parseToProjection(
@@ -118,15 +110,15 @@ public class GeoService {
                                         MeetingView.class
                                 );
 
-                        JSONObject jsonObjectForFirstUser = (JSONObject) JSONValue.parseWithException(objectMapper
-                                .writeValueAsString(meetingViewForFirstUser));
-                        jsonObjectForFirstUser.put("type", "MEETING");
+                        RabbitMessage<MeetingView> rabbitMessageForFirstUser = new RabbitMessage<>();
+                        rabbitMessageForFirstUser.setType(RequestType.REQUEST);
+                        rabbitMessageForFirstUser.setPayload(meetingViewForFirstUser);
 
 
                         User initialFirstUser = meeting.getFirstUser();
                         User initialSecondUser = meeting.getSecondUser();
 
-                        rabbitTemplate.convertAndSend(initialFirstUser.getUsername(), "", jsonObjectForFirstUser);
+                        rabbitTemplate.convertAndSend(initialFirstUser.getUsername(), "", rabbitMessageForFirstUser);
 
                         meeting.setFirstUser(meeting.getSecondUser());
                         meeting.setSecondUser(initialFirstUser);
@@ -137,18 +129,18 @@ public class GeoService {
                                         MeetingView.class
                                 );
 
-                        JSONObject jsonObjectForSecondUser = (JSONObject) JSONValue.parseWithException(objectMapper
-                                .writeValueAsString(meetingViewForSecondUser));
-                        jsonObjectForSecondUser.put("type", "MEETING");
+                        RabbitMessage<MeetingView> rabbitMessageForSecondUser = new RabbitMessage<>();
+                        rabbitMessageForSecondUser.setType(MeetingType.MEETING);
+                        rabbitMessageForSecondUser.setPayload(meetingViewForSecondUser);
 
 
-                        rabbitTemplate.convertAndSend(initialSecondUser.getUsername(),"", jsonObjectForSecondUser);
+                        rabbitTemplate.convertAndSend(initialSecondUser.getUsername(), "", rabbitMessageForSecondUser);
 
                     }
                 }
             }
+        }
     }
-}
 
     public void loadGeolocationHistory(MultipartFile file, String username) {
 
@@ -197,7 +189,7 @@ public class GeoService {
         return Math.PI / 180 * EARTH_RADIUS * Math.cos(deg2rad(degrees));
     }
 
-    public double deg2rad( double degrees) {
+    public double deg2rad(double degrees) {
         return degrees * Math.PI / 180;
     }
 
@@ -221,12 +213,6 @@ public class GeoService {
                         .loadUserByUsernameProxy(authUser)
                         .getUsername(), time);
     }
-
-
-    public void saveGeo(Geolocation geolocation) {
-        geolocationRepository.save(geolocation);
-    }
-
 
     public ArrayList<GeolocationView> getAllGeo(String username) {
         return (ArrayList<GeolocationView>) geolocationRepository.getAll(username);

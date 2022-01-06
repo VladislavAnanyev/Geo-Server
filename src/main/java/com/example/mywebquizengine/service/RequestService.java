@@ -5,12 +5,9 @@ import com.example.mywebquizengine.model.User;
 import com.example.mywebquizengine.model.chat.Dialog;
 import com.example.mywebquizengine.model.chat.MessageStatus;
 import com.example.mywebquizengine.model.projection.RequestView;
+import com.example.mywebquizengine.model.rabbit.RabbitMessage;
+import com.example.mywebquizengine.model.rabbit.RequestType;
 import com.example.mywebquizengine.repos.RequestRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-import org.json.simple.parser.ParseException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,11 +36,9 @@ public class RequestService {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Transactional
-    public void sendRequest(Request request, Principal principal) throws JsonProcessingException, ParseException {
+    public void sendRequest(Request request, Principal principal) {
 
         request.setSender(userService.loadUserByUsername(principal.getName()));
         request.setTo(userService.loadUserByUsername(request.getTo().getUsername()));
@@ -76,11 +71,11 @@ public class RequestService {
 
         RequestView requestView = ProjectionUtil.parseToProjection(request, RequestView.class);
 
-        JSONObject jsonObject = (JSONObject) JSONValue
-                .parseWithException(objectMapper.writeValueAsString(requestView));
-        jsonObject.put("type", "REQUEST");
+        RabbitMessage<RequestView> rabbitMessage = new RabbitMessage<>();
+        rabbitMessage.setType(RequestType.REQUEST);
+        rabbitMessage.setPayload(requestView);
 
-        rabbitTemplate.convertAndSend(request.getTo().getUsername(), "", jsonObject);
+        rabbitTemplate.convertAndSend(request.getTo().getUsername(), "", rabbitMessage);
     }
 
     public List<RequestView> getSentRequests(String username) {
@@ -107,7 +102,7 @@ public class RequestService {
         );
     }
 
-    public Long acceptRequest(Long requestId, String username) throws JsonProcessingException, ParseException {
+    public Long acceptRequest(Long requestId, String username) {
         User authUser = userService.loadUserByUsername(username);
 
         Request request = requestRepository.findById(requestId).get();
@@ -118,12 +113,12 @@ public class RequestService {
 
         RequestView requestView = ProjectionUtil.parseToProjection(request, RequestView.class);
 
-        JSONObject jsonObject = (JSONObject) JSONValue
-                .parseWithException(objectMapper.writeValueAsString(requestView));
-        jsonObject.put("type", "ACCEPT-REQUEST");
+        RabbitMessage<RequestView> rabbitMessage = new RabbitMessage<>();
+        rabbitMessage.setType(RequestType.ACCEPT_REQUEST);
+        rabbitMessage.setPayload(requestView);
 
-        rabbitTemplate.convertAndSend(request.getSender().getUsername(), "", jsonObject);
-        rabbitTemplate.convertAndSend(request.getTo().getUsername(), "", jsonObject);
+        rabbitTemplate.convertAndSend(request.getSender().getUsername(), "", rabbitMessage);
+        rabbitTemplate.convertAndSend(request.getTo().getUsername(), "", rabbitMessage);
 
         return messageService.checkDialog(request.getSender().getUsername(), username);
     }

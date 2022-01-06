@@ -49,6 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles({"test"})
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class ApiChatControllerTest {
 
@@ -98,7 +99,7 @@ public class ApiChatControllerTest {
 
         Message message = objectMapper.readValue(json, Message.class);
         Integer expectedMessageCount = ((ArrayList<Message>) messageRepository.findAll()).size() + 1;
-        rabbitController.getMessageFromAndroid(message);
+        rabbitController.sendMessageFromAMQPClient(message);
         Integer actualMessageCount = ((ArrayList<Message>) messageRepository.findAll()).size();
 
         assertEquals(expectedMessageCount, actualMessageCount);
@@ -166,7 +167,7 @@ public class ApiChatControllerTest {
         Message message = objectMapper.readValue(json, Message.class);
 
         try {
-            rabbitController.getMessageFromAndroid(message);
+            rabbitController.sendMessageFromAMQPClient(message);
             fail("Expected ConstraintViolationException");
         } catch (ConstraintViolationException e) {
             assertNotEquals("", e.getMessage());
@@ -201,7 +202,7 @@ public class ApiChatControllerTest {
         Message message = objectMapper.readValue(json, Message.class);
 
         try {
-            rabbitController.getMessageFromAndroid(message);
+            rabbitController.sendMessageFromAMQPClient(message);
             fail("Expected ConstraintViolationException");
         } catch (ConstraintViolationException e) {
             assertNotEquals("", e.getMessage());
