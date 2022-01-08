@@ -1,7 +1,9 @@
-package com.example.mywebquizengine.security;
+package com.example.mywebquizengine.security.handler;
 
 import com.example.mywebquizengine.model.userinfo.RegistrationType;
 import com.example.mywebquizengine.model.User;
+import com.example.mywebquizengine.security.ActiveUserStore;
+import com.example.mywebquizengine.security.LoggedUser;
 import com.example.mywebquizengine.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -69,25 +71,16 @@ public class MyAuthenticationSuccessHandler extends
             }
         }
 
-
+        LoggedUser user = new LoggedUser(authentication.getName(), activeUserStore);
 
         HttpSession session = request.getSession(false);
-        if (session != null) {
 
-            LoggedUser user = new LoggedUser(authentication.getName(), activeUserStore);
-            session.invalidate();
-            session = request.getSession(true);
-            session.setAttribute("user", user);
-            session.setMaxInactiveInterval(60);
-            session.setAttribute("abc", "AAA");
-        } else {
-            LoggedUser user = new LoggedUser(authentication.getName(), activeUserStore);
+        session.invalidate();
+        session = request.getSession(true);
+        session.setAttribute("user", user);
+        session.setMaxInactiveInterval(60);
+            //session.setAttribute("abc", "AAA");
 
-            session = request.getSession(true);
-            session.setAttribute("user", user);
-            session.setMaxInactiveInterval(60);
-            session.setAttribute("abc", "AAA");
-        }
 
         //clearAuthenticationAttributes(request);
 

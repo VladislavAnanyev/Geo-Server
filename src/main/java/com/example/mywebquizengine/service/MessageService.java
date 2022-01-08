@@ -17,7 +17,8 @@ import com.example.mywebquizengine.repos.MessageRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.simple.JSONValue;
-import org.json.simple.parser.ParseException;
+import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,14 +30,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.boot.json.*;
 
 import javax.transaction.Transactional;
+import javax.validation.Valid;
 import java.util.*;
 
 @Service
+@Validated
 public class MessageService {
 
     @Autowired
@@ -165,7 +167,7 @@ public class MessageService {
 
 
     @Transactional
-    public void deleteMessage(Long id, String username) throws JsonProcessingException, ParseException {
+    public void deleteMessage(Long id, String username) throws JsonProcessingException {
         Optional<Message> optionalMessage = messageRepository.findById(id);
         if (optionalMessage.isPresent()) {
             Message message = optionalMessage.get();
@@ -204,8 +206,6 @@ public class MessageService {
 
         DialogView dialog = dialogRepository.findAllDialogByDialogId(dialogId);
 
-
-
         // If user contains in dialog
         if (dialog.getUsers().stream().anyMatch(o -> o.getUsername()
                 .equals(username))) {
@@ -215,7 +215,7 @@ public class MessageService {
     }
 
     @Transactional
-    public void editMessage(Message newMessage, String username) throws JsonProcessingException, ParseException {
+    public void editMessage(Message newMessage, String username) throws JsonProcessingException {
         Optional<Message> optionalMessage = messageRepository.findById(newMessage.getId());
         if (optionalMessage.isPresent()) {
             Message message = optionalMessage.get();
@@ -240,7 +240,7 @@ public class MessageService {
     }
 
     @Transactional
-    public void sendMessage(Message message) throws JsonProcessingException, ParseException {
+    public void sendMessage(@Valid Message message) throws JsonProcessingException {
 
         Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
         if (dialog.getUsers().stream().anyMatch(user -> user.getUsername()
@@ -261,16 +261,21 @@ public class MessageService {
             rabbitMessage.setType(MessageType.MESSAGE);
             rabbitMessage.setPayload(messageDto);
 
+            final MessagePostProcessor messagePostProcessor = messagePr -> {
+                messagePr.getMessageProperties().setPriority(1);
+                return messagePr;
+            };
+
             for (User user : dialog.getUsers()) {
                 rabbitTemplate.convertAndSend(user.getUsername(), "",
-                        JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
+                        JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)), messagePostProcessor);
             }
         }
 
     }
 
 
-    public Long createGroup(Dialog newDialog, String username) throws JsonProcessingException, ParseException {
+    public Long createGroup(Dialog newDialog, String username) throws JsonProcessingException {
 
         User authUser = new User();
 
@@ -321,33 +326,63 @@ public class MessageService {
         } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 
-    public DialogView getDialogWithPaging(String dialog_id, Integer page, Integer pageSize, String sortBy) {
-        Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
-
-        dialogRepository.findById(Long.valueOf(dialog_id)).get().setPaging(paging);
-        return dialogRepository.findAllDialogByDialogId(Long.valueOf(dialog_id));
-    }
-
 
     // протестить
-    public void typingMessage(Typing typing) throws JsonProcessingException, ParseException {
+    @Transactional
+    public void typingMessage(@Valid Typing typing) throws JsonProcessingException {
 
-        Dialog dialog = dialogRepository.findById(typing.getDialogId()).get();
+        Optional<Dialog> dialog = dialogRepository.findById(typing.getDialogId());
 
-        TypingView typingView = ProjectionUtil.parseToProjection(typing, TypingView.class);
+        if (dialog.isPresent()) {
+            Dialog existDialog = dialog.get();
 
-        RabbitMessage<TypingView> rabbitMessage = new RabbitMessage<>();
-        rabbitMessage.setType(MessageType.TYPING);
-        rabbitMessage.setPayload(typingView);
+            User authUser = userService.loadUserByUsername(typing.getUser().getUsername());
+            typing.setUser(authUser);
 
-        MessageProperties props = new MessageProperties();
-        props.setExpiration(String.valueOf(0));
-        org.springframework.amqp.core.Message rabbitMessageWithTTL =
-                new org.springframework.amqp.core.Message(objectMapper.writeValueAsString(rabbitMessage).getBytes(), props);
+            TypingView typingView = ProjectionUtil.parseToProjection(typing, TypingView.class);
 
-        for (User user : dialog.getUsers()) {
-            rabbitTemplate.convertAndSend(user.getUsername(), "",
-                    JSONValue.parse(objectMapper.writeValueAsString(rabbitMessageWithTTL)));
+            RabbitMessage<TypingView> rabbitMessage = new RabbitMessage<>();
+            rabbitMessage.setType(MessageType.TYPING);
+            rabbitMessage.setPayload(typingView);
+
+            final MessagePostProcessor messagePostProcessor = message -> {
+                message.getMessageProperties().setExpiration(String.valueOf(0));
+                message.getMessageProperties().setPriority(0);
+                return message;
+            };
+
+            for (User user : existDialog.getUsers()) {
+
+                if (!typing.getUser().getUsername().equals(user.getUsername())) {
+                    rabbitTemplate.convertAndSend(user.getUsername(), "",
+                            JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)), messagePostProcessor);
+                }
+
+            }
         }
+
+
+    }
+
+    @Transactional
+    public List<MessageView> getListOfMessages(Long dialogId, Pageable paging) {
+
+        String authName = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        List<Message> messages = messageRepository
+                .findAllByDialog_DialogIdAndStatusNot(dialogId, MessageStatus.DELETED, paging)
+                .getContent();
+
+        for (Message message : messages) {
+            if (message.getStatus().equals(MessageStatus.DELIVERED)
+                    && !message.getSender().getUsername().equals(authName)) {
+                message.setStatus(MessageStatus.RECEIVED);
+            }
+        }
+
+        List<MessageView> messageViews = ProjectionUtil.parseToProjectionList(messages, MessageView.class);
+        Collections.reverse(messageViews);
+
+        return messageViews;
     }
 }

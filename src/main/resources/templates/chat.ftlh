@@ -278,10 +278,16 @@
 
 
         document.addEventListener("keypress", function(e) {
+
+
+
             let messageInput = document.getElementById("inputtextarea");
+            dia = location.pathname.replace("/chat/", "")
+
             if (e.key === "Enter" && messageInput.value !== ' ') {
-                dia = location.pathname.replace("/chat/", "")
                 sendMessage(dia)
+            } else {
+                logKey(dia)
             }
         });
     </script>

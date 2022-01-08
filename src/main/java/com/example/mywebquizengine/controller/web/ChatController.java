@@ -63,9 +63,8 @@ public class ChatController {
                                @RequestParam(defaultValue = "timestamp") String sortBy,
                                @AuthenticationPrincipal Principal principal) {
 
-
-        DialogView dialog = messageService.getDialogWithPaging(dialog_id, page, pageSize, sortBy);
-
+        //DialogView dialog = messageService.getDialogWithPaging(dialog_id, page, pageSize, sortBy);
+        DialogView dialog = messageService.getMessages(Long.valueOf(dialog_id), page, pageSize, sortBy, principal.getName());
         if (dialog.getUsers().stream().anyMatch(o -> o.getUsername()
                 .equals(principal.getName()))) {
 

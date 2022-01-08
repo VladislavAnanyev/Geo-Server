@@ -268,7 +268,7 @@ public class UserService implements UserDetailsService {
         String jwt = jwtTokenUtil.generateToken((UserDetails) authentication.getPrincipal());
 
         Queue queue = new Queue("", true, false, false);
-        queue.addArgument("x-expires", 2419200000L);
+        queue.addArgument("x-expires", 172800000L);
         String queueName = rabbitAdmin.declareQueue(queue);
         Binding binding = new Binding(
                 queueName,

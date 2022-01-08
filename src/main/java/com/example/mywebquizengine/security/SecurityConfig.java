@@ -1,5 +1,7 @@
 package com.example.mywebquizengine.security;
 
+import com.example.mywebquizengine.security.handler.MyAuthenticationSuccessHandler;
+import com.example.mywebquizengine.security.handler.MyLogoutSuccessHandler;
 import com.example.mywebquizengine.service.JWTFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -60,6 +62,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
+
+
+    @Bean
+    public ActiveUserStore activeUserStore() {
+        return new ActiveUserStore();
+    }
 
     @Bean
     public AuthenticationManager authenticationManagerBean() throws Exception {
@@ -88,6 +100,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         @Autowired
         private JWTFilter jwtFilter;
 
+
         @Override
         protected void configure(HttpSecurity http) throws Exception {
 
@@ -106,7 +119,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .and()
                     .logout().logoutUrl("/api/logout").logoutSuccessHandler(new SimpleUrlLogoutSuccessHandler())
                     .permitAll()
-                    .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                    /*.and()
+                    .sessionManagement()*/
+                    /*.maximumSessions(100)*//*.sessionRegistry(sessionRegistry())*/
+                    .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER)/*.sessionFixation().none()*/;
 
             http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -134,16 +150,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             return "secretkey";
         }
 
-        @Bean
-        public SessionRegistry sessionRegistry() {
-            return new SessionRegistryImpl();
-        }
-
-
-        @Bean
-        public ActiveUserStore activeUserStore() {
-            return new ActiveUserStore();
-        }
 
         @Bean
         public PersistentTokenRepository persistentTokenRepository() {

@@ -29,17 +29,26 @@ public class LoggedUser implements HttpSessionBindingListener {
         if (activeUserStore != null) {
             List<String> users = activeUserStore.getUsers();
 
+            boolean flag = true;
+
             LoggedUser user = (LoggedUser) event.getValue();
-            if (!users.contains(user.getUsername())) {
+            //if (!users.contains(user.getUsername())) {
+            if (users.contains(user.getUsername())) {
+                flag = false;
+            }
                 users.add(user.getUsername());
+            //}
+
+
+            if (flag) {
+                if (MywebquizengineApplication.ctx.getBean(UserRepository.class).findById(user.getUsername()).isPresent()) {
+                    User authUser = MywebquizengineApplication.ctx.getBean(UserRepository.class).findById(user.getUsername()).get();
+                    authUser.setOnline("true");
+                    MywebquizengineApplication.ctx.getBean(UserRepository.class).save(authUser);
+                }
             }
 
 
-            if (MywebquizengineApplication.ctx.getBean(UserRepository.class).findById(user.getUsername()).isPresent()) {
-                User authUser = MywebquizengineApplication.ctx.getBean(UserRepository.class).findById(user.getUsername()).get();
-                authUser.setOnline("true");
-                MywebquizengineApplication.ctx.getBean(UserRepository.class).save(authUser);
-            }
 
         }
     }
@@ -49,22 +58,36 @@ public class LoggedUser implements HttpSessionBindingListener {
 
         List<String> users = activeUserStore.getUsers();
         LoggedUser user = (LoggedUser) event.getValue();
+
+        boolean flag = true;
+
+
+
         if (users != null) {
             users.remove(user.getUsername());
+
+
+            if (users.contains(user.getUsername())) {
+                flag = false;
+            }
         }
 
-        Optional<User> optionalUser = MywebquizengineApplication
-                .ctx
-                .getBean(UserRepository.class)
-                .findById(user
-                        .getUsername()
-                );
+        if (flag) {
+            Optional<User> optionalUser = MywebquizengineApplication
+                    .ctx
+                    .getBean(UserRepository.class)
+                    .findById(user
+                            .getUsername()
+                    );
 
-        if (optionalUser.isPresent()) {
-            User authUser = optionalUser.get();
-            authUser.setOnline("false");
-            MywebquizengineApplication.ctx.getBean(UserRepository.class).save(authUser);
+            if (optionalUser.isPresent()) {
+                User authUser = optionalUser.get();
+                authUser.setOnline("false");
+                MywebquizengineApplication.ctx.getBean(UserRepository.class).save(authUser);
+            }
+
         }
+
 
     }
 

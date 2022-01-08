@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.security;
+package com.example.mywebquizengine.security.handler;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.DefaultRedirectStrategy;

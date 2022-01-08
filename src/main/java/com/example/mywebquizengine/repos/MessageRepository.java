@@ -36,7 +36,10 @@ public interface MessageRepository extends CrudRepository<Message, Long>, Paging
     List<Message> getDialogs(String username);*/
 
 
-    Page<MessageView> findAllByDialog_DialogIdAndStatusNot(Long dialogId, MessageStatus status, Pageable paging);
+    //Page<MessageView> findAllByDialog_DialogIdAndStatusNot(Long dialogId, MessageStatus status, Pageable paging);
+
+    Page<Message> findAllByDialog_DialogIdAndStatusNot(Long dialogId, MessageStatus status, Pageable paging);
+    //List<Message> findMessagesByDialogDialogId(Long dialogId, Pageable paging);
 
     @Query(value = """
             SELECT MESSAGES.id, content, DIALOGS.dialog_id as dialogId,

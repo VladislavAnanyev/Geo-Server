@@ -1,6 +1,7 @@
 package com.example.mywebquizengine.model.projection;
 
 import com.example.mywebquizengine.model.chat.MessagePhoto;
+import com.example.mywebquizengine.model.chat.MessageStatus;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.time.Instant;
@@ -17,4 +18,5 @@ public interface MessageView {
     @Value("#{target.dialog.dialogId}")
     Long getDialogId();
     String getUniqueCode();
+    MessageStatus getStatus();
 }

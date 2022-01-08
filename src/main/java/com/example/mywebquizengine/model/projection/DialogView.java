@@ -16,6 +16,7 @@ public interface DialogView {
     @Value("#{@messageService.getCompanion(target.name ,target.users)}")
     String getName();
 
-    @Value("#{T(com.google.common.collect.Lists).reverse(@messageRepository.findAllByDialog_DialogIdAndStatusNot(target.dialogId, T(com.example.mywebquizengine.model.chat.MessageStatus).DELETED, target.paging ).content)}")
+    //@Value("#{T(com.google.common.collect.Lists).reverse(@messageRepository.findAllByDialog_DialogIdAndStatusNot(target.dialogId, T(com.example.mywebquizengine.model.chat.MessageStatus).DELETED, target.paging).content)}")
+    @Value("#{@messageService.getListOfMessages(target.dialogId, target.paging)}")
     List<MessageView> getMessages();
 }

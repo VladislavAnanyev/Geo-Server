@@ -8,6 +8,8 @@ var colors2 = [
     '#ffc107', '#ff85af', '#FF9800', '#39bbb0'
 ];
 
+
+
 function notificationConnect() {
 
 
@@ -282,6 +284,58 @@ function onMessageReceived(payload) {
 }
 
 
+
+function logKey(dialog) {
+
+    console.log("aaa")
+    //console.log(date.valueOf())
+    if (stompClient) {
+        var typing = {
+            user: {username: username},
+            dialogId: dialog
+        };
+
+        let rabbitMessage = {
+            type: "TYPING",
+            payload: typing
+        }
+        stompClient.send("/app/user/" + dialog, {/*"x-message-ttl": 15000*/}, JSON.stringify(rabbitMessage));
+
+    }
+
+
+    /*let div = document.createElement("div");
+    div.setAttribute('class', "outgoing_msg")
+
+    div.innerHTML =
+        "                        <div class=\"sent_msg\">\n" +
+        "                            <p>" + messageContent + "</p>\n" +
+        "                            <span id=\"" + uniqueCode + "\" class=\"time_date\">" + date.toLocaleDateString() + " " + date.toLocaleTimeString() + "</span> </div>\n"
+
+
+    let last = document.getElementById("msg");
+
+    last.append(div)
+
+    var div2 = $("#msg");
+    div2.scrollTop(div2.prop('scrollHeight'));
+
+    let lastMsg = document.getElementById("lastMsg" + dialog)
+    //console.log(lastMsg)
+    //let msgInput = messageInput.value
+
+    let dialogList = document.getElementById("dialogs")
+    let existDialog = document.getElementById(dialog)
+    existDialog.remove()
+    dialogList.prepend(existDialog)*/
+    //document.getElementById("lastMsg" + dialog).textContent = message.payload.content
+
+
+
+
+}
+
+
 function sendMessage(dialog) {
 
 
@@ -301,7 +355,12 @@ function sendMessage(dialog) {
                 /*type: "MESSAGE",*/
                 uniqueCode: uniqueCode
             };
-            stompClient.send("/app/user/" + dialog, {/*"x-message-ttl": 15000*/}, JSON.stringify(chatMessage));
+
+            let rabbitMessage = {
+                type: "MESSAGE",
+                payload: chatMessage
+            }
+            stompClient.send("/app/user/" + dialog, {/*"x-message-ttl": 15000*/}, JSON.stringify(rabbitMessage));
 
         }
 

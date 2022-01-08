@@ -4,6 +4,7 @@ import com.example.mywebquizengine.controller.rabbit.RabbitController;
 import com.example.mywebquizengine.model.chat.Dialog;
 import com.example.mywebquizengine.model.chat.Message;
 import com.example.mywebquizengine.model.chat.MessageStatus;
+import com.example.mywebquizengine.model.rabbit.RabbitMessage;
 import com.example.mywebquizengine.repos.DialogRepository;
 import com.example.mywebquizengine.repos.MessageRepository;
 import com.example.mywebquizengine.repos.UserRepository;
@@ -40,6 +41,7 @@ import static java.util.Collections.sort;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.doubleThat;
 import static org.mockito.Mockito.anyObject;
 import static org.mockito.Mockito.doAnswer;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -78,26 +80,31 @@ public class ApiChatControllerTest {
     public void sendMessageTest() throws JsonProcessingException {
 
         String json = """
-                { 
-                    "dialog": {
-                        "dialogId":  1196
-                    },          
-                    "content": "12345",            
-                    "sender": {
-                        "username": "user1"
-                    },
-                    "uniqueCode": 123456789          
+                {   "type": "MESSAGE",
+                    "payload": { 
+                        "dialog": {
+                            "dialogId":  1196
+                        },          
+                        "content": "12345",            
+                        "sender": {
+                            "username": "user1"
+                        },
+                        "uniqueCode": 123456789
+                    }          
                 }
                 """;
 
         doAnswer(i -> {
             Object obj = new JSONParser().parse(i.getArgument(1).toString());
             JSONObject jo = (JSONObject) obj;
-            assertEquals("123456789", jo.get("uniqueCode"));
+            /*System.out.println(jo.get("payload").toString());
+            System.out.println("AAA");
+            assertEquals("1234567890", jo.get("payload").toString());*/
             return null;
         }).when(rabbitTemplate).convertAndSend(anyString(), (Object) anyObject());
 
-        Message message = objectMapper.readValue(json, Message.class);
+        System.out.println("AAA");
+        RabbitMessage message = objectMapper.readValue(json, RabbitMessage.class);
         Integer expectedMessageCount = ((ArrayList<Message>) messageRepository.findAll()).size() + 1;
         rabbitController.sendMessageFromAMQPClient(message);
         Integer actualMessageCount = ((ArrayList<Message>) messageRepository.findAll()).size();
@@ -110,24 +117,27 @@ public class ApiChatControllerTest {
     public void sendMessageForbiddenTest() throws JsonProcessingException, ParseException {
 
         String json = """
-                { 
-                    "dialog": {
-                        "dialogId":  1196
-                    },          
-                    "content": "12345",            
-                    "sender": {
-                        "username": "user3"
-                    },
-                    "uniqueCode": 123456789          
+                {
+                    "type": "MESSAGE",
+                    "payload": { 
+                        "dialog": {
+                            "dialogId":  1196
+                        },          
+                        "content": "12345",            
+                        "sender": {
+                            "username": "user3"
+                        },
+                        "uniqueCode": 123456789    
+                    }      
                 }
                 """;
 
-        Message message = objectMapper.readValue(json, Message.class);
+        RabbitMessage message = objectMapper.readValue(json, RabbitMessage.class);
 
         doAnswer(i -> {
             Object obj = new JSONParser().parse(i.getArgument(1).toString());
-            JSONObject jo = (JSONObject) obj;
-            assertEquals("123456789", jo.get("uniqueCode"));
+            /*JSONObject jo = (JSONObject) obj;
+            assertEquals("123456789", jo.get("uniqueCode"));*/
             return null;
         }).when(rabbitTemplate).convertAndSend(anyString(), (Object) anyObject());
 
@@ -154,17 +164,20 @@ public class ApiChatControllerTest {
         ArrayList<Message> expectedMessages = (ArrayList<Message>) messageRepository.findAll();
 
         String json = """
-                { 
-                    "dialog": {
-                        "dialogId":  1196
-                    },          
-                    "content": "",            
-                    "sender": {"username": "user1"},
-                    "uniqueCode": 123456789          
+                {
+                    "type": "MESSAGE",
+                    "payload": { 
+                        "dialog": {
+                            "dialogId":  1196
+                        },          
+                        "content": "",            
+                        "sender": {"username": "user1"},
+                        "uniqueCode": 123456789
+                    }          
                 }
                 """;
 
-        Message message = objectMapper.readValue(json, Message.class);
+        RabbitMessage message = objectMapper.readValue(json, RabbitMessage.class);
 
         try {
             rabbitController.sendMessageFromAMQPClient(message);
@@ -190,16 +203,19 @@ public class ApiChatControllerTest {
         ArrayList<Message> expectedMessages = (ArrayList<Message>) messageRepository.findAll();
 
         String json = """
-                { 
-                    "dialog": {
-                        "dialogId":  1196
-                    },                    
-                    "sender": {"username": "user1"},
-                    "uniqueCode": 123456789          
+                {
+                    "type": "MESSAGE",
+                    "payload": { 
+                        "dialog": {
+                            "dialogId":  1196
+                        },                    
+                        "sender": {"username": "user1"},
+                        "uniqueCode": 123456789
+                    }          
                 }
                 """;
 
-        Message message = objectMapper.readValue(json, Message.class);
+        RabbitMessage message = objectMapper.readValue(json, RabbitMessage.class);
 
         try {
             rabbitController.sendMessageFromAMQPClient(message);

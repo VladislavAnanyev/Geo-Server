@@ -1,10 +1,13 @@
 package com.example.mywebquizengine.model.rabbit;
 
+import javax.validation.Valid;
+
 public class RabbitMessage<T> {
 
     private Type type;
-    private T payload;
 
+
+    private T payload;
 
     public T getPayload() {
         return payload;
@@ -21,6 +24,5 @@ public class RabbitMessage<T> {
     public void setType(Type type) {
         this.type = type;
     }
-
 
 }
