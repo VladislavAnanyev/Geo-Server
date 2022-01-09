@@ -3,6 +3,7 @@
 var stompClient = null;
 var username = null;
 let uniqueQueueName = new Date().valueOf() + ""
+let activeTyping = true
 var colors2 = [
     '#2196F3', '#32c787', '#00BCD4', '#ff5652',
     '#ffc107', '#ff85af', '#FF9800', '#39bbb0'
@@ -287,22 +288,28 @@ function onMessageReceived(payload) {
 
 function logKey(dialog) {
 
-    console.log("aaa")
-    //console.log(date.valueOf())
-    if (stompClient) {
-        var typing = {
-            user: {username: username},
-            dialogId: dialog
-        };
+    if (activeTyping) {
 
-        let rabbitMessage = {
-            type: "TYPING",
-            payload: typing
+        if (stompClient) {
+            var typing = {
+                user: {username: username},
+                dialogId: dialog
+            };
+
+            let rabbitMessage = {
+                type: "TYPING",
+                payload: typing
+            }
+            stompClient.send("/app/user/" + dialog, {/*"x-message-ttl": 15000*/}, JSON.stringify(rabbitMessage));
+            activeTyping = false
+
+            setTimeout(() => {
+                console.log("yyy")
+                activeTyping = true
+            }, 5000)
+
         }
-        stompClient.send("/app/user/" + dialog, {/*"x-message-ttl": 15000*/}, JSON.stringify(rabbitMessage));
-
     }
-
 
     /*let div = document.createElement("div");
     div.setAttribute('class', "outgoing_msg")
@@ -398,7 +405,11 @@ function sendMessage(dialog) {
         lastMsg.textContent = messageContent
 
     }
+
 }
+
+
+
 
 
 

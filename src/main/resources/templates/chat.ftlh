@@ -160,7 +160,8 @@
                 <#if dialog??>
                 <div id="msgArea" class="type_msg">
                     <div class="input_msg_write">
-                        <input type="text" class="write_msg" id="inputtextarea" placeholder="Напишите сообщение"/>
+
+                        <label for="inputtextarea"></label><input type="text" class="write_msg" id="inputtextarea" placeholder="Напишите сообщение"/>
                         <button onclick="sendMessage(location.pathname.replace('/chat/', ''))" class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
                     </div>
                 </div>
@@ -276,28 +277,24 @@
 
     <script>
 
+        //const input = document.querySelector('input')
 
-        document.addEventListener("keypress", function(e) {
+        document.onkeydown = function(e) {
+            if (e.composedPath()[0].toString().includes('Input')) {
+                let messageInput = document.getElementById("inputtextarea");
+                dia = location.pathname.replace("/chat/", "")
 
-
-
-            let messageInput = document.getElementById("inputtextarea");
-            dia = location.pathname.replace("/chat/", "")
-
-            if (e.key === "Enter" && messageInput.value !== ' ') {
-                sendMessage(dia)
-            } else {
-                logKey(dia)
+                if (e.key === "Enter" && messageInput.value !== ' ') {
+                    sendMessage(dia)
+                } else {
+                    logKey(dia)
+                }
             }
-        });
+        };
     </script>
 
-
-
     <script src="https://cdn.jsdelivr.net/npm/@barba/core"></script>
-<#--    <script src="https://unpkg.com/@barba/core"></script>-->
     <script src="https://unpkg.com/gsap@latest/dist/gsap.min.js"></script>
-
 
     <script>
 
