@@ -47,22 +47,25 @@ public class JWTFilter extends OncePerRequestFilter {
                             username, "Bearer", authorities);
             SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
 
-            HttpSession session = request.getSession(false);
-            if (session != null) {
+            System.out.println(request.getRequestURI());
 
-                LoggedUser user = new LoggedUser(SecurityContextHolder.getContext().getAuthentication().getName(), activeUserStore);
-                session.invalidate();
-                session = request.getSession(true);
-                session.setAttribute("user", user);
-                session.setMaxInactiveInterval(60);
-                session.setAttribute("abc", "AAA");
-            } else {
-                LoggedUser user = new LoggedUser(SecurityContextHolder.getContext().getAuthentication().getName(), activeUserStore);
+            System.out.println("aaa");
+            if (!request.getRequestURI().contains("sendGeolocation")) {
+                HttpSession session = request.getSession(false);
+                if (session != null) {
 
-                session = request.getSession(true);
-                session.setAttribute("user", user);
-                session.setMaxInactiveInterval(60);
-                session.setAttribute("abc", "AAA");
+                    LoggedUser user = new LoggedUser(SecurityContextHolder.getContext().getAuthentication().getName(), activeUserStore);
+                    session.invalidate();
+                    session = request.getSession(true);
+                    session.setAttribute("user", user);
+                    session.setMaxInactiveInterval(60);
+                } else {
+                    LoggedUser user = new LoggedUser(SecurityContextHolder.getContext().getAuthentication().getName(), activeUserStore);
+
+                    session = request.getSession(true);
+                    session.setAttribute("user", user);
+                    session.setMaxInactiveInterval(60);
+                }
             }
 
         }

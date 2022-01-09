@@ -88,13 +88,13 @@ public class User implements UserDetails, OAuth2User  {
         this.enabled = true;
     }
 
-    public User(String username, String email, String firstName, String lastName, String password) {
+    public User(String username, String email, String firstName, String lastName, String password, String status) {
         this.username = username;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
-        this.status = false;
+        this.status = Boolean.parseBoolean(status);
     }
 
     public User(String username, String firstName, String lastName, List<Photo> photos) {
@@ -104,7 +104,7 @@ public class User implements UserDetails, OAuth2User  {
         this.photos = photos;
     }
 
-    public User(String username, String firstName, String lastName, String avatar) {
+    public User(String username, String firstName, String lastName, String avatar, String online) {
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -113,6 +113,7 @@ public class User implements UserDetails, OAuth2User  {
         List<Photo> photos = new ArrayList<>();
         photos.add(photo);
         this.photos = photos;
+        this.online = online;
     }
 
     public void setOnline(String online) {

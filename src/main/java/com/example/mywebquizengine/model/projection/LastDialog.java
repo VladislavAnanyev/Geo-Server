@@ -11,7 +11,10 @@ public interface LastDialog {
 
     String getContent();
 
-    @Value("#{new com.example.mywebquizengine.model.User(target.username, target.firstName, target.lastName, target.avatar)}")
+    @Value("#{target.status}")
+    String getStatus();
+
+    @Value("#{new com.example.mywebquizengine.model.User(target.username, target.firstName, target.lastName, target.avatar, target.online)}")
     UserCommonView getLastSender();
 
     @Value("#{@messageService.getCompanionForLastDialogs(target.dialogId)}")

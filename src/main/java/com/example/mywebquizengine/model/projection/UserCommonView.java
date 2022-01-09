@@ -9,5 +9,7 @@ public interface UserCommonView {
 
     @Value("#{target.photos.get(0).url}")
     String getAvatar();
+
+    String getOnline();
 }
 

@@ -44,8 +44,8 @@ public interface MessageRepository extends CrudRepository<Message, Long>, Paging
     @Query(value = """
             SELECT MESSAGES.id, content, DIALOGS.dialog_id as dialogId,
                    MESSAGES.SENDER_USERNAME as username, activation_code,
-                   balance, change_password_code, email, first_name as firstName,
-                   last_name as lastName, password, MESSAGES.status, image, name ,
+                   balance, change_password_code, email, first_name as firstName, ONLINE as online,
+                   last_name as lastName, password, MESSAGES.status as status, image, name ,
                    timestamp as timestamp, up.URL as avatar
             FROM MESSAGES
                      LEFT OUTER JOIN USERS U
