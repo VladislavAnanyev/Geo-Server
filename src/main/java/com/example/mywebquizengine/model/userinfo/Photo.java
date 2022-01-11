@@ -1,6 +1,7 @@
 package com.example.mywebquizengine.model.userinfo;
 
 import com.example.mywebquizengine.model.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -15,6 +16,7 @@ public class Photo /*implements Comparable<Photo>*/ {
 
     private String url;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
