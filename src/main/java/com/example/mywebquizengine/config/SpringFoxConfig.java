@@ -1,4 +1,4 @@
-package com.example.mywebquizengine;
+package com.example.mywebquizengine.config;
 
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.context.annotation.Bean;

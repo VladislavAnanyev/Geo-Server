@@ -15,9 +15,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class PhotoService {
@@ -32,21 +30,17 @@ public class PhotoService {
     private String hostname;
 
     @Transactional
-    public void swapPhoto(Photo photo, String name) throws IllegalAccessError, EntityNotFoundException {
+    public void swapPhoto(Long firstPhotoId, Long secondPhotoId, String name) throws IllegalAccessError, EntityNotFoundException {
 
-        Optional<Photo> optionalPhoto = photoRepository.findById(photo.getId());
-        if (optionalPhoto.isPresent()) {
-            String photoLoaderUsername = photoRepository.getPhotoLoaderUsername(photo.getId());
-            if (photoLoaderUsername.equals(name)) {
-                Photo savedPhoto = optionalPhoto.get();
-                List<Photo> photos = photoRepository.findByUser_Username(name);
-
-                photos.remove(((int) savedPhoto.getPosition()));
-                photos.add(photo.getPosition(), savedPhoto);
-
-                for (int i = 0; i < photos.size(); i++) {
-                    photos.get(i).setPosition(i);
-                }
+        Optional<Photo> optionalFirstPhoto = photoRepository.findById(firstPhotoId);
+        Optional<Photo> optionalSecondPhoto = photoRepository.findById(secondPhotoId);
+        if (optionalFirstPhoto.isPresent() && optionalSecondPhoto.isPresent()) {
+            Photo firstPhoto = optionalFirstPhoto.get();
+            Photo secondPhoto = optionalSecondPhoto.get();
+            if (firstPhoto.getUser().getUsername().equals(name) && secondPhoto.getUser().getUsername().equals(name)) {
+                String tempPhotoUrl = firstPhoto.getUrl();
+                firstPhoto.setUrl(secondPhoto.getUrl());
+                secondPhoto.setUrl(tempPhotoUrl);
             } else throw new SecurityException("You are not loader of this photo");
         } else throw new EntityNotFoundException("Photo with given photoId not found");
 
@@ -72,7 +66,6 @@ public class PhotoService {
 
                 Photo photo = new Photo();
                 photo.setUrl(photoUrl);
-                photo.setPosition(user.getPhotos().size());
                 user.addPhoto(photo);
 
                 return photoUrl;
@@ -83,11 +76,12 @@ public class PhotoService {
         } else throw new LogicException("File is empty");
     }
 
+    @Transactional
     public void deletePhoto(Long photoId, String authUsername) throws LogicException {
         Optional<Photo> optionalPhoto = photoRepository.findById(photoId);
         if (optionalPhoto.isPresent()) {
-            String photoLoaderUsername = photoRepository.getPhotoLoaderUsername(photoId);
-            if (photoLoaderUsername.equals(authUsername)) {
+            Photo photo = optionalPhoto.get();
+            if (photo.getUser().getUsername().equals(authUsername)) {
                 if (photoRepository.getPhotoCountByUsername(authUsername) > 1) {
                     photoRepository.deleteById(photoId);
                 } else throw new LogicException("You must have at least one photo");

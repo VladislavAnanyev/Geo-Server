@@ -31,6 +31,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
@@ -108,6 +109,7 @@ public class MessageService {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
             users.removeIf(user -> user.getUsername().equals(username));
             return users.iterator().next().getPhotos().get(0).getUrl();
+
         } else if (users.size() == 1) {
             return users.iterator().next().getPhotos().get(0).getUrl();
         } else {
@@ -149,6 +151,7 @@ public class MessageService {
                 String username = SecurityContextHolder.getContext().getAuthentication().getName();
                 users.removeIf(user -> user.getUsername().equals(username));
                 return users.iterator().next().getPhotos().get(0).getUrl();
+
             } else if (users.size() == 1) {
                 return users.iterator().next().getPhotos().get(0).getUrl();
             } else {
@@ -240,7 +243,7 @@ public class MessageService {
     }
 
     @Transactional
-    public void sendMessage(@Valid Message message) throws JsonProcessingException {
+    public void sendMessage(@Valid Message message) throws JsonProcessingException, MethodArgumentNotValidException {
 
         Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
         if (dialog.getUsers().stream().anyMatch(user -> user.getUsername()

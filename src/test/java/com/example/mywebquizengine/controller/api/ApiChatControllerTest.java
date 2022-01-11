@@ -11,11 +11,18 @@ import com.example.mywebquizengine.repos.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.impl.ChannelN;
+import com.rabbitmq.client.impl.recovery.AutorecoveringChannel;
+import com.rabbitmq.client.impl.recovery.AutorecoveringConnection;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.springframework.amqp.rabbit.connection.PublisherCallbackChannelImpl;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -29,8 +36,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.DirectFieldBindingResult;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import javax.validation.ConstraintViolationException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -77,7 +89,7 @@ public class ApiChatControllerTest {
     private RabbitController rabbitController;
 
     @Test
-    public void sendMessageTest() throws JsonProcessingException {
+    public void sendMessageTest() throws IOException, MethodArgumentNotValidException {
 
         String json = """
                 {   "type": "MESSAGE",
@@ -106,7 +118,7 @@ public class ApiChatControllerTest {
         System.out.println("AAA");
         RabbitMessage message = objectMapper.readValue(json, RabbitMessage.class);
         Integer expectedMessageCount = ((ArrayList<Message>) messageRepository.findAll()).size() + 1;
-        rabbitController.sendMessageFromAMQPClient(message);
+        rabbitController.sendMessageFromAMQPClient(message, Mockito.mock(Channel.class), 1L);
         Integer actualMessageCount = ((ArrayList<Message>) messageRepository.findAll()).size();
 
         assertEquals(expectedMessageCount, actualMessageCount);
@@ -114,7 +126,7 @@ public class ApiChatControllerTest {
     }
 
     @Test
-    public void sendMessageForbiddenTest() throws JsonProcessingException, ParseException {
+    public void sendMessageForbiddenTest() throws JsonProcessingException, ParseException, MethodArgumentNotValidException {
 
         String json = """
                 {
@@ -180,10 +192,12 @@ public class ApiChatControllerTest {
         RabbitMessage message = objectMapper.readValue(json, RabbitMessage.class);
 
         try {
-            rabbitController.sendMessageFromAMQPClient(message);
+            rabbitController.sendMessageFromAMQPClient(message, Mockito.mock(Channel.class), 1L);
             fail("Expected ConstraintViolationException");
         } catch (ConstraintViolationException e) {
             assertNotEquals("", e.getMessage());
+        } catch (MethodArgumentNotValidException | IOException e) {
+            e.printStackTrace();
         }
 
         ArrayList<Message> actualMessages = (ArrayList<Message>) messageRepository.findAll();
@@ -217,11 +231,15 @@ public class ApiChatControllerTest {
 
         RabbitMessage message = objectMapper.readValue(json, RabbitMessage.class);
 
+
+
         try {
-            rabbitController.sendMessageFromAMQPClient(message);
+            rabbitController.sendMessageFromAMQPClient(message, Mockito.mock(Channel.class), 1L);
             fail("Expected ConstraintViolationException");
         } catch (ConstraintViolationException e) {
             assertNotEquals("", e.getMessage());
+        } catch (MethodArgumentNotValidException | IOException e) {
+            e.printStackTrace();
         }
 
         ArrayList<Message> actualMessages = (ArrayList<Message>) messageRepository.findAll();

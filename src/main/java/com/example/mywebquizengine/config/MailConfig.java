@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.security;
+package com.example.mywebquizengine.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

@@ -2,6 +2,7 @@ package com.example.mywebquizengine;
 
 import com.example.mywebquizengine.model.exception.ApiError;
 import com.example.mywebquizengine.model.exception.LogicException;
+import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import javax.persistence.EntityNotFoundException;
+import javax.validation.ConstraintViolationException;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -87,6 +89,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         ApiError apiError = new ApiError("Internal Exception", ex.getMessage());
         return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
     }*/
+
+    @ExceptionHandler(ListenerExecutionFailedException.class)
+    protected ResponseEntity<Object> handleAmqpFailure(ListenerExecutionFailedException e) {
+        ApiError apiError = new ApiError("ListenerExecutionFailedException", e.getMessage());
+        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    }
 
 
 }

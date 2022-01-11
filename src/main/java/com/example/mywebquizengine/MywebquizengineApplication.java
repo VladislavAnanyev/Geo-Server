@@ -1,29 +1,24 @@
 package com.example.mywebquizengine;
 
 
-import freemarker.template.*;
-
+import freemarker.template.TemplateException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
-
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ApplicationContext;
-
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
-import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 
-
-import java.io.*;
+import java.io.IOException;
 
 @ServletComponentScan("com.example.mywebquizengine.Security")
 @SpringBootApplication
 @EnableScheduling
 @EnableAsync
 public class MywebquizengineApplication {
+
+    public static ApplicationContext ctx;
 
     public static void main(String[] args) throws TemplateException, IOException {
 
@@ -90,22 +85,7 @@ public class MywebquizengineApplication {
         }*/
 
 
-
-
-
     }
-
-    /*@Bean
-    public static ConfigureRedisAction configureRedisAction() {
-        return ConfigureRedisAction.NO_OP;
-    }*/
-
-    /*@Bean
-    public RedisConnectionFactory factory() {
-        return new LettuceConnectionFactory("localhost", 6379);
-    }*/
-
-    public static ApplicationContext ctx;
 
     /**
      * Make Spring inject the application context

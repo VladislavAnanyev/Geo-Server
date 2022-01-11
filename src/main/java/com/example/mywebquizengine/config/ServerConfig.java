@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.security;
+package com.example.mywebquizengine.config;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.connector.Connector;

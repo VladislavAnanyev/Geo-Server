@@ -16,6 +16,7 @@ public class Message {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotNull
     private User sender;
 
     @Size(min = 1)

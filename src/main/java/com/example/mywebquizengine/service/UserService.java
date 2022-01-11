@@ -399,7 +399,7 @@ public class UserService implements UserDetailsService {
     @Transactional
     public ProfileView getUserProfileById(String username) {
         ProfileView profileView = userRepository.findUserByUsernameOrderByUsernameAscPhotosAsc(username);
-        Collections.sort(profileView.getPhotos());
+        //Collections.sort(profileView.getPhotos());
         return profileView;
     }
 

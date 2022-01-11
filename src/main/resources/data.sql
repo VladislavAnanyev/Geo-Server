@@ -10,12 +10,12 @@ INSERT INTO PUBLIC.USERS_ROLES (USERS_USERNAME, ROLES) VALUES ('user3', 'ROLE_US
 INSERT INTO PUBLIC.USERS_ROLES (USERS_USERNAME, ROLES) VALUES ('user4', 'ROLE_USER');
 INSERT INTO PUBLIC.USERS_ROLES (USERS_USERNAME, ROLES) VALUES ('user5', 'ROLE_USER');
 
-INSERT INTO PUBLIC.USERS_PHOTOS (ID, POSITION, URL, USER_USERNAME) VALUES (64, 0, 'https://localhost/img/default.jpg', 'user1');
-INSERT INTO PUBLIC.USERS_PHOTOS (ID, POSITION, URL, USER_USERNAME) VALUES (65, 0, 'https://localhost/img/default.jpg', 'user2');
-INSERT INTO PUBLIC.USERS_PHOTOS (ID, POSITION, URL, USER_USERNAME) VALUES (66, 0, 'https://localhost/img/default.jpg', 'user2');
-INSERT INTO PUBLIC.USERS_PHOTOS (ID, POSITION, URL, USER_USERNAME) VALUES (67, 0, 'https://localhost/img/default.jpg', 'user3');
-INSERT INTO PUBLIC.USERS_PHOTOS (ID, POSITION, URL, USER_USERNAME) VALUES (68, 0, 'https://localhost/img/default.jpg', 'user4');
-INSERT INTO PUBLIC.USERS_PHOTOS (ID, POSITION, URL, USER_USERNAME) VALUES (69, 0, 'https://localhost/img/default.jpg', 'user5');
+INSERT INTO PUBLIC.USERS_PHOTOS (ID,  URL, USER_USERNAME) VALUES (64, 'https://localhost/img/default.jpg', 'user1');
+INSERT INTO PUBLIC.USERS_PHOTOS (ID,  URL, USER_USERNAME) VALUES (65, 'https://localhost/img/default.jpg', 'user2');
+INSERT INTO PUBLIC.USERS_PHOTOS (ID,  URL, USER_USERNAME) VALUES (66, 'https://localhost/img/default.jpg', 'user2');
+INSERT INTO PUBLIC.USERS_PHOTOS (ID,  URL, USER_USERNAME) VALUES (67, 'https://localhost/img/default.jpg', 'user3');
+INSERT INTO PUBLIC.USERS_PHOTOS (ID,  URL, USER_USERNAME) VALUES (68, 'https://localhost/img/default.jpg', 'user4');
+INSERT INTO PUBLIC.USERS_PHOTOS (ID,  URL, USER_USERNAME) VALUES (69, 'https://localhost/img/default.jpg', 'user5');
 
 INSERT INTO PUBLIC.DIALOGS (DIALOG_ID, IMAGE, NAME) VALUES (1196, null, null);
 INSERT INTO PUBLIC.DIALOGS (DIALOG_ID, IMAGE, NAME) VALUES (1202, 'https://localhost/img/default.jpg', 'Группа');

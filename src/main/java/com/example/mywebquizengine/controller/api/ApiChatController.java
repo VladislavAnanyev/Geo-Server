@@ -23,14 +23,14 @@ public class ApiChatController {
     @DeleteMapping(path = "/message/{id}")
     public void deleteMessage(@PathVariable Long id,
                               @AuthenticationPrincipal Principal principal
-    ) throws JsonProcessingException, ParseException {
+    ) throws JsonProcessingException {
         messageService.deleteMessage(id, principal.getName());
     }
 
     @PutMapping(path = "/message/{id}")
     public void editMessage(@RequestBody Message message,
                             @AuthenticationPrincipal Principal principal
-    ) throws JsonProcessingException, ParseException {
+    ) throws JsonProcessingException {
         messageService.editMessage(message, principal.getName());
     }
 

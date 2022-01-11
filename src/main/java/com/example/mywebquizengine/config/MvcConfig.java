@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.security;
+package com.example.mywebquizengine.config;
 
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.annotation.Bean;
