@@ -1,7 +1,6 @@
 package com.example.mywebquizengine.controller.api;
 
 import com.example.mywebquizengine.model.exception.LogicException;
-import com.example.mywebquizengine.model.userinfo.Photo;
 import com.example.mywebquizengine.service.PhotoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.model.chat;
 
-import com.example.mywebquizengine.model.User;
+import com.example.mywebquizengine.model.userinfo.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.domain.Pageable;
 

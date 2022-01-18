@@ -2,7 +2,7 @@ package com.example.mywebquizengine.repos;
 
 import com.example.mywebquizengine.model.projection.RequestView;
 
-import com.example.mywebquizengine.model.Request;
+import com.example.mywebquizengine.model.request.Request;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

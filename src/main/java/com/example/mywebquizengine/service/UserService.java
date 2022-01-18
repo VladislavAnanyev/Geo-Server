@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.service;
 
-import com.example.mywebquizengine.model.Role;
-import com.example.mywebquizengine.model.User;
+import com.example.mywebquizengine.model.userinfo.Role;
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.model.projection.ProfileView;
 import com.example.mywebquizengine.model.projection.UserCommonView;
 import com.example.mywebquizengine.model.projection.UserView;
@@ -171,12 +171,10 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public User getUserViaChangePasswordCode(String changePasswordCode) {
+    public void getUserViaChangePasswordCode(String changePasswordCode) {
 
         Optional<User> optionalUser = userRepository.findByChangePasswordCode(changePasswordCode);
-        if (optionalUser.isPresent()) {
-            return optionalUser.get();
-        } else {
+        if (optionalUser.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
@@ -267,7 +265,7 @@ public class UserService implements UserDetailsService {
         // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
         String jwt = jwtTokenUtil.generateToken((UserDetails) authentication.getPrincipal());
 
-        Queue queue = new Queue("", true, false, false);
+        /*Queue queue = new Queue("", true, false, false);
         queue.addArgument("x-expires", 172800000L);
         String queueName = rabbitAdmin.declareQueue(queue);
         Binding binding = new Binding(
@@ -277,9 +275,9 @@ public class UserService implements UserDetailsService {
                 "",
                 null
         );
-        rabbitAdmin.declareBinding(binding);
+        rabbitAdmin.declareBinding(binding);*/
 
-        return new AuthResponse(jwt, queueName);
+        return new AuthResponse(jwt);
     }
 
     public AuthResponse getJwtToken(User user) {
@@ -334,7 +332,7 @@ public class UserService implements UserDetailsService {
 
             String jwt = jwtTokenUtil.generateToken(savedUser);
 
-            Queue queue = new Queue("", true, false, false);
+            /*Queue queue = new Queue("", true, false, false);
             queue.addArgument("x-expires", 2419200000L);
             String queueName = rabbitAdmin.declareQueue(queue);
             Binding binding = new Binding(
@@ -344,9 +342,9 @@ public class UserService implements UserDetailsService {
                     "",
                     null
             );
-            rabbitAdmin.declareBinding(binding);
+            rabbitAdmin.declareBinding(binding);*/
 
-            return new AuthResponse(jwt, queueName);
+            return new AuthResponse(jwt);
             // Use or store profile information
             // ...
 
@@ -398,9 +396,7 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public ProfileView getUserProfileById(String username) {
-        ProfileView profileView = userRepository.findUserByUsernameOrderByUsernameAscPhotosAsc(username);
-        //Collections.sort(profileView.getPhotos());
-        return profileView;
+        return userRepository.findUserByUsernameOrderByUsernameAscPhotosAsc(username);
     }
 
 

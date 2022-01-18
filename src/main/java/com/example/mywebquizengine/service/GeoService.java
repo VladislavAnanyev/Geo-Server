@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.service;
 
-import com.example.mywebquizengine.model.User;
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.model.geo.Geolocation;
 import com.example.mywebquizengine.model.geo.Meeting;
 import com.example.mywebquizengine.model.projection.GeolocationView;
@@ -8,7 +8,6 @@ import com.example.mywebquizengine.model.projection.MeetingView;
 import com.example.mywebquizengine.model.projection.MeetingViewCustomQuery;
 import com.example.mywebquizengine.model.rabbit.MeetingType;
 import com.example.mywebquizengine.model.rabbit.RabbitMessage;
-import com.example.mywebquizengine.model.rabbit.RequestType;
 import com.example.mywebquizengine.repos.GeolocationRepository;
 import com.example.mywebquizengine.repos.MeetingRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,8 +20,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.json.BasicJsonParser;
-import org.springframework.boot.json.JsonParser;
 import org.springframework.data.domain.Example;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -55,9 +52,6 @@ public class GeoService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private final JsonParser jsonParser = new BasicJsonParser();
-
-
     public ArrayList<MeetingViewCustomQuery> getMyMeetings(String username, String date) {
         if (date == null) {
             Calendar calendar = new GregorianCalendar();
@@ -68,41 +62,41 @@ public class GeoService {
         return (ArrayList<MeetingViewCustomQuery>) meetingRepository.getMyMeetings(username, date);
     }
 
-    public void sendGeolocation(String username, Geolocation myGeolocation) throws JsonProcessingException, ParseException {
-        myGeolocation.setUser(userService.loadUserByUsername(username));
+    public void sendGeolocation(String username, Geolocation geolocation) throws JsonProcessingException, ParseException {
+        geolocation.setUser(userService.loadUserByUsername(username));
 
         String time = "";
         Timestamp timestamp;
-        if (myGeolocation.getTime() == null) {
+        if (geolocation.getTime() == null) {
             timestamp = Timestamp.from(new GregorianCalendar().toInstant());
-            myGeolocation.setTime(timestamp);
+            geolocation.setTime(timestamp);
             time = timestamp.toString();
             System.out.println(time);
         } else {
-            timestamp = Timestamp.from(myGeolocation.getTime().toInstant());
+            timestamp = Timestamp.from(geolocation.getTime().toInstant());
             time = timestamp.toString();
         }
 
-        geolocationRepository.save(myGeolocation);
+        geolocationRepository.save(geolocation);
 
-        ArrayList<Geolocation> peopleNearMe = findInSquare(username, myGeolocation, "20", time);
+        ArrayList<Geolocation> peopleNearMe = findInSquare(username, geolocation, "20", time);
 
         if (peopleNearMe.size() > 0) {
 
             for (int i = 0; i < peopleNearMe.size(); i++) {
 
                 if (meetingRepository.
-                        getMeetings(myGeolocation.getUser().getUsername(),
+                        getMeetings(geolocation.getUser().getUsername(),
                                 peopleNearMe.get(i).getUser().getUsername(), time.substring(0, 10))
                         .size() == 0) {
 
                     if (!username.equals(peopleNearMe.get(i).getUser().getUsername())) {
 
                         Meeting meeting = new Meeting();
-                        meeting.setFirstUser(myGeolocation.getUser());
+                        meeting.setFirstUser(geolocation.getUser());
                         meeting.setSecondUser(peopleNearMe.get(i).getUser());
-                        meeting.setLat(myGeolocation.getLat());
-                        meeting.setLng(myGeolocation.getLng());
+                        meeting.setLat(geolocation.getLat());
+                        meeting.setLng(geolocation.getLng());
                         meeting.setTime(timestamp);
 
                         meetingRepository.save(meeting);

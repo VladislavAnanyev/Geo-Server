@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.controller.web;
 
-import com.example.mywebquizengine.model.User;
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.model.exception.LogicException;
 import com.example.mywebquizengine.service.PhotoService;
 import com.example.mywebquizengine.service.UserService;

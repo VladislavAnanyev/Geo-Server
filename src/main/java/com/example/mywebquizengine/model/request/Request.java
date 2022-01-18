@@ -1,5 +1,6 @@
-package com.example.mywebquizengine.model;
+package com.example.mywebquizengine.model.request;
 
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.model.chat.Message;
 import com.example.mywebquizengine.model.geo.Meeting;
 

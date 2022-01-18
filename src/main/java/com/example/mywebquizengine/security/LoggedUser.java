@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.security;
 
-import com.example.mywebquizengine.model.User;
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.MywebquizengineApplication;
 import com.example.mywebquizengine.repos.UserRepository;
 import org.springframework.stereotype.Component;

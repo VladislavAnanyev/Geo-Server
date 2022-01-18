@@ -2,8 +2,8 @@ package com.example.mywebquizengine.controller.web;
 
 import com.example.mywebquizengine.model.projection.UserView;
 import com.example.mywebquizengine.model.userinfo.RegistrationType;
-import com.example.mywebquizengine.model.Request;
-import com.example.mywebquizengine.model.User;
+import com.example.mywebquizengine.model.request.Request;
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.security.ActiveUserStore;
 import com.example.mywebquizengine.service.RequestService;
 import com.example.mywebquizengine.service.UserService;
@@ -160,7 +160,7 @@ public class UserController {
     @PostMapping(path = "/sendRequest")
     @ResponseBody
     public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
-        requestService.sendRequest(request, principal);
+        requestService.sendRequest(request, principal.getName());
     }
 
     @GetMapping(path = "/requests")

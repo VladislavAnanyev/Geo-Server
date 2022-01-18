@@ -1,6 +1,6 @@
 package com.example.mywebquizengine;
 
-import com.example.mywebquizengine.model.User;
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.repos.UserRepository;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;

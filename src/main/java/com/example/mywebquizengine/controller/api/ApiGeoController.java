@@ -1,12 +1,14 @@
 package com.example.mywebquizengine.controller.api;
 
 import com.example.mywebquizengine.model.geo.Geolocation;
+import com.example.mywebquizengine.model.geo.GeolocationRequest;
 import com.example.mywebquizengine.model.projection.MeetingViewCustomQuery;
 import com.example.mywebquizengine.service.GeoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.security.Principal;
 import java.util.ArrayList;
@@ -19,14 +21,20 @@ public class ApiGeoController {
     private GeoService geoService;
 
     @GetMapping(path = "/meetings")
-    public ArrayList<MeetingViewCustomQuery> getMyMeetings(@AuthenticationPrincipal Principal principal,
+    public ArrayList<MeetingViewCustomQuery> getMyMeetings(@ApiIgnore @AuthenticationPrincipal Principal principal,
                                                            @RequestParam(required = false) String date) {
         return geoService.getMyMeetings(principal.getName(), date);
     }
 
     @PostMapping(path = "/sendGeolocation")
-    public void sendGeolocation(@AuthenticationPrincipal Principal principal, @RequestBody Geolocation myGeolocation) throws Exception {
-        geoService.sendGeolocation(principal.getName(), myGeolocation);
+    public void sendGeolocation(@ApiIgnore @AuthenticationPrincipal Principal principal,
+                                @RequestBody GeolocationRequest geolocationRequest) throws Exception {
+
+        Geolocation geolocation = new Geolocation();
+        geolocation.setLat(geolocationRequest.getLat());
+        geolocation.setLng(geolocationRequest.getLng());
+
+        geoService.sendGeolocation(principal.getName(), geolocation);
     }
 
     @GetMapping(path = "/test")
@@ -37,8 +45,7 @@ public class ApiGeoController {
     @PostMapping(path = "/loadGoogleHistory")
     @ResponseBody
     public void handleGoogleHistoryUpload(@RequestParam("file") MultipartFile file,
-                                            @AuthenticationPrincipal Principal principal) {
-
+                                          @ApiIgnore @AuthenticationPrincipal Principal principal) {
         geoService.loadGeolocationHistory(file, principal.getName());
     }
 

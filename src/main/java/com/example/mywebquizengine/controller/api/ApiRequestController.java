@@ -1,15 +1,18 @@
 package com.example.mywebquizengine.controller.api;
 
+import com.example.mywebquizengine.model.request.RequestDto;
+import com.example.mywebquizengine.model.userinfo.User;
+import com.example.mywebquizengine.model.chat.Message;
+import com.example.mywebquizengine.model.geo.Meeting;
 import com.example.mywebquizengine.model.projection.RequestView;
-import com.example.mywebquizengine.model.Request;
+import com.example.mywebquizengine.model.request.Request;
 import com.example.mywebquizengine.service.RequestService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.security.Principal;
 import java.util.ArrayList;
@@ -24,30 +27,43 @@ public class ApiRequestController {
 
     @PostMapping(path = "/request")
     @ResponseBody
-    public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
-        requestService.sendRequest(request, principal);
-        throw new ResponseStatusException(HttpStatus.OK);
+    public void sendRequest(@RequestBody RequestDto requestDto, @ApiIgnore @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
+
+        Request request = new Request();
+
+        User user = new User();
+        user.setUsername(requestDto.getToUsername());
+
+        Meeting meeting = new Meeting();
+        meeting.setId(requestDto.getMeetingId());
+
+        Message message = new Message();
+        message.setContent(requestDto.getMessageContent());
+
+        request.setTo(user);
+        request.setMeeting(meeting);
+
+        requestService.sendRequest(request, principal.getName());
     }
 
     @PostMapping(path = "/request/{id}/accept")
     //@PreAuthorize(value = "!#principal.name.equals(#user.username)")
-    public Long acceptRequest(@PathVariable Long id, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
+    public Long acceptRequest(@PathVariable Long id, @ApiIgnore @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
         return requestService.acceptRequest(id, principal.getName());
     }
 
     @GetMapping(path = "/requests")
-    public ArrayList<RequestView> getMyRequests(@AuthenticationPrincipal Principal principal) {
+    public ArrayList<RequestView> getMyRequests(@ApiIgnore @AuthenticationPrincipal Principal principal) {
         return requestService.getMyRequests(principal.getName());
     }
 
     @PostMapping(path = "/request/{id}/reject")
-    public void rejectRequest(@PathVariable Long id, @AuthenticationPrincipal Principal principal) {
+    public void rejectRequest(@PathVariable Long id, @ApiIgnore @AuthenticationPrincipal Principal principal) {
         requestService.rejectRequest(id, principal.getName());
-        throw new ResponseStatusException(HttpStatus.OK);
     }
 
     @GetMapping(path = "/sentRequests")
-    public List<RequestView> getSentRequests(@AuthenticationPrincipal Principal principal) {
+    public List<RequestView> getSentRequests(@ApiIgnore @AuthenticationPrincipal Principal principal) {
         return requestService.getSentRequests(principal.getName());
     }
 }

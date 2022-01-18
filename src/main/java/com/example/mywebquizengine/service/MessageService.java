@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.service;
 
 
-import com.example.mywebquizengine.model.User;
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.model.chat.Dialog;
 import com.example.mywebquizengine.model.chat.Message;
 import com.example.mywebquizengine.model.chat.MessageStatus;
@@ -11,15 +11,13 @@ import com.example.mywebquizengine.model.projection.MessageView;
 import com.example.mywebquizengine.model.projection.TypingView;
 import com.example.mywebquizengine.model.rabbit.MessageType;
 import com.example.mywebquizengine.model.rabbit.RabbitMessage;
-import com.example.mywebquizengine.model.rabbit.Typing;
+import com.example.mywebquizengine.model.chat.Typing;
 import com.example.mywebquizengine.repos.DialogRepository;
 import com.example.mywebquizengine.repos.MessageRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.simple.JSONValue;
-import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.MessagePostProcessor;
-import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,9 +29,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.*;
@@ -61,8 +59,7 @@ public class MessageService {
         messageRepository.save(message);
     }
 
-
-    public Long checkDialog(String username, String authUsername) {
+    public Long createDialog(String username, String authUsername) {
 
         if (!authUsername.equals(username)) {
             Long dialog_id = dialogRepository.findDialogByName(username,
@@ -79,7 +76,7 @@ public class MessageService {
             } else {
                 return dialog_id;
             }
-        } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        } else throw new IllegalArgumentException("You can not create dialog with myself");
 
 
     }
@@ -91,12 +88,11 @@ public class MessageService {
             return name;
         } else if (users.size() == 2) {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            users.removeIf(user -> user.getUsername().equals(username));
-            return users.iterator().next().getUsername();
-        } else if (users.size() == 1) {
-            return users.iterator().next().getUsername();
+            Set<User> userSet = new HashSet<>(users);
+            userSet.removeIf(user -> user.getUsername().equals(username));
+            return userSet.iterator().next().getUsername();
         } else {
-            return "Пустой диалог";
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
     }
@@ -107,13 +103,11 @@ public class MessageService {
             return image;
         } else if (users.size() == 2) {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            users.removeIf(user -> user.getUsername().equals(username));
-            return users.iterator().next().getPhotos().get(0).getUrl();
-
-        } else if (users.size() == 1) {
-            return users.iterator().next().getPhotos().get(0).getUrl();
+            Set<User> userSet = new HashSet<>(users);
+            userSet.removeIf(user -> user.getUsername().equals(username));
+            return userSet.iterator().next().getPhotos().get(0).getUrl();
         } else {
-            return "Пустой диалог";
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
     }
@@ -128,14 +122,13 @@ public class MessageService {
                 return dialog.getName();
             } else if (users.size() == 2) {
                 String username = SecurityContextHolder.getContext().getAuthentication().getName();
-                users.removeIf(user -> user.getUsername().equals(username));
-                return users.iterator().next().getUsername();
-            } else if (users.size() == 1) {
-                return users.iterator().next().getUsername();
+                Set<User> userSet = new HashSet<>(users);
+                userSet.removeIf(user -> user.getUsername().equals(username));
+                return userSet.iterator().next().getUsername();
             } else {
-                return "Пустой диалог";
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
             }
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        } else throw new EntityNotFoundException("Dialog not found");
     }
 
 
@@ -149,25 +142,20 @@ public class MessageService {
                 return dialog.getImage();
             } else if (users.size() == 2) {
                 String username = SecurityContextHolder.getContext().getAuthentication().getName();
-                users.removeIf(user -> user.getUsername().equals(username));
-                return users.iterator().next().getPhotos().get(0).getUrl();
+                Set<User> userSet = new HashSet<>(users);
+                userSet.removeIf(user -> user.getUsername().equals(username));
+                return userSet.iterator().next().getPhotos().get(0).getUrl();
 
-            } else if (users.size() == 1) {
-                return users.iterator().next().getPhotos().get(0).getUrl();
             } else {
-                return "Пустой диалог";
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
             }
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        } else throw new EntityNotFoundException("Dialog not found");
     }
-
 
     public ArrayList<LastDialog> getDialogsForApi(String username) {
-
         List<LastDialog> messageViews = messageRepository.getDialogsForApi(username);
-
         return (ArrayList<LastDialog>) messageViews;
     }
-
 
     @Transactional
     public void deleteMessage(Long id, String username) throws JsonProcessingException {
@@ -189,10 +177,10 @@ public class MessageService {
                 }
 
             } else {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+                throw new SecurityException("You are not author of this message");
             }
         } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            throw new EntityNotFoundException("Message with specified id not found");
         }
     }
 
@@ -213,7 +201,7 @@ public class MessageService {
         if (dialog.getUsers().stream().anyMatch(o -> o.getUsername()
                 .equals(username))) {
             return dialog;
-        } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        } else throw new SecurityException("You are not contains in this dialog");
 
     }
 
@@ -243,37 +231,39 @@ public class MessageService {
     }
 
     @Transactional
-    public void sendMessage(@Valid Message message) throws JsonProcessingException, MethodArgumentNotValidException {
+    public void sendMessage(@Valid Message message) throws JsonProcessingException, IllegalAccessException {
 
-        Dialog dialog = dialogRepository.findById(message.getDialog().getDialogId()).get();
-        if (dialog.getUsers().stream().anyMatch(user -> user.getUsername()
-                .equals(message.getSender().getUsername()))) {
+        Optional<Dialog> optionalDialog = dialogRepository.findById(message.getDialog().getDialogId());
 
-            User sender = userService.loadUserByUsernameProxy(message.getSender().getUsername());
+        if (optionalDialog.isPresent()) {
 
-            message.setSender(sender);
-            message.setDialog(dialogRepository.findById(message.getDialog().getDialogId()).get());
-            message.setTimestamp(new Date());
-            message.setStatus(MessageStatus.DELIVERED);
+            Dialog dialog = optionalDialog.get();
 
-            messageRepository.save(message);
+            if (dialog.getUsers().stream().anyMatch(user -> user.getUsername()
+                    .equals(message.getSender().getUsername()))) {
 
-            MessageView messageDto = ProjectionUtil.parseToProjection(message, MessageView.class);
+                User sender = userService.loadUserByUsernameProxy(message.getSender().getUsername());
 
-            RabbitMessage<MessageView> rabbitMessage = new RabbitMessage<>();
-            rabbitMessage.setType(MessageType.MESSAGE);
-            rabbitMessage.setPayload(messageDto);
+                message.setSender(sender);
+                message.setDialog(dialog);
+                message.setTimestamp(new Date());
+                message.setStatus(MessageStatus.DELIVERED);
 
-            final MessagePostProcessor messagePostProcessor = messagePr -> {
-                messagePr.getMessageProperties().setPriority(1);
-                return messagePr;
-            };
+                messageRepository.save(message);
 
-            for (User user : dialog.getUsers()) {
-                rabbitTemplate.convertAndSend(user.getUsername(), "",
-                        JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)), messagePostProcessor);
-            }
-        }
+                MessageView messageDto = ProjectionUtil.parseToProjection(message, MessageView.class);
+
+                RabbitMessage<MessageView> rabbitMessage = new RabbitMessage<>();
+                rabbitMessage.setType(MessageType.MESSAGE);
+                rabbitMessage.setPayload(messageDto);
+
+                for (User user : dialog.getUsers()) {
+                    rabbitTemplate.convertAndSend(user.getUsername(), "",
+                            JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
+                }
+            } else throw new SecurityException("You are not contains in this dialog");
+            //else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        } else throw new EntityNotFoundException("Dialog not found");
 
     }
 
@@ -362,7 +352,7 @@ public class MessageService {
                 }
 
             }
-        }
+        } throw new EntityNotFoundException("Dialog not found");
 
 
     }

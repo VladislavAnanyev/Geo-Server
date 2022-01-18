@@ -1,14 +1,15 @@
 package com.example.mywebquizengine.controller.api;
 
+import com.example.mywebquizengine.model.chat.EditMessageRequest;
 import com.example.mywebquizengine.model.chat.Message;
 import com.example.mywebquizengine.model.projection.LastDialog;
 import com.example.mywebquizengine.model.projection.DialogView;
 import com.example.mywebquizengine.service.MessageService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.security.Principal;
 import java.util.ArrayList;
@@ -22,36 +23,41 @@ public class ApiChatController {
 
     @DeleteMapping(path = "/message/{id}")
     public void deleteMessage(@PathVariable Long id,
-                              @AuthenticationPrincipal Principal principal
+                              @ApiIgnore @AuthenticationPrincipal Principal principal
     ) throws JsonProcessingException {
         messageService.deleteMessage(id, principal.getName());
     }
 
     @PutMapping(path = "/message/{id}")
-    public void editMessage(@RequestBody Message message,
-                            @AuthenticationPrincipal Principal principal
+    public void editMessage(@PathVariable Long id,
+                            @RequestBody EditMessageRequest editMessageRequest,
+                            @ApiIgnore @AuthenticationPrincipal Principal principal
     ) throws JsonProcessingException {
+
+        Message message = new Message();
+        message.setContent(editMessageRequest.getContent());
+        message.setId(id);
+
         messageService.editMessage(message, principal.getName());
     }
 
-    @GetMapping(path = "/messages")
-    public DialogView getMessages(@RequestParam Long dialogId,
+    @GetMapping(path = "/dialog/{dialogId}")
+    public DialogView getMessages(@PathVariable Long dialogId,
                                   @RequestParam(required = false,defaultValue = "0") Integer page,
                                   @RequestParam(required = false,defaultValue = "50") Integer pageSize,
                                   @RequestParam(defaultValue = "timestamp") String sortBy,
-                                  @AuthenticationPrincipal Principal principal) {
+                                  @ApiIgnore @AuthenticationPrincipal Principal principal) {
         return messageService.getMessages(dialogId, page, pageSize, sortBy, principal.getName());
     }
 
     @GetMapping(path = "/dialogs")
-    public ArrayList<LastDialog> getDialogs(@AuthenticationPrincipal Principal principal) {
+    public ArrayList<LastDialog> getDialogs(@ApiIgnore @AuthenticationPrincipal Principal principal) {
         return messageService.getDialogsForApi(principal.getName());
     }
 
-    @GetMapping(path = "/getDialogId")
-    public Long checkDialog(@RequestParam String username, @AuthenticationPrincipal Principal principal) {
-        return messageService.checkDialog(username, principal.getName());
+    @PostMapping(path = "/dialog/create")
+    public Long checkDialog(@RequestParam String username, @ApiIgnore @AuthenticationPrincipal Principal principal) {
+        return messageService.createDialog(username, principal.getName());
     }
-
 
 }

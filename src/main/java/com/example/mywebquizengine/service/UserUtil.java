@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.service;
 
 import com.example.mywebquizengine.MywebquizengineApplication;
-import com.example.mywebquizengine.model.User;
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.model.projection.UserCommonView;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;

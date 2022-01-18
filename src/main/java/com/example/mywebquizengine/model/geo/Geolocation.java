@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.model.geo;
 
-import com.example.mywebquizengine.model.User;
+import com.example.mywebquizengine.model.userinfo.User;
 
 import javax.persistence.*;
 import java.util.Date;

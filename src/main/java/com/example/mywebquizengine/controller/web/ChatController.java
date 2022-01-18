@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.controller.web;
 
 
-import com.example.mywebquizengine.model.User;
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.model.chat.Dialog;
 import com.example.mywebquizengine.model.projection.DialogView;
 import com.example.mywebquizengine.service.MessageService;
@@ -51,7 +51,7 @@ public class ChatController {
     @PreAuthorize(value = "!#principal.name.equals(#user.username)")
     public Long checkDialog(@RequestBody User user, @AuthenticationPrincipal Principal principal) {
 
-        return messageService.checkDialog(user.getUsername(), principal.getName());
+        return messageService.createDialog(user.getUsername(), principal.getName());
 
     }
 

@@ -1,6 +1,6 @@
-package com.example.mywebquizengine.model.rabbit;
+package com.example.mywebquizengine.model.chat;
 
-import com.example.mywebquizengine.model.User;
+import com.example.mywebquizengine.model.userinfo.User;
 
 public class Typing {
     private User user;

@@ -58,7 +58,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(SecurityException.class)
     public ResponseEntity<Object> handleException(SecurityException e) {
-        ApiError apiError = new ApiError("Malformed JSON Request", e.getMessage());
+        ApiError apiError = new ApiError("Security Exception", e.getMessage());
         return new ResponseEntity<>(apiError, HttpStatus.FORBIDDEN);
     }
 

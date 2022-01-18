@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.service;
 
-import com.example.mywebquizengine.model.Order;
+import com.example.mywebquizengine.model.order.Order;
 import com.example.mywebquizengine.repos.OrderRepository;
 /*import com.paypal.api.payments.*;
 import com.paypal.base.rest.APIContext;

@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.model;
+package com.example.mywebquizengine.model.order;
 
 public class OrderDetail {
     private String productName;

@@ -1,10 +1,8 @@
 package com.example.mywebquizengine.model.userinfo;
 
-import com.example.mywebquizengine.model.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 

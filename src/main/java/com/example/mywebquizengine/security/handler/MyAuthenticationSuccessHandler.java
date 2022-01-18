@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.security.handler;
 
 import com.example.mywebquizengine.model.userinfo.RegistrationType;
-import com.example.mywebquizengine.model.User;
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.security.ActiveUserStore;
 import com.example.mywebquizengine.security.LoggedUser;
 import com.example.mywebquizengine.service.UserService;
@@ -75,10 +75,17 @@ public class MyAuthenticationSuccessHandler extends
 
         HttpSession session = request.getSession(false);
 
-        session.invalidate();
-        session = request.getSession(true);
-        session.setAttribute("user", user);
-        session.setMaxInactiveInterval(60);
+        if (session != null) {
+
+            session.invalidate();
+            session = request.getSession(true);
+            session.setAttribute("user", user);
+            session.setMaxInactiveInterval(60);
+        } else {
+            session = request.getSession(true);
+            session.setAttribute("user", user);
+            session.setMaxInactiveInterval(60);
+        }
             //session.setAttribute("abc", "AAA");
 
 

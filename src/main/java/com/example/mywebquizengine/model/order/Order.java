@@ -1,4 +1,6 @@
-package com.example.mywebquizengine.model;
+package com.example.mywebquizengine.model.order;
+
+import com.example.mywebquizengine.model.userinfo.User;
 
 import javax.persistence.*;
 

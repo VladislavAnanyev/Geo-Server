@@ -1,11 +1,8 @@
 package com.example.mywebquizengine.model.rabbit;
 
-import javax.validation.Valid;
-
 public class RabbitMessage<T> {
 
     private Type type;
-
 
     private T payload;
 

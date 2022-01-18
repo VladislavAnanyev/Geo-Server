@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.model.projection;
 
 import com.example.mywebquizengine.model.userinfo.Photo;
-import com.example.mywebquizengine.model.Role;
+import com.example.mywebquizengine.model.userinfo.Role;
 
 import java.util.List;
 

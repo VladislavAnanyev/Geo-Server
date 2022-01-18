@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.service;
 
-import com.example.mywebquizengine.model.Request;
-import com.example.mywebquizengine.model.User;
+import com.example.mywebquizengine.model.request.Request;
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.model.chat.Dialog;
 import com.example.mywebquizengine.model.chat.MessageStatus;
 import com.example.mywebquizengine.model.projection.RequestView;
@@ -11,7 +11,6 @@ import com.example.mywebquizengine.repos.RequestRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.simple.JSONValue;
-import org.json.simple.parser.ParseException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.json.BasicJsonParser;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -48,9 +46,9 @@ public class RequestService {
     private final JsonParser jsonParser = new BasicJsonParser();
 
     @Transactional
-    public void sendRequest(Request request, Principal principal) throws JsonProcessingException {
+    public void sendRequest(Request request, String username) throws JsonProcessingException {
 
-        request.setSender(userService.loadUserByUsername(principal.getName()));
+        request.setSender(userService.loadUserByUsername(username));
         request.setTo(userService.loadUserByUsername(request.getTo().getUsername()));
         request.setStatus("PENDING");
 
@@ -63,7 +61,7 @@ public class RequestService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Вы уже отправляли заявку по этой встрече");
         }
 
-        Long dialogId = messageService.checkDialog(request.getTo().getUsername(), principal.getName());
+        Long dialogId = messageService.createDialog(request.getTo().getUsername(), username);
 
         Dialog dialog = new Dialog();
         dialog.setDialogId(dialogId);
@@ -71,7 +69,7 @@ public class RequestService {
         if (request.getMessage() != null) {
 
             request.getMessage().setDialog(dialog);
-            request.getMessage().setSender(userService.loadUserByUsernameProxy(principal.getName()));
+            request.getMessage().setSender(userService.loadUserByUsernameProxy(username));
             request.getMessage().setStatus(MessageStatus.DELIVERED);
             request.getMessage().setTimestamp(new Date());
 
@@ -113,7 +111,7 @@ public class RequestService {
         );
     }
 
-    public Long acceptRequest(Long requestId, String username) throws JsonProcessingException, ParseException {
+    public Long acceptRequest(Long requestId, String username) throws JsonProcessingException {
         User authUser = userService.loadUserByUsername(username);
 
         Request request = requestRepository.findById(requestId).get();
@@ -133,6 +131,6 @@ public class RequestService {
         rabbitTemplate.convertAndSend(request.getTo().getUsername(), "",
                 JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
 
-        return messageService.checkDialog(request.getSender().getUsername(), username);
+        return messageService.createDialog(request.getSender().getUsername(), username);
     }
 }

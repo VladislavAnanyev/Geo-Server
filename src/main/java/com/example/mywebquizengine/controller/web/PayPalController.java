@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.controller.web;
 
-import com.example.mywebquizengine.model.Order;
+import com.example.mywebquizengine.model.order.Order;
 //import com.example.mywebquizengine.Service.PaymentServices;
 import com.example.mywebquizengine.service.PaymentServices;
 import com.example.mywebquizengine.service.UserService;

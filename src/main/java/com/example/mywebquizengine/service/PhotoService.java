@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.service;
 
-import com.example.mywebquizengine.model.User;
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.model.exception.LogicException;
 import com.example.mywebquizengine.model.userinfo.Photo;
 import com.example.mywebquizengine.repos.PhotoRepository;
@@ -43,6 +43,25 @@ public class PhotoService {
                 secondPhoto.setUrl(tempPhotoUrl);
             } else throw new SecurityException("You are not loader of this photo");
         } else throw new EntityNotFoundException("Photo with given photoId not found");
+
+
+
+        /*        Photo savedPhoto = optionalPhoto.get();
+                List<Photo> photos = photoRepository.findByUser_Username(name);
+        for (Photo photo : photos) {
+            if (photo.getId().equals(firstPhotoId)) {
+                photos.remove(photo);
+            }*/
+        /*}
+
+        photos.indexOf()
+
+                photos.remove(((int) savedPhoto.getPosition()));
+                photos.add(photo.getPosition(), savedPhoto);
+
+                for (int i = 0; i < photos.size(); i++) {
+                    photos.get(i).setPosition(i);
+                }*/
 
     }
 

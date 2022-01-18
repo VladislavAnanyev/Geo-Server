@@ -3,7 +3,7 @@ package com.example.mywebquizengine.repos;
 import com.example.mywebquizengine.model.projection.ProfileView;
 import com.example.mywebquizengine.model.projection.UserCommonView;
 import com.example.mywebquizengine.model.projection.UserView;
-import com.example.mywebquizengine.model.User;
+import com.example.mywebquizengine.model.userinfo.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

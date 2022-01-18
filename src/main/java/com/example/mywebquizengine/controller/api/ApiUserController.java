@@ -1,17 +1,15 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.model.User;
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.model.projection.ProfileView;
 import com.example.mywebquizengine.model.projection.UserCommonView;
 import com.example.mywebquizengine.model.projection.UserView;
-import com.example.mywebquizengine.model.userinfo.AuthRequest;
-import com.example.mywebquizengine.model.userinfo.AuthResponse;
-import com.example.mywebquizengine.model.userinfo.GoogleToken;
-import com.example.mywebquizengine.model.userinfo.RegistrationType;
+import com.example.mywebquizengine.model.userinfo.*;
 import com.example.mywebquizengine.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
 import java.io.IOException;
@@ -27,7 +25,7 @@ public class ApiUserController {
     private UserService userService;
 
     @GetMapping(path = "/friends")
-    public List<UserCommonView> getFriends(@AuthenticationPrincipal Principal principal) {
+    public List<UserCommonView> getFriends(@ApiIgnore @AuthenticationPrincipal Principal principal) {
         return userService.findMyFriends(principal.getName());
     }
 
@@ -42,7 +40,14 @@ public class ApiUserController {
     }
 
     @PostMapping(path = "/signup")
-    public AuthResponse signup(@Valid @RequestBody User user) {
+    public AuthResponse signup(@Valid @RequestBody RegistrationRequest registrationRequest) {
+        User user = new User();
+        user.setUsername(registrationRequest.getUsername());
+        user.setFirstName(registrationRequest.getFirstName());
+        user.setLastName(registrationRequest.getLastName());
+        user.setPassword(registrationRequest.getPassword());
+        user.setEmail(registrationRequest.getEmail());
+
         userService.processCheckIn(user, RegistrationType.BASIC);
         return userService.getJwtToken(user);
     }
@@ -53,7 +58,7 @@ public class ApiUserController {
     }
 
     @GetMapping(path = "/authuser")
-    public UserView getApiAuthUser(@AuthenticationPrincipal Principal principal) {
+    public UserView getApiAuthUser(@ApiIgnore @AuthenticationPrincipal Principal principal) {
         return userService.getAuthUser(principal.getName());
     }
 
@@ -65,7 +70,7 @@ public class ApiUserController {
 
     @PutMapping(path = "/user", consumes = {"application/json"})
     public void changeUser(@RequestBody User user,
-                           @AuthenticationPrincipal Principal principal) {
+                           @ApiIgnore @AuthenticationPrincipal Principal principal) {
         userService.updateUser(user.getLastName(), user.getFirstName(), principal.getName());
     }
 
@@ -80,14 +85,16 @@ public class ApiUserController {
     }
 
     @PostMapping(path = "/user/verify-password-code")
-    public void verifyChangePasswordCode(@RequestBody User user) {
-        userService.getUserViaChangePasswordCodePhoneApi(user.getUsername(), user.getChangePasswordCode());
+    public void verifyChangePasswordCode(@RequestBody VerifyCodeRequest verifyCodeRequest) {
+        userService.getUserViaChangePasswordCodePhoneApi(
+                verifyCodeRequest.getUsername(),
+                verifyCodeRequest.getCode()
+        );
     }
 
     @GetMapping(path = "/user/check-username")
     public Boolean checkExistUser(@RequestParam String username) {
         return userService.checkForExistUser(username);
     }
-
 
 }

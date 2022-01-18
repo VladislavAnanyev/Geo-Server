@@ -40,6 +40,7 @@ import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.DirectFieldBindingResult;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.ConstraintViolationException;
 import java.io.IOException;
@@ -89,19 +90,15 @@ public class ApiChatControllerTest {
     private RabbitController rabbitController;
 
     @Test
-    public void sendMessageTest() throws IOException, MethodArgumentNotValidException {
+    public void sendMessageTest() throws IOException, MethodArgumentNotValidException, IllegalAccessException {
 
         String json = """
                 {   "type": "MESSAGE",
                     "payload": { 
-                        "dialog": {
-                            "dialogId":  1196
-                        },          
+                        "dialogId":  1196,         
                         "content": "12345",            
-                        "sender": {
-                            "username": "user1"
-                        },
-                        "uniqueCode": 123456789
+                        "username": "user1",
+                        "uniqueCode": "123456789"
                     }          
                 }
                 """;
@@ -126,20 +123,16 @@ public class ApiChatControllerTest {
     }
 
     @Test
-    public void sendMessageForbiddenTest() throws JsonProcessingException, ParseException, MethodArgumentNotValidException {
+    public void sendMessageForbiddenTest() throws JsonProcessingException, IllegalAccessException {
 
         String json = """
                 {
                     "type": "MESSAGE",
                     "payload": { 
-                        "dialog": {
-                            "dialogId":  1196
-                        },          
+                        "dialogId":  1196,        
                         "content": "12345",            
-                        "sender": {
-                            "username": "user3"
-                        },
-                        "uniqueCode": 123456789    
+                        "username": "user3",
+                        "uniqueCode": "123456789"
                     }      
                 }
                 """;
@@ -157,7 +150,12 @@ public class ApiChatControllerTest {
 
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(userRepository.findById("user3").get(), null);
-        rabbitController.sendMessage(message, authentication);
+
+        try {
+            rabbitController.sendMessage(message, authentication);
+        } catch (SecurityException e) {
+
+        }
 
         Integer actualMessageCount = ((ArrayList<Message>) messageRepository.findAll()).size();
         assertEquals(expectedMessageCount, actualMessageCount);
@@ -196,7 +194,7 @@ public class ApiChatControllerTest {
             fail("Expected ConstraintViolationException");
         } catch (ConstraintViolationException e) {
             assertNotEquals("", e.getMessage());
-        } catch (MethodArgumentNotValidException | IOException e) {
+        } catch (IOException | IllegalAccessException e) {
             e.printStackTrace();
         }
 
@@ -238,7 +236,7 @@ public class ApiChatControllerTest {
             fail("Expected ConstraintViolationException");
         } catch (ConstraintViolationException e) {
             assertNotEquals("", e.getMessage());
-        } catch (MethodArgumentNotValidException | IOException e) {
+        } catch (IOException | IllegalAccessException e) {
             e.printStackTrace();
         }
 
@@ -251,7 +249,7 @@ public class ApiChatControllerTest {
     @Test
     @WithUserDetails(value = "user1")
     public void getMessagesInNotExistDialog() throws Exception {
-        mockMvc.perform(get("/api/messages?dialogId=" + 5555).secure(true))
+        mockMvc.perform(get("/api/dialog/" + 5555).secure(true))
                 .andExpect(status().isNotFound());
     }
 
@@ -295,7 +293,7 @@ public class ApiChatControllerTest {
     @WithUserDetails(value = "user1")
     public void testCreateDialog() throws Exception {
 
-        String dialogId = mockMvc.perform(get("/api/getDialogId?username=user4")
+        String dialogId = mockMvc.perform(post("/api/dialog/create?username=user4")
                 .secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isNumber()).andReturn().getResponse().getContentAsString();
@@ -309,14 +307,14 @@ public class ApiChatControllerTest {
     @WithUserDetails(value = "user1")
     public void testCreateExistDialog() throws Exception {
 
-        String existDialogId = mockMvc.perform(get("/api/getDialogId?username=user4")
+        String existDialogId = mockMvc.perform(post("/api/dialog/create?username=user4")
                 .secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isNumber()).andReturn().getResponse().getContentAsString();
 
         assertTrue(dialogRepository.findById(Long.valueOf(existDialogId)).isPresent());
 
-        String newDialogId = mockMvc.perform(get("/api/getDialogId?username=user4")
+        String newDialogId = mockMvc.perform(post("/api/dialog/create?username=user4")
                 .secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isNumber()).andReturn().getResponse().getContentAsString();
@@ -329,7 +327,7 @@ public class ApiChatControllerTest {
     @WithUserDetails(value = "user1")
     public void getMessagesInEmptyDialog() throws Exception {
 
-        String dialogId = mockMvc.perform(get("/api/getDialogId?username=user5")
+        String dialogId = mockMvc.perform(post("/api/dialog/create?username=user5")
                 .secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isNumber()).andReturn().getResponse().getContentAsString();
@@ -339,7 +337,7 @@ public class ApiChatControllerTest {
 
         assertTrue(dialog.isPresent());
 
-        mockMvc.perform(get("/api/messages?dialogId=" + dialogId).secure(true))
+        mockMvc.perform(get("/api/dialog/" + dialogId).secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.messages", hasSize(0)));
     }
@@ -348,7 +346,7 @@ public class ApiChatControllerTest {
     @Test
     @WithUserDetails(value = "user4")
     public void testGetMessagesInBigDialog() throws Exception {
-        mockMvc.perform(get("/api/messages?dialogId=1277").secure(true))
+        mockMvc.perform(get("/api/dialog/1277").secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.messages", hasSize(50)))
                 .andExpect(jsonPath("$.messages[0].id").value("1324"))
@@ -360,7 +358,7 @@ public class ApiChatControllerTest {
     @Test
     @WithUserDetails(value = "user4")
     public void testGetMessagesOnSecondPageInDialog() throws Exception {
-        mockMvc.perform(get("/api/messages?dialogId=1277&page=1").secure(true))
+        mockMvc.perform(get("/api/dialog/1277?page=1").secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.messages", hasSize(46)))
                 .andExpect(jsonPath("$.messages[0].id").value("1278"))
@@ -372,7 +370,7 @@ public class ApiChatControllerTest {
     @Test
     @WithUserDetails(value = "user2")
     public void testGetMessagesOnSecondPageInDialogForbidden() throws Exception {
-        mockMvc.perform(get("/api/messages?dialogId=1277&page=1").secure(true))
+        mockMvc.perform(get("/api/dialog/1277?page=1").secure(true))
                 .andExpect(status().isForbidden());
     }
 

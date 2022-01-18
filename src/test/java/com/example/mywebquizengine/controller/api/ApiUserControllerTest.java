@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.model.User;
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.repos.UserRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -250,8 +250,7 @@ public class ApiUserControllerTest {
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.jwtToken").isString())
-                .andExpect(jsonPath("$.queueName").isString());
+                .andExpect(jsonPath("$.jwtToken").isString());
     }
 
 
