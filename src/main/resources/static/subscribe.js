@@ -356,9 +356,9 @@ function sendMessage(dialog) {
         //console.log(date.valueOf())
         if(messageContent && stompClient) {
             var chatMessage = {
-                sender: {username: username},
+                username: username,
                 content: messageContent,
-                dialog: {dialogId: dialog},
+                dialogId: dialog,
                 /*type: "MESSAGE",*/
                 uniqueCode: uniqueCode
             };

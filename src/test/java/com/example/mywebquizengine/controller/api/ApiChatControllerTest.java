@@ -90,10 +90,11 @@ public class ApiChatControllerTest {
     private RabbitController rabbitController;
 
     @Test
-    public void sendMessageTest() throws IOException, MethodArgumentNotValidException, IllegalAccessException {
+    public void sendMessageTest() throws IOException, IllegalAccessException {
 
         String json = """
-                {   "type": "MESSAGE",
+                {   
+                    "type": "MESSAGE",
                     "payload": { 
                         "dialogId":  1196,         
                         "content": "12345",            
