@@ -12,8 +12,6 @@ public class RequestDto {
     @NotNull
     private Long meetingId;
 
-    @NotNull
-    @NotBlank
     private String messageContent;
 
     public Long getMeetingId() {

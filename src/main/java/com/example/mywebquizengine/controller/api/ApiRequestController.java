@@ -14,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.validation.Valid;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,7 @@ public class ApiRequestController {
 
     @PostMapping(path = "/request")
     @ResponseBody
-    public void sendRequest(@RequestBody RequestDto requestDto, @ApiIgnore @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
+    public void sendRequest(@RequestBody @Valid RequestDto requestDto, @ApiIgnore @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
 
         Request request = new Request();
 
@@ -43,6 +44,9 @@ public class ApiRequestController {
         request.setTo(user);
         request.setMeeting(meeting);
 
+        if (message.getContent() != null) {
+            request.setMessage(message);
+        }
         requestService.sendRequest(request, principal.getName());
     }
 
