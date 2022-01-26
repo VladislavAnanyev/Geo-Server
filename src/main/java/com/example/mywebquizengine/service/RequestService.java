@@ -8,6 +8,8 @@ import com.example.mywebquizengine.model.projection.RequestView;
 import com.example.mywebquizengine.model.rabbit.RabbitMessage;
 import com.example.mywebquizengine.model.rabbit.RequestType;
 import com.example.mywebquizengine.repos.RequestRepository;
+import com.example.mywebquizengine.service.utils.ProjectionUtil;
+import com.example.mywebquizengine.service.utils.RabbitUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.simple.JSONValue;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -43,10 +46,8 @@ public class RequestService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private final JsonParser jsonParser = new BasicJsonParser();
-
     @Transactional
-    public void sendRequest(Request request, String username) throws JsonProcessingException {
+    public void sendRequest(Request request, String username) throws JsonProcessingException, NoSuchAlgorithmException {
 
         request.setSender(userService.loadUserByUsername(username));
         request.setTo(userService.loadUserByUsername(request.getTo().getUsername()));
@@ -83,7 +84,9 @@ public class RequestService {
         rabbitMessage.setType(RequestType.REQUEST);
         rabbitMessage.setPayload(requestView);
 
-        rabbitTemplate.convertAndSend(request.getTo().getUsername(), "",
+        String exchangeName = RabbitUtil.getExchangeName(request.getTo().getUsername());
+
+        rabbitTemplate.convertAndSend(exchangeName, "",
                 JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
     }
 
@@ -111,7 +114,7 @@ public class RequestService {
         );
     }
 
-    public Long acceptRequest(Long requestId, String username) throws JsonProcessingException {
+    public Long acceptRequest(Long requestId, String username) throws JsonProcessingException, NoSuchAlgorithmException {
         User authUser = userService.loadUserByUsername(username);
 
         Request request = requestRepository.findById(requestId).get();
@@ -126,9 +129,12 @@ public class RequestService {
         rabbitMessage.setType(RequestType.ACCEPT_REQUEST);
         rabbitMessage.setPayload(requestView);
 
-        rabbitTemplate.convertAndSend(request.getSender().getUsername(), "",
+        String senderExchangeName = RabbitUtil.getExchangeName(request.getSender().getUsername());
+        String toExchangeName = RabbitUtil.getExchangeName(request.getTo().getUsername());
+
+        rabbitTemplate.convertAndSend(senderExchangeName, "",
                 JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
-        rabbitTemplate.convertAndSend(request.getTo().getUsername(), "",
+        rabbitTemplate.convertAndSend(toExchangeName, "",
                 JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
 
         return messageService.createDialog(request.getSender().getUsername(), username);

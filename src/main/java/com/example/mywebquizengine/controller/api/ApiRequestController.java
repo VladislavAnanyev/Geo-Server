@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
+import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,7 @@ public class ApiRequestController {
 
     @PostMapping(path = "/request")
     @ResponseBody
-    public void sendRequest(@RequestBody @Valid RequestDto requestDto, @ApiIgnore @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
+    public void sendRequest(@RequestBody @Valid RequestDto requestDto, @ApiIgnore @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException, NoSuchAlgorithmException {
 
         Request request = new Request();
 
@@ -52,7 +53,7 @@ public class ApiRequestController {
 
     @PostMapping(path = "/request/{id}/accept")
     //@PreAuthorize(value = "!#principal.name.equals(#user.username)")
-    public Long acceptRequest(@PathVariable Long id, @ApiIgnore @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
+    public Long acceptRequest(@PathVariable Long id, @ApiIgnore @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException, NoSuchAlgorithmException {
         return requestService.acceptRequest(id, principal.getName());
     }
 

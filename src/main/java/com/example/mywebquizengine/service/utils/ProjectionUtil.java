@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.service;
+package com.example.mywebquizengine.service.utils;
 
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;

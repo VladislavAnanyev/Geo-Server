@@ -44,6 +44,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.ConstraintViolationException;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -90,7 +91,7 @@ public class ApiChatControllerTest {
     private RabbitController rabbitController;
 
     @Test
-    public void sendMessageTest() throws IOException, IllegalAccessException {
+    public void sendMessageTest() throws IOException, IllegalAccessException, NoSuchAlgorithmException {
 
         String json = """
                 {   
@@ -154,7 +155,7 @@ public class ApiChatControllerTest {
 
         try {
             rabbitController.sendMessage(message, authentication);
-        } catch (SecurityException e) {
+        } catch (SecurityException | NoSuchAlgorithmException e) {
 
         }
 
@@ -197,6 +198,8 @@ public class ApiChatControllerTest {
             assertNotEquals("", e.getMessage());
         } catch (IOException | IllegalAccessException e) {
             e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
         }
 
         ArrayList<Message> actualMessages = (ArrayList<Message>) messageRepository.findAll();
@@ -237,7 +240,7 @@ public class ApiChatControllerTest {
             fail("Expected ConstraintViolationException");
         } catch (ConstraintViolationException e) {
             assertNotEquals("", e.getMessage());
-        } catch (IOException | IllegalAccessException e) {
+        } catch (IOException | IllegalAccessException | NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
 

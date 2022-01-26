@@ -6,6 +6,7 @@ import com.example.mywebquizengine.model.chat.Dialog;
 import com.example.mywebquizengine.model.projection.DialogView;
 import com.example.mywebquizengine.service.MessageService;
 import com.example.mywebquizengine.service.UserService;
+import com.example.mywebquizengine.service.utils.RabbitUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 
 
@@ -44,6 +46,12 @@ public class ChatController {
         model.addAttribute("lastDialogs", messageService.getDialogsForApi(principal.getName()));
         model.addAttribute("userList", userService.findMyFriends(principal.getName()));
         return "chat";
+    }
+
+    @GetMapping(path = "/exchange")
+    @ResponseBody
+    public String getExchangeName(@AuthenticationPrincipal Principal principal) throws NoSuchAlgorithmException {
+        return RabbitUtil.getExchangeName(principal.getName());
     }
 
     @PostMapping(path = "/checkdialog")
@@ -96,7 +104,7 @@ public class ChatController {
     @ResponseBody
     public Long createGroup(@Valid @RequestBody Dialog newDialog,
                             @AuthenticationPrincipal Principal principal
-    ) throws JsonProcessingException, ParseException {
+    ) throws JsonProcessingException, ParseException, NoSuchAlgorithmException {
         return messageService.createGroup(newDialog, principal.getName());
     }
 

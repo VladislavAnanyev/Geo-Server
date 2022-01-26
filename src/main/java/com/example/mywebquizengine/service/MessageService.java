@@ -14,8 +14,11 @@ import com.example.mywebquizengine.model.rabbit.RabbitMessage;
 import com.example.mywebquizengine.model.chat.Typing;
 import com.example.mywebquizengine.repos.DialogRepository;
 import com.example.mywebquizengine.repos.MessageRepository;
+import com.example.mywebquizengine.service.utils.ProjectionUtil;
+import com.example.mywebquizengine.service.utils.RabbitUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.json.simple.JSONValue;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -34,6 +37,9 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 @Service
@@ -81,76 +87,7 @@ public class MessageService {
 
     }
 
-    public String getCompanion(String name, Set<User> users) {
 
-
-        if (users.size() > 2) {
-            return name;
-        } else if (users.size() == 2) {
-            String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            Set<User> userSet = new HashSet<>(users);
-            userSet.removeIf(user -> user.getUsername().equals(username));
-            return userSet.iterator().next().getUsername();
-        } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
-
-    }
-
-    public String getCompanionAvatar(String image, Set<User> users) {
-
-        if (users.size() > 2) {
-            return image;
-        } else if (users.size() == 2) {
-            String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            Set<User> userSet = new HashSet<>(users);
-            userSet.removeIf(user -> user.getUsername().equals(username));
-            return userSet.iterator().next().getPhotos().get(0).getUrl();
-        } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
-
-    }
-
-    public String getCompanionForLastDialogs(Long dialog_id) {
-        Optional<Dialog> optionalDialog = dialogRepository.findById(dialog_id);
-        if (optionalDialog.isPresent()) {
-            Dialog dialog = optionalDialog.get();
-            Set<User> users = dialog.getUsers();
-
-            if (users.size() > 2) {
-                return dialog.getName();
-            } else if (users.size() == 2) {
-                String username = SecurityContextHolder.getContext().getAuthentication().getName();
-                Set<User> userSet = new HashSet<>(users);
-                userSet.removeIf(user -> user.getUsername().equals(username));
-                return userSet.iterator().next().getUsername();
-            } else {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-            }
-        } else throw new EntityNotFoundException("Dialog not found");
-    }
-
-
-    public String getCompanionAvatarForLastDialogs(Long dialog_id) {
-        Optional<Dialog> optionalDialog = dialogRepository.findById(dialog_id);
-        if (optionalDialog.isPresent()) {
-            Dialog dialog = optionalDialog.get();
-            Set<User> users = dialog.getUsers();
-
-            if (users.size() > 2) {
-                return dialog.getImage();
-            } else if (users.size() == 2) {
-                String username = SecurityContextHolder.getContext().getAuthentication().getName();
-                Set<User> userSet = new HashSet<>(users);
-                userSet.removeIf(user -> user.getUsername().equals(username));
-                return userSet.iterator().next().getPhotos().get(0).getUrl();
-
-            } else {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-            }
-        } else throw new EntityNotFoundException("Dialog not found");
-    }
 
     public ArrayList<LastDialog> getDialogsForApi(String username) {
         List<LastDialog> messageViews = messageRepository.getDialogsForApi(username);
@@ -158,7 +95,7 @@ public class MessageService {
     }
 
     @Transactional
-    public void deleteMessage(Long id, String username) throws JsonProcessingException {
+    public void deleteMessage(Long id, String username) throws JsonProcessingException, NoSuchAlgorithmException {
         Optional<Message> optionalMessage = messageRepository.findById(id);
         if (optionalMessage.isPresent()) {
             Message message = optionalMessage.get();
@@ -172,7 +109,8 @@ public class MessageService {
                 rabbitMessage.setPayload(messageDto);
 
                 for (User user : message.getDialog().getUsers()) {
-                    rabbitTemplate.convertAndSend(user.getUsername(), "",
+                    String exchangeName = RabbitUtil.getExchangeName(user.getUsername());
+                    rabbitTemplate.convertAndSend(exchangeName, "",
                             JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
                 }
 
@@ -206,7 +144,7 @@ public class MessageService {
     }
 
     @Transactional
-    public void editMessage(Message newMessage, String username) throws JsonProcessingException {
+    public void editMessage(Message newMessage, String username) throws JsonProcessingException, NoSuchAlgorithmException {
         Optional<Message> optionalMessage = messageRepository.findById(newMessage.getId());
         if (optionalMessage.isPresent()) {
             Message message = optionalMessage.get();
@@ -221,7 +159,10 @@ public class MessageService {
                 rabbitMessage.setPayload(messageDto);
 
                 for (User user : message.getDialog().getUsers()) {
-                    rabbitTemplate.convertAndSend(user.getUsername(), "",
+
+                    String exchangeName = RabbitUtil.getExchangeName(user.getUsername());
+
+                    rabbitTemplate.convertAndSend(exchangeName, "",
                             JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
                 }
             } else {
@@ -231,7 +172,7 @@ public class MessageService {
     }
 
     @Transactional
-    public void sendMessage(@Valid Message message) throws JsonProcessingException, IllegalAccessException {
+    public void sendMessage(@Valid Message message) throws JsonProcessingException, IllegalAccessException, NoSuchAlgorithmException {
 
         Optional<Dialog> optionalDialog = dialogRepository.findById(message.getDialog().getDialogId());
 
@@ -258,7 +199,10 @@ public class MessageService {
                 rabbitMessage.setPayload(messageDto);
 
                 for (User user : dialog.getUsers()) {
-                    rabbitTemplate.convertAndSend(user.getUsername(), "",
+
+                    String exchangeName = RabbitUtil.getExchangeName(user.getUsername());
+
+                    rabbitTemplate.convertAndSend(exchangeName, "",
                             JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
                 }
             } else throw new SecurityException("You are not contains in this dialog");
@@ -268,7 +212,7 @@ public class MessageService {
     }
 
 
-    public Long createGroup(Dialog newDialog, String username) throws JsonProcessingException {
+    public Long createGroup(Dialog newDialog, String username) throws JsonProcessingException, NoSuchAlgorithmException {
 
         User authUser = new User();
 
@@ -310,7 +254,9 @@ public class MessageService {
             rabbitMessage.setType(MessageType.MESSAGE);
             rabbitMessage.setPayload(messageDto);
             for (User user : dialog.getUsers()) {
-                rabbitTemplate.convertAndSend(user.getUsername(), "",
+                String exchangeName = RabbitUtil.getExchangeName(user.getUsername());
+
+                rabbitTemplate.convertAndSend(exchangeName, "",
                         JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
             }
 
@@ -322,7 +268,7 @@ public class MessageService {
 
     // протестить
     @Transactional
-    public void typingMessage(@Valid Typing typing) throws JsonProcessingException {
+    public void typingMessage(@Valid Typing typing) throws JsonProcessingException, NoSuchAlgorithmException {
 
         Optional<Dialog> dialog = dialogRepository.findById(typing.getDialogId());
 
@@ -347,7 +293,8 @@ public class MessageService {
             for (User user : existDialog.getUsers()) {
 
                 if (!typing.getUser().getUsername().equals(user.getUsername())) {
-                    rabbitTemplate.convertAndSend(user.getUsername(), "",
+                    String exchangeName = RabbitUtil.getExchangeName(user.getUsername());
+                    rabbitTemplate.convertAndSend(exchangeName, "",
                             JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)), messagePostProcessor);
                 }
 

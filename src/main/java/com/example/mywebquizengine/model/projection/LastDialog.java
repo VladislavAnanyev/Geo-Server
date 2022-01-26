@@ -17,10 +17,10 @@ public interface LastDialog {
     @Value("#{new com.example.mywebquizengine.model.userinfo.User(target.username, target.firstName, target.lastName, target.avatar, target.online)}")
     UserCommonView getLastSender();
 
-    @Value("#{@messageService.getCompanionForLastDialogs(target.dialogId)}")
+    @Value("#{@messageViewLogicUtil.getCompanionForLastDialogs(target.dialogId)}")
     String getName();
 
-    @Value("#{@messageService.getCompanionAvatarForLastDialogs(target.dialogId)}")
+    @Value("#{@messageViewLogicUtil.getCompanionAvatarForLastDialogs(target.dialogId)}")
     String getImage();
 
     Date getTimestamp();

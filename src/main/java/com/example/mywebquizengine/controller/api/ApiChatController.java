@@ -11,6 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.ArrayList;
 
@@ -24,7 +25,7 @@ public class ApiChatController {
     @DeleteMapping(path = "/message/{id}")
     public void deleteMessage(@PathVariable Long id,
                               @ApiIgnore @AuthenticationPrincipal Principal principal
-    ) throws JsonProcessingException {
+    ) throws JsonProcessingException, NoSuchAlgorithmException {
         messageService.deleteMessage(id, principal.getName());
     }
 
@@ -32,7 +33,7 @@ public class ApiChatController {
     public void editMessage(@PathVariable Long id,
                             @RequestBody EditMessageRequest editMessageRequest,
                             @ApiIgnore @AuthenticationPrincipal Principal principal
-    ) throws JsonProcessingException {
+    ) throws JsonProcessingException, NoSuchAlgorithmException {
 
         Message message = new Message();
         message.setContent(editMessageRequest.getContent());

@@ -7,7 +7,7 @@ import java.util.Date;
 public interface MeetingViewCustomQuery {
     Long getId();
 
-    @Value("#{T(com.example.mywebquizengine.service.UserUtil).getUserForMeeting(target.first_username, target.second_username)}")
+    @Value("#{T(com.example.mywebquizengine.service.utils.UserUtil).getUserForMeeting(target.first_username, target.second_username)}")
     UserCommonView getUser();
 
     Double getLng();

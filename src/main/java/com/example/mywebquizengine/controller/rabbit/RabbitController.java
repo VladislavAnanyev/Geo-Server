@@ -26,6 +26,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 
 @Controller
@@ -42,7 +43,7 @@ public class RabbitController {
     @MessageMapping("/user/{dialogId}")
     public void sendMessage(@Valid @Payload RabbitMessage rabbitMessage,
                             @AuthenticationPrincipal Principal principal
-    ) throws JsonProcessingException, IllegalAccessException {
+    ) throws JsonProcessingException, IllegalAccessException, NoSuchAlgorithmException {
         if (rabbitMessage.getType().equals(MessageType.MESSAGE)) {
             SendMessageRequest sendMessageRequest = objectMapper.readValue(objectMapper
                     .writeValueAsString(rabbitMessage.getPayload()), SendMessageRequest.class);
@@ -71,7 +72,7 @@ public class RabbitController {
 
     @RabbitListener(queues = "incoming-messages")
     public void sendMessageFromAMQPClient(@Valid RabbitMessage rabbitMessage, Channel channel,
-                                          @Header(AmqpHeaders.DELIVERY_TAG) Long tag) throws IOException, IllegalAccessException {
+                                          @Header(AmqpHeaders.DELIVERY_TAG) Long tag) throws IOException, IllegalAccessException, NoSuchAlgorithmException {
         channel.basicAck(tag, false);
         if (rabbitMessage.getType().equals(MessageType.MESSAGE)) {
             SendMessageRequest sendMessageRequest = objectMapper.readValue(objectMapper

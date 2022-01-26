@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -159,7 +160,7 @@ public class UserController {
 
     @PostMapping(path = "/sendRequest")
     @ResponseBody
-    public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
+    public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException, NoSuchAlgorithmException {
         requestService.sendRequest(request, principal.getName());
     }
 
@@ -175,7 +176,7 @@ public class UserController {
 
     @PostMapping(path = "/acceptRequest")
     @ResponseBody
-    public Long acceptRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException {
+    public Long acceptRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException, NoSuchAlgorithmException {
         return requestService.acceptRequest(request.getId(), principal.getName());
     }
 

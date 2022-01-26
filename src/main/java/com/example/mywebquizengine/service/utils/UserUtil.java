@@ -1,8 +1,9 @@
-package com.example.mywebquizengine.service;
+package com.example.mywebquizengine.service.utils;
 
 import com.example.mywebquizengine.MywebquizengineApplication;
 import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.model.projection.UserCommonView;
+import com.example.mywebquizengine.service.UserService;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.http.HttpStatus;

@@ -34,10 +34,11 @@ public class Demo implements CommandLineRunner {
         }*/
 
         //if (rabbitAdmin.getQueueProperties("application") == null) {
-            List<User> users = userRepository.findAll();
 
-            for (User user : users) {
-                rabbitAdmin.declareExchange(new FanoutExchange(user.getUsername(), true, false));
+            //List<User> users = userRepository.findAll();
+
+            //for (User user : users) {
+            //    rabbitAdmin.declareExchange(new FanoutExchange(user.getUsername(), true, false));
                 /*Queue queue = new Queue(user.getUsername(), true, false, false);
 
                 Binding binding = new Binding(user.getUsername(), Binding.DestinationType.QUEUE,
@@ -47,7 +48,7 @@ public class Demo implements CommandLineRunner {
                 rabbitAdmin.declareBinding(binding);*/
 
 
-            }
+            //}
         //}
 //
 

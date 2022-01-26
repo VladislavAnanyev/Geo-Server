@@ -35,14 +35,23 @@ function onConnectedNotif() {
     }
     xhr.send();
 
+    let xhrExchange = new XMLHttpRequest();
+    xhrExchange.open('GET', '/exchange', false);
+    xhrExchange.onreadystatechange = function () {
+        if (xhrExchange.readyState === XMLHttpRequest.DONE && xhrExchange.status === 200) {
+            console.log(xhrExchange.responseText)
+        }
+    }
+    xhrExchange.send();
+
     if (location.pathname.includes("chat")) {
-        stompClient.subscribe('/exchange/' + username, onMessageReceived,
+        stompClient.subscribe('/exchange/' + xhrExchange.responseText, onMessageReceived,
             {
                 "id": "sub", "auto-delete": false, "x-queue-name": uniqueQueueName,
                 "x-expires": 300000, "ack": "client"
             });
     } else {
-        stompClient.subscribe('/exchange/' + username, onMessageReceived, {"ack": "client"})
+        stompClient.subscribe('/exchange/' + xhrExchange.responseText, onMessageReceived, {"ack": "client"})
     }
     //stompClient.subscribe('/queue/' + username, onMessageReceived);
     geo()

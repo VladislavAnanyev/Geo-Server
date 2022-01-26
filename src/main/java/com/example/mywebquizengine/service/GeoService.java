@@ -10,6 +10,8 @@ import com.example.mywebquizengine.model.rabbit.MeetingType;
 import com.example.mywebquizengine.model.rabbit.RabbitMessage;
 import com.example.mywebquizengine.repos.GeolocationRepository;
 import com.example.mywebquizengine.repos.MeetingRepository;
+import com.example.mywebquizengine.service.utils.ProjectionUtil;
+import com.example.mywebquizengine.service.utils.RabbitUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.util.IOUtils;
@@ -28,6 +30,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -62,7 +65,7 @@ public class GeoService {
         return (ArrayList<MeetingViewCustomQuery>) meetingRepository.getMyMeetings(username, date);
     }
 
-    public void sendGeolocation(String username, Geolocation geolocation) throws JsonProcessingException, ParseException {
+    public void sendGeolocation(String username, Geolocation geolocation) throws JsonProcessingException, NoSuchAlgorithmException {
         geolocation.setUser(userService.loadUserByUsername(username));
 
         String time = "";
@@ -123,7 +126,9 @@ public class GeoService {
                         User initialFirstUser = meeting.getFirstUser();
                         User initialSecondUser = meeting.getSecondUser();
 
-                        rabbitTemplate.convertAndSend(initialFirstUser.getUsername(), "",
+                        String firstUserExchangeName = RabbitUtil.getExchangeName(initialFirstUser.getUsername());
+
+                        rabbitTemplate.convertAndSend(firstUserExchangeName, "",
                                 JSONValue.parse(objectMapper.writeValueAsString(rabbitMessageForFirstUser)));
 
                         meeting.setFirstUser(meeting.getSecondUser());
@@ -140,7 +145,9 @@ public class GeoService {
                         rabbitMessageForSecondUser.setPayload(meetingViewForSecondUser);
 
 
-                        rabbitTemplate.convertAndSend(initialSecondUser.getUsername(), "",
+                        String secondUserExchangeName = RabbitUtil.getExchangeName(initialSecondUser.getUsername());
+
+                        rabbitTemplate.convertAndSend(secondUserExchangeName, "",
                                 JSONValue.parse(objectMapper.writeValueAsString(rabbitMessageForSecondUser)));
 
                     }

@@ -5,13 +5,13 @@ import com.example.mywebquizengine.model.projection.UserCommonView;
 import com.example.mywebquizengine.model.projection.UserView;
 import com.example.mywebquizengine.model.userinfo.*;
 import com.example.mywebquizengine.repos.UserRepository;
+import com.example.mywebquizengine.service.utils.RabbitUtil;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson.JacksonFactory;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -33,9 +32,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
@@ -62,10 +59,6 @@ public class UserService implements UserDetailsService {
     private MailSender mailSender;
     @Value("${hostname}")
     private String hostname;
-    @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
-    @Value("${salt}")
-    private String salt;
 
 
     @Override
@@ -252,7 +245,7 @@ public class UserService implements UserDetailsService {
         return userRepository.findByUsername(username);
     }
 
-    public AuthResponse signInViaJwt(AuthRequest authRequest) throws NoSuchAlgorithmException, InterruptedException {
+    public AuthResponse signInViaJwt(AuthRequest authRequest) throws NoSuchAlgorithmException {
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
@@ -267,13 +260,7 @@ public class UserService implements UserDetailsService {
         // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
         String jwt = jwtTokenUtil.generateToken((UserDetails) authentication.getPrincipal());
 
-        MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
-        messageDigest.update(authRequest.getUsername().getBytes(StandardCharsets.UTF_8));
-        messageDigest.update(salt.getBytes());
-
-        byte[] digest = messageDigest.digest();
-
-        String exchangeName = DigestUtils.sha256Hex(digest);
+        String exchangeName = RabbitUtil.getExchangeName(authRequest.getUsername());
 
         rabbitAdmin.declareExchange(new FanoutExchange(exchangeName, true, false));
 
@@ -284,13 +271,8 @@ public class UserService implements UserDetailsService {
     public AuthResponse getJwtToken(User user) throws NoSuchAlgorithmException {
         // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
         String jwt = jwtTokenUtil.generateToken(loadUserByUsername(user.getUsername()));
-        MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
-        messageDigest.update(user.getUsername().getBytes(StandardCharsets.UTF_8));
-        messageDigest.update(salt.getBytes());
 
-        byte[] digest = messageDigest.digest();
-
-        String exchangeName = DigestUtils.sha256Hex(digest);
+        String exchangeName = RabbitUtil.getExchangeName(user.getUsername());
         rabbitAdmin.declareExchange(new FanoutExchange(exchangeName, true, false));
         return new AuthResponse(jwt, exchangeName);
     }
@@ -341,30 +323,10 @@ public class UserService implements UserDetailsService {
 
             String jwt = jwtTokenUtil.generateToken(savedUser);
 
-            MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
-            messageDigest.update(username.getBytes(StandardCharsets.UTF_8));
-            messageDigest.update(salt.getBytes());
-
-            byte[] digest = messageDigest.digest();
-
-            String exchangeName = DigestUtils.sha256Hex(digest);
+            String exchangeName = RabbitUtil.getExchangeName(username);
             rabbitAdmin.declareExchange(new FanoutExchange(exchangeName, true, false));
 
-            /*Queue queue = new Queue("", true, false, false);
-            queue.addArgument("x-expires", 2419200000L);
-            String queueName = rabbitAdmin.declareQueue(queue);
-            Binding binding = new Binding(
-                    queueName,
-                    Binding.DestinationType.QUEUE,
-                    user.getUsername(),
-                    "",
-                    null
-            );
-            rabbitAdmin.declareBinding(binding);*/
-
             return new AuthResponse(jwt, exchangeName);
-            // Use or store profile information
-            // ...
 
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
