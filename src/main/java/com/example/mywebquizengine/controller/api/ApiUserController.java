@@ -1,6 +1,5 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.model.projection.ProfileView;
 import com.example.mywebquizengine.model.projection.UserCommonView;
 import com.example.mywebquizengine.model.projection.UserView;
@@ -14,6 +13,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.List;
 
@@ -35,12 +35,12 @@ public class ApiUserController {
     }
 
     @PostMapping(path = "/signin")
-    public AuthResponse jwtSignIn(@RequestBody AuthRequest authRequest) {
+    public AuthResponse jwtSignIn(@RequestBody AuthRequest authRequest) throws NoSuchAlgorithmException, InterruptedException {
         return userService.signInViaJwt(authRequest);
     }
 
     @PostMapping(path = "/signup")
-    public AuthResponse signup(@Valid @RequestBody RegistrationRequest registrationRequest) {
+    public AuthResponse signup(@Valid @RequestBody RegistrationRequest registrationRequest) throws NoSuchAlgorithmException {
         User user = new User();
         user.setUsername(registrationRequest.getUsername());
         user.setFirstName(registrationRequest.getFirstName());
