@@ -5,6 +5,7 @@ import com.example.mywebquizengine.model.userinfo.RegistrationType;
 import com.example.mywebquizengine.model.request.Request;
 import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.security.ActiveUserStore;
+import com.example.mywebquizengine.service.JWTUtil;
 import com.example.mywebquizengine.service.RequestService;
 import com.example.mywebquizengine.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -39,6 +40,9 @@ public class UserController {
     @Autowired
     private ActiveUserStore activeUserStore;
 
+    @Autowired
+    private JWTUtil jwtUtil;
+
 
     @GetMapping(path = "/profile")
     public String getProfile(Model model, @AuthenticationPrincipal Principal principal) {
@@ -49,6 +53,12 @@ public class UserController {
         model.addAttribute("balance", user.getBalance());
 
         return "profile";
+    }
+
+    @GetMapping(path = "/jwt")
+    @ResponseBody
+    public String getJwtToken(@AuthenticationPrincipal Principal principal) {
+        return jwtUtil.generateToken(userService.loadUserByUsername(principal.getName()));
     }
 
     @GetMapping(path = "/authuser")

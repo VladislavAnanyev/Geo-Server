@@ -1,3 +1,4 @@
+/*
 package com.example.mywebquizengine.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,12 +34,16 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Value("${rabbitPassword}")
     private String password;
 
+*/
 /*
     Конфигурирует брокер сообщений в памяти с одним адресом с префиксом /user для отправки и получения сообщений.
     Адреса с префиксом /app предназначены для сообщений, обрабатываемых методами с аннотацией @MessageMapping
      *//*
+*/
+/*
 
-    */
+    *//*
+
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
 
@@ -56,13 +61,17 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 
 
+*/
 /*
     Регистрирация конечной точки STOMP /ws.
     Эта конечная точка будет использоваться клиентами для подключения к STOMP-серверу.
     Здесь также включается резервный SockJS, который будет использоваться, если WebSocket будет недоступен.
      *//*
+*/
+/*
 
-    */
+    *//*
+
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry
@@ -73,11 +82,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 
 
+*/
 /*
     Конвертер JSON, который используется Spring для преобразования сообщений из/в JSON.
      *//*
+*/
+/*
 
-    */
+    *//*
+
     @Override
     public boolean configureMessageConverters(List<MessageConverter> messageConverters) {
         DefaultContentTypeResolver resolver = new DefaultContentTypeResolver();
@@ -91,3 +104,4 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 }
 
+*/

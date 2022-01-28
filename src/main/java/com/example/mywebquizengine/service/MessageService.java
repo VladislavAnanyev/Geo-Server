@@ -296,10 +296,11 @@ public class MessageService {
                     String exchangeName = RabbitUtil.getExchangeName(user.getUsername());
                     rabbitTemplate.convertAndSend(exchangeName, "",
                             JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)), messagePostProcessor);
+
                 }
 
             }
-        } throw new EntityNotFoundException("Dialog not found");
+        } else throw new EntityNotFoundException("Dialog not found");
 
 
     }

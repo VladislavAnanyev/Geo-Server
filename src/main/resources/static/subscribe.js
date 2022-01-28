@@ -4,6 +4,7 @@ var stompClient = null;
 var username = null;
 let uniqueQueueName = new Date().valueOf() + ""
 let activeTyping = true
+let jwt = null
 var colors2 = [
     '#2196F3', '#32c787', '#00BCD4', '#ff5652',
     '#ffc107', '#ff85af', '#FF9800', '#39bbb0'
@@ -15,12 +16,16 @@ function notificationConnect() {
 
 
     console.log("Go")
-    var socket = new SockJS('/ws');
-    stompClient = Stomp.over(socket);
+    /*var socket = new SockJS('/ws');
+    stompClient = Stomp.over(socket);*/
+
+    var url = "wss://" + location.host + ":15673/ws";
+    stompClient = Stomp.client(url);
+
     stompClient.heartbeat.outgoing = 10000; // client will send heartbeats every 20000ms
     stompClient.heartbeat.incoming = 10000;
     //stompClient.reconnect_delay = 5000;
-    stompClient.connect({}, onConnectedNotif, onErrorNotif)
+    stompClient.connect('test', 'test', onConnectedNotif, onErrorNotif)
 
 }
 
@@ -35,11 +40,21 @@ function onConnectedNotif() {
     }
     xhr.send();
 
+
+    let xhrJwt = new XMLHttpRequest();
+    xhrJwt.open('GET', '/jwt', false);
+    xhrJwt.onreadystatechange = function () {
+        if (xhrJwt.readyState === XMLHttpRequest.DONE && xhrJwt.status === 200) {
+            jwt = xhrJwt.responseText
+        }
+    }
+    xhrJwt.send();
+
     let xhrExchange = new XMLHttpRequest();
     xhrExchange.open('GET', '/exchange', false);
     xhrExchange.onreadystatechange = function () {
         if (xhrExchange.readyState === XMLHttpRequest.DONE && xhrExchange.status === 200) {
-            console.log(xhrExchange.responseText)
+
         }
     }
     xhrExchange.send();
@@ -110,9 +125,6 @@ function onMessageReceived(payload) {
 
     if (message.type === "MEETING") {
 
-        console.log(111)
-
-
         toastLiveExample = document.getElementById('liveToastMeet')
 
         let body = document.getElementById("toast-text-meet")
@@ -129,9 +141,6 @@ function onMessageReceived(payload) {
     if (message.type === "MESSAGE" && !location.pathname.includes(message.payload.dialogId)
         && location.pathname.includes("/chat")) {
 
-
-       
-            console.log("Успех")
             console.log(message)
 
             let dialog = document.getElementById("dialogs")
@@ -193,7 +202,6 @@ function onMessageReceived(payload) {
 
 
     if (message.type === "MESSAGE" && location.pathname.includes(message.payload.dialogId)) {
-        console.log("Успех")
         console.log(message)
 
         let uniqueCodeFromMsg = message.payload.uniqueCode
@@ -301,7 +309,6 @@ function logKey(dialog) {
 
         if (stompClient) {
             var typing = {
-                user: {username: username},
                 dialogId: dialog
             };
 
@@ -309,11 +316,10 @@ function logKey(dialog) {
                 type: "TYPING",
                 payload: typing
             }
-            stompClient.send("/app/user/" + dialog, {/*"x-message-ttl": 15000*/}, JSON.stringify(rabbitMessage));
+            stompClient.send("/queue/incoming-messages", {"Authorization": jwt + ""}, JSON.stringify(rabbitMessage));
             activeTyping = false
 
             setTimeout(() => {
-                console.log("yyy")
                 activeTyping = true
             }, 5000)
 
@@ -365,7 +371,6 @@ function sendMessage(dialog) {
         //console.log(date.valueOf())
         if(messageContent && stompClient) {
             var chatMessage = {
-                username: username,
                 content: messageContent,
                 dialogId: dialog,
                 /*type: "MESSAGE",*/
@@ -376,12 +381,11 @@ function sendMessage(dialog) {
                 type: "MESSAGE",
                 payload: chatMessage
             }
-            stompClient.send("/app/user/" + dialog, {/*"x-message-ttl": 15000*/}, JSON.stringify(rabbitMessage));
+            stompClient.send("/queue/incoming-messages", {"Authorization": jwt + ""}, JSON.stringify(rabbitMessage));
 
         }
 
 
-        console.log(Intl.DateTimeFormat().resolvedOptions().timeZone)
 
         let div = document.createElement("div");
         div.setAttribute('class', "outgoing_msg")

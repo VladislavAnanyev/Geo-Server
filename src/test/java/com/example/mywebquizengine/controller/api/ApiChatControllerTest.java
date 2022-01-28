@@ -8,21 +8,18 @@ import com.example.mywebquizengine.model.rabbit.RabbitMessage;
 import com.example.mywebquizengine.repos.DialogRepository;
 import com.example.mywebquizengine.repos.MessageRepository;
 import com.example.mywebquizengine.repos.UserRepository;
+import com.example.mywebquizengine.service.JWTUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.impl.ChannelN;
-import com.rabbitmq.client.impl.recovery.AutorecoveringChannel;
-import com.rabbitmq.client.impl.recovery.AutorecoveringConnection;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.amqp.rabbit.connection.PublisherCallbackChannelImpl;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -36,10 +33,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.validation.BeanPropertyBindingResult;
-import org.springframework.validation.DirectFieldBindingResult;
-import org.springframework.validation.MapBindingResult;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.ConstraintViolationException;
@@ -55,7 +48,6 @@ import static java.util.Collections.sort;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.doubleThat;
 import static org.mockito.Mockito.anyObject;
 import static org.mockito.Mockito.doAnswer;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -75,180 +67,12 @@ public class ApiChatControllerTest {
     @Autowired
     private DialogRepository dialogRepository;
 
-    @MockBean
-    private RabbitTemplate rabbitTemplate;
-
     @Autowired
     private MessageRepository messageRepository;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private RabbitController rabbitController;
-
-    @Test
-    public void sendMessageTest() throws IOException, IllegalAccessException, NoSuchAlgorithmException {
-
-        String json = """
-                {   
-                    "type": "MESSAGE",
-                    "payload": { 
-                        "dialogId":  1196,         
-                        "content": "12345",            
-                        "username": "user1",
-                        "uniqueCode": "123456789"
-                    }          
-                }
-                """;
-
-        doAnswer(i -> {
-            Object obj = new JSONParser().parse(i.getArgument(1).toString());
-            JSONObject jo = (JSONObject) obj;
-            /*System.out.println(jo.get("payload").toString());
-            System.out.println("AAA");
-            assertEquals("1234567890", jo.get("payload").toString());*/
-            return null;
-        }).when(rabbitTemplate).convertAndSend(anyString(), (Object) anyObject());
-
-        System.out.println("AAA");
-        RabbitMessage message = objectMapper.readValue(json, RabbitMessage.class);
-        Integer expectedMessageCount = ((ArrayList<Message>) messageRepository.findAll()).size() + 1;
-        rabbitController.sendMessageFromAMQPClient(message, Mockito.mock(Channel.class), 1L);
-        Integer actualMessageCount = ((ArrayList<Message>) messageRepository.findAll()).size();
-
-        assertEquals(expectedMessageCount, actualMessageCount);
-
-    }
-
-    @Test
-    public void sendMessageForbiddenTest() throws JsonProcessingException, IllegalAccessException {
-
-        String json = """
-                {
-                    "type": "MESSAGE",
-                    "payload": { 
-                        "dialogId":  1196,        
-                        "content": "12345",            
-                        "username": "user3",
-                        "uniqueCode": "123456789"
-                    }      
-                }
-                """;
-
-        RabbitMessage message = objectMapper.readValue(json, RabbitMessage.class);
-
-        doAnswer(i -> {
-            Object obj = new JSONParser().parse(i.getArgument(1).toString());
-            /*JSONObject jo = (JSONObject) obj;
-            assertEquals("123456789", jo.get("uniqueCode"));*/
-            return null;
-        }).when(rabbitTemplate).convertAndSend(anyString(), (Object) anyObject());
-
-        Integer expectedMessageCount = ((ArrayList<Message>) messageRepository.findAll()).size();
-
-
-        Authentication authentication = new UsernamePasswordAuthenticationToken(userRepository.findById("user3").get(), null);
-
-        try {
-            rabbitController.sendMessage(message, authentication);
-        } catch (SecurityException | NoSuchAlgorithmException e) {
-
-        }
-
-        Integer actualMessageCount = ((ArrayList<Message>) messageRepository.findAll()).size();
-        assertEquals(expectedMessageCount, actualMessageCount);
-
-    }
-
-
-    @Test
-    public void sendMessageWithBlankContentTest() throws JsonProcessingException, ParseException {
-
-        doAnswer(i -> {
-            assertNotNull(i.getArgument(1).toString());
-            return null;
-        }).when(rabbitTemplate).convertAndSend(anyString(), (Object) anyObject());
-
-        ArrayList<Message> expectedMessages = (ArrayList<Message>) messageRepository.findAll();
-
-        String json = """
-                {
-                    "type": "MESSAGE",
-                    "payload": { 
-                        "dialog": {
-                            "dialogId":  1196
-                        },          
-                        "content": "",            
-                        "sender": {"username": "user1"},
-                        "uniqueCode": 123456789
-                    }          
-                }
-                """;
-
-        RabbitMessage message = objectMapper.readValue(json, RabbitMessage.class);
-
-        try {
-            rabbitController.sendMessageFromAMQPClient(message, Mockito.mock(Channel.class), 1L);
-            fail("Expected ConstraintViolationException");
-        } catch (ConstraintViolationException e) {
-            assertNotEquals("", e.getMessage());
-        } catch (IOException | IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-
-        ArrayList<Message> actualMessages = (ArrayList<Message>) messageRepository.findAll();
-
-        assertEquals(expectedMessages.size(), actualMessages.size());
-
-    }
-
-    @Test
-    public void sendMessageWithNullContentTest() throws JsonProcessingException, ParseException {
-
-        doAnswer(i -> {
-            assertNotNull(i.getArgument(1).toString());
-            return null;
-        }).when(rabbitTemplate).convertAndSend(anyString(), (Object) anyObject());
-
-        ArrayList<Message> expectedMessages = (ArrayList<Message>) messageRepository.findAll();
-
-        String json = """
-                {
-                    "type": "MESSAGE",
-                    "payload": { 
-                        "dialog": {
-                            "dialogId":  1196
-                        },                    
-                        "sender": {"username": "user1"},
-                        "uniqueCode": 123456789
-                    }          
-                }
-                """;
-
-        RabbitMessage message = objectMapper.readValue(json, RabbitMessage.class);
-
-
-
-        try {
-            rabbitController.sendMessageFromAMQPClient(message, Mockito.mock(Channel.class), 1L);
-            fail("Expected ConstraintViolationException");
-        } catch (ConstraintViolationException e) {
-            assertNotEquals("", e.getMessage());
-        } catch (IOException | IllegalAccessException | NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-
-        ArrayList<Message> actualMessages = (ArrayList<Message>) messageRepository.findAll();
-
-        assertEquals(expectedMessages.size(), actualMessages.size());
-
-    }
 
     @Test
     @WithUserDetails(value = "user1")

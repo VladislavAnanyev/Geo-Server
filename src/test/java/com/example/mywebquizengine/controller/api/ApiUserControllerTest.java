@@ -4,6 +4,8 @@ import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.repos.UserRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -230,13 +232,8 @@ public class ApiUserControllerTest {
     @Test
     public void testSignIn() throws Exception {
 
-        doAnswer(i -> {
-            return "123";
-        }).when(rabbitAdmin).declareQueue(anyObject());
+        doAnswer(invocationOnMock -> null).when(rabbitAdmin).declareExchange(anyObject());
 
-        doAnswer(i -> {
-            return null;
-        }).when(rabbitAdmin).declareBinding(anyObject());
 
         String json =
                 """
