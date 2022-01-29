@@ -41,6 +41,7 @@ public class User implements UserDetails, OAuth2User  {
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_username")
+    @OrderBy("position ASC")
     private List<Photo> photos;
 
     private String description;
@@ -108,6 +109,7 @@ public class User implements UserDetails, OAuth2User  {
         this.lastName = lastName;
         Photo photo = new Photo();
         photo.setUrl(avatar);
+        photo.setPosition(0);
         List<Photo> photos = new ArrayList<>();
         photos.add(photo);
         this.photos = photos;
@@ -229,6 +231,7 @@ public class User implements UserDetails, OAuth2User  {
     public void setPhotos(List<String> avatarName) {
         Photo photo = new Photo();
         photo.setUrl(avatarName.get(0));
+        photo.setPosition(0);
         this.photos = Collections.singletonList(photo);
     }
 

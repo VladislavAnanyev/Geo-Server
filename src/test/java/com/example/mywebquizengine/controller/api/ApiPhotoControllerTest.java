@@ -48,13 +48,17 @@ public class ApiPhotoControllerTest {
 
         Integer photoCountByUsernameBefore = photoRepository.getPhotoCountByUsername("user2");
 
-        mockMvc.perform(delete("/api/user/photo/66").secure(true))
+        mockMvc.perform(delete("/api/user/photo/65").secure(true))
                 .andExpect(status().isOk());
 
-        Integer photoCountByUsernameAfter = photoRepository.getPhotoCountByUsername("user2") + 1;
+        Integer photoCountByUsernameAfter = photoRepository.getPhotoCountByUsername("user2");
 
-        assertEquals(photoCountByUsernameBefore, photoCountByUsernameAfter);
+        assertNotEquals(photoCountByUsernameBefore, photoCountByUsernameAfter);
 
+        List<Photo> userPhotos = photoRepository.findByUser_Username("user2");
+        int position = userPhotos.get(0).getPosition();
+
+        assertEquals(0, position);
     }
 
     @Test
@@ -76,7 +80,7 @@ public class ApiPhotoControllerTest {
     public void testSwapPhoto() throws Exception {
         List<Photo> userPhotoBefore = photoRepository.findByUser_Username("user1");
 
-        mockMvc.perform(post("/api/user/photo/swap?firstId=63&secondId=64").secure(true))
+        mockMvc.perform(post("/api/user/photo/swap?firstId=63&position=2").secure(true))
                 .andExpect(status().isOk());
 
         List<Photo> userPhotos = photoRepository.findByUser_Username("user1");

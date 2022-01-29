@@ -7,12 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity(name = "USERS_PHOTOS")
-public class Photo /*implements Comparable<Photo>*/ {
+public class Photo implements Comparable<Photo> {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     private String url;
+
+    private Integer position;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
@@ -50,8 +52,16 @@ public class Photo /*implements Comparable<Photo>*/ {
         this.url = url;
     }
 
-/*    @Override
+    public Integer getPosition() {
+        return position;
+    }
+
+    public void setPosition(Integer position) {
+        this.position = position;
+    }
+
+    @Override
     public int compareTo(Photo photo) {
         return this.position.compareTo(photo.position);
-    }*/
+    }
 }

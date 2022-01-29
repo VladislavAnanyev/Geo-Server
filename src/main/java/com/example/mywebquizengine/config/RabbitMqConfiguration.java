@@ -20,18 +20,11 @@ import org.springframework.messaging.handler.annotation.support.MessageHandlerMe
 @Configuration
 public class RabbitMqConfiguration implements RabbitListenerConfigurer {
 
-    public static final String EXCHANGE = "message-exchange";
-
     public static final String INCOMING_MESSAGES = "incoming-messages";
 
     @Bean
     Queue QueueInMessages() {
         return QueueBuilder.durable(INCOMING_MESSAGES).build();
-    }
-
-    @Bean
-    DirectExchange ordersExchange() {
-        return new DirectExchange(EXCHANGE);
     }
 
     @Bean

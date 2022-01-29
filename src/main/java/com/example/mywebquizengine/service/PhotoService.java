@@ -4,6 +4,7 @@ import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.model.exception.LogicException;
 import com.example.mywebquizengine.model.userinfo.Photo;
 import com.example.mywebquizengine.repos.PhotoRepository;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -30,38 +31,23 @@ public class PhotoService {
     private String hostname;
 
     @Transactional
-    public void swapPhoto(Long firstPhotoId, Long secondPhotoId, String name) throws IllegalAccessError, EntityNotFoundException {
+    public void swapPhoto(Long photoId, Integer position, String name) throws IllegalAccessError, EntityNotFoundException {
 
-        Optional<Photo> optionalFirstPhoto = photoRepository.findById(firstPhotoId);
-        Optional<Photo> optionalSecondPhoto = photoRepository.findById(secondPhotoId);
-        if (optionalFirstPhoto.isPresent() && optionalSecondPhoto.isPresent()) {
-            Photo firstPhoto = optionalFirstPhoto.get();
-            Photo secondPhoto = optionalSecondPhoto.get();
-            if (firstPhoto.getUser().getUsername().equals(name) && secondPhoto.getUser().getUsername().equals(name)) {
-                String tempPhotoUrl = firstPhoto.getUrl();
-                firstPhoto.setUrl(secondPhoto.getUrl());
-                secondPhoto.setUrl(tempPhotoUrl);
-            } else throw new SecurityException("You are not loader of this photo");
-        } else throw new EntityNotFoundException("Photo with given photoId not found");
-
-
-
-        /*        Photo savedPhoto = optionalPhoto.get();
+        Optional<Photo> optionalPhoto = photoRepository.findById(photoId);
+        if (optionalPhoto.isPresent()) {
+            String photoLoaderUsername = photoRepository.getPhotoLoaderUsername(photoId);
+            if (photoLoaderUsername.equals(name)) {
+                Photo savedPhoto = optionalPhoto.get();
                 List<Photo> photos = photoRepository.findByUser_Username(name);
-        for (Photo photo : photos) {
-            if (photo.getId().equals(firstPhotoId)) {
-                photos.remove(photo);
-            }*/
-        /*}
-
-        photos.indexOf()
 
                 photos.remove(((int) savedPhoto.getPosition()));
-                photos.add(photo.getPosition(), savedPhoto);
+                photos.add(position, savedPhoto);
 
                 for (int i = 0; i < photos.size(); i++) {
                     photos.get(i).setPosition(i);
-                }*/
+                }
+            } else throw new SecurityException("You are not loader of this photo");
+        } else throw new EntityNotFoundException("Photo with given photoId not found");
 
     }
 
@@ -83,8 +69,10 @@ public class PhotoService {
 
                 User user = userService.loadUserByUsername(username);
 
+
                 Photo photo = new Photo();
                 photo.setUrl(photoUrl);
+                photo.setPosition(user.getPhotos().size());
                 user.addPhoto(photo);
 
                 return photoUrl;
@@ -103,6 +91,13 @@ public class PhotoService {
             if (photo.getUser().getUsername().equals(authUsername)) {
                 if (photoRepository.getPhotoCountByUsername(authUsername) > 1) {
                     photoRepository.deleteById(photoId);
+
+                    List<Photo> photos = photoRepository.findByUser_Username(authUsername);
+
+                    for (int i = 0; i < photos.size(); i++) {
+                        photos.get(i).setPosition(i);
+                    }
+
                 } else throw new LogicException("You must have at least one photo");
             } else throw new SecurityException("You are not loader of this photo");
         } else throw new EntityNotFoundException("Photo with given photoId not found");
