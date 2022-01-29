@@ -1,5 +1,6 @@
 package com.example.mywebquizengine;
 
+import com.example.mywebquizengine.model.userinfo.Photo;
 import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.repos.UserRepository;
 import org.springframework.amqp.core.FanoutExchange;
@@ -35,10 +36,14 @@ public class Demo implements CommandLineRunner {
 
         //if (rabbitAdmin.getQueueProperties("application") == null) {
 
-            //List<User> users = userRepository.findAll();
+            List<User> users = userRepository.findAll();
 
-            //for (User user : users) {
-            //    rabbitAdmin.declareExchange(new FanoutExchange(user.getUsername(), true, false));
+            for (User user : users) {
+
+                for (int i = 0; i < user.getPhotos().size(); i++) {
+                    user.getPhotos().get(i).setPosition(i);
+                }
+                //rabbitAdmin.declareExchange(new FanoutExchange(user.getUsername(), true, false));
                 /*Queue queue = new Queue(user.getUsername(), true, false, false);
 
                 Binding binding = new Binding(user.getUsername(), Binding.DestinationType.QUEUE,
@@ -48,7 +53,7 @@ public class Demo implements CommandLineRunner {
                 rabbitAdmin.declareBinding(binding);*/
 
 
-            //}
+            }
         //}
 //
 
