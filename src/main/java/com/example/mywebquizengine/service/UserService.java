@@ -245,7 +245,7 @@ public class UserService implements UserDetailsService {
         return userRepository.findByUsername(username);
     }
 
-    public AuthResponse signInViaJwt(AuthRequest authRequest) throws NoSuchAlgorithmException {
+    public AuthResponse signInViaApi(AuthRequest authRequest)  {
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
@@ -264,11 +264,10 @@ public class UserService implements UserDetailsService {
 
         rabbitAdmin.declareExchange(new FanoutExchange(exchangeName, true, false));
 
-
         return new AuthResponse(jwt, exchangeName);
     }
 
-    public AuthResponse getJwtToken(User user) throws NoSuchAlgorithmException {
+    public AuthResponse getJwtToken(User user) {
         // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
         String jwt = jwtTokenUtil.generateToken(loadUserByUsername(user.getUsername()));
 

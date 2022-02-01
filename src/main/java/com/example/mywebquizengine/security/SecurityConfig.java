@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.security;
 
+import com.example.mywebquizengine.security.handler.ApiLogoutHandler;
 import com.example.mywebquizengine.security.handler.MyAuthenticationSuccessHandler;
 import com.example.mywebquizengine.security.handler.MyLogoutSuccessHandler;
 import com.example.mywebquizengine.service.JWTFilter;
@@ -9,6 +10,7 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -38,6 +40,7 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
@@ -100,6 +103,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         @Autowired
         private JWTFilter jwtFilter;
 
+        @Autowired
+        private ApiLogoutHandler apiLogoutHandler;
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
@@ -115,14 +120,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                             "/api/user/verify-password-code", "/api/user/password").permitAll()
 
                     .anyRequest().authenticated()
-
                     .and()
-                    .logout().logoutUrl("/api/logout").logoutSuccessHandler(new SimpleUrlLogoutSuccessHandler())
-                    .permitAll()
-                    /*.and()
-                    .sessionManagement()*/
-                    /*.maximumSessions(100)*//*.sessionRegistry(sessionRegistry())*/
-                    .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER)/*.sessionFixation().none()*/;
+                    .logout(logout -> logout.logoutUrl("/api/logout")
+                            .addLogoutHandler(apiLogoutHandler)
+                            .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.OK)))
+
+                    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER);
 
             http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

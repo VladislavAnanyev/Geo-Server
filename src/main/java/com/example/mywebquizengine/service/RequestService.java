@@ -47,7 +47,7 @@ public class RequestService {
     private ObjectMapper objectMapper;
 
     @Transactional
-    public void sendRequest(Request request, String username) throws JsonProcessingException, NoSuchAlgorithmException {
+    public void sendRequest(Request request, String username) throws JsonProcessingException {
 
         request.setSender(userService.loadUserByUsername(username));
         request.setTo(userService.loadUserByUsername(request.getTo().getUsername()));
@@ -114,7 +114,7 @@ public class RequestService {
         );
     }
 
-    public Long acceptRequest(Long requestId, String username) throws JsonProcessingException, NoSuchAlgorithmException {
+    public Long acceptRequest(Long requestId, String username) throws JsonProcessingException {
         User authUser = userService.loadUserByUsername(username);
 
         Request request = requestRepository.findById(requestId).get();

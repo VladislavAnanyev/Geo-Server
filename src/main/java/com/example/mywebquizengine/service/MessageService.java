@@ -95,7 +95,7 @@ public class MessageService {
     }
 
     @Transactional
-    public void deleteMessage(Long id, String username) throws JsonProcessingException, NoSuchAlgorithmException {
+    public void deleteMessage(Long id, String username) throws JsonProcessingException {
         Optional<Message> optionalMessage = messageRepository.findById(id);
         if (optionalMessage.isPresent()) {
             Message message = optionalMessage.get();
@@ -144,7 +144,7 @@ public class MessageService {
     }
 
     @Transactional
-    public void editMessage(Message newMessage, String username) throws JsonProcessingException, NoSuchAlgorithmException {
+    public void editMessage(Message newMessage, String username) throws JsonProcessingException {
         Optional<Message> optionalMessage = messageRepository.findById(newMessage.getId());
         if (optionalMessage.isPresent()) {
             Message message = optionalMessage.get();
@@ -172,7 +172,7 @@ public class MessageService {
     }
 
     @Transactional
-    public void sendMessage(@Valid Message message) throws JsonProcessingException, IllegalAccessException, NoSuchAlgorithmException {
+    public void sendMessage(@Valid Message message) throws JsonProcessingException {
 
         Optional<Dialog> optionalDialog = dialogRepository.findById(message.getDialog().getDialogId());
 
@@ -212,7 +212,7 @@ public class MessageService {
     }
 
 
-    public Long createGroup(Dialog newDialog, String username) throws JsonProcessingException, NoSuchAlgorithmException {
+    public Long createGroup(Dialog newDialog, String username) throws JsonProcessingException {
 
         User authUser = new User();
 
@@ -268,7 +268,7 @@ public class MessageService {
 
     // протестить
     @Transactional
-    public void typingMessage(@Valid Typing typing) throws JsonProcessingException, NoSuchAlgorithmException {
+    public void typingMessage(@Valid Typing typing) throws JsonProcessingException {
 
         Optional<Dialog> dialog = dialogRepository.findById(typing.getDialogId());
 

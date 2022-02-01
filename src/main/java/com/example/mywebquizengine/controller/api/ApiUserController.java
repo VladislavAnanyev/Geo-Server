@@ -10,10 +10,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.List;
 
@@ -35,12 +36,12 @@ public class ApiUserController {
     }
 
     @PostMapping(path = "/signin")
-    public AuthResponse jwtSignIn(@RequestBody AuthRequest authRequest) throws NoSuchAlgorithmException, InterruptedException {
-        return userService.signInViaJwt(authRequest);
+    public AuthResponse jwtSignIn(@RequestBody AuthRequest authRequest) {
+        return userService.signInViaApi(authRequest);
     }
 
     @PostMapping(path = "/signup")
-    public AuthResponse signup(@Valid @RequestBody RegistrationRequest registrationRequest) throws NoSuchAlgorithmException {
+    public AuthResponse signup(@Valid @RequestBody RegistrationRequest registrationRequest)  {
         User user = new User();
         user.setUsername(registrationRequest.getUsername());
         user.setFirstName(registrationRequest.getFirstName());
@@ -53,7 +54,8 @@ public class ApiUserController {
     }
 
     @PostMapping(path = "/googleauth")
-    public AuthResponse googleJwt(@RequestBody GoogleToken token) throws GeneralSecurityException, IOException {
+    public AuthResponse googleJwt(@RequestBody GoogleToken token, HttpServletRequest request) throws GeneralSecurityException, IOException, ServletException {
+        request.logout();
         return userService.signinViaGoogleToken(token);
     }
 

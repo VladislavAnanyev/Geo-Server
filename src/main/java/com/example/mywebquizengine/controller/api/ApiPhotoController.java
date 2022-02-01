@@ -20,9 +20,9 @@ public class ApiPhotoController {
 
     @PostMapping(path = "/user/photo/swap")
     public void swapPhoto(@ApiIgnore @AuthenticationPrincipal Principal principal,
-                          @RequestParam Long firstId,
+                          @RequestParam Long photoId,
                           @RequestParam Integer position) {
-        photoService.swapPhoto(firstId, position, principal.getName());
+        photoService.swapPhoto(photoId, position, principal.getName());
     }
 
     @PostMapping(path = "/user/photo")

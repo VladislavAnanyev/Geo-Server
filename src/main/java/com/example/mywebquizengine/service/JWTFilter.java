@@ -47,9 +47,6 @@ public class JWTFilter extends OncePerRequestFilter {
                             username, "Bearer", authorities);
             SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
 
-            System.out.println(request.getRequestURI());
-
-            System.out.println("aaa");
             if (!request.getRequestURI().contains("sendGeolocation")) {
                 HttpSession session = request.getSession(false);
                 if (session != null) {

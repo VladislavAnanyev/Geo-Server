@@ -36,13 +36,13 @@ public class Demo implements CommandLineRunner {
 
         //if (rabbitAdmin.getQueueProperties("application") == null) {
 
-            List<User> users = userRepository.findAll();
+          /*  List<User> users = userRepository.findAll();
 
             for (User user : users) {
 
                 for (int i = 0; i < user.getPhotos().size(); i++) {
                     user.getPhotos().get(i).setPosition(i);
-                }
+                }*/
                 //rabbitAdmin.declareExchange(new FanoutExchange(user.getUsername(), true, false));
                 /*Queue queue = new Queue(user.getUsername(), true, false, false);
 
@@ -53,7 +53,7 @@ public class Demo implements CommandLineRunner {
                 rabbitAdmin.declareBinding(binding);*/
 
 
-            }
+           // }
         //}
 //
 

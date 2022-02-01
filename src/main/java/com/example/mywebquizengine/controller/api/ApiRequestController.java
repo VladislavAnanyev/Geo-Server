@@ -29,7 +29,9 @@ public class ApiRequestController {
 
     @PostMapping(path = "/request")
     @ResponseBody
-    public void sendRequest(@RequestBody @Valid RequestDto requestDto, @ApiIgnore @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException, NoSuchAlgorithmException {
+    public void sendRequest(
+            @RequestBody @Valid RequestDto requestDto,
+            @ApiIgnore @AuthenticationPrincipal Principal principal) throws JsonProcessingException {
 
         Request request = new Request();
 
@@ -53,7 +55,9 @@ public class ApiRequestController {
 
     @PostMapping(path = "/request/{id}/accept")
     //@PreAuthorize(value = "!#principal.name.equals(#user.username)")
-    public Long acceptRequest(@PathVariable Long id, @ApiIgnore @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException, NoSuchAlgorithmException {
+    public Long acceptRequest(
+            @PathVariable Long id,
+            @ApiIgnore @AuthenticationPrincipal Principal principal) throws JsonProcessingException {
         return requestService.acceptRequest(id, principal.getName());
     }
 
