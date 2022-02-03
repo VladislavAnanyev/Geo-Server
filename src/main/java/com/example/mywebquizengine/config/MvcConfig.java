@@ -35,10 +35,7 @@ public class MvcConfig implements WebMvcConfigurer {
 
         registry.addResourceHandler("/webjars/**")
                 .addResourceLocations("classpath:/META-INF/resources/webjars/");
-        // for Windows
-        /*.addResourceLocations("classpath:/static/", "file:C:\\Users\\avlad\\IdeaProjects\\WebQuiz\\img\\",
-                "file:C:\\Users\\avlad\\IdeaProjects\\WebQuiz\\video\\", "file:C:\\Users\\avlad\\IdeaProjects\\WebQuiz\\.well-known\\pki-validation\\");*/
-    }
+        }
 
     @Bean
     MultipartConfigElement multipartConfigElement() {

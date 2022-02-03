@@ -52,35 +52,16 @@ public class PhotoService {
     }
 
     @Transactional
-    public String uploadPhoto(MultipartFile file, String username) throws LogicException, IOException {
-        if (!file.isEmpty()) {
-            try {
-                String uuid = UUID.randomUUID().toString();
-                uuid = uuid.substring(0, 8);
-                byte[] bytes = file.getBytes();
+    public String savePhoto(String fileName, String username) {
+        String photoUrl = hostname + "/img/" + fileName;
+        User user = userService.loadUserByUsername(username);
 
-                BufferedOutputStream stream =
-                        new BufferedOutputStream(new FileOutputStream(new File("img/" +
-                                uuid + ".jpg")));
-                stream.write(bytes);
-                stream.close();
+        Photo photo = new Photo();
+        photo.setUrl(photoUrl);
+        photo.setPosition(user.getPhotos().size());
+        user.addPhoto(photo);
 
-                String photoUrl = "https://" + hostname + "/img/" + uuid + ".jpg";
-
-                User user = userService.loadUserByUsername(username);
-
-
-                Photo photo = new Photo();
-                photo.setUrl(photoUrl);
-                photo.setPosition(user.getPhotos().size());
-                user.addPhoto(photo);
-
-                return photoUrl;
-
-            } catch (IOException e) {
-                throw new IOException("Input-Output error");
-            }
-        } else throw new LogicException("File is empty");
+        return photoUrl;
     }
 
     @Transactional
@@ -102,4 +83,5 @@ public class PhotoService {
             } else throw new SecurityException("You are not loader of this photo");
         } else throw new EntityNotFoundException("Photo with given photoId not found");
     }
+
 }

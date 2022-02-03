@@ -80,7 +80,7 @@ public class ApiPhotoControllerTest {
     public void testSwapPhoto() throws Exception {
         List<Photo> userPhotoBefore = photoRepository.findByUser_Username("user1");
 
-        mockMvc.perform(post("/api/user/photo/swap?firstId=63&position=2").secure(true))
+        mockMvc.perform(post("/api/user/photo/swap?photoId=63&position=2").secure(true))
                 .andExpect(status().isOk());
 
         List<Photo> userPhotos = photoRepository.findByUser_Username("user1");
@@ -104,14 +104,14 @@ public class ApiPhotoControllerTest {
     @Test
     @WithUserDetails(value = "user2")
     public void testForbiddenSwap() throws Exception {
-        mockMvc.perform(post("/api/user/photo/swap?firstId=67&secondId=68").secure(true))
+        mockMvc.perform(post("/api/user/photo/swap?photoId=67&position=2").secure(true))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @WithUserDetails(value = "user2")
     public void testNotFoundSwap() throws Exception {
-        mockMvc.perform(post("/api/user/photo/swap?firstId=66&secondId=670").secure(true))
+        mockMvc.perform(post("/api/user/photo/swap?photoId=6896&position=4").secure(true))
                 .andExpect(status().isNotFound());
     }
 

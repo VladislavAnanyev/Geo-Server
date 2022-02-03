@@ -188,7 +188,7 @@ public class MessageService {
                 message.setSender(sender);
                 message.setDialog(dialog);
                 message.setTimestamp(new Date());
-                message.setStatus(MessageStatus.DELIVERED);
+                message.setStatus(MessageStatus.DELIVERED);;
 
                 messageRepository.save(message);
 
@@ -206,7 +206,7 @@ public class MessageService {
                             JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
                 }
             } else throw new SecurityException("You are not contains in this dialog");
-            //else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+
         } else throw new EntityNotFoundException("Dialog not found");
 
     }
@@ -245,7 +245,7 @@ public class MessageService {
             }
 
             //group.setCreator(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()));
-            dialog.setImage("https://" + hostname + "/img/default.jpg");
+            dialog.setImage(hostname + "/img/default.jpg");
             dialogRepository.save(dialog);
 
             MessageView messageDto = ProjectionUtil.parseToProjection(message, MessageView.class);

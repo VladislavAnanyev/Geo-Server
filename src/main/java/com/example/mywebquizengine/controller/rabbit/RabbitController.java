@@ -1,12 +1,10 @@
 package com.example.mywebquizengine.controller.rabbit;
 
-import com.example.mywebquizengine.model.chat.Dialog;
-import com.example.mywebquizengine.model.chat.Message;
-import com.example.mywebquizengine.model.chat.SendMessageRequest;
-import com.example.mywebquizengine.model.chat.Typing;
+import com.example.mywebquizengine.model.chat.*;
 import com.example.mywebquizengine.model.rabbit.MessageType;
 import com.example.mywebquizengine.model.rabbit.RabbitMessage;
 import com.example.mywebquizengine.model.userinfo.User;
+import com.example.mywebquizengine.service.FileSystemStorageService;
 import com.example.mywebquizengine.service.JWTUtil;
 import com.example.mywebquizengine.service.MessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,7 +21,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 
 @Controller
 @EnableRabbit
@@ -38,6 +39,10 @@ public class RabbitController {
 
     @Autowired
     private JWTUtil jwtUtil;
+
+    @Autowired
+    private FileSystemStorageService fileSystemStorageService;
+
 
     @RabbitListener(queues = "incoming-messages", ackMode = "MANUAL")
     public void sendMessageFromAMQPClient(org.springframework.amqp.core.Message messageFromRabbit, Channel channel,
@@ -57,7 +62,6 @@ public class RabbitController {
                 SendMessageRequest sendMessageRequest = objectMapper.readValue(objectMapper
                         .writeValueAsString(rabbitMessage.getPayload()), SendMessageRequest.class);
 
-
                 Message message = new Message();
                 message.setContent(sendMessageRequest.getContent());
 
@@ -69,6 +73,19 @@ public class RabbitController {
                 dialog.setDialogId(sendMessageRequest.getDialogId());
                 message.setDialog(dialog);
                 message.setUniqueCode(sendMessageRequest.getUniqueCode());
+
+                String photoUrl = sendMessageRequest.getPhotoUrl();
+                if (photoUrl != null) {
+
+                    String filename = photoUrl.substring(photoUrl.lastIndexOf("/") + 1);
+                    Path path = fileSystemStorageService.load(filename);
+                    if (Files.exists(path)) {
+                        MessagePhoto messagePhoto = new MessagePhoto();
+                        messagePhoto.setPhoto_url(sendMessageRequest.getPhotoUrl());
+                        message.setPhotos(Collections.singletonList(messagePhoto));
+                    }
+
+                }
 
                 messageService.sendMessage(message);
             } else if (rabbitMessage.getType().equals(MessageType.TYPING)) {

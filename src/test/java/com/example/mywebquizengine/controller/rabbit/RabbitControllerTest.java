@@ -1,4 +1,3 @@
-/*
 package com.example.mywebquizengine.controller.rabbit;
 
 import com.example.mywebquizengine.model.chat.Message;
@@ -21,6 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.transaction.Transactional;
 import javax.validation.ConstraintViolationException;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -71,10 +71,9 @@ public class RabbitControllerTest {
         doAnswer(i -> {
             Object obj = new JSONParser().parse(i.getArgument(1).toString());
             JSONObject jo = (JSONObject) obj;
-            */
-/*System.out.println(jo.get("payload").toString());
+            System.out.println(jo.get("payload").toString());
             System.out.println("AAA");
-            assertEquals("1234567890", jo.get("payload").toString());*//*
+            assertEquals("1234567890", jo.get("payload").toString());
 
             return null;
         }).when(rabbitTemplate).convertAndSend(anyString(), (Object) anyObject());
@@ -113,9 +112,8 @@ public class RabbitControllerTest {
 
         doAnswer(i -> {
             Object obj = new JSONParser().parse(i.getArgument(1).toString());
-            */
-/*JSONObject jo = (JSONObject) obj;
-            assertEquals("123456789", jo.get("uniqueCode"));*//*
+JSONObject jo = (JSONObject) obj;
+            assertEquals("123456789", jo.get("uniqueCode"));
 
             return null;
         }).when(rabbitTemplate).convertAndSend(anyString(), (Object) anyObject());
@@ -226,4 +224,51 @@ public class RabbitControllerTest {
         assertEquals(expectedMessages.size(), actualMessages.size());
 
     }
-}*/
+
+
+    @Test
+    @Transactional
+    public void sendMessageTestWithPhotos() throws IOException, IllegalAccessException, NoSuchAlgorithmException {
+
+        String json = """
+                {   
+                    "type": "MESSAGE",
+                    "payload": { 
+                        "dialogId":  1196,         
+                        "content": "12345",            
+                        "username": "user1",
+                        "uniqueCode": "123456789",
+                        "photoUrl": "https://localhost/img/f5d2b480.jpg"
+                    }          
+                }
+                """;
+
+        doAnswer(i -> {
+            Object obj = new JSONParser().parse(i.getArgument(1).toString());
+            JSONObject jo = (JSONObject) obj;
+            assertEquals("1234567890", jo.get("payload").toString());
+
+            return null;
+        }).when(rabbitTemplate).convertAndSend(anyString(), (Object) anyObject());
+
+
+        String token = jwtTokenUtil.generateToken(userRepository.findById("user1").get());
+        MessageProperties messageProperties = new MessageProperties();
+        messageProperties.setHeader("Authorization", token);
+
+        org.springframework.amqp.core.Message message =
+                new org.springframework.amqp.core.Message(json.getBytes(), messageProperties);
+
+        Integer expectedMessageCount = ((ArrayList<Message>) messageRepository.findAll()).size() + 1;
+        rabbitController.sendMessageFromAMQPClient(message, Mockito.mock(Channel.class), 1L);
+        Integer actualMessageCount = ((ArrayList<Message>) messageRepository.findAll()).size();
+
+        assertNotEquals(0, ((ArrayList<Message>) messageRepository.findAll()).get(0).getPhotos().size());
+
+        assertEquals(expectedMessageCount, actualMessageCount);
+
+    }
+
+
+
+}

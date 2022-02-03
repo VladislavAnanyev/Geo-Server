@@ -51,18 +51,16 @@ src/main/resources/keystore.p12
 src/main/resources/yourkeystore.jks
 *.p12
 *.jks
-src/main/resources/application.properties
+
 !/out/
 out/artifacts/
 out/production/resources/META-INF/
 out/production/resources/db/
 out/production/resources/static/
 out/production/resources/templates/
-out/production/resources/application.properties
 logs/logging.log
 
-
-#!/img/4fe8efec.jpg
+*.jpg
 
 img/009ac8f9.jpg
 src/test/java/com/example/mywebquizengine/model/
