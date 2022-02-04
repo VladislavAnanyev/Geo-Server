@@ -130,7 +130,7 @@ JSONObject jo = (JSONObject) obj;
         try {
             rabbitController.sendMessageFromAMQPClient(message, Mockito.mock(Channel.class), 1L);
             fail("Expected SecurityException");
-        } catch (SecurityException | IOException | NoSuchAlgorithmException | IllegalAccessException e) {
+        } catch (SecurityException | IOException e) {
             assertNotEquals("", e.getMessage());
         }
 
@@ -175,7 +175,7 @@ JSONObject jo = (JSONObject) obj;
             fail("Expected ConstraintViolationException");
         } catch (ConstraintViolationException e) {
             assertNotEquals("", e.getMessage());
-        } catch (IOException | IllegalAccessException | NoSuchAlgorithmException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -215,7 +215,7 @@ JSONObject jo = (JSONObject) obj;
             fail("Expected ConstraintViolationException");
         } catch (ConstraintViolationException e) {
             assertNotEquals("", e.getMessage());
-        } catch (IOException | IllegalAccessException | NoSuchAlgorithmException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

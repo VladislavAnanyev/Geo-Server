@@ -2,6 +2,7 @@
 
 var stompClient = null;
 var username = null;
+let exhcangeName = null
 let uniqueQueueName = new Date().valueOf() + ""
 let activeTyping = true
 let jwt = null
@@ -12,8 +13,9 @@ var colors2 = [
 
 
 
-function notificationConnect() {
+function notificationConnect(exchange) {
 
+    exhcangeName = exchange
 
     console.log("Go")
     /*var socket = new SockJS('/ws');
@@ -50,23 +52,23 @@ function onConnectedNotif() {
     }
     xhrJwt.send();
 
-    let xhrExchange = new XMLHttpRequest();
+/*    let xhrExchange = new XMLHttpRequest();
     xhrExchange.open('GET', '/exchange', false);
     xhrExchange.onreadystatechange = function () {
         if (xhrExchange.readyState === XMLHttpRequest.DONE && xhrExchange.status === 200) {
-
+            xhrExchange.responseText - имя обмена
         }
     }
-    xhrExchange.send();
+    xhrExchange.send();*/
 
     if (location.pathname.includes("chat")) {
-        stompClient.subscribe('/exchange/' + xhrExchange.responseText, onMessageReceived,
+        stompClient.subscribe('/exchange/' + exhcangeName, onMessageReceived,
             {
                 "id": "sub", "auto-delete": false, "x-queue-name": uniqueQueueName,
                 "x-expires": 300000, "ack": "client"
             });
     } else {
-        stompClient.subscribe('/exchange/' + xhrExchange.responseText, onMessageReceived, {"ack": "client"})
+        stompClient.subscribe('/exchange/' + exhcangeName, onMessageReceived, {"ack": "client"})
     }
     //stompClient.subscribe('/queue/' + username, onMessageReceived);
     geo()

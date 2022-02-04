@@ -273,6 +273,11 @@ public class User implements UserDetails, OAuth2User  {
         user.getFriends().add(this);
     }
 
+    public void removeFriend(User user) {
+        this.friends.remove(user);
+        user.getFriends().remove(this);
+    }
+
     @Override
     public String getName() {
         return username;

@@ -386,4 +386,11 @@ public class UserService implements UserDetailsService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
     }
+
+    @Transactional
+    public void deleteFriend(String username, String authUsername) {
+        User user = loadUserByUsername(authUsername);
+        User friend = loadUserByUsername(username);
+        user.removeFriend(friend);
+    }
 }

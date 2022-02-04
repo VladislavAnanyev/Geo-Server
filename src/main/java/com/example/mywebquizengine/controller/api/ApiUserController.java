@@ -30,6 +30,11 @@ public class ApiUserController {
         return userService.findMyFriends(principal.getName());
     }
 
+    @DeleteMapping(path = "/friend/{username}")
+    public void deleteFriend(@PathVariable String username, @ApiIgnore @AuthenticationPrincipal Principal principal) {
+        userService.deleteFriend(username, principal.getName());
+    }
+
     @GetMapping(path = "/findbyid")
     public UserCommonView getUserById(@RequestParam String username) {
         return userService.getUserView(username);

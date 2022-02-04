@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.controller.web;
 
+import com.example.mywebquizengine.model.projection.UserCommonView;
 import com.example.mywebquizengine.model.projection.UserView;
 import com.example.mywebquizengine.model.userinfo.RegistrationType;
 import com.example.mywebquizengine.model.request.Request;
@@ -18,6 +19,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
@@ -25,6 +27,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 
@@ -43,6 +46,18 @@ public class UserController {
     @Autowired
     private JWTUtil jwtUtil;
 
+    @GetMapping(path = "/friends")
+    public String getFriends(Model model, @ApiIgnore @AuthenticationPrincipal Principal principal) {
+
+        model.addAttribute("friends", userService.findMyFriends(principal.getName()));
+        return "friends";
+    }
+
+    @DeleteMapping(path = "/friend/{username}")
+    @ResponseBody
+    public void deleteFriend(@PathVariable String username, @ApiIgnore @AuthenticationPrincipal Principal principal) {
+        userService.deleteFriend(username, principal.getName());
+    }
 
     @GetMapping(path = "/profile")
     public String getProfile(Model model, @AuthenticationPrincipal Principal principal) {

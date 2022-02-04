@@ -86,9 +86,8 @@ public class ApiChatControllerTest {
     public void testGetEmptyDialogList() throws Exception {
         mockMvc.perform(get("/api/dialogs").secure(true))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$", hasSize(1)));
     }
-
 
     @Test
     public void testGetEmptyDialogWithoutAuth() throws Exception {

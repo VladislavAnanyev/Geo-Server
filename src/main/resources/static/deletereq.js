@@ -1,12 +1,12 @@
 
-function deleteQuiz(id) {
+function deleteFriend(id) {
 
+    console.log(id)
     let xhr = new XMLHttpRequest();
-    console.log('/api/quizzes/' + id);
     let div = document.getElementById(id);
-    xhr.open('DELETE', '/quizzes/' + id);
-    //xhr.onreadystatechange = function () {
-      //  if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+    xhr.open('DELETE', '/friend/' + id);
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
             setTimeout(() => $(div).slideUp('slow', function () {
                     //button.disabled = false;
                     $(this).remove();
@@ -15,8 +15,8 @@ function deleteQuiz(id) {
                 }
             ), 0);
 
-     //   }
-    //}
+       }
+    }
     xhr.send();
 
 

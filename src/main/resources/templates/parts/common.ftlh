@@ -69,7 +69,7 @@
     <script src="/static/geolocation.js"></script>
 
     <script>
-        notificationConnect()
+        notificationConnect('${Session.exchange}')
     </script>
 
 

@@ -1,3 +1,5 @@
+let allow = true
+
 function geo() {
     //var findMeButton = document.getElementById("findme")
 
@@ -102,7 +104,7 @@ function geo() {
 
 
         navigator.geolocation.watchPosition(position => {
-            if (position.timestamp/1000 - lastTimestamp/1000 > 5) {
+            if (allow) {
 
                 console.log("1234")
                 console.log(position)
@@ -139,12 +141,17 @@ function geo() {
                 }
 
 
+
                 let xhr = new XMLHttpRequest();
                 xhr.open('POST', '/sendGeolocation', true);
                 xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
                 xhr.onreadystatechange = function () {
                     if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                        allow = false
 
+                        setTimeout(() => {
+                            allow = true
+                        }, 5000)
                         console.log("Отправлено")
                     } else if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 400) {
 
@@ -169,7 +176,7 @@ function geo() {
             }
             console.log(lat + " " + lng)
 
-            if (lat != null && lng != null) {
+            if (lat != null && lng != null && allow) {
                 let xhrBackground = new XMLHttpRequest();
                 xhrBackground.open('POST', '/sendGeolocation',true);
                 xhrBackground.setRequestHeader('Content-type','application/json; charset=utf-8');

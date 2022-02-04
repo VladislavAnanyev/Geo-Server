@@ -35,7 +35,7 @@ public class LoggedUser implements HttpSessionBindingListener {
             if (users.contains(user.getUsername())) {
                 flag = false;
             }
-                users.add(user.getUsername());
+            users.add(user.getUsername());
 
             if (flag) {
                 if (MywebquizengineApplication.ctx.getBean(UserRepository.class).findById(user.getUsername()).isPresent()) {

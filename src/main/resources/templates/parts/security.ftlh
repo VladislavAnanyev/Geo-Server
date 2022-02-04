@@ -20,14 +20,13 @@
 <#--        name = nowUser.email?replace("@gmail.com","")-->
 <#--    name = nowUser.toString()-->
 
-
     >
 
 
 <#--    <#if nowUser.principal.username??>-->
         <#assign
         name = nowUser.name
-
+            
 
         <#--        balance = nowUser.principal.getBalance()-->
             >

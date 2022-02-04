@@ -25,7 +25,7 @@ public class ApiChatController {
     @DeleteMapping(path = "/message/{id}")
     public void deleteMessage(@PathVariable Long id,
                               @ApiIgnore @AuthenticationPrincipal Principal principal
-    ) throws JsonProcessingException, NoSuchAlgorithmException {
+    ) throws JsonProcessingException {
         messageService.deleteMessage(id, principal.getName());
     }
 
@@ -33,7 +33,7 @@ public class ApiChatController {
     public void editMessage(@PathVariable Long id,
                             @RequestBody EditMessageRequest editMessageRequest,
                             @ApiIgnore @AuthenticationPrincipal Principal principal
-    ) throws JsonProcessingException, NoSuchAlgorithmException {
+    ) throws JsonProcessingException {
 
         Message message = new Message();
         message.setContent(editMessageRequest.getContent());

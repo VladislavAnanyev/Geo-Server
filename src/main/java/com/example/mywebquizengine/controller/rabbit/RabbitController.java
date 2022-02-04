@@ -46,7 +46,7 @@ public class RabbitController {
 
     @RabbitListener(queues = "incoming-messages", ackMode = "MANUAL")
     public void sendMessageFromAMQPClient(org.springframework.amqp.core.Message messageFromRabbit, Channel channel,
-                                          @Header(AmqpHeaders.DELIVERY_TAG) Long tag) throws IOException, IllegalAccessException, NoSuchAlgorithmException {
+                                          @Header(AmqpHeaders.DELIVERY_TAG) Long tag) throws IOException {
         channel.basicAck(tag, false);
         Object authorization = messageFromRabbit.getMessageProperties().getHeaders().get("Authorization");
         if (authorization == null) {

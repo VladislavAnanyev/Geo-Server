@@ -5,6 +5,7 @@ import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.security.ActiveUserStore;
 import com.example.mywebquizengine.security.LoggedUser;
 import com.example.mywebquizengine.service.UserService;
+import com.example.mywebquizengine.service.utils.RabbitUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -79,11 +80,11 @@ public class MyAuthenticationSuccessHandler extends
 
             session.invalidate();
             session = request.getSession(true);
-            session.setAttribute("user", user);
+            session.setAttribute("exchange", RabbitUtil.getExchangeName(user.getUsername()));
             session.setMaxInactiveInterval(60);
         } else {
             session = request.getSession(true);
-            session.setAttribute("user", user);
+            session.setAttribute("exchange", RabbitUtil.getExchangeName(user.getUsername()));
             session.setMaxInactiveInterval(60);
         }
             //session.setAttribute("abc", "AAA");
