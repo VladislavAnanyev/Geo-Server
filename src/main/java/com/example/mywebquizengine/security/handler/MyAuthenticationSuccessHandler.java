@@ -80,11 +80,13 @@ public class MyAuthenticationSuccessHandler extends
 
             session.invalidate();
             session = request.getSession(true);
-            session.setAttribute("exchange", RabbitUtil.getExchangeName(user.getUsername()));
+            session.setAttribute("user", user);
+            session.setAttribute("exchange", RabbitUtil.getExchangeName(authentication.getName()));
             session.setMaxInactiveInterval(60);
         } else {
             session = request.getSession(true);
-            session.setAttribute("exchange", RabbitUtil.getExchangeName(user.getUsername()));
+            session.setAttribute("user", user);
+            session.setAttribute("exchange", RabbitUtil.getExchangeName(authentication.getName()));
             session.setMaxInactiveInterval(60);
         }
             //session.setAttribute("abc", "AAA");

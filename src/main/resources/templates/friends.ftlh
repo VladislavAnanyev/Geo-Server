@@ -29,11 +29,6 @@
     </div>
 
 
-    <div>
-        ${Session.exchange}
-    </div>
-
-
     <script src="/static/newActiveDialog.js"></script>
     <script src="/static/deletereq.js"></script>
 </@e.page>
