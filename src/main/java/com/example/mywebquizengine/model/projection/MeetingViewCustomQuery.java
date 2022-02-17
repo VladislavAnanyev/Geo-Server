@@ -12,6 +12,8 @@ public interface MeetingViewCustomQuery {
 
     Double getLng();
     Double getLat();
-
     Date getTime();
+
+    @Value("#{@requestService.isPossibleToSendRequest(target.id)}")
+    boolean isPossibleToSendRequest();
 }

@@ -1,5 +1,7 @@
 package com.example.mywebquizengine.service;
 
+import com.example.mywebquizengine.model.projection.UserCommonView;
+import com.example.mywebquizengine.model.rabbit.FriendType;
 import com.example.mywebquizengine.model.request.Request;
 import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.model.chat.Dialog;
@@ -15,14 +17,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.simple.JSONValue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.json.BasicJsonParser;
-import org.springframework.boot.json.JsonParser;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -46,48 +46,66 @@ public class RequestService {
     @Autowired
     private ObjectMapper objectMapper;
 
+    private Optional<Request> isPresentMyRequestByMeetingIdAndToUsername(Long meetingId, String toUsername) {
+        return requestRepository.findAllByMeetingIdAndStatusAndSenderUsername(meetingId, "PENDING", toUsername);
+    }
+
     @Transactional
     public void sendRequest(Request request, String username) throws JsonProcessingException {
 
-        request.setSender(userService.loadUserByUsername(username));
-        request.setTo(userService.loadUserByUsername(request.getTo().getUsername()));
-        request.setStatus("PENDING");
+        Optional<Request> optionalRequest = isPresentMyRequestByMeetingIdAndToUsername(
+                request.getMeeting().getId(), request.getTo().getUsername()
+        );
 
-        ArrayList<Request> requests = requestRepository
-                .findAllByMeetingId(
-                        request.getMeeting().getId()
-                );
+        if (optionalRequest.isPresent()) {
+            acceptRequest(optionalRequest.get().getId(), username);
+        } else {
 
-        if (requests.size() > 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Вы уже отправляли заявку по этой встрече");
+            List<Request> allMyPendingRequestsToUser = requestRepository.findBySenderUsernameAndToUsernameAndStatus(
+                    username,
+                    request.getTo().getUsername(),
+                    "PENDING"
+            );
+
+            if (allMyPendingRequestsToUser.size() != 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You already send request to this user");
+            }
+
+            request.setSender(userService.loadUserByUsername(username));
+            request.setTo(userService.loadUserByUsername(request.getTo().getUsername()));
+            request.setStatus("PENDING");
+
+            if(!isPossibleToSendRequest(request.getMeeting().getId())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can not send request");
+            }
+
+            Long dialogId = messageService.createDialog(request.getTo().getUsername(), username);
+
+            Dialog dialog = new Dialog();
+            dialog.setDialogId(dialogId);
+
+            if (request.getMessage() != null) {
+
+                request.getMessage().setDialog(dialog);
+                request.getMessage().setSender(userService.loadUserByUsernameProxy(username));
+                request.getMessage().setStatus(MessageStatus.DELIVERED);
+                request.getMessage().setTimestamp(new Date());
+
+            }
+
+            requestRepository.save(request);
+
+            RequestView requestView = ProjectionUtil.parseToProjection(request, RequestView.class);
+
+            RabbitMessage<RequestView> rabbitMessage = new RabbitMessage<>();
+            rabbitMessage.setType(RequestType.REQUEST);
+            rabbitMessage.setPayload(requestView);
+
+            String exchangeName = RabbitUtil.getExchangeName(request.getTo().getUsername());
+
+            rabbitTemplate.convertAndSend(exchangeName, "",
+                    JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
         }
-
-        Long dialogId = messageService.createDialog(request.getTo().getUsername(), username);
-
-        Dialog dialog = new Dialog();
-        dialog.setDialogId(dialogId);
-
-        if (request.getMessage() != null) {
-
-            request.getMessage().setDialog(dialog);
-            request.getMessage().setSender(userService.loadUserByUsernameProxy(username));
-            request.getMessage().setStatus(MessageStatus.DELIVERED);
-            request.getMessage().setTimestamp(new Date());
-
-        }
-
-        requestRepository.save(request);
-
-        RequestView requestView = ProjectionUtil.parseToProjection(request, RequestView.class);
-
-        RabbitMessage<RequestView> rabbitMessage = new RabbitMessage<>();
-        rabbitMessage.setType(RequestType.REQUEST);
-        rabbitMessage.setPayload(requestView);
-
-        String exchangeName = RabbitUtil.getExchangeName(request.getTo().getUsername());
-
-        rabbitTemplate.convertAndSend(exchangeName, "",
-                JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
     }
 
     public List<RequestView> getSentRequests(String username) {
@@ -108,6 +126,34 @@ public class RequestService {
 
     }
 
+    /**
+     * ты сейчас можешь отправить заявку либо если заявок по этой встрече нет либо если не существует заявок
+     * от тебя и не существует заявок со статусом принята или отклонена
+     */
+    public boolean isPossibleToSendRequest(Long meetingId) {
+
+        ArrayList<Request> allRequests = requestRepository
+                .findAllByMeetingId(
+                        meetingId
+                );
+
+        if (allRequests.size() == 0) {
+            return true;
+        } else {
+            String authUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+            ArrayList<RequestView> sentRequest = requestRepository.findByMeetingIdAndSenderUsername(meetingId, authUsername);
+            int sizeOfSentRequest = sentRequest.size();
+            boolean isRequestWithStatusRejectedOrAcceptedExist = false;
+            for (Request request : allRequests) {
+                if (request.getStatus().equals("REJECTED") || request.getStatus().equals("ACCEPTED")) {
+                    isRequestWithStatusRejectedOrAcceptedExist = true;
+                    break;
+                }
+            }
+            return sizeOfSentRequest == 0 && !isRequestWithStatusRejectedOrAcceptedExist;
+        }
+    }
+
     public ArrayList<RequestView> getMyRequests(String username) {
         return requestRepository.findByStatusAndToUsernameOrStatusAndSenderUsername(
                 "PENDING", username, "PENDING", username
@@ -123,17 +169,19 @@ public class RequestService {
         authUser.addFriend(request.getSender());
         requestRepository.save(request);
 
-        RequestView requestView = ProjectionUtil.parseToProjection(request, RequestView.class);
+        UserCommonView toView = ProjectionUtil.parseToProjection(request.getTo(), UserCommonView.class);
 
-        RabbitMessage<RequestView> rabbitMessage = new RabbitMessage<>();
-        rabbitMessage.setType(RequestType.ACCEPT_REQUEST);
-        rabbitMessage.setPayload(requestView);
+        RabbitMessage<UserCommonView> rabbitMessage = new RabbitMessage<>();
+        rabbitMessage.setType(FriendType.NEW_FRIEND);
+        rabbitMessage.setPayload(toView);
 
         String senderExchangeName = RabbitUtil.getExchangeName(request.getSender().getUsername());
         String toExchangeName = RabbitUtil.getExchangeName(request.getTo().getUsername());
-
         rabbitTemplate.convertAndSend(senderExchangeName, "",
                 JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
+
+        UserCommonView senderView = ProjectionUtil.parseToProjection(request.getSender(), UserCommonView.class);
+        rabbitMessage.setPayload(senderView);
         rabbitTemplate.convertAndSend(toExchangeName, "",
                 JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
 

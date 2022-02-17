@@ -82,4 +82,5 @@ public class Meeting {
     public void setRequest(Request request) {
         this.request = request;
     }
+
 }

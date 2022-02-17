@@ -16,4 +16,7 @@ public interface MeetingView {
 
     Date getTime();
 
+    @Value("TRUE")
+    boolean isPossibleToSendRequest();
+
 }

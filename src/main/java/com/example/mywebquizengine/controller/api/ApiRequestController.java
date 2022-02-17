@@ -1,24 +1,24 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.model.request.RequestDto;
-import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.model.chat.Message;
 import com.example.mywebquizengine.model.geo.Meeting;
 import com.example.mywebquizengine.model.projection.RequestView;
 import com.example.mywebquizengine.model.request.Request;
+import com.example.mywebquizengine.model.request.RequestDto;
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.service.RequestService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.transaction.Transactional;
 import javax.validation.Valid;
-import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/api")
@@ -29,6 +29,7 @@ public class ApiRequestController {
 
     @PostMapping(path = "/request")
     @ResponseBody
+    @Transactional
     public void sendRequest(
             @RequestBody @Valid RequestDto requestDto,
             @ApiIgnore @AuthenticationPrincipal Principal principal) throws JsonProcessingException {
@@ -51,6 +52,7 @@ public class ApiRequestController {
             request.setMessage(message);
         }
         requestService.sendRequest(request, principal.getName());
+
     }
 
     @PostMapping(path = "/request/{id}/accept")

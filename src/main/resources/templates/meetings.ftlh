@@ -29,11 +29,12 @@
 
                 <#else>
 
+                    <#if meeting.possibleToSendRequest>
                     <span class="input-group-text mb-1">Сообщение</span>
                     <textarea class="form-control mb-2" id="${meeting.user.username}msg" aria-label="With textarea"></textarea>
 
                     <a  onclick="sendRequest('${meeting.user.username}', '${meeting.id?c}')" href="#" id="button${meeting.user.username}" class="btn btn-primary">Отправить запрос</a>
-
+                    </#if>
 
                 </#if>
 

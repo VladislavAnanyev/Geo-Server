@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public interface RequestRepository extends CrudRepository<Request, Long>, JpaRepository<Request, Long> {
 
@@ -22,7 +24,11 @@ public interface RequestRepository extends CrudRepository<Request, Long>, JpaRep
     * FindByStatusAnd(ToUsernameOrSenderUsername)*/
     ArrayList<RequestView> findByStatusAndToUsernameOrStatusAndSenderUsername(String status, @NotBlank String to_username, String status2, @NotBlank String sender_username);
 
+    ArrayList<RequestView> findByMeetingIdAndSenderUsername(Long meetingId, String username);
+
     ArrayList<Request> findAllByMeetingIdAndStatus(Long meetingId, String status);
+
+    Optional<Request> findAllByMeetingIdAndStatusAndSenderUsername(Long meetingId, String status, String username);
 
     ArrayList<Request> findAllByMeetingId(Long meetingId);
 
@@ -33,4 +39,6 @@ public interface RequestRepository extends CrudRepository<Request, Long>, JpaRep
     @Transactional
     @Query(nativeQuery = true, value = "UPDATE REQUESTS SET STATUS = :status WHERE ID = :id")
     void updateStatus(Long id, String status);
+
+    List<Request> findBySenderUsernameAndToUsernameAndStatus(String username, String username1, String pending);
 }
