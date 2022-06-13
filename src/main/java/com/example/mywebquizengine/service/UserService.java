@@ -1,5 +1,8 @@
 package com.example.mywebquizengine.service;
 
+import com.example.mywebquizengine.model.exception.AuthorizationException;
+import com.example.mywebquizengine.model.exception.LogicException;
+import com.example.mywebquizengine.model.exception.UserNotFoundException;
 import com.example.mywebquizengine.model.projection.ProfileView;
 import com.example.mywebquizengine.model.projection.UserCommonView;
 import com.example.mywebquizengine.model.projection.UserView;
@@ -28,8 +31,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -62,12 +68,12 @@ public class UserService implements UserDetailsService {
 
 
     @Override
-    public User loadUserByUsername(String username) throws ResponseStatusException {
+    public User loadUserByUsername(String username) throws UserNotFoundException {
         Optional<User> user = userRepository.findById(username);
 
         if (user.isPresent()) {
             return user.get();
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        } else throw new EntityNotFoundException("Пользователь не найден");
     }
 
     public User loadUserByUsernameProxy(String username) throws UsernameNotFoundException {
@@ -84,7 +90,7 @@ public class UserService implements UserDetailsService {
         } else if (type.equals(RegistrationType.BASIC)) {
             if (optionalUser.isEmpty()) {
                 userRepository.save(user);
-            } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            } else throw new LogicException("Пользователь с таким \"username\" уже существует");
         }
 
     }
@@ -245,7 +251,7 @@ public class UserService implements UserDetailsService {
         return userRepository.findByUsername(username);
     }
 
-    public AuthResponse signInViaApi(AuthRequest authRequest)  {
+    public AuthResult signInViaApi(AuthRequest authRequest)  {
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
@@ -254,29 +260,25 @@ public class UserService implements UserDetailsService {
                             authRequest.getPassword()
                     )
             );
-        } catch (BadCredentialsException e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Имя или пароль неправильны", e);
+        } catch (Exception e) {
+            throw new AuthorizationException("Имя или пароль неправильны");
         }
         // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
         String jwt = jwtTokenUtil.generateToken((UserDetails) authentication.getPrincipal());
-
         String exchangeName = RabbitUtil.getExchangeName(authRequest.getUsername());
-
-        rabbitAdmin.declareExchange(new FanoutExchange(exchangeName, true, false));
-
-        return new AuthResponse(jwt, exchangeName);
+        return new AuthResult(jwt, exchangeName);
     }
 
-    public AuthResponse getJwtToken(User user) {
+    public AuthResult getJwtToken(User user) {
         // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
         String jwt = jwtTokenUtil.generateToken(loadUserByUsername(user.getUsername()));
 
         String exchangeName = RabbitUtil.getExchangeName(user.getUsername());
         rabbitAdmin.declareExchange(new FanoutExchange(exchangeName, true, false));
-        return new AuthResponse(jwt, exchangeName);
+        return new AuthResult(jwt, exchangeName);
     }
 
-    public AuthResponse signinViaGoogleToken(GoogleToken token) throws GeneralSecurityException, IOException {
+    public AuthResult signinViaGoogleToken(GoogleToken token) throws GeneralSecurityException, IOException {
         GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory)
                 // Specify the CLIENT_ID of the app that accesses the backend:
                 .setAudience(Collections.singletonList(CLIENT_ID))
@@ -325,7 +327,7 @@ public class UserService implements UserDetailsService {
             String exchangeName = RabbitUtil.getExchangeName(username);
             rabbitAdmin.declareExchange(new FanoutExchange(exchangeName, true, false));
 
-            return new AuthResponse(jwt, exchangeName);
+            return new AuthResult(jwt, exchangeName);
 
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -343,7 +345,7 @@ public class UserService implements UserDetailsService {
 
     public void processCheckIn(User user, RegistrationType type) {
         if (user.getUsername().contains(" ")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            throw new IllegalArgumentException("\"username\" не должен содержать пробелов");
         } else {
             if (type.equals(RegistrationType.BASIC)) {
                 user.setPassword(passwordEncoder.encode(user.getPassword()));

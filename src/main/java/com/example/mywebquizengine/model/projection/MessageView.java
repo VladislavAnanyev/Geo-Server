@@ -2,6 +2,7 @@ package com.example.mywebquizengine.model.projection;
 
 import com.example.mywebquizengine.model.chat.MessagePhoto;
 import com.example.mywebquizengine.model.chat.MessageStatus;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.time.Instant;
@@ -12,6 +13,8 @@ public interface MessageView {
     Long getId();
     String getContent();
     UserCommonView getSender();
+
+    //@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     Date getTimestamp();
     List<MessageView> getForwardedMessages();
     List<MessagePhoto> getPhotos();

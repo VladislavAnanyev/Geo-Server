@@ -1,25 +1,22 @@
 package com.example.mywebquizengine.service;
 
 
-import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.model.chat.Dialog;
 import com.example.mywebquizengine.model.chat.Message;
 import com.example.mywebquizengine.model.chat.MessageStatus;
+import com.example.mywebquizengine.model.chat.Typing;
 import com.example.mywebquizengine.model.projection.DialogView;
 import com.example.mywebquizengine.model.projection.LastDialog;
 import com.example.mywebquizengine.model.projection.MessageView;
 import com.example.mywebquizengine.model.projection.TypingView;
 import com.example.mywebquizengine.model.rabbit.MessageType;
 import com.example.mywebquizengine.model.rabbit.RabbitMessage;
-import com.example.mywebquizengine.model.chat.Typing;
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.repos.DialogRepository;
 import com.example.mywebquizengine.repos.MessageRepository;
 import com.example.mywebquizengine.service.utils.ProjectionUtil;
 import com.example.mywebquizengine.service.utils.RabbitUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.json.simple.JSONValue;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,9 +34,6 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 @Service
@@ -58,8 +52,6 @@ public class MessageService {
     private RabbitTemplate rabbitTemplate;
     @Value("${hostname}")
     private String hostname;
-    @Autowired
-    private ObjectMapper objectMapper;
 
     public void saveMessage(Message message) {
         messageRepository.save(message);
@@ -82,11 +74,10 @@ public class MessageService {
             } else {
                 return dialog_id;
             }
-        } else throw new IllegalArgumentException("You can not create dialog with myself");
+        } else throw new IllegalArgumentException("You can not create dialog with yourself");
 
 
     }
-
 
 
     public ArrayList<LastDialog> getDialogsForApi(String username) {
@@ -110,8 +101,7 @@ public class MessageService {
 
                 for (User user : message.getDialog().getUsers()) {
                     String exchangeName = RabbitUtil.getExchangeName(user.getUsername());
-                    rabbitTemplate.convertAndSend(exchangeName, "",
-                            JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
+                    rabbitTemplate.convertAndSend(exchangeName, "", rabbitMessage);
                 }
 
             } else {
@@ -162,8 +152,7 @@ public class MessageService {
 
                     String exchangeName = RabbitUtil.getExchangeName(user.getUsername());
 
-                    rabbitTemplate.convertAndSend(exchangeName, "",
-                            JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
+                    rabbitTemplate.convertAndSend(exchangeName, "", rabbitMessage);
                 }
             } else {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
@@ -172,7 +161,7 @@ public class MessageService {
     }
 
     @Transactional
-    public void sendMessage(@Valid Message message) throws JsonProcessingException {
+    public void sendMessage(@Valid Message message) {
 
         Optional<Dialog> optionalDialog = dialogRepository.findById(message.getDialog().getDialogId());
 
@@ -188,7 +177,8 @@ public class MessageService {
                 message.setSender(sender);
                 message.setDialog(dialog);
                 message.setTimestamp(new Date());
-                message.setStatus(MessageStatus.DELIVERED);;
+                message.setStatus(MessageStatus.DELIVERED);
+                ;
 
                 messageRepository.save(message);
 
@@ -202,8 +192,7 @@ public class MessageService {
 
                     String exchangeName = RabbitUtil.getExchangeName(user.getUsername());
 
-                    rabbitTemplate.convertAndSend(exchangeName, "",
-                            JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
+                    rabbitTemplate.convertAndSend(exchangeName, "", rabbitMessage);
                 }
             } else throw new SecurityException("You are not contains in this dialog");
 
@@ -212,7 +201,7 @@ public class MessageService {
     }
 
 
-    public Long createGroup(Dialog newDialog, String username) throws JsonProcessingException {
+    public Long createGroup(Dialog newDialog, String username) {
 
         User authUser = new User();
 
@@ -256,8 +245,7 @@ public class MessageService {
             for (User user : dialog.getUsers()) {
                 String exchangeName = RabbitUtil.getExchangeName(user.getUsername());
 
-                rabbitTemplate.convertAndSend(exchangeName, "",
-                        JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
+                rabbitTemplate.convertAndSend(exchangeName, "", rabbitMessage);
             }
 
             return dialog.getDialogId();
@@ -268,7 +256,7 @@ public class MessageService {
 
     // протестить
     @Transactional
-    public void typingMessage(@Valid Typing typing) throws JsonProcessingException {
+    public void typingMessage(@Valid Typing typing) {
 
         Optional<Dialog> dialog = dialogRepository.findById(typing.getDialogId());
 
@@ -294,8 +282,7 @@ public class MessageService {
 
                 if (!typing.getUser().getUsername().equals(user.getUsername())) {
                     String exchangeName = RabbitUtil.getExchangeName(user.getUsername());
-                    rabbitTemplate.convertAndSend(exchangeName, "",
-                            JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)), messagePostProcessor);
+                    rabbitTemplate.convertAndSend(exchangeName, "", rabbitMessage, messagePostProcessor);
 
                 }
 

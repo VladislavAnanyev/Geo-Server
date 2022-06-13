@@ -61,9 +61,7 @@ public class MyAuthenticationSuccessHandler extends
             } else {
                 targetUrl = "/profile";
             }
-        }
-
-        if (authentication instanceof UsernamePasswordAuthenticationToken) {
+        } else if (authentication instanceof UsernamePasswordAuthenticationToken) {
 
             if (savedRequest != null) {
                 targetUrl = savedRequest.getRedirectUrl();

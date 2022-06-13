@@ -42,7 +42,7 @@ public class ApiUserController {
 
     @PostMapping(path = "/signin")
     public AuthResponse jwtSignIn(@RequestBody AuthRequest authRequest) {
-        return userService.signInViaApi(authRequest);
+        return new AuthResponse(userService.signInViaApi(authRequest));
     }
 
     @PostMapping(path = "/signup")
@@ -55,13 +55,13 @@ public class ApiUserController {
         user.setEmail(registrationRequest.getEmail());
 
         userService.processCheckIn(user, RegistrationType.BASIC);
-        return userService.getJwtToken(user);
+        return new AuthResponse(userService.getJwtToken(user));
     }
 
     @PostMapping(path = "/googleauth")
     public AuthResponse googleJwt(@RequestBody GoogleToken token, HttpServletRequest request) throws GeneralSecurityException, IOException, ServletException {
         request.logout();
-        return userService.signinViaGoogleToken(token);
+        return new AuthResponse(userService.signinViaGoogleToken(token));
     }
 
     @GetMapping(path = "/authuser")

@@ -1,6 +1,10 @@
 package com.example.mywebquizengine.config;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
@@ -15,6 +19,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.handler.annotation.support.DefaultMessageHandlerMethodFactory;
 import org.springframework.messaging.handler.annotation.support.MessageHandlerMethodFactory;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 @Configuration
@@ -41,7 +48,9 @@ public class RabbitMqConfiguration implements RabbitListenerConfigurer {
 
     @Bean
     public Jackson2JsonMessageConverter producerJackson2MessageConverter() {
-        return new Jackson2JsonMessageConverter();
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setDateFormat(new StdDateFormat());
+        return new Jackson2JsonMessageConverter(objectMapper);
     }
 
     @Override

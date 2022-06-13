@@ -70,7 +70,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return new SessionRegistryImpl();
     }
 
-
     @Bean
     public ActiveUserStore activeUserStore() {
         return new ActiveUserStore();
@@ -153,7 +152,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             return "secretkey";
         }
 
-
         @Bean
         public PersistentTokenRepository persistentTokenRepository() {
             JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
@@ -161,12 +159,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             return tokenRepository;
         }
 
-
         @Override
         public void configure(WebSecurity web) throws Exception {
             web.debug(true).ignoring().antMatchers("/img/**", "/static/**");
         }
-
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {

@@ -1,7 +1,9 @@
 package com.example.mywebquizengine;
 
 import com.example.mywebquizengine.model.exception.ApiError;
+import com.example.mywebquizengine.model.exception.AuthorizationException;
 import com.example.mywebquizengine.model.exception.LogicException;
+import com.example.mywebquizengine.model.userinfo.ErrorResponse;
 import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -68,6 +70,13 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(AuthorizationException.class)
+    public ResponseEntity<Object> handleException(AuthorizationException e) {
+        return new ResponseEntity<>(
+                new ErrorResponse("AuthorizationException",
+                        e.getMessage()), HttpStatus.OK);
+    }
+
     @ExceptionHandler(IOException.class)
     public ResponseEntity<Object> handleException(IOException e) {
         ApiError apiError = new ApiError("IOException", e.getMessage());
@@ -80,8 +89,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         ApiError apiError = new ApiError();
         apiError.setMessage(String.format("The parameter '%s' of value '%s' could not be converted to type '%s'",
                 ex.getName(), ex.getValue(), ex.getRequiredType().getSimpleName()));
-        apiError.setDebugMessage(ex.getMessage());
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+        apiError.setDescription("MethodArgumentTypeMismatchException");
+
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setError(apiError);
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     /*@ExceptionHandler(Exception.class)

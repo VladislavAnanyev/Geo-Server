@@ -1,28 +1,17 @@
 package com.example.mywebquizengine.model.userinfo;
 
-public class AuthResponse {
-    private String jwtToken;
-    private String exchangeName;
+public class AuthResponse extends SuccessfulResponse {
+    private AuthResult result;
 
-    public AuthResponse(String jwtToken, String exchangeName) {
-        this.jwtToken = jwtToken;
-        this.exchangeName = exchangeName;
+    public AuthResponse(AuthResult result) {
+        this.result = result;
     }
 
-    public String getExchangeName() {
-        return exchangeName;
+    public AuthResult getResult() {
+        return result;
     }
 
-    public void setExchangeName(String exchangeName) {
-        this.exchangeName = exchangeName;
-    }
-    // геттер и сеттер
-
-    public String getJwtToken() {
-        return jwtToken;
-    }
-
-    public void setJwtToken(String jwtToken) {
-        this.jwtToken = jwtToken;
+    public void setResult(AuthResult result) {
+        this.result = result;
     }
 }
