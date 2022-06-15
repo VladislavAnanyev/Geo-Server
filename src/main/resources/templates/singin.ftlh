@@ -60,12 +60,11 @@
             <label class="form-check-label" for="exampleCheck1">Запомнить меня</label>
         </div>-->
         <button type="submit" class="btn btn-primary">Войти</button>
-        <#if nowUser??>
+
         <button type="button" class="btn btn-primary my-1" data-toggle="modal" data-target="#staticBackdrop">
             Забыли пароль?
         </button>
         <a class="btn btn-primary " href="/reg" role="button">Регистрация</a>
-        </#if>
     </form>
 
 
