@@ -3,6 +3,7 @@ package com.example.mywebquizengine.controller.api;
 import com.example.mywebquizengine.model.geo.Geolocation;
 import com.example.mywebquizengine.model.geo.GeolocationRequest;
 import com.example.mywebquizengine.model.projection.MeetingViewCustomQuery;
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.service.GeoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,20 +22,20 @@ public class ApiGeoController {
     private GeoService geoService;
 
     @GetMapping(path = "/meetings")
-    public ArrayList<MeetingViewCustomQuery> getMyMeetings(@ApiIgnore @AuthenticationPrincipal Principal principal,
+    public ArrayList<MeetingViewCustomQuery> getMyMeetings(@ApiIgnore @AuthenticationPrincipal User authUser,
                                                            @RequestParam(required = false) String date) {
-        return geoService.getMyMeetings(principal.getName(), date);
+        return geoService.getMyMeetings(authUser.getUsername(), date);
     }
 
     @PostMapping(path = "/sendGeolocation")
-    public void sendGeolocation(@ApiIgnore @AuthenticationPrincipal Principal principal,
+    public void sendGeolocation(@ApiIgnore @AuthenticationPrincipal User authUser,
                                 @RequestBody GeolocationRequest geolocationRequest) throws Exception {
 
         Geolocation geolocation = new Geolocation();
         geolocation.setLat(geolocationRequest.getLat());
         geolocation.setLng(geolocationRequest.getLng());
 
-        geoService.sendGeolocation(principal.getName(), geolocation);
+        geoService.sendGeolocation(authUser.getUsername(), geolocation);
     }
 
     @GetMapping(path = "/test")
@@ -45,8 +46,8 @@ public class ApiGeoController {
     @PostMapping(path = "/loadGoogleHistory")
     @ResponseBody
     public void handleGoogleHistoryUpload(@RequestParam("file") MultipartFile file,
-                                          @ApiIgnore @AuthenticationPrincipal Principal principal) {
-        geoService.loadGeolocationHistory(file, principal.getName());
+                                          @ApiIgnore @AuthenticationPrincipal User authUser) {
+        geoService.loadGeolocationHistory(file, authUser.getUsername());
     }
 
 }

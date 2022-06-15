@@ -1,5 +1,7 @@
 package com.example.mywebquizengine.security;
 
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.List;
 

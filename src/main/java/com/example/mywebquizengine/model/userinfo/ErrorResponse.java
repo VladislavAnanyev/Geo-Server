@@ -1,6 +1,5 @@
 package com.example.mywebquizengine.model.userinfo;
 
-
 import com.example.mywebquizengine.model.exception.ApiError;
 
 public class ErrorResponse implements Response {

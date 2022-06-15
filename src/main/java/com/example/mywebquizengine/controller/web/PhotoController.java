@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.controller.web;
 
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.service.FileSystemStorageService;
 import com.example.mywebquizengine.service.PhotoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +24,10 @@ public class PhotoController {
 
     @PostMapping(path = "/upload")
     public String handleFileUpload(@RequestParam("file") MultipartFile file,
-                                   @AuthenticationPrincipal Principal principal) {
+                                   @AuthenticationPrincipal User principal) {
 
         String fileName = fileSystemStorageService.store(file);
-        photoService.savePhoto(fileName, principal.getName());
+        photoService.savePhoto(fileName, principal.getUsername());
 
         return "redirect:/profile";
 

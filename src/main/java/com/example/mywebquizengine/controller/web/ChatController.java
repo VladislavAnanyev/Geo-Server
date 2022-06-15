@@ -39,27 +39,27 @@ public class ChatController {
 
 
     @GetMapping(path = "/chat")
-    public String chat(Model model, @AuthenticationPrincipal Principal principal) {
+    public String chat(Model model, @AuthenticationPrincipal User authUser) {
 
-        User user = userService.loadUserByUsernameProxy(principal.getName());
+        User user = userService.loadUserByUsernameProxy(authUser.getUsername());
         model.addAttribute("myUsername", user);
-        model.addAttribute("lastDialogs", messageService.getDialogsForApi(principal.getName()));
-        model.addAttribute("userList", userService.findMyFriends(principal.getName()));
+        model.addAttribute("lastDialogs", messageService.getDialogsForApi(authUser.getUsername()));
+        model.addAttribute("userList", userService.findMyFriends(authUser.getUsername()));
         return "chat";
     }
 
     @GetMapping(path = "/exchange")
     @ResponseBody
-    public String getExchangeName(@AuthenticationPrincipal Principal principal) throws NoSuchAlgorithmException {
-        return RabbitUtil.getExchangeName(principal.getName());
+    public String getExchangeName(@AuthenticationPrincipal User authUser) {
+        return RabbitUtil.getExchangeName(authUser.getUsername());
     }
 
     @PostMapping(path = "/checkdialog")
     @ResponseBody
     @PreAuthorize(value = "!#principal.name.equals(#user.username)")
-    public Long checkDialog(@RequestBody User user, @AuthenticationPrincipal Principal principal) {
+    public Long checkDialog(@RequestBody User user, @AuthenticationPrincipal User authUser) {
 
-        return messageService.createDialog(user.getUsername(), principal.getName());
+        return messageService.createDialog(user.getUsername(), authUser.getUsername());
 
     }
 
@@ -69,18 +69,18 @@ public class ChatController {
                                @RequestParam(required = false, defaultValue = "0") @Min(0) Integer page,
                                @RequestParam(required = false, defaultValue = "50") @Min(1) @Max(100) Integer pageSize,
                                @RequestParam(defaultValue = "timestamp") String sortBy,
-                               @AuthenticationPrincipal Principal principal) {
+                               @AuthenticationPrincipal User authUser) {
 
         //DialogView dialog = messageService.getDialogWithPaging(dialog_id, page, pageSize, sortBy);
-        DialogView dialog = messageService.getMessages(Long.valueOf(dialog_id), page, pageSize, sortBy, principal.getName());
+        DialogView dialog = messageService.getMessages(Long.valueOf(dialog_id), page, pageSize, sortBy, authUser.getUsername());
         if (dialog.getUsers().stream().anyMatch(o -> o.getUsername()
-                .equals(principal.getName()))) {
+                .equals(authUser.getUsername()))) {
 
-            model.addAttribute("lastDialogs", messageService.getDialogsForApi(principal.getName()));
+            model.addAttribute("lastDialogs", messageService.getDialogsForApi(authUser.getUsername()));
             model.addAttribute("dialog", dialog.getDialogId());
             model.addAttribute("messages", dialog.getMessages());
             model.addAttribute("dialogObj", dialog);
-            model.addAttribute("userList", userService.findMyFriends(principal.getName()));
+            model.addAttribute("userList", userService.findMyFriends(authUser.getUsername()));
 
             return "chat";
 
@@ -96,16 +96,16 @@ public class ChatController {
                                         @RequestParam(required = false, defaultValue = "0") @Min(0) Integer page,
                                         @RequestParam(required = false, defaultValue = "50") @Min(1) @Max(100) Integer pageSize,
                                         @RequestParam(defaultValue = "timestamp") String sortBy,
-                                        @AuthenticationPrincipal Principal principal) {
-        return messageService.getMessages(Long.valueOf(dialog_id), page, pageSize, sortBy, principal.getName());
+                                        @AuthenticationPrincipal User authUser) {
+        return messageService.getMessages(Long.valueOf(dialog_id), page, pageSize, sortBy, authUser.getUsername());
     }
 
     @PostMapping(path = "/createGroup")
     @ResponseBody
     public Long createGroup(@Valid @RequestBody Dialog newDialog,
-                            @AuthenticationPrincipal Principal principal
+                            @AuthenticationPrincipal User authUser
     ) throws JsonProcessingException, ParseException, NoSuchAlgorithmException {
-        return messageService.createGroup(newDialog, principal.getName());
+        return messageService.createGroup(newDialog, authUser.getUsername());
     }
 
 

@@ -3,7 +3,9 @@ package com.example.mywebquizengine.security;
 import com.example.mywebquizengine.security.handler.ApiLogoutHandler;
 import com.example.mywebquizengine.security.handler.MyAuthenticationSuccessHandler;
 import com.example.mywebquizengine.security.handler.MyLogoutSuccessHandler;
+import com.example.mywebquizengine.service.AuthService;
 import com.example.mywebquizengine.service.JWTFilter;
+import com.example.mywebquizengine.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.web.servlet.ServletComponentScan;
@@ -58,9 +60,9 @@ import java.util.Set;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Qualifier("userService")
+//    @Qualifier("userService")
     @Autowired
-    protected UserDetailsService userDetailsService;
+    protected AuthService userDetailsService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -68,11 +70,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public SessionRegistry sessionRegistry() {
         return new SessionRegistryImpl();
-    }
-
-    @Bean
-    public ActiveUserStore activeUserStore() {
-        return new ActiveUserStore();
     }
 
     @Bean

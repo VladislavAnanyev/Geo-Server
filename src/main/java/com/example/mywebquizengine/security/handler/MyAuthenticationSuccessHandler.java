@@ -4,11 +4,14 @@ import com.example.mywebquizengine.model.userinfo.RegistrationType;
 import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.security.ActiveUserStore;
 import com.example.mywebquizengine.security.LoggedUser;
-import com.example.mywebquizengine.service.UserService;
+import com.example.mywebquizengine.service.AuthService;
+import com.example.mywebquizengine.service.utils.OauthUserMapper;
 import com.example.mywebquizengine.service.utils.RabbitUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
@@ -24,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.Collections;
 
 
 @Component("myAuthenticationSuccessHandler")
@@ -36,7 +40,7 @@ public class MyAuthenticationSuccessHandler extends
     private ActiveUserStore activeUserStore;
 
     @Autowired
-    private UserService userService;
+    private AuthService authService;
 
     public MyAuthenticationSuccessHandler() {
         super();
@@ -50,12 +54,21 @@ public class MyAuthenticationSuccessHandler extends
                                         Authentication authentication) throws IOException {
 
         SavedRequest savedRequest = requestCache.getRequest(request, response);
-
         String targetUrl = determineTargetUrl(request, response, authentication);
 
         if (authentication instanceof OAuth2AuthenticationToken) {
-            User user = userService.castToUserFromOauth((OAuth2AuthenticationToken) authentication);
-            userService.processCheckIn(user, RegistrationType.OAUTH2); // save if not exist (registration)
+
+            // save if not exist (registration)
+            User user = authService.processCheckIn(
+                    OauthUserMapper.castToUserFromOauth(authentication),
+                    RegistrationType.OAUTH2
+            );
+
+            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+                    new UsernamePasswordAuthenticationToken(
+                            user, "Bearer", Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")));
+            SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+
             if (savedRequest != null) {
                 targetUrl = savedRequest.getRedirectUrl();
             } else {
@@ -87,11 +100,8 @@ public class MyAuthenticationSuccessHandler extends
             session.setAttribute("exchange", RabbitUtil.getExchangeName(authentication.getName()));
             session.setMaxInactiveInterval(60);
         }
-            //session.setAttribute("abc", "AAA");
-
 
         //clearAuthenticationAttributes(request);
-
         redirectStrategy.sendRedirect(request, response, targetUrl);
     }
 

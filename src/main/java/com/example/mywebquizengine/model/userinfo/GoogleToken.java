@@ -3,6 +3,9 @@ package com.example.mywebquizengine.model.userinfo;
 public class GoogleToken {
     private String idTokenString;
 
+    public GoogleToken() {
+    }
+
     public String getIdTokenString() {
         return idTokenString;
     }
@@ -11,5 +14,4 @@ public class GoogleToken {
         this.idTokenString = idTokenString;
     }
 
-    public GoogleToken() {}
 }

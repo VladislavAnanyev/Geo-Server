@@ -4,6 +4,7 @@ import com.example.mywebquizengine.model.chat.EditMessageRequest;
 import com.example.mywebquizengine.model.chat.Message;
 import com.example.mywebquizengine.model.projection.LastDialog;
 import com.example.mywebquizengine.model.projection.DialogView;
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.service.MessageService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,22 +25,22 @@ public class ApiChatController {
 
     @DeleteMapping(path = "/message/{id}")
     public void deleteMessage(@PathVariable Long id,
-                              @ApiIgnore @AuthenticationPrincipal Principal principal
+                              @ApiIgnore @AuthenticationPrincipal User authUser
     ) throws JsonProcessingException {
-        messageService.deleteMessage(id, principal.getName());
+        messageService.deleteMessage(id, authUser.getUsername());
     }
 
     @PutMapping(path = "/message/{id}")
     public void editMessage(@PathVariable Long id,
                             @RequestBody EditMessageRequest editMessageRequest,
-                            @ApiIgnore @AuthenticationPrincipal Principal principal
+                            @ApiIgnore @AuthenticationPrincipal User authUser
     ) throws JsonProcessingException {
 
         Message message = new Message();
         message.setContent(editMessageRequest.getContent());
         message.setId(id);
 
-        messageService.editMessage(message, principal.getName());
+        messageService.editMessage(message, authUser.getUsername());
     }
 
     @GetMapping(path = "/dialog/{dialogId}")
@@ -47,18 +48,18 @@ public class ApiChatController {
                                   @RequestParam(required = false,defaultValue = "0") Integer page,
                                   @RequestParam(required = false,defaultValue = "50") Integer pageSize,
                                   @RequestParam(defaultValue = "timestamp") String sortBy,
-                                  @ApiIgnore @AuthenticationPrincipal Principal principal) {
-        return messageService.getMessages(dialogId, page, pageSize, sortBy, principal.getName());
+                                  @ApiIgnore @AuthenticationPrincipal User authUser) {
+        return messageService.getMessages(dialogId, page, pageSize, sortBy, authUser.getUsername());
     }
 
     @GetMapping(path = "/dialogs")
-    public ArrayList<LastDialog> getDialogs(@ApiIgnore @AuthenticationPrincipal Principal principal) {
-        return messageService.getDialogsForApi(principal.getName());
+    public ArrayList<LastDialog> getDialogs(@ApiIgnore @AuthenticationPrincipal User authUser) {
+        return messageService.getDialogsForApi(authUser.getUsername());
     }
 
     @PostMapping(path = "/dialog/create")
-    public Long checkDialog(@RequestParam String username, @ApiIgnore @AuthenticationPrincipal Principal principal) {
-        return messageService.createDialog(username, principal.getName());
+    public Long checkDialog(@RequestParam String username, @ApiIgnore @AuthenticationPrincipal User authUser) {
+        return messageService.createDialog(username, authUser.getUsername());
     }
 
 }

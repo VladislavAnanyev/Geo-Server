@@ -4,6 +4,7 @@ import com.example.mywebquizengine.model.projection.ProfileView;
 import com.example.mywebquizengine.model.projection.UserCommonView;
 import com.example.mywebquizengine.model.projection.UserView;
 import com.example.mywebquizengine.model.userinfo.*;
+import com.example.mywebquizengine.service.AuthService;
 import com.example.mywebquizengine.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,14 +26,17 @@ public class ApiUserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private AuthService authService;
+
     @GetMapping(path = "/friends")
-    public List<UserCommonView> getFriends(@ApiIgnore @AuthenticationPrincipal Principal principal) {
-        return userService.findMyFriends(principal.getName());
+    public List<UserCommonView> getFriends(@ApiIgnore @AuthenticationPrincipal User authUser) {
+        return userService.findMyFriends(authUser.getUsername());
     }
 
     @DeleteMapping(path = "/friend/{username}")
-    public void deleteFriend(@PathVariable String username, @ApiIgnore @AuthenticationPrincipal Principal principal) {
-        userService.deleteFriend(username, principal.getName());
+    public void deleteFriend(@PathVariable String username, @ApiIgnore @AuthenticationPrincipal User authUser) {
+        userService.deleteFriend(username, authUser.getUsername());
     }
 
     @GetMapping(path = "/findbyid")
@@ -42,7 +46,7 @@ public class ApiUserController {
 
     @PostMapping(path = "/signin")
     public AuthResponse jwtSignIn(@RequestBody AuthRequest authRequest) {
-        return new AuthResponse(userService.signInViaApi(authRequest));
+        return new AuthResponse(authService.signInViaApi(authRequest));
     }
 
     @PostMapping(path = "/signup")
@@ -54,19 +58,19 @@ public class ApiUserController {
         user.setPassword(registrationRequest.getPassword());
         user.setEmail(registrationRequest.getEmail());
 
-        userService.processCheckIn(user, RegistrationType.BASIC);
-        return new AuthResponse(userService.getJwtToken(user));
+        authService.processCheckIn(user, RegistrationType.BASIC);
+        return new AuthResponse(authService.getJwtToken(user));
     }
 
     @PostMapping(path = "/googleauth")
     public AuthResponse googleJwt(@RequestBody GoogleToken token, HttpServletRequest request) throws GeneralSecurityException, IOException, ServletException {
         request.logout();
-        return new AuthResponse(userService.signinViaGoogleToken(token));
+        return new AuthResponse(authService.signinViaGoogleToken(token));
     }
 
     @GetMapping(path = "/authuser")
-    public UserView getApiAuthUser(@ApiIgnore @AuthenticationPrincipal Principal principal) {
-        return userService.getAuthUser(principal.getName());
+    public UserView getApiAuthUser(@ApiIgnore @AuthenticationPrincipal User authUser) {
+        return authService.getAuthUser(authUser.getUsername());
     }
 
     @GetMapping(path = "/user/{username}/profile")
@@ -77,23 +81,23 @@ public class ApiUserController {
 
     @PutMapping(path = "/user", consumes = {"application/json"})
     public void changeUser(@RequestBody User user,
-                           @ApiIgnore @AuthenticationPrincipal Principal principal) {
-        userService.updateUser(user.getLastName(), user.getFirstName(), principal.getName());
+                           @ApiIgnore @AuthenticationPrincipal User authUser) {
+        userService.updateUser(user.getLastName(), user.getFirstName(), authUser.getUsername());
     }
 
     @PostMapping(path = "/user/send-change-password-code")
     public void sendChangePasswordCodeWithoutAuth(@RequestParam String username) {
-        userService.sendCodeForChangePasswordFromPhone(username);
+        authService.sendCodeForChangePasswordFromPhone(username);
     }
 
     @PutMapping(path = "/user/password")
     public void changePassword(@RequestBody User user) {
-        userService.updatePassword(user);
+        authService.updatePassword(user);
     }
 
     @PostMapping(path = "/user/verify-password-code")
     public void verifyChangePasswordCode(@RequestBody VerifyCodeRequest verifyCodeRequest) {
-        userService.getUserViaChangePasswordCodePhoneApi(
+        authService.getUserViaChangePasswordCodePhoneApi(
                 verifyCodeRequest.getUsername(),
                 verifyCodeRequest.getCode()
         );

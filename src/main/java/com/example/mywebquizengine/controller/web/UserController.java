@@ -6,6 +6,7 @@ import com.example.mywebquizengine.model.userinfo.RegistrationType;
 import com.example.mywebquizengine.model.request.Request;
 import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.security.ActiveUserStore;
+import com.example.mywebquizengine.service.AuthService;
 import com.example.mywebquizengine.service.JWTUtil;
 import com.example.mywebquizengine.service.RequestService;
 import com.example.mywebquizengine.service.UserService;
@@ -16,6 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -46,25 +50,27 @@ public class UserController {
     @Autowired
     private JWTUtil jwtUtil;
 
-    @GetMapping(path = "/friends")
-    public String getFriends(Model model, @ApiIgnore @AuthenticationPrincipal Principal principal) {
+    @Autowired
+    private AuthService authService;
 
-        model.addAttribute("friends", userService.findMyFriends(principal.getName()));
+    @GetMapping(path = "/friends")
+    public String getFriends(Model model, @ApiIgnore @AuthenticationPrincipal User authUser) {
+
+        model.addAttribute("friends", userService.findMyFriends(authUser.getUsername()));
         return "friends";
     }
 
     @DeleteMapping(path = "/friend/{username}")
     @ResponseBody
-    public void deleteFriend(@PathVariable String username, @ApiIgnore @AuthenticationPrincipal Principal principal) {
-        userService.deleteFriend(username, principal.getName());
+    public void deleteFriend(@PathVariable String username, @ApiIgnore @AuthenticationPrincipal User authUser) {
+        userService.deleteFriend(username, authUser.getUsername());
     }
 
     @GetMapping(path = "/profile")
-    public String getProfile(Model model, @AuthenticationPrincipal Principal principal) {
+    public String getProfile(Model model, @AuthenticationPrincipal User authUser) {
 
-        UserView user = userService.getAuthUser(principal.getName());
+        UserView user = authService.getAuthUser(authUser.getUsername());
         model.addAttribute("user", user);
-
         model.addAttribute("balance", user.getBalance());
 
         return "profile";
@@ -72,21 +78,21 @@ public class UserController {
 
     @GetMapping(path = "/jwt")
     @ResponseBody
-    public String getJwtToken(@AuthenticationPrincipal Principal principal) {
-        return jwtUtil.generateToken(userService.loadUserByUsername(principal.getName()));
+    public String getJwtToken(@AuthenticationPrincipal User authUser) {
+        return jwtUtil.generateToken(userService.loadUserByUsername(authUser.getUsername()));
     }
 
     @GetMapping(path = "/authuser")
     @ResponseBody
-    public String getAuthUsername(@AuthenticationPrincipal Principal principal) {
-        return principal.getName();
+    public String getAuthUsername(@AuthenticationPrincipal User authUser) {
+        return authUser.getUsername();
     }
 
 
     @GetMapping(path = "/getbalance")
     @ResponseBody
-    public Integer getBalance(@AuthenticationPrincipal Principal principal) {
-        User user = userService.loadUserByUsername(principal.getName());
+    public Integer getBalance(@AuthenticationPrincipal User authUser) {
+        User user = userService.loadUserByUsername(authUser.getUsername());
         return user.getBalance();
     }
 
@@ -100,16 +106,16 @@ public class UserController {
     @PostMapping(path = "/register")
     public String checkIn(@Valid User user) {
 
-        userService.processCheckIn(user, RegistrationType.BASIC);
+        authService.processCheckIn(user, RegistrationType.BASIC);
         return "reg";
 
     }
 
     @PostMapping(path = "/update/userinfo/password", consumes = {"application/json"})
-    public void tryToChangePassWithAuth(@AuthenticationPrincipal Principal principal) {
+    public void tryToChangePassWithAuth(@AuthenticationPrincipal User authUser) {
 
-        //User user = userService.loadUserByUsernameProxy(principal.getName());
-        userService.sendCodeForChangePassword(principal.getName());
+        //User user = userService.loadUserByUsernameProxy(authUser.getUsername());
+        authService.sendCodeForChangePassword(authUser.getUsername());
 
     }
 
@@ -125,7 +131,7 @@ public class UserController {
 
         //User user = userService.loadUserByUsername(in.getUsername());
 
-        userService.sendCodeForChangePassword(in.getUsername());
+        authService.sendCodeForChangePassword(in.getUsername());
 
     }
 
@@ -149,7 +155,7 @@ public class UserController {
     @PutMapping(path = "/updatepass/{changePasswordCode}", consumes = {"application/json"})
     public String changePasswordUsingCode(@RequestBody User in, @PathVariable String changePasswordCode) {
         in.setChangePasswordCode(changePasswordCode);
-        userService.updatePassword(in);
+        authService.updatePassword(in);
 
         return "changePassword";
     }
@@ -157,15 +163,15 @@ public class UserController {
 
     @Transactional
     @PutMapping(path = "/update/user/{username}", consumes = {"application/json"})
-    @PreAuthorize(value = "#principal.name.equals(#username)")
-    public void changeUser(@PathVariable String username, @RequestBody User user, @AuthenticationPrincipal Principal principal) {
+    @PreAuthorize(value = "#authUser.username.equals(#username)")
+    public void changeUser(@PathVariable String username, @RequestBody User user, @AuthenticationPrincipal User authUser) {
         userService.updateUser(user.getLastName(), user.getFirstName(), username);
     }
 
     @GetMapping(path = "/about/{username}")
-    public String getInfoAboutUser(Model model, @PathVariable String username, @AuthenticationPrincipal Principal principal) {
+    public String getInfoAboutUser(Model model, @PathVariable String username, @AuthenticationPrincipal User authUser) {
 
-        if (principal != null && username.equals(userService.loadUserByUsername(principal.getName()).getUsername())) {
+        if (authUser != null && username.equals(userService.loadUserByUsername(authUser.getUsername()).getUsername())) {
             return "redirect:/profile";
         } else {
             User user = userService.loadUserByUsername(username);
@@ -185,15 +191,15 @@ public class UserController {
 
     @PostMapping(path = "/sendRequest")
     @ResponseBody
-    public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException, NoSuchAlgorithmException {
-        requestService.sendRequest(request, principal.getName());
+    public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal User authUser) throws JsonProcessingException, ParseException, NoSuchAlgorithmException {
+        requestService.sendRequest(request, authUser.getUsername());
     }
 
     @GetMapping(path = "/requests")
-    public String getMyRequests(Model model, @AuthenticationPrincipal Principal principal) {
+    public String getMyRequests(Model model, @AuthenticationPrincipal User authUser) {
 
-        model.addAttribute("myUsername", principal.getName());
-        model.addAttribute("meetings", requestService.getMyRequests(principal.getName()));
+        model.addAttribute("myUsername", authUser.getUsername());
+        model.addAttribute("meetings", requestService.getMyRequests(authUser.getUsername()));
 
         return "requests";
     }
@@ -201,14 +207,14 @@ public class UserController {
 
     @PostMapping(path = "/acceptRequest")
     @ResponseBody
-    public Long acceptRequest(@RequestBody Request request, @AuthenticationPrincipal Principal principal) throws JsonProcessingException, ParseException, NoSuchAlgorithmException {
-        return requestService.acceptRequest(request.getId(), principal.getName());
+    public Long acceptRequest(@RequestBody Request request, @AuthenticationPrincipal User authUser) throws JsonProcessingException, ParseException, NoSuchAlgorithmException {
+        return requestService.acceptRequest(request.getId(), authUser.getUsername());
     }
 
     @PostMapping(path = "/rejectRequest")
     @ResponseBody
-    public void rejectRequest(@RequestBody Request requestId, @AuthenticationPrincipal Principal principal) {
-        requestService.rejectRequest(requestId.getId(), principal.getName());
+    public void rejectRequest(@RequestBody Request requestId, @AuthenticationPrincipal User authUser) {
+        requestService.rejectRequest(requestId.getId(), authUser.getUsername());
     }
 
     @GetMapping(path = "/testConnection")

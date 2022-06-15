@@ -32,7 +32,7 @@ public class ApiRequestController {
     @Transactional
     public void sendRequest(
             @RequestBody @Valid RequestDto requestDto,
-            @ApiIgnore @AuthenticationPrincipal Principal principal) throws JsonProcessingException {
+            @ApiIgnore @AuthenticationPrincipal User authUser) throws JsonProcessingException {
 
         Request request = new Request();
 
@@ -51,7 +51,7 @@ public class ApiRequestController {
         if (message.getContent() != null) {
             request.setMessage(message);
         }
-        requestService.sendRequest(request, principal.getName());
+        requestService.sendRequest(request, authUser.getUsername());
 
     }
 
@@ -59,22 +59,22 @@ public class ApiRequestController {
     //@PreAuthorize(value = "!#principal.name.equals(#user.username)")
     public Long acceptRequest(
             @PathVariable Long id,
-            @ApiIgnore @AuthenticationPrincipal Principal principal) throws JsonProcessingException {
-        return requestService.acceptRequest(id, principal.getName());
+            @ApiIgnore @AuthenticationPrincipal User user) throws JsonProcessingException {
+        return requestService.acceptRequest(id, user.getUsername());
     }
 
     @GetMapping(path = "/requests")
-    public ArrayList<RequestView> getMyRequests(@ApiIgnore @AuthenticationPrincipal Principal principal) {
-        return requestService.getMyRequests(principal.getName());
+    public ArrayList<RequestView> getMyRequests(@ApiIgnore @AuthenticationPrincipal User user) {
+        return requestService.getMyRequests(user.getUsername());
     }
 
     @PostMapping(path = "/request/{id}/reject")
-    public void rejectRequest(@PathVariable Long id, @ApiIgnore @AuthenticationPrincipal Principal principal) {
-        requestService.rejectRequest(id, principal.getName());
+    public void rejectRequest(@PathVariable Long id, @ApiIgnore @AuthenticationPrincipal User user) {
+        requestService.rejectRequest(id, user.getUsername());
     }
 
     @GetMapping(path = "/sentRequests")
-    public List<RequestView> getSentRequests(@ApiIgnore @AuthenticationPrincipal Principal principal) {
-        return requestService.getSentRequests(principal.getName());
+    public List<RequestView> getSentRequests(@ApiIgnore @AuthenticationPrincipal User user) {
+        return requestService.getSentRequests(user.getUsername());
     }
 }

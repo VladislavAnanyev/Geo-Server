@@ -2,6 +2,7 @@ package com.example.mywebquizengine.controller.web;
 
 import com.example.mywebquizengine.model.order.Order;
 //import com.example.mywebquizengine.Service.PaymentServices;
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.service.PaymentServices;
 import com.example.mywebquizengine.service.UserService;
 /*import com.paypal.api.payments.PayerInfo;
@@ -44,11 +45,11 @@ public class PayPalController {
     }
 
     @GetMapping(path = "/checkout")
-    public String getCheckOut(Model model, @AuthenticationPrincipal Principal principal) {
+    public String getCheckOut(Model model, @AuthenticationPrincipal User principal) {
 
         Order order = new Order();
 
-        order.setUser(userService.loadUserByUsernameProxy(principal.getName()));
+        order.setUser(userService.loadUserByUsernameProxy(principal.getUsername()));
 
         paymentServices.saveStartOrder(order);
 

@@ -1,6 +1,7 @@
 package com.example.mywebquizengine.controller.api;
 
 import com.example.mywebquizengine.model.exception.LogicException;
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.service.FileSystemStorageService;
 import com.example.mywebquizengine.service.PhotoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,17 +24,17 @@ public class ApiPhotoController {
     private FileSystemStorageService fileSystemStorageService;
 
     @PostMapping(path = "/user/photo/swap")
-    public void swapPhoto(@ApiIgnore @AuthenticationPrincipal Principal principal,
+    public void swapPhoto(@ApiIgnore @AuthenticationPrincipal User authUser,
                           @RequestParam Long photoId,
                           @RequestParam Integer position) {
-        photoService.swapPhoto(photoId, position, principal.getName());
+        photoService.swapPhoto(photoId, position, authUser.getUsername());
     }
 
     @PostMapping(path = "/user/photo")
     public String uploadPhoto(@RequestParam("file") MultipartFile file,
-                              @ApiIgnore @AuthenticationPrincipal Principal principal) {
+                              @ApiIgnore @AuthenticationPrincipal User authUser) {
         String fileName = fileSystemStorageService.store(file);
-        return photoService.savePhoto(fileName, principal.getName());
+        return photoService.savePhoto(fileName, authUser.getUsername());
     }
 
     @PostMapping(path = "/dialog/photo")
@@ -42,8 +43,8 @@ public class ApiPhotoController {
     }
 
     @DeleteMapping(path = "/user/photo/{id}")
-    public void deletePhoto(@ApiIgnore @AuthenticationPrincipal Principal principal,
+    public void deletePhoto(@ApiIgnore @AuthenticationPrincipal User authUser,
                             @PathVariable Long id) throws LogicException {
-        photoService.deletePhoto(id, principal.getName());
+        photoService.deletePhoto(id, authUser.getUsername());
     }
 }

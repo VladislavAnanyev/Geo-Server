@@ -26,7 +26,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.server.ResponseStatusException;
@@ -41,8 +40,6 @@ import java.util.*;
 public class MessageService {
 
     @Autowired
-    SessionRegistry sessionRegistry;
-    @Autowired
     private MessageRepository messageRepository;
     @Autowired
     private DialogRepository dialogRepository;
@@ -52,10 +49,6 @@ public class MessageService {
     private RabbitTemplate rabbitTemplate;
     @Value("${hostname}")
     private String hostname;
-
-    public void saveMessage(Message message) {
-        messageRepository.save(message);
-    }
 
     public Long createDialog(String username, String authUsername) {
 

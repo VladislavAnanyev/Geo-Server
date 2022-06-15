@@ -44,124 +44,15 @@ import java.util.*;
 
 
 @Service
-public class UserService implements UserDetailsService {
+public class UserService {
 
-    private static final HttpTransport transport = new NetHttpTransport();
-    private static final JsonFactory jsonFactory = new JacksonFactory();
-
-    @Value("${androidGoogleClientId}")
-    private String CLIENT_ID;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private AuthenticationManager authenticationManager;
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private JWTUtil jwtTokenUtil;
-    @Autowired
-    private RabbitAdmin rabbitAdmin;
-    @Autowired
-    private MailSender mailSender;
-    @Value("${hostname}")
-    private String hostname;
-
-
-    @Override
-    public User loadUserByUsername(String username) throws UserNotFoundException {
-        Optional<User> user = userRepository.findById(username);
-
-        if (user.isPresent()) {
-            return user.get();
-        } else throw new EntityNotFoundException("Пользователь не найден");
-    }
-
-    public User loadUserByUsernameProxy(String username) throws UsernameNotFoundException {
-        return userRepository.getOne(username);
-    }
-
-    private void saveUser(User user, RegistrationType type) {
-
-        Optional<User> optionalUser = userRepository.findById(user.getUsername());
-        if (type.equals(RegistrationType.OAUTH2)) {
-            if (optionalUser.isEmpty()) {
-                userRepository.save(user);
-            }
-        } else if (type.equals(RegistrationType.BASIC)) {
-            if (optionalUser.isEmpty()) {
-                userRepository.save(user);
-            } else throw new LogicException("Пользователь с таким \"username\" уже существует");
-        }
-
-    }
 
     public void updateUser(String lastName, String firstName, String username) {
         if (lastName != null && !lastName.trim().equals("") && firstName != null && !firstName.trim().equals("")) {
             userRepository.updateUserInfo(firstName, lastName, username);
         } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-    }
-
-    public void sendCodeForChangePasswordFromPhone(String username) {
-
-        User user = loadUserByUsername(username);
-
-        Random random = new Random();
-        int rage = 9999;
-        int code = 1000 + random.nextInt(rage - 1000);
-
-        userRepository.setChangePasswordCode(user.getUsername(), String.valueOf(code));
-
-        try {
-            mailSender.send(user.getEmail(), "Смена пароля в " + hostname,
-                    """
-                            Для смены пароля в """ + hostname +
-                            """
-                                    введите в приложении код: """ + code +
-                            """
-                                    . 
-                                    Если вы не меняли пароль на данном ресурсе, то проигнорируйте сообщение
-                                    """);
-
-        } catch (Exception e) {
-            System.out.println("Не отправлено");
-        }
-    }
-
-    public void sendCodeForChangePassword(String username) {
-
-        User user = loadUserByUsername(username);
-
-        String code = UUID.randomUUID().toString();
-        userRepository.setChangePasswordCode(user.getUsername(), code);
-
-        try {
-            mailSender.send(user.getEmail(), "Смена пароля в " + hostname, "Для смены пароля в " + hostname +
-                    " перейдите по ссылке: https://" + hostname + "/updatepass/" + code + " Если вы не меняли пароль на данном ресурсе, то проигнорируйте сообщение");
-
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-
-    @Transactional
-    public void updatePassword(User user) {
-        User savedUser = getUserViaChangePasswordCodeFromPhone(user.getUsername(), user.getChangePasswordCode());
-        savedUser.setPassword(passwordEncoder.encode(user.getPassword()));
-        savedUser.setChangePasswordCode(null);
-    }
-
-    private User getUserViaChangePasswordCodeFromPhone(String username, String changePasswordCode) {
-        Optional<User> optionalUser = userRepository
-                .findByChangePasswordCodeAndUsername(
-                        changePasswordCode,
-                        username
-                );
-        if (optionalUser.isPresent()) {
-            return optionalUser.get();
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
     }
 
     public void activateAccount(String activationCode) {
@@ -178,59 +69,6 @@ public class UserService implements UserDetailsService {
         if (optionalUser.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-
-    }
-
-    public User castToUserFromOauth(OAuth2AuthenticationToken authentication) {
-
-        User user = new User();
-
-        if (authentication.getAuthorizedClientRegistrationId().equals("google")) {
-
-            String username = ((String) authentication.getPrincipal().getAttributes()
-                    .get("email")).replace("@gmail.com", "");
-
-            if (userRepository.findById(username).isPresent()) {
-                user = userRepository.findById(username).get();
-            } else {
-
-                user.setEmail((String) authentication.getPrincipal().getAttributes().get("email"));
-                user.setFirstName((String) authentication.getPrincipal().getAttributes().get("given_name"));
-                user.setLastName((String) authentication.getPrincipal().getAttributes().get("family_name"));
-                user.setPhotos(Collections.singletonList((String) authentication.getPrincipal().getAttributes().get("picture")));
-
-                user.setUsername(((String) authentication.getPrincipal().getAttributes()
-                        .get("email")).replace("@gmail.com", ""));
-
-            }
-
-
-        } else if (authentication.getAuthorizedClientRegistrationId().equals("github")) {
-            user.setUsername(authentication.getPrincipal().getAttributes().get("login").toString());
-            user.setFirstName(authentication.getPrincipal().getAttributes().get("name").toString());
-            user.setLastName(authentication.getPrincipal().getAttributes().get("name").toString());
-            user.setPhotos(Collections.singletonList(authentication.getPrincipal().getAttributes().get("avatar_url").toString()));
-
-            if (authentication.getPrincipal().getAttributes().get("email") != null) {
-                user.setEmail(authentication.getPrincipal().getAttributes().get("email").toString());
-            } else {
-                user.setEmail("default@default.com");
-            }
-        }
-
-        //doInitialize(user);
-
-        return user;
-    }
-
-    public void doBasicUserInitializationBeforeSave(User user) {
-
-        rabbitAdmin.declareExchange(new FanoutExchange(user.getUsername(), true, false));
-
-        user.setEnabled(true);
-        user.setBalance(0);
-        user.grantAuthority(Role.ROLE_USER);
-        user.setOnline("false");
 
     }
 
@@ -251,125 +89,6 @@ public class UserService implements UserDetailsService {
         return userRepository.findByUsername(username);
     }
 
-    public AuthResult signInViaApi(AuthRequest authRequest)  {
-        Authentication authentication;
-        try {
-            authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            authRequest.getUsername(),
-                            authRequest.getPassword()
-                    )
-            );
-        } catch (Exception e) {
-            throw new AuthorizationException("Имя или пароль неправильны");
-        }
-        // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
-        String jwt = jwtTokenUtil.generateToken((UserDetails) authentication.getPrincipal());
-        String exchangeName = RabbitUtil.getExchangeName(authRequest.getUsername());
-        return new AuthResult(jwt, exchangeName);
-    }
-
-    public AuthResult getJwtToken(User user) {
-        // при создании токена в него кладется username как Subject claim и список authorities как кастомный claim
-        String jwt = jwtTokenUtil.generateToken(loadUserByUsername(user.getUsername()));
-
-        String exchangeName = RabbitUtil.getExchangeName(user.getUsername());
-        rabbitAdmin.declareExchange(new FanoutExchange(exchangeName, true, false));
-        return new AuthResult(jwt, exchangeName);
-    }
-
-    public AuthResult signinViaGoogleToken(GoogleToken token) throws GeneralSecurityException, IOException {
-        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory)
-                // Specify the CLIENT_ID of the app that accesses the backend:
-                .setAudience(Collections.singletonList(CLIENT_ID))
-                // Or, if multiple clients access the backend:
-                //.setAudience(Arrays.asList(CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3))
-                .build();
-
-        GoogleIdToken idToken = verifier.verify(token.getIdTokenString());
-        if (idToken != null) {
-            GoogleIdToken.Payload payload = idToken.getPayload();
-
-            // Print user identifier
-            String userId = payload.getSubject();
-            System.out.println("User ID: " + userId);
-
-            // Get profile information from payload
-            String email = payload.getEmail();
-            boolean emailVerified = Boolean.valueOf(payload.getEmailVerified());
-            String name = (String) payload.get("name");
-            List<String> pictureUrl = Collections.singletonList((String) payload.get("picture"));
-            String locale = (String) payload.get("locale");
-            String familyName = (String) payload.get("family_name");
-            String givenName = (String) payload.get("given_name");
-
-
-            String username = email.replace("@gmail.com", "");
-
-            User user = new User();
-            user.setUsername(username);
-            user.setEmail(email);
-            user.setFirstName(givenName);
-            user.setLastName(familyName);
-            user.setPhotos(pictureUrl);
-
-            processCheckIn(user, RegistrationType.OAUTH2);
-
-            User savedUser = loadUserByUsername(user.getUsername());
-
-            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                    new UsernamePasswordAuthenticationToken(
-                            username, null, savedUser.getAuthorities()); // Проверить работу getAuthorities
-            SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-
-            String jwt = jwtTokenUtil.generateToken(savedUser);
-
-            String exchangeName = RabbitUtil.getExchangeName(username);
-            rabbitAdmin.declareExchange(new FanoutExchange(exchangeName, true, false));
-
-            return new AuthResult(jwt, exchangeName);
-
-        } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    public UserView getAuthUser(String username) {
-        if (userRepository.findAllByUsername(username) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        } else {
-            return userRepository.findAllByUsername(username);
-        }
-    }
-
-
-    public void processCheckIn(User user, RegistrationType type) {
-        if (user.getUsername().contains(" ")) {
-            throw new IllegalArgumentException("\"username\" не должен содержать пробелов");
-        } else {
-            if (type.equals(RegistrationType.BASIC)) {
-                user.setPassword(passwordEncoder.encode(user.getPassword()));
-                user.setStatus(false);
-                user.setPhotos(Collections.singletonList("https://" + hostname + "/img/default.jpg"));
-                user.setActivationCode(UUID.randomUUID().toString());
-                String mes = user.getFirstName() + " " + user.getLastName() + ", Добро пожаловать в WebQuizzes! "
-                        + "Для активации аккаунта перейдите по ссылке: https://" + hostname + "/activate/" + user.getActivationCode()
-                        + " Если вы не регистрировались на данном ресурсе, то проигнорируйте это сообщение";
-
-                try {
-                    mailSender.send(user.getEmail(), "Активация аккаунта в WebQuizzes", mes);
-                } catch (Exception e) {
-                    System.out.println("Отключено");
-                }
-
-            } else if (type.equals(RegistrationType.OAUTH2)) {
-                user.setStatus(true);
-            }
-            doBasicUserInitializationBeforeSave(user);
-            saveUser(user, type);
-        }
-    }
-
     public Boolean checkForExistUser(String username) {
         return userRepository.existsById(username);
     }
@@ -379,20 +98,22 @@ public class UserService implements UserDetailsService {
         return userRepository.findUserByUsernameOrderByUsernameAscPhotosAsc(username);
     }
 
-
-    public void getUserViaChangePasswordCodePhoneApi(String username, String code) {
-
-        Optional<User> user = userRepository.findByChangePasswordCode(code);
-
-        if (!(user.isPresent() && user.get().getUsername().equals(username))) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
-    }
-
     @Transactional
     public void deleteFriend(String username, String authUsername) {
         User user = loadUserByUsername(authUsername);
         User friend = loadUserByUsername(username);
         user.removeFriend(friend);
+    }
+
+    public User loadUserByUsername(String username) throws UserNotFoundException {
+        Optional<User> user = userRepository.findById(username);
+
+        if (user.isPresent()) {
+            return user.get();
+        } else throw new EntityNotFoundException("Пользователь не найден");
+    }
+
+    public User loadUserByUsernameProxy(String username) throws UsernameNotFoundException {
+        return userRepository.getOne(username);
     }
 }

@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.service;
 
+import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.security.ActiveUserStore;
 import com.example.mywebquizengine.security.LoggedUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,9 +43,11 @@ public class JWTFilter extends OncePerRequestFilter {
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             String commaSeparatedListOfAuthorities = jwtUtil.extractAuthorities(jwt);
             List<GrantedAuthority> authorities = AuthorityUtils.commaSeparatedStringToAuthorityList(commaSeparatedListOfAuthorities);
+            User authUser = new User();
+            authUser.setUsername(username);
             UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                     new UsernamePasswordAuthenticationToken(
-                            username, "Bearer", authorities);
+                            authUser, "Bearer", authorities);
             SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
 
             if (!request.getRequestURI().contains("sendGeolocation")) {
