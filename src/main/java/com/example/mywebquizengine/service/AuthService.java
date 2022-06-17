@@ -62,10 +62,10 @@ public class AuthService implements UserDetailsService {
             if (type.equals(RegistrationType.BASIC)) {
                 user.setPassword(passwordEncoder.encode(user.getPassword()));
                 user.setStatus(false);
-                user.setPhotos(Collections.singletonList("https://" + hostname + "/img/default.jpg"));
+                user.setPhotos(Collections.singletonList(hostname + "/img/default.jpg"));
                 user.setActivationCode(UUID.randomUUID().toString());
                 String mes = user.getFirstName() + " " + user.getLastName() + ", Добро пожаловать в WebQuizzes! "
-                        + "Для активации аккаунта перейдите по ссылке: https://" + hostname + "/activate/" + user.getActivationCode()
+                        + "Для активации аккаунта перейдите по ссылке: " + hostname + "/activate/" + user.getActivationCode()
                         + " Если вы не регистрировались на данном ресурсе, то проигнорируйте это сообщение";
 
                 mailSender.send(user.getEmail(), "Активация аккаунта в WebQuizzes", mes);
@@ -166,7 +166,7 @@ public class AuthService implements UserDetailsService {
         String code = UUID.randomUUID().toString();
         userRepository.setChangePasswordCode(user.getUsername(), code);
         mailSender.send(user.getEmail(), "Смена пароля в " + hostname, "Для смены пароля в " + hostname +
-                " перейдите по ссылке: https://" + hostname + "/updatepass/" + code + " Если вы не меняли пароль на данном ресурсе, то проигнорируйте сообщение");
+                " перейдите по ссылке: " + hostname + "/updatepass/" + code + " Если вы не меняли пароль на данном ресурсе, то проигнорируйте сообщение");
 
     }
 
