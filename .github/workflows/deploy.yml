@@ -24,7 +24,7 @@ jobs:
           git fetch
           git merge
           ./gradlew build -x test --no-daemon
-          pkill -9 java
+          sudo pkill -9 java
           sudo nohup java -jar build/libs/mywebquizengine-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod > /dev/null 2>&1 &
 
   
