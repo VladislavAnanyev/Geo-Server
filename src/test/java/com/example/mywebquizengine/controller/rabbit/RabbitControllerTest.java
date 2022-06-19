@@ -1,9 +1,9 @@
 package com.example.mywebquizengine.controller.rabbit;
 
-import com.example.mywebquizengine.model.chat.Message;
+import com.example.mywebquizengine.model.chat.domain.Message;
 import com.example.mywebquizengine.repos.MessageRepository;
 import com.example.mywebquizengine.repos.UserRepository;
-import com.example.mywebquizengine.service.JWTUtil;
+import com.example.mywebquizengine.service.utils.JWTUtil;
 import com.rabbitmq.client.Channel;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -17,7 +17,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.transaction.Transactional;
@@ -35,7 +34,6 @@ import static org.mockito.Mockito.doAnswer;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles({"test"})
-@TestPropertySource(locations = "classpath:application-test.properties")
 public class RabbitControllerTest {
 
     @MockBean
@@ -54,7 +52,7 @@ public class RabbitControllerTest {
     private MessageRepository messageRepository;
 
     @Test
-    public void sendMessageTest() throws IOException, IllegalAccessException, NoSuchAlgorithmException {
+    public void sendMessageTest() throws IOException {
 
         String json = """
                 {   
@@ -62,7 +60,6 @@ public class RabbitControllerTest {
                     "payload": { 
                         "dialogId":  1196,         
                         "content": "12345",            
-                        "username": "user1",
                         "uniqueCode": "123456789"
                     }          
                 }
@@ -79,7 +76,7 @@ public class RabbitControllerTest {
         }).when(rabbitTemplate).convertAndSend(anyString(), (Object) anyObject());
 
 
-        String token = jwtTokenUtil.generateToken(userRepository.findById("user1").get());
+        String token = jwtTokenUtil.generateToken(userRepository.findUserByUsername("user1").get());
         MessageProperties messageProperties = new MessageProperties();
         messageProperties.setHeader("Authorization", token);
 
@@ -103,7 +100,6 @@ public class RabbitControllerTest {
                     "payload": { 
                         "dialogId":  1196,        
                         "content": "12345",            
-                        "username": "user3",
                         "uniqueCode": "123456789"
                     }      
                 }
@@ -112,7 +108,7 @@ public class RabbitControllerTest {
 
         doAnswer(i -> {
             Object obj = new JSONParser().parse(i.getArgument(1).toString());
-JSONObject jo = (JSONObject) obj;
+            JSONObject jo = (JSONObject) obj;
             assertEquals("123456789", jo.get("uniqueCode"));
 
             return null;
@@ -120,7 +116,7 @@ JSONObject jo = (JSONObject) obj;
 
         Integer expectedMessageCount = ((ArrayList<Message>) messageRepository.findAll()).size();
 
-        String token = jwtTokenUtil.generateToken(userRepository.findById("user3").get());
+        String token = jwtTokenUtil.generateToken(userRepository.findUserByUsername("user3").get());
         MessageProperties messageProperties = new MessageProperties();
         messageProperties.setHeader("Authorization", token);
 
@@ -156,13 +152,12 @@ JSONObject jo = (JSONObject) obj;
                     "payload": {           
                         "dialogId":  1196,        
                         "content": "",            
-                        "username": "user1",
                         "uniqueCode": "123456789"
                     }          
                 }
                 """;
 
-        String token = jwtTokenUtil.generateToken(userRepository.findById("user1").get());
+        String token = jwtTokenUtil.generateToken(userRepository.findUserByUsername("user1").get());
         MessageProperties messageProperties = new MessageProperties();
         messageProperties.setHeader("Authorization", token);
 
@@ -205,7 +200,7 @@ JSONObject jo = (JSONObject) obj;
                 }
                 """;
 
-        String token = jwtTokenUtil.generateToken(userRepository.findById("user1").get());
+        String token = jwtTokenUtil.generateToken(userRepository.findUserByUsername("user1").get());
         MessageProperties messageProperties = new MessageProperties();
         messageProperties.setHeader("Authorization", token);
 
@@ -236,7 +231,6 @@ JSONObject jo = (JSONObject) obj;
                     "payload": { 
                         "dialogId":  1196,         
                         "content": "12345",            
-                        "username": "user1",
                         "uniqueCode": "123456789",
                         "photoUrl": "https://localhost/img/f5d2b480.jpg"
                     }          
@@ -252,7 +246,7 @@ JSONObject jo = (JSONObject) obj;
         }).when(rabbitTemplate).convertAndSend(anyString(), (Object) anyObject());
 
 
-        String token = jwtTokenUtil.generateToken(userRepository.findById("user1").get());
+        String token = jwtTokenUtil.generateToken(userRepository.findUserByUsername("user1").get());
         MessageProperties messageProperties = new MessageProperties();
         messageProperties.setHeader("Authorization", token);
 
@@ -268,7 +262,6 @@ JSONObject jo = (JSONObject) obj;
         assertEquals(expectedMessageCount, actualMessageCount);
 
     }
-
 
 
 }

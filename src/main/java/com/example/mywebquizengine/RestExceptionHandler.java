@@ -1,10 +1,12 @@
 package com.example.mywebquizengine;
 
 import com.example.mywebquizengine.model.exception.ApiError;
-import com.example.mywebquizengine.model.exception.AuthorizationException;
+import com.example.mywebquizengine.model.exception.GlobalException;
 import com.example.mywebquizengine.model.exception.LogicException;
-import com.example.mywebquizengine.model.userinfo.ErrorResponse;
+import com.example.mywebquizengine.model.common.ErrorResponse;
 import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,31 +20,34 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import javax.persistence.EntityNotFoundException;
-import javax.validation.ConstraintViolationException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
+    @Autowired
+    private MessageSource messageSource;
+
     @ExceptionHandler(EntityNotFoundException.class)
     protected ResponseEntity<Object> handleEntityNotFoundEx(EntityNotFoundException ex, WebRequest request) {
-        ApiError apiError = new ApiError("Entity Not Found Exception", ex.getMessage());
+        ApiError apiError = new ApiError(ex.getMessage());
         return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
     }
 
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        ApiError apiError = new ApiError("Malformed JSON Request", ex.getMessage());
+        ApiError apiError = new ApiError(ex.getMessage());
         return new ResponseEntity<>(apiError, status);
     }
 
     @Override
     protected ResponseEntity<Object> handleNoHandlerFoundException(NoHandlerFoundException ex, HttpHeaders headers,
                                                                    HttpStatus status, WebRequest request) {
-        return new ResponseEntity<Object>(new ApiError("No Handler Found", ex.getMessage()), status);
+        return new ResponseEntity<Object>(new ApiError(ex.getMessage()), status);
     }
 
     @Override
@@ -54,32 +59,42 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 .map(x -> x.getDefaultMessage())
                 .collect(Collectors.toList());
 
-        ApiError apiError = new ApiError("Method Argument Not Valid", ex.getMessage(), errors);
+        ApiError apiError = new ApiError(ex.getMessage(), errors);
         return new ResponseEntity<>(apiError, status);
     }
 
     @ExceptionHandler(SecurityException.class)
     public ResponseEntity<Object> handleException(SecurityException e) {
-        ApiError apiError = new ApiError("Security Exception", e.getMessage());
+        ApiError apiError = new ApiError(e.getMessage());
         return new ResponseEntity<>(apiError, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(LogicException.class)
-    public ResponseEntity<Object> handleException(LogicException e) {
-        ApiError apiError = new ApiError("Business Logic Exception", e.getMessage());
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<Object> handleException(LogicException e, Locale locale) {
+
+        ErrorResponse errorResponse = new ErrorResponse();
+        ApiError apiError = new ApiError();
+        apiError.setMessage(messageSource.getMessage(e.getMessage(), null, locale));
+        errorResponse.setError(apiError);
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.OK);
     }
 
-    @ExceptionHandler(AuthorizationException.class)
-    public ResponseEntity<Object> handleException(AuthorizationException e) {
-        return new ResponseEntity<>(
-                new ErrorResponse("AuthorizationException",
-                        e.getMessage()), HttpStatus.OK);
+    @ExceptionHandler(GlobalException.class)
+    protected ResponseEntity<Object> handleGlobalException (GlobalException e, Locale locale) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        ApiError apiError = new ApiError();
+        apiError.setMessage(messageSource.getMessage(e.getMessage(), null, locale));
+        errorResponse.setError(apiError);
+
+        return ResponseEntity
+                .ok()
+                .body(errorResponse);
     }
 
     @ExceptionHandler(IOException.class)
     public ResponseEntity<Object> handleException(IOException e) {
-        ApiError apiError = new ApiError("IOException", e.getMessage());
+        ApiError apiError = new ApiError(e.getMessage());
         return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -89,7 +104,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         ApiError apiError = new ApiError();
         apiError.setMessage(String.format("The parameter '%s' of value '%s' could not be converted to type '%s'",
                 ex.getName(), ex.getValue(), ex.getRequiredType().getSimpleName()));
-        apiError.setDescription("MethodArgumentTypeMismatchException");
 
         ErrorResponse errorResponse = new ErrorResponse();
         errorResponse.setError(apiError);
@@ -105,7 +119,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ListenerExecutionFailedException.class)
     protected ResponseEntity<Object> handleAmqpFailure(ListenerExecutionFailedException e) {
-        ApiError apiError = new ApiError("ListenerExecutionFailedException", e.getMessage());
+        ApiError apiError = new ApiError(e.getMessage());
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
     }
 

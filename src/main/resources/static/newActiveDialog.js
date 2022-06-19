@@ -1,17 +1,17 @@
-function writeMsg(username) {
+function writeMsg(userId) {
     let xhr = new XMLHttpRequest();
     let json = {
-        username: username
+        userId: userId
     }
-    console.log(username)
-xhr.open('POST', '/checkdialog');
-xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
-xhr.onreadystatechange = function () {
-if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-    location.href='../chat/' + xhr.responseText
-}
-};
-xhr.send(JSON.stringify(json));
+    console.log(userId)
+    xhr.open('POST', '/checkdialog');
+    xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            location.href = '../chat/' + xhr.responseText
+        }
+    };
+    xhr.send(JSON.stringify(json));
 }
 
 function writeMsgFromChat(username) {
@@ -21,10 +21,10 @@ function writeMsgFromChat(username) {
     }
     console.log(username)
     xhr.open('POST', '/checkdialog');
-    xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
+    xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
     xhr.onreadystatechange = function () {
-        if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-            location.href='/chat/' + xhr.responseText
+        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            location.href = '/chat/' + xhr.responseText
         }
     };
     xhr.send(JSON.stringify(json));

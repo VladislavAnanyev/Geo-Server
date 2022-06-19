@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.service.utils;
 
-import com.example.mywebquizengine.model.userinfo.GoogleToken;
-import com.example.mywebquizengine.model.userinfo.User;
+import com.example.mywebquizengine.model.userinfo.dto.input.GoogleToken;
+import com.example.mywebquizengine.model.userinfo.RegistrationModel;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.HttpTransport;
@@ -15,7 +15,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
-import java.util.List;
 
 public class OauthUserMapper {
 
@@ -23,9 +22,9 @@ public class OauthUserMapper {
     private static final JsonFactory jsonFactory = new JacksonFactory();
     private static final String CLIENT_ID = "681500590257-g4sdctvrglu3fqee4dl67abeksm463qi.apps.googleusercontent.com";
 
-    public static User castToUserFromOauth(Object authenticationToken) {
+    public static RegistrationModel map(Object authenticationToken) {
 
-        User user = new User();
+        RegistrationModel user = new RegistrationModel();
 
         if (authenticationToken instanceof OAuth2AuthenticationToken authentication) {
             if (authentication.getAuthorizedClientRegistrationId().equals("google")) {
@@ -33,7 +32,7 @@ public class OauthUserMapper {
                 user.setEmail((String) authentication.getPrincipal().getAttributes().get("email"));
                 user.setFirstName((String) authentication.getPrincipal().getAttributes().get("given_name"));
                 user.setLastName((String) authentication.getPrincipal().getAttributes().get("family_name"));
-                user.setPhotos(Collections.singletonList((String) authentication.getPrincipal().getAttributes().get("picture")));
+                user.setAvatar((String) authentication.getPrincipal().getAttributes().get("picture"));
                 user.setUsername(((String) authentication.getPrincipal().getAttributes()
                         .get("email")).replace("@gmail.com", ""));
 
@@ -42,7 +41,7 @@ public class OauthUserMapper {
                 user.setUsername(authentication.getPrincipal().getAttributes().get("login").toString());
                 user.setFirstName(authentication.getPrincipal().getAttributes().get("name").toString());
                 user.setLastName(authentication.getPrincipal().getAttributes().get("name").toString());
-                user.setPhotos(Collections.singletonList(authentication.getPrincipal().getAttributes().get("avatar_url").toString()));
+                user.setAvatar(authentication.getPrincipal().getAttributes().get("avatar_url").toString());
 
                 if (authentication.getPrincipal().getAttributes().get("email") != null) {
                     user.setEmail(authentication.getPrincipal().getAttributes().get("email").toString());
@@ -68,7 +67,7 @@ public class OauthUserMapper {
                 String email = payload.getEmail();
                 boolean emailVerified = Boolean.valueOf(payload.getEmailVerified());
                 String name = (String) payload.get("name");
-                List<String> pictureUrl = Collections.singletonList((String) payload.get("picture"));
+                String pictureUrl = (String) payload.get("picture");
                 String locale = (String) payload.get("locale");
                 String familyName = (String) payload.get("family_name");
                 String givenName = (String) payload.get("given_name");
@@ -80,8 +79,8 @@ public class OauthUserMapper {
                 user.setEmail(email);
                 user.setFirstName(givenName);
                 user.setLastName(familyName);
-                user.setPhotos(pictureUrl);
-            } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+                user.setAvatar(pictureUrl);
+            } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Не поддерживаемый токен");
         }
 
         return user;

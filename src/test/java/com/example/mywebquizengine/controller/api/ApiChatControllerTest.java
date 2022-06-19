@@ -1,43 +1,24 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.controller.rabbit.RabbitController;
-import com.example.mywebquizengine.model.chat.Dialog;
-import com.example.mywebquizengine.model.chat.Message;
-import com.example.mywebquizengine.model.chat.MessageStatus;
-import com.example.mywebquizengine.model.rabbit.RabbitMessage;
+import com.example.mywebquizengine.model.chat.domain.Dialog;
+import com.example.mywebquizengine.model.chat.domain.Message;
+import com.example.mywebquizengine.model.chat.domain.MessageStatus;
 import com.example.mywebquizengine.repos.DialogRepository;
 import com.example.mywebquizengine.repos.MessageRepository;
-import com.example.mywebquizengine.repos.UserRepository;
-import com.example.mywebquizengine.service.JWTUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rabbitmq.client.Channel;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.springframework.amqp.core.MessageProperties;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.server.ResponseStatusException;
 
-import javax.validation.ConstraintViolationException;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -47,9 +28,6 @@ import static java.util.Collections.reverse;
 import static java.util.Collections.sort;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.anyObject;
-import static org.mockito.Mockito.doAnswer;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -58,7 +36,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles({"test"})
-@TestPropertySource(locations = "classpath:application-test.properties")
 public class ApiChatControllerTest {
 
     @Autowired
@@ -120,7 +97,7 @@ public class ApiChatControllerTest {
     @WithUserDetails(value = "user1")
     public void testCreateDialog() throws Exception {
 
-        String dialogId = mockMvc.perform(post("/api/dialog/create?username=user4")
+        String dialogId = mockMvc.perform(post("/api/dialog/create?userId=1004")
                 .secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isNumber()).andReturn().getResponse().getContentAsString();
@@ -134,14 +111,14 @@ public class ApiChatControllerTest {
     @WithUserDetails(value = "user1")
     public void testCreateExistDialog() throws Exception {
 
-        String existDialogId = mockMvc.perform(post("/api/dialog/create?username=user4")
+        String existDialogId = mockMvc.perform(post("/api/dialog/create?userId=1004")
                 .secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isNumber()).andReturn().getResponse().getContentAsString();
 
         assertTrue(dialogRepository.findById(Long.valueOf(existDialogId)).isPresent());
 
-        String newDialogId = mockMvc.perform(post("/api/dialog/create?username=user4")
+        String newDialogId = mockMvc.perform(post("/api/dialog/create?userId=1004")
                 .secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isNumber()).andReturn().getResponse().getContentAsString();
@@ -154,7 +131,7 @@ public class ApiChatControllerTest {
     @WithUserDetails(value = "user1")
     public void getMessagesInEmptyDialog() throws Exception {
 
-        String dialogId = mockMvc.perform(post("/api/dialog/create?username=user5")
+        String dialogId = mockMvc.perform(post("/api/dialog/create?userId=1005")
                 .secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isNumber()).andReturn().getResponse().getContentAsString();
@@ -176,9 +153,9 @@ public class ApiChatControllerTest {
         mockMvc.perform(get("/api/dialog/1277").secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.messages", hasSize(50)))
-                .andExpect(jsonPath("$.messages[0].id").value("1324"))
+                .andExpect(jsonPath("$.messages[0].messageId").value("1324"))
                 .andExpect(jsonPath("$.messages[0].content").value("asdf"))
-                .andExpect(jsonPath("$.messages[49].id").value("1373"))
+                .andExpect(jsonPath("$.messages[49].messageId").value("1373"))
                 .andExpect(jsonPath("$.messages[49].content").value("f"));
     }
 
@@ -188,9 +165,9 @@ public class ApiChatControllerTest {
         mockMvc.perform(get("/api/dialog/1277?page=1").secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.messages", hasSize(46)))
-                .andExpect(jsonPath("$.messages[0].id").value("1278"))
+                .andExpect(jsonPath("$.messages[0].messageId").value("1278"))
                 .andExpect(jsonPath("$.messages[0].content").value("1"))
-                .andExpect(jsonPath("$.messages[45].id").value("1323"))
+                .andExpect(jsonPath("$.messages[45].messageId").value("1323"))
                 .andExpect(jsonPath("$.messages[45].content").value("sdf"));
     }
 
@@ -232,7 +209,7 @@ public class ApiChatControllerTest {
 
         Message message = new Message();
         message.setContent("1234");
-        message.setId(1197L);
+        message.setMessageId(1197L);
 
         mockMvc.perform(put("/api/message/1197").secure(true)
                 .content(objectMapper.writeValueAsString(message))
@@ -249,7 +226,7 @@ public class ApiChatControllerTest {
 
         Message message = new Message();
         message.setContent("1234");
-        message.setId(1197L);
+        message.setMessageId(1197L);
 
         mockMvc.perform(put("/api/message/1197").secure(true)
                 .content(objectMapper.writeValueAsString(message))
@@ -264,7 +241,7 @@ public class ApiChatControllerTest {
 
         Message message = new Message();
         message.setContent("1234");
-        message.setId(54321L);
+        message.setMessageId(54321L);
 
         mockMvc.perform(put("/api/message/54321").secure(true)
                 .content(objectMapper.writeValueAsString(message))

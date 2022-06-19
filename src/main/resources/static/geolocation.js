@@ -104,6 +104,7 @@ function geo() {
 
 
         navigator.geolocation.watchPosition(position => {
+            console.log("Да")
             if (allow) {
 
                 console.log("1234")
@@ -148,9 +149,10 @@ function geo() {
                 xhr.onreadystatechange = function () {
                     if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
                         allow = false
-
+                        console.log("Нельзя")
                         setTimeout(() => {
                             allow = true
+                            console.log("Вновь можно")
                         }, 5000)
                         console.log("Отправлено")
                     } else if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 400) {

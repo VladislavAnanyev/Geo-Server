@@ -1,9 +1,8 @@
 package com.example.mywebquizengine.model.exception;
 
-public class UserNotFoundException extends RuntimeException {
+public class UserNotFoundException extends GlobalException {
 
-    public UserNotFoundException(String message) {
-        super(message);
+    public UserNotFoundException(String message, Long code) {
+        super(message, code);
     }
-
 }

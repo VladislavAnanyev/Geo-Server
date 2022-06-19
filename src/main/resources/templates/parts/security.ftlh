@@ -26,7 +26,7 @@
 <#--    <#if nowUser.principal.username??>-->
         <#assign
         name = nowUser.name
-            
+
 
         <#--        balance = nowUser.principal.getBalance()-->
             >

@@ -1,11 +1,10 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.model.userinfo.User;
+import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.repos.UserRepository;
+import com.example.mywebquizengine.service.BusinessEmailSender;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,7 +13,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,7 +28,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles({"test"})
-@TestPropertySource(locations = "classpath:application-test.properties")
 public class ApiUserControllerTest {
 
     @Autowired
@@ -41,6 +38,9 @@ public class ApiUserControllerTest {
 
     @MockBean
     private RabbitAdmin rabbitAdmin;
+
+    @MockBean
+    private BusinessEmailSender businessEmailSender;
 
     @Test
     public void testGetAuthUserWithoutAuth() throws Exception {
@@ -59,9 +59,8 @@ public class ApiUserControllerTest {
     @Test
     public void testSignUp() throws Exception {
 
-        doAnswer(i -> {
-            return null;
-        }).when(rabbitAdmin).declareExchange(anyObject());
+        doAnswer(i -> null).when(rabbitAdmin).declareExchange(anyObject());
+        doAnswer(i -> null).when(businessEmailSender).sendWelcomeMessage(anyObject());
 
         String json =
                 """
@@ -78,9 +77,9 @@ public class ApiUserControllerTest {
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.jwtToken").isString());
+                .andExpect(jsonPath("$.result.jwtToken").isString());
 
-        User user = userRepository.findById("application").get();
+        User user = userRepository.findUserByUsername("application").get();
         assertNotNull(user.getPassword());
 
     }
@@ -100,7 +99,9 @@ public class ApiUserControllerTest {
 
         mockMvc.perform(post("/api/signup").secure(true)
                 .content(json)
-                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("FAIL"));
     }
 
     @Test
@@ -154,7 +155,9 @@ public class ApiUserControllerTest {
 
         mockMvc.perform(post("/api/signup").secure(true)
                 .content(json)
-                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("FAIL"));
     }
 
     @Test
@@ -247,7 +250,7 @@ public class ApiUserControllerTest {
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.jwtToken").isString());
+                .andExpect(jsonPath("$.result.jwtToken").isString());
     }
 
 
@@ -265,7 +268,8 @@ public class ApiUserControllerTest {
         mockMvc.perform(post("/api/signin").secure(true)
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("FAIL"));
     }
 
     @Test
@@ -299,7 +303,7 @@ public class ApiUserControllerTest {
                 .content(json))
                 .andExpect(status().isOk());
 
-        User user = userRepository.findById("user1").get();
+        User user = userRepository.findUserByUsername("user1").get();
         assertEquals("rename", user.getFirstName());
         assertEquals("user", user.getLastName());
     }
@@ -318,7 +322,7 @@ public class ApiUserControllerTest {
                 .content(json))
                 .andExpect(status().isBadRequest());
 
-        User user = userRepository.findById("user1").get();
+        User user = userRepository.findUserByUsername("user1").get();
         assertEquals("user1", user.getFirstName());
         assertEquals("user1", user.getLastName());
     }

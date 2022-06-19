@@ -74,7 +74,7 @@
 
     <div class="col-md-6 mb-3">
         <label for="validationDefault05">Онлайн</label>
-        <input type="text" class="form-control" id="validationDefault05" disabled value="${user.online}" name="online" required>
+        <input type="text" class="form-control" id="validationDefault05" disabled value="${user.online?string('Да', 'Нет')}" name="online" required>
     </div>
 
     <div class="modal fade" id="staticBackdrop" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">

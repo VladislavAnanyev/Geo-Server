@@ -1,46 +1,22 @@
 package com.example.mywebquizengine.service;
 
-import com.example.mywebquizengine.model.exception.AuthorizationException;
-import com.example.mywebquizengine.model.exception.LogicException;
+import com.example.mywebquizengine.model.exception.GlobalErrorCode;
 import com.example.mywebquizengine.model.exception.UserNotFoundException;
-import com.example.mywebquizengine.model.projection.ProfileView;
-import com.example.mywebquizengine.model.projection.UserCommonView;
-import com.example.mywebquizengine.model.projection.UserView;
-import com.example.mywebquizengine.model.userinfo.*;
+import com.example.mywebquizengine.model.userinfo.dto.output.AuthUserView;
+import com.example.mywebquizengine.model.userinfo.dto.output.ProfileView;
+import com.example.mywebquizengine.model.userinfo.dto.output.UserCommonView;
+import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.repos.UserRepository;
-import com.example.mywebquizengine.service.utils.RabbitUtil;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson.JacksonFactory;
-import org.springframework.amqp.core.FanoutExchange;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.BeanPropertyBindingResult;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -49,17 +25,21 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public void updateUser(String lastName, String firstName, String username) {
+    public void updateUser(String lastName, String firstName, Long userId) {
         if (lastName != null && !lastName.trim().equals("") && firstName != null && !firstName.trim().equals("")) {
-            userRepository.updateUserInfo(firstName, lastName, username);
+            userRepository.updateUserInfo(firstName, lastName, userId);
         } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+    }
+
+    public AuthUserView getAuthUser(Long userId) {
+        return userRepository.findAllByUserId(userId);
     }
 
     public void activateAccount(String activationCode) {
         User user = userRepository.findByActivationCode(activationCode);
         if (user != null) {
             user.setStatus(true);
-            userRepository.activateAccount(user.getUsername());
+            userRepository.activateAccount(user.getUserId());
         }
     }
 
@@ -72,8 +52,8 @@ public class UserService {
 
     }
 
-    public void updateBalance(Integer coins, String username) {
-        User user = userRepository.findById(username).get();
+    public void updateBalance(Integer coins, Long userId) {
+        User user = userRepository.findById(userId).get();
         user.setBalance(user.getBalance() + coins);
     }
 
@@ -81,39 +61,35 @@ public class UserService {
         return (ArrayList<User>) userRepository.findAll();
     }
 
-    public List<UserCommonView> findMyFriends(String username) {
-        return userRepository.findUsersByFriendsUsername(username);
+    public List<UserCommonView> findMyFriends(Long userId) {
+        return userRepository.findUsersByFriendsUserId(userId);
     }
 
-    public UserCommonView getUserView(String username) {
-        return userRepository.findByUsername(username);
-    }
-
-    public Boolean checkForExistUser(String username) {
-        return userRepository.existsById(username);
+    public UserCommonView getUserView(Long userId) {
+        return userRepository.findByUserId(userId);
     }
 
     @Transactional
-    public ProfileView getUserProfileById(String username) {
-        return userRepository.findUserByUsernameOrderByUsernameAscPhotosAsc(username);
+    public ProfileView getUserProfileById(Long userId) {
+        return userRepository.findUserByUserIdOrderByUsernameAscPhotosAsc(userId);
     }
 
     @Transactional
-    public void deleteFriend(String username, String authUsername) {
-        User user = loadUserByUsername(authUsername);
-        User friend = loadUserByUsername(username);
+    public void deleteFriend(Long userId, Long authUserId) {
+        User user = loadUserByUserId(authUserId);
+        User friend = loadUserByUserId(userId);
         user.removeFriend(friend);
     }
 
-    public User loadUserByUsername(String username) throws UserNotFoundException {
-        Optional<User> user = userRepository.findById(username);
+    public User loadUserByUserId(Long userId) {
+        Optional<User> user = userRepository.findById(userId);
 
         if (user.isPresent()) {
             return user.get();
-        } else throw new EntityNotFoundException("Пользователь не найден");
+        } else throw new UserNotFoundException("exception.user.not.found", GlobalErrorCode.ERROR_USER_NOT_FOUND);
     }
 
-    public User loadUserByUsernameProxy(String username) throws UsernameNotFoundException {
-        return userRepository.getOne(username);
+    public User loadUserByUserIdProxy(Long userId) throws UsernameNotFoundException {
+        return userRepository.getOne(userId);
     }
 }

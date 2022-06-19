@@ -1,12 +1,12 @@
 package com.example.mywebquizengine.service;
 
-import com.example.mywebquizengine.model.projection.UserCommonView;
+import com.example.mywebquizengine.model.userinfo.dto.output.UserCommonView;
 import com.example.mywebquizengine.model.rabbit.FriendType;
-import com.example.mywebquizengine.model.request.Request;
-import com.example.mywebquizengine.model.userinfo.User;
-import com.example.mywebquizengine.model.chat.Dialog;
-import com.example.mywebquizengine.model.chat.MessageStatus;
-import com.example.mywebquizengine.model.projection.RequestView;
+import com.example.mywebquizengine.model.request.domain.Request;
+import com.example.mywebquizengine.model.userinfo.domain.User;
+import com.example.mywebquizengine.model.chat.domain.Dialog;
+import com.example.mywebquizengine.model.chat.domain.MessageStatus;
+import com.example.mywebquizengine.model.request.dto.output.RequestView;
 import com.example.mywebquizengine.model.rabbit.RabbitMessage;
 import com.example.mywebquizengine.model.rabbit.RequestType;
 import com.example.mywebquizengine.repos.RequestRepository;
@@ -46,24 +46,24 @@ public class RequestService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private Optional<Request> isPresentMyRequestByMeetingIdAndToUsername(Long meetingId, String toUsername) {
-        return requestRepository.findAllByMeetingIdAndStatusAndSenderUsername(meetingId, "PENDING", toUsername);
+    private Optional<Request> isPresentMyRequestByMeetingIdAndToUserId(Long meetingId, Long toUserId) {
+        return requestRepository.findAllByMeetingMeetingIdAndStatusAndSenderUserId(meetingId, "PENDING", toUserId);
     }
 
     @Transactional
-    public void sendRequest(Request request, String username) throws JsonProcessingException {
+    public void sendRequest(Request request, Long userId) throws JsonProcessingException {
 
-        Optional<Request> optionalRequest = isPresentMyRequestByMeetingIdAndToUsername(
-                request.getMeeting().getId(), request.getTo().getUsername()
+        Optional<Request> optionalRequest = isPresentMyRequestByMeetingIdAndToUserId(
+                request.getMeeting().getMeetingId(), request.getTo().getUserId()
         );
 
         if (optionalRequest.isPresent()) {
-            acceptRequest(optionalRequest.get().getId(), username);
+            acceptRequest(optionalRequest.get().getRequestId(), userId);
         } else {
 
-            List<Request> allMyPendingRequestsToUser = requestRepository.findBySenderUsernameAndToUsernameAndStatus(
-                    username,
-                    request.getTo().getUsername(),
+            List<Request> allMyPendingRequestsToUser = requestRepository.findBySenderUserIdAndToUserIdAndStatus(
+                    userId,
+                    request.getTo().getUserId(),
                     "PENDING"
             );
 
@@ -71,15 +71,15 @@ public class RequestService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You already send request to this user");
             }
 
-            request.setSender(userService.loadUserByUsername(username));
-            request.setTo(userService.loadUserByUsername(request.getTo().getUsername()));
+            request.setSender(userService.loadUserByUserId(userId));
+            request.setTo(userService.loadUserByUserId(request.getTo().getUserId()));
             request.setStatus("PENDING");
 
-            if(!isPossibleToSendRequest(request.getMeeting().getId())) {
+            if(!isPossibleToSendRequest(request.getMeeting().getMeetingId())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can not send request");
             }
 
-            Long dialogId = messageService.createDialog(request.getTo().getUsername(), username);
+            Long dialogId = messageService.createDialog(request.getTo().getUserId(), userId);
 
             Dialog dialog = new Dialog();
             dialog.setDialogId(dialogId);
@@ -87,7 +87,7 @@ public class RequestService {
             if (request.getMessage() != null) {
 
                 request.getMessage().setDialog(dialog);
-                request.getMessage().setSender(userService.loadUserByUsernameProxy(username));
+                request.getMessage().setSender(userService.loadUserByUserIdProxy(userId));
                 request.getMessage().setStatus(MessageStatus.DELIVERED);
                 request.getMessage().setTimestamp(new Date());
 
@@ -101,29 +101,28 @@ public class RequestService {
             rabbitMessage.setType(RequestType.REQUEST);
             rabbitMessage.setPayload(requestView);
 
-            String exchangeName = RabbitUtil.getExchangeName(request.getTo().getUsername());
+            String exchangeName = RabbitUtil.getExchangeName(request.getTo().getUserId());
 
             rabbitTemplate.convertAndSend(exchangeName, "",
                     JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
         }
     }
 
-    public List<RequestView> getSentRequests(String username) {
-        return requestRepository.findAllBySenderUsernameAndStatus(username, "PENDING");
+    public List<RequestView> getSentRequests(Long userId) {
+        return requestRepository.findAllBySenderUserIdAndStatus(userId, "PENDING");
     }
 
 
-    public void rejectRequest(Long id, String username) {
+    public void rejectRequest(Long id, Long userId) {
         Optional<Request> optionalRequest = requestRepository.findById(id);
         if (optionalRequest.isPresent()) {
             Request request = optionalRequest.get();
-            if (request.getTo().getUsername().equals(username)) {
-                requestRepository.updateStatus(request.getId(), "REJECTED");
+            if (request.getTo().getUserId().equals(userId)) {
+                requestRepository.updateStatus(request.getRequestId(), "REJECTED");
             } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-
     }
 
     /**
@@ -133,15 +132,18 @@ public class RequestService {
     public boolean isPossibleToSendRequest(Long meetingId) {
 
         ArrayList<Request> allRequests = requestRepository
-                .findAllByMeetingId(
+                .findAllByMeetingMeetingId(
                         meetingId
                 );
 
         if (allRequests.size() == 0) {
             return true;
         } else {
-            String authUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-            ArrayList<RequestView> sentRequest = requestRepository.findByMeetingIdAndSenderUsername(meetingId, authUsername);
+            Long authUserId = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
+            ArrayList<RequestView> sentRequest = requestRepository.findByMeetingMeetingIdAndSenderUserId(
+                    meetingId,
+                    authUserId
+            );
             int sizeOfSentRequest = sentRequest.size();
             boolean isRequestWithStatusRejectedOrAcceptedExist = false;
             for (Request request : allRequests) {
@@ -154,14 +156,14 @@ public class RequestService {
         }
     }
 
-    public ArrayList<RequestView> getMyRequests(String username) {
-        return requestRepository.findByStatusAndToUsernameOrStatusAndSenderUsername(
-                "PENDING", username, "PENDING", username
+    public ArrayList<RequestView> getMyRequests(Long userId) {
+        return requestRepository.findByStatusAndToUserIdOrStatusAndSenderUserId(
+                "PENDING", userId, "PENDING", userId
         );
     }
 
-    public Long acceptRequest(Long requestId, String username) throws JsonProcessingException {
-        User authUser = userService.loadUserByUsername(username);
+    public Long acceptRequest(Long requestId, Long userId) throws JsonProcessingException {
+        User authUser = userService.loadUserByUserId(userId);
 
         Request request = requestRepository.findById(requestId).get();
         request.setStatus("ACCEPTED");
@@ -175,8 +177,8 @@ public class RequestService {
         rabbitMessage.setType(FriendType.NEW_FRIEND);
         rabbitMessage.setPayload(toView);
 
-        String senderExchangeName = RabbitUtil.getExchangeName(request.getSender().getUsername());
-        String toExchangeName = RabbitUtil.getExchangeName(request.getTo().getUsername());
+        String senderExchangeName = RabbitUtil.getExchangeName(request.getSender().getUserId());
+        String toExchangeName = RabbitUtil.getExchangeName(request.getTo().getUserId());
         rabbitTemplate.convertAndSend(senderExchangeName, "",
                 JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
 
@@ -185,6 +187,6 @@ public class RequestService {
         rabbitTemplate.convertAndSend(toExchangeName, "",
                 JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
 
-        return messageService.createDialog(request.getSender().getUsername(), username);
+        return messageService.createDialog(request.getSender().getUserId(), userId);
     }
 }

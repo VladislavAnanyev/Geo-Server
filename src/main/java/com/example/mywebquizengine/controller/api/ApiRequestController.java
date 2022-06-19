@@ -1,31 +1,31 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.model.chat.Message;
-import com.example.mywebquizengine.model.geo.Meeting;
-import com.example.mywebquizengine.model.projection.RequestView;
-import com.example.mywebquizengine.model.request.Request;
-import com.example.mywebquizengine.model.request.RequestDto;
-import com.example.mywebquizengine.model.userinfo.User;
+import com.example.mywebquizengine.model.chat.domain.Message;
+import com.example.mywebquizengine.model.geo.domain.Meeting;
+import com.example.mywebquizengine.model.request.dto.output.RequestView;
+import com.example.mywebquizengine.model.request.domain.Request;
+import com.example.mywebquizengine.model.request.dto.input.RequestDto;
+import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.service.RequestService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/api")
 public class ApiRequestController {
 
-    @Autowired
-    private RequestService requestService;
+    private final RequestService requestService;
+
+    public ApiRequestController(RequestService requestService) {
+        this.requestService = requestService;
+    }
 
     @PostMapping(path = "/request")
     @ResponseBody
@@ -37,10 +37,10 @@ public class ApiRequestController {
         Request request = new Request();
 
         User user = new User();
-        user.setUsername(requestDto.getToUsername());
+        user.setUserId(requestDto.getToUserId());
 
         Meeting meeting = new Meeting();
-        meeting.setId(requestDto.getMeetingId());
+        meeting.setMeetingId(requestDto.getMeetingId());
 
         Message message = new Message();
         message.setContent(requestDto.getMessageContent());
@@ -51,7 +51,7 @@ public class ApiRequestController {
         if (message.getContent() != null) {
             request.setMessage(message);
         }
-        requestService.sendRequest(request, authUser.getUsername());
+        requestService.sendRequest(request, authUser.getUserId());
 
     }
 
@@ -60,21 +60,21 @@ public class ApiRequestController {
     public Long acceptRequest(
             @PathVariable Long id,
             @ApiIgnore @AuthenticationPrincipal User user) throws JsonProcessingException {
-        return requestService.acceptRequest(id, user.getUsername());
+        return requestService.acceptRequest(id, user.getUserId());
     }
 
     @GetMapping(path = "/requests")
     public ArrayList<RequestView> getMyRequests(@ApiIgnore @AuthenticationPrincipal User user) {
-        return requestService.getMyRequests(user.getUsername());
+        return requestService.getMyRequests(user.getUserId());
     }
 
     @PostMapping(path = "/request/{id}/reject")
     public void rejectRequest(@PathVariable Long id, @ApiIgnore @AuthenticationPrincipal User user) {
-        requestService.rejectRequest(id, user.getUsername());
+        requestService.rejectRequest(id, user.getUserId());
     }
 
     @GetMapping(path = "/sentRequests")
     public List<RequestView> getSentRequests(@ApiIgnore @AuthenticationPrincipal User user) {
-        return requestService.getSentRequests(user.getUsername());
+        return requestService.getSentRequests(user.getUserId());
     }
 }

@@ -1,33 +1,33 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.model.chat.EditMessageRequest;
-import com.example.mywebquizengine.model.chat.Message;
-import com.example.mywebquizengine.model.projection.LastDialog;
-import com.example.mywebquizengine.model.projection.DialogView;
-import com.example.mywebquizengine.model.userinfo.User;
+import com.example.mywebquizengine.model.chat.dto.input.EditMessageRequest;
+import com.example.mywebquizengine.model.chat.domain.Message;
+import com.example.mywebquizengine.model.chat.dto.output.LastDialog;
+import com.example.mywebquizengine.model.chat.dto.output.DialogView;
+import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.service.MessageService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.Principal;
-import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping(path = "/api")
 public class ApiChatController {
 
-    @Autowired
-    private MessageService messageService;
+    private final MessageService messageService;
+
+    public ApiChatController(MessageService messageService) {
+        this.messageService = messageService;
+    }
 
     @DeleteMapping(path = "/message/{id}")
     public void deleteMessage(@PathVariable Long id,
                               @ApiIgnore @AuthenticationPrincipal User authUser
     ) throws JsonProcessingException {
-        messageService.deleteMessage(id, authUser.getUsername());
+        messageService.deleteMessage(id, authUser.getUserId());
     }
 
     @PutMapping(path = "/message/{id}")
@@ -38,9 +38,9 @@ public class ApiChatController {
 
         Message message = new Message();
         message.setContent(editMessageRequest.getContent());
-        message.setId(id);
+        message.setMessageId(id);
 
-        messageService.editMessage(message, authUser.getUsername());
+        messageService.editMessage(message, authUser.getUserId());
     }
 
     @GetMapping(path = "/dialog/{dialogId}")
@@ -49,17 +49,17 @@ public class ApiChatController {
                                   @RequestParam(required = false,defaultValue = "50") Integer pageSize,
                                   @RequestParam(defaultValue = "timestamp") String sortBy,
                                   @ApiIgnore @AuthenticationPrincipal User authUser) {
-        return messageService.getMessages(dialogId, page, pageSize, sortBy, authUser.getUsername());
+        return messageService.getMessages(dialogId, page, pageSize, sortBy, authUser.getUserId());
     }
 
     @GetMapping(path = "/dialogs")
-    public ArrayList<LastDialog> getDialogs(@ApiIgnore @AuthenticationPrincipal User authUser) {
-        return messageService.getDialogsForApi(authUser.getUsername());
+    public List<LastDialog> getDialogs(@ApiIgnore @AuthenticationPrincipal User authUser) {
+        return messageService.getDialogsForApi(authUser.getUserId());
     }
 
     @PostMapping(path = "/dialog/create")
-    public Long checkDialog(@RequestParam String username, @ApiIgnore @AuthenticationPrincipal User authUser) {
-        return messageService.createDialog(username, authUser.getUsername());
+    public Long checkDialog(@RequestParam Long userId, @ApiIgnore @AuthenticationPrincipal User authUser) {
+        return messageService.createDialog(userId, authUser.getUserId());
     }
 
 }

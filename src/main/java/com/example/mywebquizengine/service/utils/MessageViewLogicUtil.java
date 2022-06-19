@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.service.utils;
 
-import com.example.mywebquizengine.model.chat.Dialog;
-import com.example.mywebquizengine.model.userinfo.User;
+import com.example.mywebquizengine.model.chat.domain.Dialog;
+import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.repos.DialogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,13 +23,12 @@ public class MessageViewLogicUtil {
 
     public String getCompanion(String name, Set<User> users) {
 
-
         if (users.size() > 2) {
             return name;
         } else if (users.size() == 2) {
-            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            Long userId = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
             Set<User> userSet = new HashSet<>(users);
-            userSet.removeIf(user -> user.getUsername().equals(username));
+            userSet.removeIf(user -> user.getUserId().equals(userId));
             return userSet.iterator().next().getUsername();
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -42,9 +41,9 @@ public class MessageViewLogicUtil {
         if (users.size() > 2) {
             return image;
         } else if (users.size() == 2) {
-            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            Long userId = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
             Set<User> userSet = new HashSet<>(users);
-            userSet.removeIf(user -> user.getUsername().equals(username));
+            userSet.removeIf(user -> user.getUserId().equals(userId));
             return userSet.iterator().next().getPhotos().get(0).getUrl();
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -53,6 +52,7 @@ public class MessageViewLogicUtil {
     }
 
     public String getCompanionForLastDialogs(Long dialog_id) {
+        System.out.println("Вызван комп фор ласт Ди");
         Optional<Dialog> optionalDialog = dialogRepository.findById(dialog_id);
         if (optionalDialog.isPresent()) {
             Dialog dialog = optionalDialog.get();
@@ -61,9 +61,9 @@ public class MessageViewLogicUtil {
             if (users.size() > 2) {
                 return dialog.getName();
             } else if (users.size() == 2) {
-                String username = SecurityContextHolder.getContext().getAuthentication().getName();
+                Long userId = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
                 Set<User> userSet = new HashSet<>(users);
-                userSet.removeIf(user -> user.getUsername().equals(username));
+                userSet.removeIf(user -> user.getUserId().equals(userId));
                 return userSet.iterator().next().getUsername();
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -73,6 +73,8 @@ public class MessageViewLogicUtil {
 
 
     public String getCompanionAvatarForLastDialogs(Long dialog_id) {
+        System.out.println("Вызван комп ав фор ласт Ди");
+
         Optional<Dialog> optionalDialog = dialogRepository.findById(dialog_id);
         if (optionalDialog.isPresent()) {
             Dialog dialog = optionalDialog.get();
@@ -81,9 +83,9 @@ public class MessageViewLogicUtil {
             if (users.size() > 2) {
                 return dialog.getImage();
             } else if (users.size() == 2) {
-                String username = SecurityContextHolder.getContext().getAuthentication().getName();
+                Long userId = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
                 Set<User> userSet = new HashSet<>(users);
-                userSet.removeIf(user -> user.getUsername().equals(username));
+                userSet.removeIf(user -> user.getUserId().equals(userId));
                 return userSet.iterator().next().getPhotos().get(0).getUrl();
 
             } else {

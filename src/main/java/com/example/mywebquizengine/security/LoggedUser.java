@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.security;
 
-import com.example.mywebquizengine.model.userinfo.User;
+import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.MywebquizengineApplication;
 import com.example.mywebquizengine.repos.UserRepository;
 import org.springframework.stereotype.Component;
@@ -12,11 +12,11 @@ import java.util.Optional;
 @Component
 public class LoggedUser implements HttpSessionBindingListener {
 
-    private String username;
+    private Long userId;
     private ActiveUserStore activeUserStore;
 
-    public LoggedUser(String username, ActiveUserStore activeUserStore) {
-        this.username = username;
+    public LoggedUser(Long userId, ActiveUserStore activeUserStore) {
+        this.userId = userId;
         this.activeUserStore = activeUserStore;
     }
 
@@ -26,26 +26,24 @@ public class LoggedUser implements HttpSessionBindingListener {
     public void valueBound(HttpSessionBindingEvent event) {
 
         if (activeUserStore != null) {
-            List<String> users = activeUserStore.getUsers();
+            List<Long> users = activeUserStore.getUsers();
 
             boolean flag = true;
 
             LoggedUser user = (LoggedUser) event.getValue();
 
-            if (users.contains(user.getUsername())) {
+            if (users.contains(user.getUserId())) {
                 flag = false;
             }
-            users.add(user.getUsername());
+            users.add(user.getUserId());
 
             if (flag) {
-                if (MywebquizengineApplication.ctx.getBean(UserRepository.class).findById(user.getUsername()).isPresent()) {
-                    User authUser = MywebquizengineApplication.ctx.getBean(UserRepository.class).findById(user.getUsername()).get();
-                    authUser.setOnline("true");
+                if (MywebquizengineApplication.ctx.getBean(UserRepository.class).findById(user.getUserId()).isPresent()) {
+                    User authUser = MywebquizengineApplication.ctx.getBean(UserRepository.class).findById(user.getUserId()).get();
+                    authUser.setOnline(true);
                     MywebquizengineApplication.ctx.getBean(UserRepository.class).save(authUser);
                 }
             }
-
-
 
         }
     }
@@ -53,14 +51,14 @@ public class LoggedUser implements HttpSessionBindingListener {
     @Override
     public void valueUnbound(HttpSessionBindingEvent event) {
 
-        List<String> users = activeUserStore.getUsers();
+        List<Long> users = activeUserStore.getUsers();
         LoggedUser user = (LoggedUser) event.getValue();
 
         boolean flag = true;
 
         if (users != null) {
-            users.remove(user.getUsername());
-            if (users.contains(user.getUsername())) {
+            users.remove(user.getUserId());
+            if (users.contains(user.getUserId())) {
                 flag = false;
             }
         }
@@ -70,12 +68,12 @@ public class LoggedUser implements HttpSessionBindingListener {
                     .ctx
                     .getBean(UserRepository.class)
                     .findById(user
-                            .getUsername()
+                            .getUserId()
                     );
 
             if (optionalUser.isPresent()) {
                 User authUser = optionalUser.get();
-                authUser.setOnline("false");
+                authUser.setOnline(false);
                 MywebquizengineApplication.ctx.getBean(UserRepository.class).save(authUser);
             }
 
@@ -84,11 +82,11 @@ public class LoggedUser implements HttpSessionBindingListener {
 
     }
 
-    public String getUsername() {
-        return username;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }

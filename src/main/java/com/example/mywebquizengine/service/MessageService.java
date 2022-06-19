@@ -1,22 +1,21 @@
 package com.example.mywebquizengine.service;
 
 
-import com.example.mywebquizengine.model.chat.Dialog;
-import com.example.mywebquizengine.model.chat.Message;
-import com.example.mywebquizengine.model.chat.MessageStatus;
-import com.example.mywebquizengine.model.chat.Typing;
-import com.example.mywebquizengine.model.projection.DialogView;
-import com.example.mywebquizengine.model.projection.LastDialog;
-import com.example.mywebquizengine.model.projection.MessageView;
-import com.example.mywebquizengine.model.projection.TypingView;
+import com.example.mywebquizengine.model.chat.domain.Dialog;
+import com.example.mywebquizengine.model.chat.domain.Message;
+import com.example.mywebquizengine.model.chat.domain.MessageStatus;
+import com.example.mywebquizengine.model.chat.dto.input.Typing;
+import com.example.mywebquizengine.model.chat.dto.output.DialogView;
+import com.example.mywebquizengine.model.chat.dto.output.LastDialog;
+import com.example.mywebquizengine.model.chat.dto.output.MessageView;
+import com.example.mywebquizengine.model.chat.dto.output.TypingView;
 import com.example.mywebquizengine.model.rabbit.MessageType;
 import com.example.mywebquizengine.model.rabbit.RabbitMessage;
-import com.example.mywebquizengine.model.userinfo.User;
+import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.repos.DialogRepository;
 import com.example.mywebquizengine.repos.MessageRepository;
 import com.example.mywebquizengine.service.utils.ProjectionUtil;
 import com.example.mywebquizengine.service.utils.RabbitUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,17 +49,16 @@ public class MessageService {
     @Value("${hostname}")
     private String hostname;
 
-    public Long createDialog(String username, String authUsername) {
+    public Long createDialog(Long userId, Long authUserId) {
 
-        if (!authUsername.equals(username)) {
-            Long dialog_id = dialogRepository.findDialogByName(username,
-                    authUsername);
+        if (!authUserId.equals(userId)) {
+            Long dialog_id = dialogRepository.findDialogByName(userId, authUserId);
 
             if (dialog_id == null) {
                 Dialog dialog = new Dialog();
 
-                dialog.addUser(userService.loadUserByUsername(username));
-                dialog.addUser(userService.loadUserByUsername(authUsername));
+                dialog.addUser(userService.loadUserByUserId(userId));
+                dialog.addUser(userService.loadUserByUserId(authUserId));
 
                 dialogRepository.save(dialog);
                 return dialog.getDialogId();
@@ -69,21 +67,18 @@ public class MessageService {
             }
         } else throw new IllegalArgumentException("You can not create dialog with yourself");
 
-
     }
 
-
-    public ArrayList<LastDialog> getDialogsForApi(String username) {
-        List<LastDialog> messageViews = messageRepository.getDialogsForApi(username);
-        return (ArrayList<LastDialog>) messageViews;
+    public List<LastDialog> getDialogsForApi(Long userId) {
+        return messageRepository.getDialogsForApi(userId);
     }
 
     @Transactional
-    public void deleteMessage(Long id, String username) throws JsonProcessingException {
+    public void deleteMessage(Long id, Long userId) {
         Optional<Message> optionalMessage = messageRepository.findById(id);
         if (optionalMessage.isPresent()) {
             Message message = optionalMessage.get();
-            if (message.getSender().getUsername().equals(username)) {
+            if (message.getSender().getUserId().equals(userId)) {
                 message.setStatus(MessageStatus.DELETED);
 
                 MessageView messageDto = ProjectionUtil.parseToProjection(message, MessageView.class);
@@ -93,7 +88,7 @@ public class MessageService {
                 rabbitMessage.setPayload(messageDto);
 
                 for (User user : message.getDialog().getUsers()) {
-                    String exchangeName = RabbitUtil.getExchangeName(user.getUsername());
+                    String exchangeName = RabbitUtil.getExchangeName(user.getUserId());
                     rabbitTemplate.convertAndSend(exchangeName, "", rabbitMessage);
                 }
 
@@ -106,32 +101,26 @@ public class MessageService {
     }
 
     @Transactional
-    public DialogView getMessages(Long dialogId, Integer page, Integer pageSize, String sortBy, String username) {
+    public DialogView getMessages(Long dialogId, Integer page, Integer pageSize, String sortBy, Long userId) {
         Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
         Optional<Dialog> optionalDialog = dialogRepository.findById(dialogId);
-
         if (optionalDialog.isPresent()) {
-            optionalDialog.get().setPaging(paging);
+            Dialog dialog = optionalDialog.get();
+            dialog.setPaging(paging);
+            if (dialog.getUsers().stream().anyMatch(o -> o.getUserId().equals(userId))) {
+                return dialogRepository.findAllDialogByDialogId(dialogId);
+            } else throw new SecurityException("You are not contains in this dialog");
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-
-        DialogView dialog = dialogRepository.findAllDialogByDialogId(dialogId);
-
-        // If user contains in dialog
-        if (dialog.getUsers().stream().anyMatch(o -> o.getUsername()
-                .equals(username))) {
-            return dialog;
-        } else throw new SecurityException("You are not contains in this dialog");
-
     }
 
     @Transactional
-    public void editMessage(Message newMessage, String username) throws JsonProcessingException {
-        Optional<Message> optionalMessage = messageRepository.findById(newMessage.getId());
+    public void editMessage(Message newMessage, Long userId) {
+        Optional<Message> optionalMessage = messageRepository.findById(newMessage.getMessageId());
         if (optionalMessage.isPresent()) {
             Message message = optionalMessage.get();
-            if (message.getSender().getUsername().equals(username)) {
+            if (message.getSender().getUserId().equals(userId)) {
                 message.setContent(newMessage.getContent());
                 message.setStatus(MessageStatus.EDIT);
 
@@ -143,7 +132,7 @@ public class MessageService {
 
                 for (User user : message.getDialog().getUsers()) {
 
-                    String exchangeName = RabbitUtil.getExchangeName(user.getUsername());
+                    String exchangeName = RabbitUtil.getExchangeName(user.getUserId());
 
                     rabbitTemplate.convertAndSend(exchangeName, "", rabbitMessage);
                 }
@@ -162,17 +151,15 @@ public class MessageService {
 
             Dialog dialog = optionalDialog.get();
 
-            if (dialog.getUsers().stream().anyMatch(user -> user.getUsername()
-                    .equals(message.getSender().getUsername()))) {
+            if (dialog.getUsers().stream().anyMatch(user -> user.getUserId()
+                    .equals(message.getSender().getUserId()))) {
 
-                User sender = userService.loadUserByUsernameProxy(message.getSender().getUsername());
+                User sender = userService.loadUserByUserIdProxy(message.getSender().getUserId());
 
                 message.setSender(sender);
                 message.setDialog(dialog);
                 message.setTimestamp(new Date());
                 message.setStatus(MessageStatus.DELIVERED);
-                ;
-
                 messageRepository.save(message);
 
                 MessageView messageDto = ProjectionUtil.parseToProjection(message, MessageView.class);
@@ -183,7 +170,7 @@ public class MessageService {
 
                 for (User user : dialog.getUsers()) {
 
-                    String exchangeName = RabbitUtil.getExchangeName(user.getUsername());
+                    String exchangeName = RabbitUtil.getExchangeName(user.getUserId());
 
                     rabbitTemplate.convertAndSend(exchangeName, "", rabbitMessage);
                 }
@@ -194,24 +181,21 @@ public class MessageService {
     }
 
 
-    public Long createGroup(Dialog newDialog, String username) {
+    public Long createGroup(Dialog newDialog, Long userId) {
 
         User authUser = new User();
-
-        authUser.setUsername(username);
-
+        authUser.setUserId(userId);
         newDialog.addUser(authUser);
 
-        if (newDialog.getUsers().stream().anyMatch(o -> o.getUsername()
-                .equals(username))) {
+        if (newDialog.getUsers().stream().anyMatch(o -> o.getUserId().equals(userId))) {
 
             Dialog dialog = new Dialog();
 
-            newDialog.getUsers().forEach(user -> dialog.addUser(userService.loadUserByUsername(user.getUsername())));
+            newDialog.getUsers().forEach(user -> dialog.addUser(userService.loadUserByUserId(user.getUserId())));
 
             Message message = new Message();
             message.setContent("Группа создана");
-            message.setSender(userService.loadUserByUsername(username));
+            message.setSender(userService.loadUserByUserId(userId));
             message.setStatus(MessageStatus.DELIVERED);
             message.setTimestamp(new Date());
             message.setDialog(dialog);
@@ -236,7 +220,7 @@ public class MessageService {
             rabbitMessage.setType(MessageType.MESSAGE);
             rabbitMessage.setPayload(messageDto);
             for (User user : dialog.getUsers()) {
-                String exchangeName = RabbitUtil.getExchangeName(user.getUsername());
+                String exchangeName = RabbitUtil.getExchangeName(user.getUserId());
 
                 rabbitTemplate.convertAndSend(exchangeName, "", rabbitMessage);
             }
@@ -256,7 +240,7 @@ public class MessageService {
         if (dialog.isPresent()) {
             Dialog existDialog = dialog.get();
 
-            User authUser = userService.loadUserByUsername(typing.getUser().getUsername());
+            User authUser = userService.loadUserByUserId(typing.getUser().getUserId());
             typing.setUser(authUser);
 
             TypingView typingView = ProjectionUtil.parseToProjection(typing, TypingView.class);
@@ -273,8 +257,8 @@ public class MessageService {
 
             for (User user : existDialog.getUsers()) {
 
-                if (!typing.getUser().getUsername().equals(user.getUsername())) {
-                    String exchangeName = RabbitUtil.getExchangeName(user.getUsername());
+                if (!typing.getUser().getUserId().equals(user.getUserId())) {
+                    String exchangeName = RabbitUtil.getExchangeName(user.getUserId());
                     rabbitTemplate.convertAndSend(exchangeName, "", rabbitMessage, messagePostProcessor);
 
                 }
@@ -296,7 +280,7 @@ public class MessageService {
 
         for (Message message : messages) {
             if (message.getStatus().equals(MessageStatus.DELIVERED)
-                    && !message.getSender().getUsername().equals(authName)) {
+                    && !message.getSender().getUserId().equals(authName)) {
                 message.setStatus(MessageStatus.RECEIVED);
             }
         }

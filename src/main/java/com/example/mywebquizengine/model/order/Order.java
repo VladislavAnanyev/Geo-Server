@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.model.order;
 
-import com.example.mywebquizengine.model.userinfo.User;
+import com.example.mywebquizengine.model.userinfo.domain.User;
 
 import javax.persistence.*;
 
@@ -12,6 +12,7 @@ public class Order {
     private Integer order_id;
 
     @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user;
 
     private String operation_id;
@@ -19,12 +20,6 @@ public class Order {
     private Integer coins;
 
     private String amount;
-
-
-
-    public Order() {
-
-    }
 
     public String getAmount() {
         return amount;

@@ -6,16 +6,14 @@ function sendRequest(to, id) {
     let json
     if (content !== null && content !== "") {
         json = {
-            to: {username: to},
-            meeting: {id: id},
+            to: {userId: to},
+            meeting: {meetingId: id},
             message: {content: document.getElementById(to + "msg").value}
         }
     } else {
-
-
         json = {
-            to: {username: to},
-            meeting: {id: id},
+            to: {userId: to},
+            meeting: {meetingId: id},
         }
     }
     //console.log(username)

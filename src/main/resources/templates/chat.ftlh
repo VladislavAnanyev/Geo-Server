@@ -111,7 +111,7 @@
                             <div class="outgoing_msg">
                                 <div class="sent_msg">
                                     <p>${msg.content}</p>
-                                    <span id="${msg.id?c}" class="time_date"><#--?string["dd.MM.yyyy HH:mm:ss"]}-->${msg.timestamp?long?c}</span> </div>
+                                    <span id="${msg.messageId?c}" class="time_date"><#--?string["dd.MM.yyyy HH:mm:ss"]}-->${msg.timestamp?long?c}</span> </div>
                             </div>
 
 
@@ -123,7 +123,7 @@
                                 <div class="received_msg">
                                     <div class="received_withd_msg">
                                         <p>${msg.content}</p>
-                                        <span id="${msg.id?c}" class="time_date">${msg.timestamp?long?c}</span>
+                                        <span id="${msg.messageId?c}" class="time_date">${msg.timestamp?long?c}</span>
                                     </div>
                                 </div>
                             </div>
@@ -147,7 +147,7 @@
 
                         <script id="setTimeAll">
                             <#list messages as msg>
-                            setTime(${msg.timestamp?long?c}, ${msg.id?c})
+                            setTime(${msg.timestamp?long?c}, ${msg.messageId?c})
                             </#list>
                         </script>
                     </#if>

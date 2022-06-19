@@ -1,11 +1,15 @@
 package com.example.mywebquizengine.controller.rabbit;
 
-import com.example.mywebquizengine.model.chat.*;
+import com.example.mywebquizengine.model.chat.domain.Dialog;
+import com.example.mywebquizengine.model.chat.domain.Message;
+import com.example.mywebquizengine.model.chat.domain.MessagePhoto;
+import com.example.mywebquizengine.model.chat.dto.input.SendMessageRequest;
+import com.example.mywebquizengine.model.chat.dto.input.Typing;
 import com.example.mywebquizengine.model.rabbit.MessageType;
 import com.example.mywebquizengine.model.rabbit.RabbitMessage;
-import com.example.mywebquizengine.model.userinfo.User;
+import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.service.FileSystemStorageService;
-import com.example.mywebquizengine.service.JWTUtil;
+import com.example.mywebquizengine.service.utils.JWTUtil;
 import com.example.mywebquizengine.service.MessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
@@ -19,11 +23,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 
 @Controller
@@ -54,19 +56,18 @@ public class RabbitController {
         }
 
         String accessKey = authorization.toString();
-        String username = jwtUtil.extractUsername(accessKey);
+        Long userId = jwtUtil.extractUserId(accessKey);
 
-        if (username != null) {
+        if (userId != null) {
             RabbitMessage rabbitMessage = objectMapper.readValue(messageFromRabbit.getBody(), RabbitMessage.class);
+            User user = new User();
+            user.setUserId(userId);
             if (rabbitMessage.getType().equals(MessageType.MESSAGE)) {
                 SendMessageRequest sendMessageRequest = objectMapper.readValue(objectMapper
                         .writeValueAsString(rabbitMessage.getPayload()), SendMessageRequest.class);
 
                 Message message = new Message();
                 message.setContent(sendMessageRequest.getContent());
-
-                User user = new User();
-                user.setUsername(username);
                 message.setSender(user);
 
                 Dialog dialog = new Dialog();
@@ -91,8 +92,6 @@ public class RabbitController {
             } else if (rabbitMessage.getType().equals(MessageType.TYPING)) {
                 Typing typing = objectMapper.readValue(objectMapper
                         .writeValueAsString(rabbitMessage.getPayload()), Typing.class);
-                User user = new User();
-                user.setUsername(username);
                 typing.setUser(user);
                 messageService.typingMessage(typing);
             } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);

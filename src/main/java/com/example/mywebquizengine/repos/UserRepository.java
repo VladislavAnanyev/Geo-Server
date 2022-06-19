@@ -1,9 +1,9 @@
 package com.example.mywebquizengine.repos;
 
-import com.example.mywebquizengine.model.projection.ProfileView;
-import com.example.mywebquizengine.model.projection.UserCommonView;
-import com.example.mywebquizengine.model.projection.UserView;
-import com.example.mywebquizengine.model.userinfo.User;
+import com.example.mywebquizengine.model.userinfo.dto.output.ProfileView;
+import com.example.mywebquizengine.model.userinfo.dto.output.UserCommonView;
+import com.example.mywebquizengine.model.userinfo.dto.output.AuthUserView;
+import com.example.mywebquizengine.model.userinfo.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,74 +15,56 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends CrudRepository<User, String>, JpaRepository<User, String> {
-    @Override
-    Optional<User> findById(String s);
+public interface UserRepository extends CrudRepository<User, Long>, JpaRepository<User, Long> {
 
+    Optional<User> findUserByUsername(String username);
 
-    UserCommonView findByUsername(String username);
+    boolean existsByUsername(String username);
 
-    UserView findAllByUsername(String username);
+    UserCommonView findByUserId(Long userId);
 
-    ProfileView findUserByUsernameOrderByUsernameAscPhotosAsc(String username);
+    AuthUserView findAllByUserId(Long userId);
+
+    ProfileView findUserByUserIdOrderByUsernameAscPhotosAsc(Long userId);
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE USERS SET FIRST_NAME = :firstname, LAST_NAME = :lastname WHERE USERNAME = :username", nativeQuery = true)
-    void updateUserInfo(String firstname, String lastname, String username);
+    @Query(value = "UPDATE USERS SET FIRST_NAME = :firstname, LAST_NAME = :lastname WHERE USER_ID = :userId", nativeQuery = true)
+    void updateUserInfo(String firstname, String lastname, Long userId);
 
     @Modifying
     @Transactional
     @Query(value = "UPDATE USERS SET PASSWORD = :password, CHANGE_PASSWORD_CODE = :changePasswordCode WHERE USERNAME = :username", nativeQuery = true)
     void changePassword(String password, String username, String changePasswordCode);
 
-    @Modifying
-    @Transactional
-    @Query(value = "UPDATE USERS SET AVATAR = :avatarName WHERE USERNAME = :username", nativeQuery = true)
-    void setAvatar(String avatarName, String username);
-
-
     @Query(value = "SELECT * FROM USERS WHERE ACTIVATION_CODE = :activationCode",nativeQuery = true )
     User findByActivationCode(String activationCode);
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE USERS SET status = true WHERE USERNAME = :username", nativeQuery = true)
-    void activateAccount(String username);
-
-    /*@Modifying
-    @Transactional
-    @Query(value = "UPDATE USERS SET AVATAR = :avatar WHERE USERNAME = :username", nativeQuery = true)
-    void updateAvatar(String username, String avatar);*/
-
+    @Query(value = "UPDATE USERS SET status = true WHERE USERNAME = :userId", nativeQuery = true)
+    void activateAccount(Long userId);
 
     @Query(value = "SELECT * FROM USERS WHERE CHANGE_PASSWORD_CODE = :changePasswordCode", nativeQuery = true )
     Optional<User> findByChangePasswordCode(String changePasswordCode);
 
-    @Query(nativeQuery = true,
-            value =
-            """
-            SELECT * FROM USERS WHERE CHANGE_PASSWORD_CODE = :changePasswordCode AND USERNAME = :username
-            """)
     Optional<User> findByChangePasswordCodeAndUsername(String changePasswordCode, String username);
+
+    boolean existsByChangePasswordCodeAndUsername(String changePasswordCode, String username);
 
     @Modifying
     @Transactional
     @Query(value = "UPDATE USERS SET CHANGE_PASSWORD_CODE = :mes WHERE USERNAME = :username", nativeQuery = true)
     void setChangePasswordCode(String username, String mes);
 
-    //List<UserCommonView> findUsersByFriendsUsernameContains(String s);
-
     @Modifying
     @Transactional
     @Query(value = "UPDATE USERS SET ONLINE = :status WHERE USERNAME = :username", nativeQuery = true)
     void setOnline(String username, String status);
 
-    //@Modifying
     @Transactional
     @Query(value = "select ONLINE from USERS WHERE USERNAME = :username", nativeQuery = true)
     String getOnline(String username);
 
-    //@Query(value = "SELECT * FROM ", nativeQuery = true)
-    List<UserCommonView> findUsersByFriendsUsername(String username);
+    List<UserCommonView> findUsersByFriendsUserId(Long userId);
 }

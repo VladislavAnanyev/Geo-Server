@@ -1,23 +1,21 @@
 package com.example.mywebquizengine.security;
 
-import org.springframework.stereotype.Component;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class ActiveUserStore {
 
-    public List<String> users;
+    public List<Long> users;
 
     public ActiveUserStore() {
-        users = new ArrayList<String>();
+        users = new ArrayList<>();
     }
 
-    public List<String> getUsers() {
+    public List<Long> getUsers() {
         return users;
     }
 
-    public void setUsers(List<String> users) {
+    public void setUsers(List<Long> users) {
         this.users = users;
     }
 

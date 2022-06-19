@@ -1,8 +1,8 @@
 package com.example.mywebquizengine.service.utils;
 
 import com.example.mywebquizengine.MywebquizengineApplication;
-import com.example.mywebquizengine.model.userinfo.User;
-import com.example.mywebquizengine.model.projection.UserCommonView;
+import com.example.mywebquizengine.model.userinfo.domain.User;
+import com.example.mywebquizengine.model.userinfo.dto.output.UserCommonView;
 import com.example.mywebquizengine.service.UserService;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
@@ -11,20 +11,19 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.server.ResponseStatusException;
 
 public class UserUtil {
-    public static UserCommonView getUserForMeeting(String firstUsername, String secondUsername) {
+    public static UserCommonView getUserForMeeting(Long firstUserId, Long secondUserId) {
 
-        String authName = SecurityContextHolder.getContext().getAuthentication().getName();
+        Long authName = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
         User user;
-        if (authName.equals(firstUsername)) {
-            user = MywebquizengineApplication.ctx.getBean(UserService.class).loadUserByUsername(secondUsername);
-        } else if (authName.equals(secondUsername)) {
-            user = MywebquizengineApplication.ctx.getBean(UserService.class).loadUserByUsername(firstUsername);
+        if (authName.equals(firstUserId)) {
+            user = MywebquizengineApplication.ctx.getBean(UserService.class).loadUserByUserId(secondUserId);
+        } else if (authName.equals(secondUserId)) {
+            user = MywebquizengineApplication.ctx.getBean(UserService.class).loadUserByUserId(firstUserId);
         } else  {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
         ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
-
         return pf.createProjection(UserCommonView.class, user);
     }
 }

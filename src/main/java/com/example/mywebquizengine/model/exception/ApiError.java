@@ -7,7 +7,6 @@ import java.util.List;
 
 public class ApiError {
 
-    private String description;
     private String message;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -15,13 +14,11 @@ public class ApiError {
 
     public ApiError() {}
 
-    public ApiError(String debugMessage, String message) {
-        this.description = debugMessage;
+    public ApiError(String message) {
         this.message = message;
     }
 
-    public ApiError(String message, String debugMessage, List<String> errors) {
-        this.description = debugMessage;
+    public ApiError(String message, List<String> errors) {
         this.message = message;
         this.errors = errors;
     }
@@ -32,14 +29,6 @@ public class ApiError {
 
     public String getMessage() {
         return message;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public void setErrors(List<String> errors) {

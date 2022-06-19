@@ -7,7 +7,6 @@
 
         <#if friends??>
             <#list friends as friend>
-            <#--            <#if request.to.username = myUsername>-->
                 <div class="col-sm-6" id="${friend.username}">
 
                     <div class="card mt-2" style="width: 18rem;">
@@ -15,15 +14,12 @@
                         <div class="card-body">
                             <h5 class="card-title">${friend.firstName} ${friend.lastName}</h5>
                             <#--                    <p class="card-text">${meeting.time?datetime?string["dd.MM.yyyy HH:mm:ss"]}</p>-->
-                            <a onclick="writeMsg('${friend.username}')" href="#" class="btn btn-primary mb-2">Написать сообщение</a>
-                            <a onclick="deleteFriend('${friend.username}')" href="#" class="btn btn-primary">Удалить из друзей</a>
+                            <a onclick="writeMsg('${friend.userId?c}')" href="#" class="btn btn-primary mb-2">Написать сообщение</a>
+                            <a onclick="deleteFriend('${friend.userId?c}')" href="#" class="btn btn-primary">Удалить из друзей</a>
 
                         </div>
-
                     </div>
-
                 </div>
-            <#--            </#if>-->
             </#list>
         </#if>
     </div>

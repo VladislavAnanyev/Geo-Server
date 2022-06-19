@@ -18,7 +18,7 @@
         <#if meetings??>
         <#list meetings as request>
 <#--            <#if request.to.username = myUsername>-->
-            <div class="col-sm-6" id="${request.id?c}">
+            <div class="col-sm-6" id="${request.requestId?c}">
 
             <div class="card mt-2" style="width: 18rem;">
                 <img class="rounded-circle" src="${request.sender.avatar}" alt="...">
@@ -28,8 +28,8 @@
                     <p>Сообщение для вас: ${request.message.content}</p>
                     </#if>
 <#--                    <p class="card-text">${meeting.time?datetime?string["dd.MM.yyyy HH:mm:ss"]}</p>-->
-                    <a onclick="acceptRequest('${request.id?c}')" href="#" class="btn btn-primary">Принять</a>
-                    <a onclick="rejectRequest('${request.id?c}')" href="#" class="btn btn-primary">Отклонить</a>
+                    <a onclick="acceptRequest('${request.requestId?c}')" href="#" class="btn btn-primary">Принять</a>
+                    <a onclick="rejectRequest('${request.requestId?c}')" href="#" class="btn btn-primary">Отклонить</a>
 
                 </div>
 

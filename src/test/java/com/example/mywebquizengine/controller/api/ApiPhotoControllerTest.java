@@ -1,8 +1,7 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.model.userinfo.Photo;
+import com.example.mywebquizengine.model.userinfo.domain.Photo;
 import com.example.mywebquizengine.repos.PhotoRepository;
-import com.example.mywebquizengine.repos.UserRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +15,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -39,23 +39,24 @@ public class ApiPhotoControllerTest {
     @WithUserDetails(value = "user5")
     public void testDeletePhotoWhenPhotoSizeIsOne() throws Exception {
         mockMvc.perform(delete("/api/user/photo/69").secure(true))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("FAIL"));
     }
 
     @Test
     @WithUserDetails(value = "user2")
     public void testDeletePhoto() throws Exception {
 
-        Integer photoCountByUsernameBefore = photoRepository.getPhotoCountByUsername("user2");
+        Integer photoCountByUsernameBefore = photoRepository.getPhotoCountByUserId(1002L);
 
         mockMvc.perform(delete("/api/user/photo/65").secure(true))
                 .andExpect(status().isOk());
 
-        Integer photoCountByUsernameAfter = photoRepository.getPhotoCountByUsername("user2");
+        Integer photoCountByUsernameAfter = photoRepository.getPhotoCountByUserId(1002L);
 
         assertNotEquals(photoCountByUsernameBefore, photoCountByUsernameAfter);
 
-        List<Photo> userPhotos = photoRepository.findByUser_Username("user2");
+        List<Photo> userPhotos = photoRepository.findByUser_UserId(1002L);
         int position = userPhotos.get(0).getPosition();
 
         assertEquals(0, position);
@@ -78,28 +79,15 @@ public class ApiPhotoControllerTest {
     @Test
     @WithUserDetails(value = "user1")
     public void testSwapPhoto() throws Exception {
-        List<Photo> userPhotoBefore = photoRepository.findByUser_Username("user1");
+        List<Photo> userPhotoBefore = photoRepository.findByUser_UserId(1001L);
 
         mockMvc.perform(post("/api/user/photo/swap?photoId=63&position=2").secure(true))
                 .andExpect(status().isOk());
 
-        List<Photo> userPhotos = photoRepository.findByUser_Username("user1");
+        List<Photo> userPhotos = photoRepository.findByUser_UserId(1001L);
         assertNotEquals(userPhotos.get(0).getUrl(), userPhotoBefore.get(0).getUrl());
         assertEquals("https://localhost/img/1.jpg", userPhotos.get(0).getUrl());
     }
-
-/*    @Test
-    @WithUserDetails(value = "user5")
-    public void testSwapPhotoWhen3Photo() throws Exception {
-        List<Photo> userPhotoBefore = photoRepository.findByUser_Username("user1");
-
-        mockMvc.perform(post("/api/user/photo/swap?firstId=69&secondId=72").secure(true))
-                .andExpect(status().isOk());
-
-        List<Photo> userPhotos = photoRepository.findByUser_Username("user5");
-        assertNotEquals(userPhotos.get(0).getUrl(), userPhotoBefore.get(0).getUrl());
-        assertEquals("https://localhost/img/default3.jpg", userPhotos.get(0).getUrl());
-    }*/
 
     @Test
     @WithUserDetails(value = "user2")

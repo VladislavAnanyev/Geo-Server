@@ -37,7 +37,6 @@ public class PaymentServices {
     }
 
     public void saveStartOrder(Order order) {
-
         orderRepository.save(order);
     }
 
@@ -45,15 +44,12 @@ public class PaymentServices {
         String mySha = notification_type + "&" + operation_id + "&" + amount + "&" + currency + "&" +
                 datetime + "&" + sender + "&" + codepro + "&" + notification_secret + "&" + label;
 
-        //System.out.println(mySha);
-
         MessageDigest mDigest = MessageDigest.getInstance("SHA1");
         byte[] result = mDigest.digest(mySha.getBytes());
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < result.length; i++) {
             sb.append(Integer.toString((result[i] & 0xff) + 0x100, 16).substring(1));
         }
-
 
         if (sb.toString().equals(sha1_hash)) {
             System.out.println("Пришло уведомление");
@@ -71,7 +67,7 @@ public class PaymentServices {
             order.setOrder_id(Integer.valueOf(label));
 
             order = saveFinalOrder(order);
-            userService.updateBalance(order.getCoins(), order.getUser().getUsername());
+            userService.updateBalance(order.getCoins(), order.getUser().getUserId());
 
         } else {
             System.out.println("Неправильный хэш");

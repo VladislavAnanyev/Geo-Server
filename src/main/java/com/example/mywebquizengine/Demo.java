@@ -1,17 +1,12 @@
 package com.example.mywebquizengine;
 
-import com.example.mywebquizengine.model.userinfo.Photo;
-import com.example.mywebquizengine.model.userinfo.User;
 import com.example.mywebquizengine.repos.UserRepository;
-import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
-import java.util.List;
-
 
 
 @Component

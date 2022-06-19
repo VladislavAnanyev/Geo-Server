@@ -1,13 +1,13 @@
 package com.example.mywebquizengine.service;
 
-import com.example.mywebquizengine.model.userinfo.User;
-import com.example.mywebquizengine.model.geo.Geolocation;
-import com.example.mywebquizengine.model.geo.Meeting;
-import com.example.mywebquizengine.model.projection.GeolocationView;
-import com.example.mywebquizengine.model.projection.MeetingView;
-import com.example.mywebquizengine.model.projection.MeetingViewCustomQuery;
+import com.example.mywebquizengine.model.geo.domain.Geolocation;
+import com.example.mywebquizengine.model.geo.domain.Meeting;
+import com.example.mywebquizengine.model.geo.dto.output.GeolocationView;
+import com.example.mywebquizengine.model.geo.dto.output.MeetingView;
+import com.example.mywebquizengine.model.geo.dto.output.MeetingViewCustomQuery;
 import com.example.mywebquizengine.model.rabbit.MeetingType;
 import com.example.mywebquizengine.model.rabbit.RabbitMessage;
+import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.repos.GeolocationRepository;
 import com.example.mywebquizengine.repos.MeetingRepository;
 import com.example.mywebquizengine.service.utils.ProjectionUtil;
@@ -19,7 +19,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
@@ -30,12 +29,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.*;
 
 @Service
 public class GeoService {
@@ -55,18 +50,21 @@ public class GeoService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public ArrayList<MeetingViewCustomQuery> getMyMeetings(String username, String date) {
+    public ArrayList<MeetingViewCustomQuery> getMyMeetings(Long userId, String date) {
         if (date == null) {
             Calendar calendar = new GregorianCalendar();
             Timestamp timestamp = Timestamp.from(calendar.toInstant());
 
             date = timestamp.toString().substring(0, 10);
         }
-        return (ArrayList<MeetingViewCustomQuery>) meetingRepository.getMyMeetings(username, date);
+        return (ArrayList<MeetingViewCustomQuery>) meetingRepository.getMyMeetings(userId, date);
     }
 
-    public void sendGeolocation(String username, Geolocation geolocation) throws JsonProcessingException, NoSuchAlgorithmException {
-        geolocation.setUser(userService.loadUserByUsername(username));
+    public void sendGeolocation(Long userId, GeolocationModel geolocationModel) throws JsonProcessingException {
+        Geolocation geolocation = new Geolocation();
+        geolocation.setUser(userService.loadUserByUserId(userId));
+        geolocation.setLat(geolocationModel.getLat());
+        geolocation.setLng(geolocationModel.getLng());
 
         String time = "";
         Timestamp timestamp;
@@ -74,30 +72,30 @@ public class GeoService {
             timestamp = Timestamp.from(new GregorianCalendar().toInstant());
             geolocation.setTime(timestamp);
             time = timestamp.toString();
-            System.out.println(time);
         } else {
             timestamp = Timestamp.from(geolocation.getTime().toInstant());
             time = timestamp.toString();
         }
 
         geolocationRepository.save(geolocation);
-
-        ArrayList<Geolocation> peopleNearMe = findInSquare(username, geolocation, "20", time);
+        ArrayList<Geolocation> peopleNearMe = findInSquare(userId, geolocation, "20", time);
 
         if (peopleNearMe.size() > 0) {
 
-            for (int i = 0; i < peopleNearMe.size(); i++) {
+            for (Geolocation value : peopleNearMe) {
 
-                if (meetingRepository.
-                        getMeetings(geolocation.getUser().getUsername(),
-                                peopleNearMe.get(i).getUser().getUsername(), time.substring(0, 10))
-                        .size() == 0) {
+                List<Meeting> meetings = meetingRepository.getMeetings(geolocation.getUser().getUserId(),
+                        value.getUser().getUserId(),
+                        time.substring(0, 10)
+                );
 
-                    if (!username.equals(peopleNearMe.get(i).getUser().getUsername())) {
+                if (meetings.size() == 0) {
+
+                    if (!userId.equals(value.getUser().getUserId())) {
 
                         Meeting meeting = new Meeting();
                         meeting.setFirstUser(geolocation.getUser());
-                        meeting.setSecondUser(peopleNearMe.get(i).getUser());
+                        meeting.setSecondUser(value.getUser());
                         meeting.setLat(geolocation.getLat());
                         meeting.setLng(geolocation.getLng());
                         meeting.setTime(timestamp);
@@ -126,7 +124,7 @@ public class GeoService {
                         User initialFirstUser = meeting.getFirstUser();
                         User initialSecondUser = meeting.getSecondUser();
 
-                        String firstUserExchangeName = RabbitUtil.getExchangeName(initialFirstUser.getUsername());
+                        String firstUserExchangeName = RabbitUtil.getExchangeName(initialFirstUser.getUserId());
 
                         rabbitTemplate.convertAndSend(firstUserExchangeName, "",
                                 JSONValue.parse(objectMapper.writeValueAsString(rabbitMessageForFirstUser)));
@@ -145,7 +143,7 @@ public class GeoService {
                         rabbitMessageForSecondUser.setPayload(meetingViewForSecondUser);
 
 
-                        String secondUserExchangeName = RabbitUtil.getExchangeName(initialSecondUser.getUsername());
+                        String secondUserExchangeName = RabbitUtil.getExchangeName(initialSecondUser.getUserId());
 
                         rabbitTemplate.convertAndSend(secondUserExchangeName, "",
                                 JSONValue.parse(objectMapper.writeValueAsString(rabbitMessageForSecondUser)));
@@ -156,7 +154,7 @@ public class GeoService {
         }
     }
 
-    public void loadGeolocationHistory(MultipartFile file, String username) {
+    public void loadGeolocationHistory(MultipartFile file, Long userId) {
 
         try {
 
@@ -186,7 +184,13 @@ public class GeoService {
                 Example<Geolocation> example = Example.of(geolocation);
 
                 if (!geolocationRepository.exists(example)) {
-                    sendGeolocation(username, geolocation);
+
+                    GeolocationModel geolocationModel = new GeolocationModel();
+                    geolocationModel.setLat(geolocation.getLat());
+                    geolocationModel.setLng(geolocationModel.getLng());
+                    geolocationModel.setTime(geolocation.getTime());
+
+                    sendGeolocation(userId, geolocationModel);
                 }
 
 
@@ -207,7 +211,7 @@ public class GeoService {
         return degrees * Math.PI / 180;
     }
 
-    public ArrayList<Geolocation> findInSquare(String authUser, Geolocation myGeolocation, String size, String time) {
+    public ArrayList<Geolocation> findInSquare(Long authUserId, Geolocation myGeolocation, String size, String time) {
 
         int DISTANCE = Integer.parseInt(size); // Интересующее нас расстояние
 
@@ -220,16 +224,14 @@ public class GeoService {
         double aroundLat = DISTANCE / deltaLat; // Вычисляем диапазон координат по широте
         double aroundLng = DISTANCE / deltaLon; // Вычисляем диапазон координат по долготе
 
-        //System.out.println(aroundLat + " " + aroundLng);
-
         return (ArrayList<Geolocation>) geolocationRepository
                 .findInSquare(myLatitude, myLongitude, aroundLat, aroundLng, userService
-                        .loadUserByUsernameProxy(authUser)
-                        .getUsername(), time);
+                        .loadUserByUserIdProxy(authUserId)
+                        .getUserId(), time);
     }
 
-    public ArrayList<GeolocationView> getAllGeo(String username) {
-        return (ArrayList<GeolocationView>) geolocationRepository.getAll(username);
+    public ArrayList<GeolocationView> getAllGeo(Long userId) {
+        return (ArrayList<GeolocationView>) geolocationRepository.getAll(userId);
     }
 
 

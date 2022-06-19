@@ -1,6 +1,7 @@
 package com.example.mywebquizengine.controller.api;
 
 import com.example.mywebquizengine.repos.RequestRepository;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles({"test"})
-@TestPropertySource(locations = "classpath:application-test.properties")
 public class ApiRequestControllerTest {
 
     @Autowired
@@ -37,9 +37,11 @@ public class ApiRequestControllerTest {
     @WithUserDetails(value = "user3")
     public void testSendRequest() throws Exception {
 
+        requestRepository.deleteAll();
+
         String json = """
                 {
-                    "toUsername": "user4",
+                    "toUserId": 1004,
                     "meetingId": 993,
                     "messageContent": "Привет"
                 }
@@ -65,7 +67,7 @@ public class ApiRequestControllerTest {
 
         String json = """
                 {
-                    "toUsername": "user4",
+                    "toUserId": 1004,
                     "meetingId": 990
                 }
                 """;
@@ -92,7 +94,7 @@ public class ApiRequestControllerTest {
 
         String json = """
                 {
-                    "toUsername": "user5",
+                    "toUserId": 1005,
                     "meetingId": 992,
                     "messageContent": "Привет"
                 }

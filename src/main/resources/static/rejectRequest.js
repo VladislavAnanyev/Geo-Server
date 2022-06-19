@@ -1,7 +1,7 @@
 function rejectRequest(id) {
     let xhr = new XMLHttpRequest();
     let json = {
-        id: id
+        requestId: id
     }
     console.log(username)
     xhr.open('POST', '/rejectRequest');
