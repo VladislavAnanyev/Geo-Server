@@ -6,7 +6,7 @@ import com.example.mywebquizengine.model.geo.dto.output.GeolocationView;
 import com.example.mywebquizengine.model.geo.dto.output.MeetingView;
 import com.example.mywebquizengine.model.geo.dto.output.MeetingViewCustomQuery;
 import com.example.mywebquizengine.model.rabbit.MeetingType;
-import com.example.mywebquizengine.model.rabbit.RabbitMessage;
+import com.example.mywebquizengine.model.rabbit.RealTimeEvent;
 import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.repos.GeolocationRepository;
 import com.example.mywebquizengine.repos.MeetingRepository;
@@ -43,6 +43,9 @@ public class GeoService {
 
     @Autowired
     private GeolocationRepository geolocationRepository;
+
+    @Autowired
+    private ProjectionUtil projectionUtil;
 
     @Autowired
     private UserService userService;
@@ -110,15 +113,15 @@ public class GeoService {
                          * одной модели, путем смены местами первого и второго пользователя
                          * */
 
-                        MeetingView meetingViewForFirstUser = ProjectionUtil
+                        MeetingView meetingViewForFirstUser = projectionUtil
                                 .parseToProjection(
                                         meeting,
                                         MeetingView.class
                                 );
 
-                        RabbitMessage<MeetingView> rabbitMessageForFirstUser = new RabbitMessage<>();
-                        rabbitMessageForFirstUser.setType(MeetingType.MEETING);
-                        rabbitMessageForFirstUser.setPayload(meetingViewForFirstUser);
+                        RealTimeEvent<MeetingView> realTimeEventForFirstUser = new RealTimeEvent<>();
+                        realTimeEventForFirstUser.setType(MeetingType.MEETING);
+                        realTimeEventForFirstUser.setPayload(meetingViewForFirstUser);
 
 
                         User initialFirstUser = meeting.getFirstUser();
@@ -127,26 +130,26 @@ public class GeoService {
                         String firstUserExchangeName = RabbitUtil.getExchangeName(initialFirstUser.getUserId());
 
                         rabbitTemplate.convertAndSend(firstUserExchangeName, "",
-                                JSONValue.parse(objectMapper.writeValueAsString(rabbitMessageForFirstUser)));
+                                JSONValue.parse(objectMapper.writeValueAsString(realTimeEventForFirstUser)));
 
                         meeting.setFirstUser(meeting.getSecondUser());
                         meeting.setSecondUser(initialFirstUser);
 
-                        MeetingView meetingViewForSecondUser = ProjectionUtil
+                        MeetingView meetingViewForSecondUser = projectionUtil
                                 .parseToProjection(
                                         meeting,
                                         MeetingView.class
                                 );
 
-                        RabbitMessage<MeetingView> rabbitMessageForSecondUser = new RabbitMessage<>();
-                        rabbitMessageForSecondUser.setType(MeetingType.MEETING);
-                        rabbitMessageForSecondUser.setPayload(meetingViewForSecondUser);
+                        RealTimeEvent<MeetingView> realTimeEventForSecondUser = new RealTimeEvent<>();
+                        realTimeEventForSecondUser.setType(MeetingType.MEETING);
+                        realTimeEventForSecondUser.setPayload(meetingViewForSecondUser);
 
 
                         String secondUserExchangeName = RabbitUtil.getExchangeName(initialSecondUser.getUserId());
 
                         rabbitTemplate.convertAndSend(secondUserExchangeName, "",
-                                JSONValue.parse(objectMapper.writeValueAsString(rabbitMessageForSecondUser)));
+                                JSONValue.parse(objectMapper.writeValueAsString(realTimeEventForSecondUser)));
 
                     }
                 }

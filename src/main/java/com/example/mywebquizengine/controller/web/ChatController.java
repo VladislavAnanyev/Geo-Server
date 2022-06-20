@@ -1,9 +1,9 @@
 package com.example.mywebquizengine.controller.web;
 
 
-import com.example.mywebquizengine.model.chat.domain.Dialog;
 import com.example.mywebquizengine.model.chat.dto.output.DialogView;
 import com.example.mywebquizengine.model.userinfo.domain.User;
+import com.example.mywebquizengine.service.CreateGroupModelMapper;
 import com.example.mywebquizengine.service.MessageService;
 import com.example.mywebquizengine.service.UserService;
 import com.example.mywebquizengine.service.utils.RabbitUtil;
@@ -35,7 +35,7 @@ public class ChatController {
     public String chat(Model model, @AuthenticationPrincipal User authUser) {
 
         model.addAttribute("myUsername", authUser.getUserId());
-        model.addAttribute("lastDialogs", messageService.getDialogsForApi(authUser.getUserId()));
+        model.addAttribute("lastDialogs", messageService.getDialogs(authUser.getUserId()));
         model.addAttribute("userList", userService.findMyFriends(authUser.getUserId()));
         return "chat";
     }
@@ -61,18 +61,14 @@ public class ChatController {
                                @RequestParam(defaultValue = "timestamp") String sortBy,
                                @AuthenticationPrincipal User authUser) {
 
-        //DialogView dialog = messageService.getDialogWithPaging(dialog_id, page, pageSize, sortBy);
         DialogView dialog = messageService.getMessages(Long.valueOf(dialog_id), page, pageSize, sortBy, authUser.getUserId());
 
-        model.addAttribute("lastDialogs", messageService.getDialogsForApi(authUser.getUserId()));
+        model.addAttribute("lastDialogs", messageService.getDialogs(authUser.getUserId()));
         model.addAttribute("dialog", dialog.getDialogId());
         model.addAttribute("messages", dialog.getMessages());
         model.addAttribute("dialogObj", dialog);
         model.addAttribute("userList", userService.findMyFriends(authUser.getUserId()));
-
         return "chat";
-
-
     }
 
     @GetMapping(path = "/chat/nextPages")
@@ -88,8 +84,8 @@ public class ChatController {
 
     @PostMapping(path = "/createGroup")
     @ResponseBody
-    public Long createGroup(@Valid @RequestBody Dialog newDialog, @AuthenticationPrincipal User authUser) {
-        return messageService.createGroup(newDialog, authUser.getUserId());
+    public Long createGroup(@Valid @RequestBody CreateGroupRequest request, @AuthenticationPrincipal User authUser) {
+        return messageService.createGroup(CreateGroupModelMapper.map(request, authUser.getUserId()));
     }
 
     @GetMapping(path = "/error")

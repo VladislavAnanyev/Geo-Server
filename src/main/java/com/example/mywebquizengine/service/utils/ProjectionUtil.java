@@ -1,20 +1,25 @@
 package com.example.mywebquizengine.service.utils;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 public class ProjectionUtil {
-    public static <T> T parseToProjection(Object obj, Class<T> clazz) {
-        ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
+
+    @Autowired
+    private SpelAwareProxyProjectionFactory pf;
+
+    public <T> T parseToProjection(Object obj, Class<T> clazz) {
         return pf.createProjection(clazz, obj);
     }
 
-    public static <T> List<T> parseToProjectionList(List obj, Class<T> clazz) {
+    public <T> List<T> parseToProjectionList(List obj, Class<T> clazz) {
         List<T> messageViews = new ArrayList<>();
-        ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
 
         for (Object o : obj) {
             messageViews.add(pf.createProjection(clazz, o));

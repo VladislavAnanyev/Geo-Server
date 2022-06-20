@@ -10,24 +10,17 @@ import com.example.mywebquizengine.model.chat.dto.output.LastDialog;
 import com.example.mywebquizengine.model.chat.dto.output.MessageView;
 import com.example.mywebquizengine.model.chat.dto.output.TypingView;
 import com.example.mywebquizengine.model.rabbit.MessageType;
-import com.example.mywebquizengine.model.rabbit.RabbitMessage;
 import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.repos.DialogRepository;
 import com.example.mywebquizengine.repos.MessageRepository;
+import com.example.mywebquizengine.service.model.SendMessageModel;
 import com.example.mywebquizengine.service.utils.ProjectionUtil;
-import com.example.mywebquizengine.service.utils.RabbitUtil;
-import org.springframework.amqp.core.MessagePostProcessor;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
@@ -38,256 +31,185 @@ import java.util.*;
 @Validated
 public class MessageService {
 
-    @Autowired
-    private MessageRepository messageRepository;
-    @Autowired
-    private DialogRepository dialogRepository;
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
+    private final MessageRepository messageRepository;
+    private final DialogRepository dialogRepository;
+    private final UserService userService;
+    private final ProjectionUtil projectionUtil;
+    private final RealTimeEventSender realTimeEventSender;
+    private final MessageFactory messageFactory;
     @Value("${hostname}")
     private String hostname;
 
-    public Long createDialog(Long userId, Long authUserId) {
-
-        if (!authUserId.equals(userId)) {
-            Long dialog_id = dialogRepository.findDialogByName(userId, authUserId);
-
-            if (dialog_id == null) {
-                Dialog dialog = new Dialog();
-
-                dialog.addUser(userService.loadUserByUserId(userId));
-                dialog.addUser(userService.loadUserByUserId(authUserId));
-
-                dialogRepository.save(dialog);
-                return dialog.getDialogId();
-            } else {
-                return dialog_id;
-            }
-        } else throw new IllegalArgumentException("You can not create dialog with yourself");
-
+    public MessageService(MessageRepository messageRepository, DialogRepository dialogRepository,
+                          UserService userService, ProjectionUtil projectionUtil, RealTimeEventSender sender,
+                          MessageFactory messageFactory) {
+        this.messageRepository = messageRepository;
+        this.dialogRepository = dialogRepository;
+        this.userService = userService;
+        this.projectionUtil = projectionUtil;
+        this.realTimeEventSender = sender;
+        this.messageFactory = messageFactory;
     }
 
-    public List<LastDialog> getDialogsForApi(Long userId) {
-        return messageRepository.getDialogsForApi(userId);
+    public Long createDialog(Long companionUserId, Long authUserId) {
+        if (authUserId.equals(companionUserId)) {
+            throw new IllegalArgumentException("You can not create dialog with yourself");
+        }
+
+        Long dialogId = dialogRepository.findDialogBetweenUsers(companionUserId, authUserId);
+        if (dialogId != null) {
+            return dialogId;
+        } else {
+            Dialog dialog = new Dialog();
+            dialog.addUser(userService.loadUserByUserId(companionUserId));
+            dialog.addUser(userService.loadUserByUserId(authUserId));
+            dialogRepository.save(dialog);
+            return dialog.getDialogId();
+        }
+    }
+
+    public List<LastDialog> getDialogs(Long userId) {
+        return messageRepository.getLastDialogs(userId);
     }
 
     @Transactional
-    public void deleteMessage(Long id, Long userId) {
-        Optional<Message> optionalMessage = messageRepository.findById(id);
-        if (optionalMessage.isPresent()) {
-            Message message = optionalMessage.get();
-            if (message.getSender().getUserId().equals(userId)) {
-                message.setStatus(MessageStatus.DELETED);
-
-                MessageView messageDto = ProjectionUtil.parseToProjection(message, MessageView.class);
-
-                RabbitMessage<MessageView> rabbitMessage = new RabbitMessage<>();
-                rabbitMessage.setType(MessageType.DELETE_MESSAGE);
-                rabbitMessage.setPayload(messageDto);
-
-                for (User user : message.getDialog().getUsers()) {
-                    String exchangeName = RabbitUtil.getExchangeName(user.getUserId());
-                    rabbitTemplate.convertAndSend(exchangeName, "", rabbitMessage);
-                }
-
-            } else {
-                throw new SecurityException("You are not author of this message");
-            }
-        } else {
-            throw new EntityNotFoundException("Message with specified id not found");
+    public void deleteMessage(Long messageId, Long userId) {
+        Message message = findMessageById(messageId);
+        if (!isCanModifyMessage(message.getSender().getUserId(), userId)) {
+            throw new SecurityException("Вы не можете удалить это сообщение");
         }
+        message.setStatus(MessageStatus.DELETED);
+        MessageView messageDto = projectionUtil.parseToProjection(message, MessageView.class);
+        realTimeEventSender.send(messageDto, message.getDialog().getUsers(), MessageType.DELETE_MESSAGE);
     }
 
     @Transactional
     public DialogView getMessages(Long dialogId, Integer page, Integer pageSize, String sortBy, Long userId) {
-        Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
-        Optional<Dialog> optionalDialog = dialogRepository.findById(dialogId);
-        if (optionalDialog.isPresent()) {
-            Dialog dialog = optionalDialog.get();
-            dialog.setPaging(paging);
-            if (dialog.getUsers().stream().anyMatch(o -> o.getUserId().equals(userId))) {
-                return dialogRepository.findAllDialogByDialogId(dialogId);
-            } else throw new SecurityException("You are not contains in this dialog");
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        Dialog dialog = findDialogById(dialogId);
+
+        if (!isUserContainsInDialog(dialog, userId)) {
+            throw new SecurityException("Вы не состоите в этом диалоге");
         }
-    }
 
-    @Transactional
-    public void editMessage(Message newMessage, Long userId) {
-        Optional<Message> optionalMessage = messageRepository.findById(newMessage.getMessageId());
-        if (optionalMessage.isPresent()) {
-            Message message = optionalMessage.get();
-            if (message.getSender().getUserId().equals(userId)) {
-                message.setContent(newMessage.getContent());
-                message.setStatus(MessageStatus.EDIT);
-
-                MessageView messageDto = ProjectionUtil.parseToProjection(message, MessageView.class);
-
-                RabbitMessage<MessageView> rabbitMessage = new RabbitMessage<>();
-                rabbitMessage.setType(MessageType.EDIT_MESSAGE);
-                rabbitMessage.setPayload(messageDto);
-
-                for (User user : message.getDialog().getUsers()) {
-
-                    String exchangeName = RabbitUtil.getExchangeName(user.getUserId());
-
-                    rabbitTemplate.convertAndSend(exchangeName, "", rabbitMessage);
-                }
-            } else {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-            }
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-    }
-
-    @Transactional
-    public void sendMessage(@Valid Message message) {
-
-        Optional<Dialog> optionalDialog = dialogRepository.findById(message.getDialog().getDialogId());
-
-        if (optionalDialog.isPresent()) {
-
-            Dialog dialog = optionalDialog.get();
-
-            if (dialog.getUsers().stream().anyMatch(user -> user.getUserId()
-                    .equals(message.getSender().getUserId()))) {
-
-                User sender = userService.loadUserByUserIdProxy(message.getSender().getUserId());
-
-                message.setSender(sender);
-                message.setDialog(dialog);
-                message.setTimestamp(new Date());
-                message.setStatus(MessageStatus.DELIVERED);
-                messageRepository.save(message);
-
-                MessageView messageDto = ProjectionUtil.parseToProjection(message, MessageView.class);
-
-                RabbitMessage<MessageView> rabbitMessage = new RabbitMessage<>();
-                rabbitMessage.setType(MessageType.MESSAGE);
-                rabbitMessage.setPayload(messageDto);
-
-                for (User user : dialog.getUsers()) {
-
-                    String exchangeName = RabbitUtil.getExchangeName(user.getUserId());
-
-                    rabbitTemplate.convertAndSend(exchangeName, "", rabbitMessage);
-                }
-            } else throw new SecurityException("You are not contains in this dialog");
-
-        } else throw new EntityNotFoundException("Dialog not found");
-
-    }
-
-
-    public Long createGroup(Dialog newDialog, Long userId) {
-
-        User authUser = new User();
-        authUser.setUserId(userId);
-        newDialog.addUser(authUser);
-
-        if (newDialog.getUsers().stream().anyMatch(o -> o.getUserId().equals(userId))) {
-
-            Dialog dialog = new Dialog();
-
-            newDialog.getUsers().forEach(user -> dialog.addUser(userService.loadUserByUserId(user.getUserId())));
-
-            Message message = new Message();
-            message.setContent("Группа создана");
-            message.setSender(userService.loadUserByUserId(userId));
-            message.setStatus(MessageStatus.DELIVERED);
-            message.setTimestamp(new Date());
-            message.setDialog(dialog);
-
-            dialog.setMessages(new ArrayList<>());
-            dialog.getMessages().add(message);
-
-
-            if (newDialog.getName() == null || newDialog.getName().equals("")) {
-                dialog.setName("Конференция");
-            } else {
-                dialog.setName(newDialog.getName());
-            }
-
-            //group.setCreator(userService.getAuthUser(SecurityContextHolder.getContext().getAuthentication()));
-            dialog.setImage(hostname + "/img/default.jpg");
-            dialogRepository.save(dialog);
-
-            MessageView messageDto = ProjectionUtil.parseToProjection(message, MessageView.class);
-
-            RabbitMessage<MessageView> rabbitMessage = new RabbitMessage<>();
-            rabbitMessage.setType(MessageType.MESSAGE);
-            rabbitMessage.setPayload(messageDto);
-            for (User user : dialog.getUsers()) {
-                String exchangeName = RabbitUtil.getExchangeName(user.getUserId());
-
-                rabbitTemplate.convertAndSend(exchangeName, "", rabbitMessage);
-            }
-
-            return dialog.getDialogId();
-
-        } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-    }
-
-
-    // протестить
-    @Transactional
-    public void typingMessage(@Valid Typing typing) {
-
-        Optional<Dialog> dialog = dialogRepository.findById(typing.getDialogId());
-
-        if (dialog.isPresent()) {
-            Dialog existDialog = dialog.get();
-
-            User authUser = userService.loadUserByUserId(typing.getUser().getUserId());
-            typing.setUser(authUser);
-
-            TypingView typingView = ProjectionUtil.parseToProjection(typing, TypingView.class);
-
-            RabbitMessage<TypingView> rabbitMessage = new RabbitMessage<>();
-            rabbitMessage.setType(MessageType.TYPING);
-            rabbitMessage.setPayload(typingView);
-
-            final MessagePostProcessor messagePostProcessor = message -> {
-                message.getMessageProperties().setExpiration(String.valueOf(0));
-                message.getMessageProperties().setPriority(0);
-                return message;
-            };
-
-            for (User user : existDialog.getUsers()) {
-
-                if (!typing.getUser().getUserId().equals(user.getUserId())) {
-                    String exchangeName = RabbitUtil.getExchangeName(user.getUserId());
-                    rabbitTemplate.convertAndSend(exchangeName, "", rabbitMessage, messagePostProcessor);
-
-                }
-
-            }
-        } else throw new EntityNotFoundException("Dialog not found");
-
-
-    }
-
-    @Transactional
-    public List<MessageView> getListOfMessages(Long dialogId, Pageable paging) {
-
-        String authName = SecurityContextHolder.getContext().getAuthentication().getName();
-
+        Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
         List<Message> messages = messageRepository
-                .findAllByDialog_DialogIdAndStatusNot(dialogId, MessageStatus.DELETED, paging)
-                .getContent();
+                .findAllByDialog_DialogIdAndStatusNot(
+                        dialogId,
+                        MessageStatus.DELETED,
+                        paging
+                ).getContent();
 
         for (Message message : messages) {
-            if (message.getStatus().equals(MessageStatus.DELIVERED)
-                    && !message.getSender().getUserId().equals(authName)) {
+            if (message.getStatus().equals(MessageStatus.DELIVERED) && !message.getSender().getUserId().equals(userId)) {
                 message.setStatus(MessageStatus.RECEIVED);
             }
         }
 
-        List<MessageView> messageViews = ProjectionUtil.parseToProjectionList(messages, MessageView.class);
-        Collections.reverse(messageViews);
+        List<Message> result = new ArrayList<>(messages);
+        Collections.reverse(result);
+        dialog.setMessages(result);
+        return projectionUtil.parseToProjection(dialog, DialogView.class);
+    }
 
-        return messageViews;
+    @Transactional
+    public void editMessage(Long messageId, String content, Long authUserId) {
+        Message message = findMessageById(messageId);
+
+        if (!isCanModifyMessage(message.getSender().getUserId(), authUserId)) {
+            throw new SecurityException("Вы не можете изменить это сообщение");
+        }
+
+        message.setContent(content);
+        message.setStatus(MessageStatus.EDIT);
+
+        MessageView messageDto = projectionUtil.parseToProjection(message, MessageView.class);
+        realTimeEventSender.send(messageDto, message.getDialog().getUsers(), MessageType.EDIT_MESSAGE);
+    }
+
+    @Transactional
+    public void sendMessage(@Valid SendMessageModel sendMessageModel) {
+        Dialog dialog = findDialogById(sendMessageModel.getDialogId());
+        if (!isUserContainsInDialog(dialog, sendMessageModel.getSenderId())) {
+            throw new SecurityException("Вы не состоите в этом диалоге");
+        }
+        Message message = messageFactory.create(
+                sendMessageModel.getContent(), sendMessageModel.getUniqueCode(),
+                sendMessageModel.getSenderId(), dialog
+        );
+        messageRepository.save(message);
+        MessageView messageDto = projectionUtil.parseToProjection(message, MessageView.class);
+        realTimeEventSender.send(messageDto, dialog.getUsers(), MessageType.MESSAGE);
+    }
+
+    public Long createGroup(CreateGroupModel model) {
+        Dialog dialog = new Dialog();
+        model.getUsers().forEach(userId -> dialog.addUser(userService.loadUserByUserId(userId)));
+
+        if (!isUserContainsInDialog(dialog, model.getAuthUserId())) {
+            throw new SecurityException("Вы не состоите в этом диалоге");
+        }
+
+        if (model.getName() == null || model.getName().equals("")) {
+            dialog.setName("Конференция");
+        } else {
+            dialog.setName(model.getName());
+        }
+
+        Message message = messageFactory.create("Группа создана", null,
+                model.getAuthUserId(),
+                dialog
+        );
+        dialog.setMessages(Collections.singletonList(message));
+        dialog.setImage(hostname + "/img/default.jpg");
+        dialogRepository.save(dialog);
+
+        MessageView messageDto = projectionUtil.parseToProjection(message, MessageView.class);
+        realTimeEventSender.send(messageDto, dialog.getUsers(), MessageType.MESSAGE);
+        return dialog.getDialogId();
+    }
+
+    @Transactional
+    public void typingMessage(Long dialogId, Long userId) {
+        Dialog dialog = findDialogById(dialogId);
+        User authUser = userService.loadUserByUserId(userId);
+
+        if (!isUserContainsInDialog(dialog, userId)) {
+            throw new SecurityException("Вы не состоите в этом диалоге");
+        }
+
+        Typing typing = new Typing();
+        typing.setUser(authUser);
+        typing.setDialogId(dialogId);
+        TypingView typingView = projectionUtil.parseToProjection(typing, TypingView.class);
+
+        Set<User> users = new HashSet<>(dialog.getUsers());
+        users.remove(authUser);
+        realTimeEventSender.send(typingView, users, MessageType.TYPING);
+    }
+
+    private Dialog findDialogById(Long dialogId) {
+        Optional<Dialog> dialog = dialogRepository.findById(dialogId);
+        if (dialog.isPresent()) {
+            return dialog.get();
+        } else {
+            throw new EntityNotFoundException("Dialog not found");
+        }
+    }
+
+    private Message findMessageById(Long messageId) {
+        Optional<Message> message = messageRepository.findById(messageId);
+        if (message.isPresent()) {
+            return message.get();
+        } else {
+            throw new EntityNotFoundException("Message not found");
+        }
+    }
+
+    private boolean isCanModifyMessage(Long senderId, Long userId) {
+        return senderId.equals(userId);
+    }
+
+    private boolean isUserContainsInDialog(Dialog dialog, Long userId) {
+        return dialog.getUsers().stream().anyMatch(user -> user.getUserId().equals(userId));
     }
 }

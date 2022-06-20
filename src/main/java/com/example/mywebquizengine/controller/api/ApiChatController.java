@@ -31,16 +31,9 @@ public class ApiChatController {
     }
 
     @PutMapping(path = "/message/{id}")
-    public void editMessage(@PathVariable Long id,
-                            @RequestBody EditMessageRequest editMessageRequest,
-                            @ApiIgnore @AuthenticationPrincipal User authUser
-    ) throws JsonProcessingException {
-
-        Message message = new Message();
-        message.setContent(editMessageRequest.getContent());
-        message.setMessageId(id);
-
-        messageService.editMessage(message, authUser.getUserId());
+    public void editMessage(@PathVariable Long id, @RequestBody EditMessageRequest editMessageRequest,
+                            @ApiIgnore @AuthenticationPrincipal User authUser)  {
+        messageService.editMessage(id, editMessageRequest.getContent(), authUser.getUserId());
     }
 
     @GetMapping(path = "/dialog/{dialogId}")
@@ -54,7 +47,7 @@ public class ApiChatController {
 
     @GetMapping(path = "/dialogs")
     public List<LastDialog> getDialogs(@ApiIgnore @AuthenticationPrincipal User authUser) {
-        return messageService.getDialogsForApi(authUser.getUserId());
+        return messageService.getDialogs(authUser.getUserId());
     }
 
     @PostMapping(path = "/dialog/create")

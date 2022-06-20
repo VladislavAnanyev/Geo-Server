@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.model.rabbit;
 
-public class RabbitMessage<T> {
+public class RealTimeEvent<T> {
 
     private Type type;
 

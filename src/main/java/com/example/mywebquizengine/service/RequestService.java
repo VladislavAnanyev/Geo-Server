@@ -7,7 +7,7 @@ import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.model.chat.domain.Dialog;
 import com.example.mywebquizengine.model.chat.domain.MessageStatus;
 import com.example.mywebquizengine.model.request.dto.output.RequestView;
-import com.example.mywebquizengine.model.rabbit.RabbitMessage;
+import com.example.mywebquizengine.model.rabbit.RealTimeEvent;
 import com.example.mywebquizengine.model.rabbit.RequestType;
 import com.example.mywebquizengine.repos.RequestRepository;
 import com.example.mywebquizengine.service.utils.ProjectionUtil;
@@ -45,6 +45,9 @@ public class RequestService {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private ProjectionUtil projectionUtil;
 
     private Optional<Request> isPresentMyRequestByMeetingIdAndToUserId(Long meetingId, Long toUserId) {
         return requestRepository.findAllByMeetingMeetingIdAndStatusAndSenderUserId(meetingId, "PENDING", toUserId);
@@ -95,16 +98,16 @@ public class RequestService {
 
             requestRepository.save(request);
 
-            RequestView requestView = ProjectionUtil.parseToProjection(request, RequestView.class);
+            RequestView requestView = projectionUtil.parseToProjection(request, RequestView.class);
 
-            RabbitMessage<RequestView> rabbitMessage = new RabbitMessage<>();
-            rabbitMessage.setType(RequestType.REQUEST);
-            rabbitMessage.setPayload(requestView);
+            RealTimeEvent<RequestView> realTimeEvent = new RealTimeEvent<>();
+            realTimeEvent.setType(RequestType.REQUEST);
+            realTimeEvent.setPayload(requestView);
 
             String exchangeName = RabbitUtil.getExchangeName(request.getTo().getUserId());
 
             rabbitTemplate.convertAndSend(exchangeName, "",
-                    JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
+                    JSONValue.parse(objectMapper.writeValueAsString(realTimeEvent)));
         }
     }
 
@@ -171,21 +174,21 @@ public class RequestService {
         authUser.addFriend(request.getSender());
         requestRepository.save(request);
 
-        UserCommonView toView = ProjectionUtil.parseToProjection(request.getTo(), UserCommonView.class);
+        UserCommonView toView = projectionUtil.parseToProjection(request.getTo(), UserCommonView.class);
 
-        RabbitMessage<UserCommonView> rabbitMessage = new RabbitMessage<>();
-        rabbitMessage.setType(FriendType.NEW_FRIEND);
-        rabbitMessage.setPayload(toView);
+        RealTimeEvent<UserCommonView> realTimeEvent = new RealTimeEvent<>();
+        realTimeEvent.setType(FriendType.NEW_FRIEND);
+        realTimeEvent.setPayload(toView);
 
         String senderExchangeName = RabbitUtil.getExchangeName(request.getSender().getUserId());
         String toExchangeName = RabbitUtil.getExchangeName(request.getTo().getUserId());
         rabbitTemplate.convertAndSend(senderExchangeName, "",
-                JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
+                JSONValue.parse(objectMapper.writeValueAsString(realTimeEvent)));
 
-        UserCommonView senderView = ProjectionUtil.parseToProjection(request.getSender(), UserCommonView.class);
-        rabbitMessage.setPayload(senderView);
+        UserCommonView senderView = projectionUtil.parseToProjection(request.getSender(), UserCommonView.class);
+        realTimeEvent.setPayload(senderView);
         rabbitTemplate.convertAndSend(toExchangeName, "",
-                JSONValue.parse(objectMapper.writeValueAsString(rabbitMessage)));
+                JSONValue.parse(objectMapper.writeValueAsString(realTimeEvent)));
 
         return messageService.createDialog(request.getSender().getUserId(), userId);
     }

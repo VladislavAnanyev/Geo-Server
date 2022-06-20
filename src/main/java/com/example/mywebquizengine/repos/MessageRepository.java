@@ -53,6 +53,6 @@ public interface MessageRepository extends CrudRepository<Message, Long>, Paging
                 )
             ORDER BY MESSAGES.TIMESTAMP DESC;
             """, nativeQuery = true)
-    List<LastDialog> getDialogsForApi(Long userId);
+    List<LastDialog> getLastDialogs(Long userId);
 
 }

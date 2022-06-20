@@ -6,9 +6,10 @@ import com.example.mywebquizengine.model.chat.domain.MessagePhoto;
 import com.example.mywebquizengine.model.chat.dto.input.SendMessageRequest;
 import com.example.mywebquizengine.model.chat.dto.input.Typing;
 import com.example.mywebquizengine.model.rabbit.MessageType;
-import com.example.mywebquizengine.model.rabbit.RabbitMessage;
+import com.example.mywebquizengine.model.rabbit.RealTimeEvent;
 import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.service.FileSystemStorageService;
+import com.example.mywebquizengine.service.model.SendMessageModel;
 import com.example.mywebquizengine.service.utils.JWTUtil;
 import com.example.mywebquizengine.service.MessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,61 +43,45 @@ public class RabbitController {
     @Autowired
     private JWTUtil jwtUtil;
 
-    @Autowired
-    private FileSystemStorageService fileSystemStorageService;
-
+    private Long userId;
 
     @RabbitListener(queues = "incoming-messages", ackMode = "MANUAL")
     public void sendMessageFromAMQPClient(org.springframework.amqp.core.Message messageFromRabbit, Channel channel,
                                           @Header(AmqpHeaders.DELIVERY_TAG) Long tag) throws IOException {
         channel.basicAck(tag, false);
-        Object authorization = messageFromRabbit.getMessageProperties().getHeaders().get("Authorization");
-        if (authorization == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        Object authorizationToken = messageFromRabbit.getMessageProperties().getHeaders().get("Authorization");
+        if (!isAuthenticate(authorizationToken.toString())) {
+            System.out.println("Неаутентифицированный запрос");
+            return;
         }
 
-        String accessKey = authorization.toString();
-        Long userId = jwtUtil.extractUserId(accessKey);
+        RealTimeEvent realTimeEvent = objectMapper.readValue(messageFromRabbit.getBody(), RealTimeEvent.class);
 
-        if (userId != null) {
-            RabbitMessage rabbitMessage = objectMapper.readValue(messageFromRabbit.getBody(), RabbitMessage.class);
-            User user = new User();
-            user.setUserId(userId);
-            if (rabbitMessage.getType().equals(MessageType.MESSAGE)) {
-                SendMessageRequest sendMessageRequest = objectMapper.readValue(objectMapper
-                        .writeValueAsString(rabbitMessage.getPayload()), SendMessageRequest.class);
+        if (realTimeEvent.getType().equals(MessageType.MESSAGE)) {
+            SendMessageRequest sendMessageRequest = objectMapper
+                    .convertValue(
+                            realTimeEvent.getPayload(),
+                            SendMessageRequest.class
+                    );
 
-                Message message = new Message();
-                message.setContent(sendMessageRequest.getContent());
-                message.setSender(user);
-
-                Dialog dialog = new Dialog();
-                dialog.setDialogId(sendMessageRequest.getDialogId());
-                message.setDialog(dialog);
-                message.setUniqueCode(sendMessageRequest.getUniqueCode());
-
-                String photoUrl = sendMessageRequest.getPhotoUrl();
-                if (photoUrl != null) {
-
-                    String filename = photoUrl.substring(photoUrl.lastIndexOf("/") + 1);
-                    Path path = fileSystemStorageService.load(filename);
-                    if (Files.exists(path)) {
-                        MessagePhoto messagePhoto = new MessagePhoto();
-                        messagePhoto.setPhoto_url(sendMessageRequest.getPhotoUrl());
-                        message.setPhotos(Collections.singletonList(messagePhoto));
-                    }
-
-                }
-
-                messageService.sendMessage(message);
-            } else if (rabbitMessage.getType().equals(MessageType.TYPING)) {
-                Typing typing = objectMapper.readValue(objectMapper
-                        .writeValueAsString(rabbitMessage.getPayload()), Typing.class);
-                typing.setUser(user);
-                messageService.typingMessage(typing);
-            } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
+            SendMessageModel sendMessageModel = new SendMessageModel();
+            sendMessageModel.setContent(sendMessageRequest.getContent());
+            sendMessageModel.setDialogId(sendMessageRequest.getDialogId());
+            sendMessageModel.setUniqueCode(sendMessageRequest.getUniqueCode());
+            sendMessageModel.setSenderId(userId);
+            messageService.sendMessage(sendMessageModel);
+        } else if (realTimeEvent.getType().equals(MessageType.TYPING)) {
+            Typing typing = objectMapper.convertValue(realTimeEvent.getPayload(), Typing.class);
+            messageService.typingMessage(typing.getDialogId(), typing.getUser().getUserId());
+        } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
     }
 
+    private boolean isAuthenticate(String token) {
+        if (token == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+        userId = jwtUtil.extractUserId(token);
+        return userId != null;
+    }
 
 }
