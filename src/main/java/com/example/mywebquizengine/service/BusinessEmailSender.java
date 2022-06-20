@@ -40,4 +40,9 @@ public class BusinessEmailSender {
 
         mailSender.send(user.getEmail(), "Смена пароля в " + hostname, mes);
     }
+
+    public void sendCodeForSignInViaPhone(String code, String email) {
+        String message = "Ваш код для входа " + code;
+        mailSender.send(email, "Код для входа в " + hostname, message);
+    }
 }

@@ -226,4 +226,62 @@ public class AuthService implements UserDetailsService {
         String jwt = jwtTokenUtil.generateToken(user);
         return new AuthResult(user.getUserId(), jwt, exchangeName);
     }
+
+    @Transactional
+    public AuthPhoneResponse signUpViaPhone(String phone, String firstName, String lastName) {
+
+        Optional<User> userByUsername = userRepository.findUserByUsername(phone);
+        if (userByUsername.isPresent()) {
+            User user = userByUsername.get();
+            String code = CodeUtil.generateShortCode();
+            user.setPassword(passwordEncoder.encode(code));
+            AuthPhoneResponse authPhoneResponse = new AuthPhoneResponse();
+            authPhoneResponse.setCode(code);
+            return authPhoneResponse;
+        } else {
+            RegistrationModel registrationModel = new RegistrationModel();
+            registrationModel.setUsername(phone);
+            String code = CodeUtil.generateShortCode();
+            registrationModel.setPassword(code);
+            registrationModel.setEmail(phone);
+            registrationModel.setLastName(lastName);
+            registrationModel.setFirstName(firstName);
+            registrationModel.setEmail(phone);
+            User user = userFactory.create(registrationModel, RegistrationType.BASIC);
+            userRepository.save(user);
+
+            AuthPhoneResponse authPhoneResponse = new AuthPhoneResponse();
+            authPhoneResponse.setCode(code);
+            return authPhoneResponse;
+        }
+    }
+
+    @Transactional
+    public AuthPhoneResponse signInViaPhone(String phone) {
+
+        Optional<User> userByUsername = userRepository.findUserByUsername(phone);
+        if (userByUsername.isPresent()) {
+            User user = userByUsername.get();
+            String code = CodeUtil.generateShortCode();
+            user.setPassword(passwordEncoder.encode(code));
+            AuthPhoneResponse authPhoneResponse = new AuthPhoneResponse();
+            authPhoneResponse.setCode(code);
+            return authPhoneResponse;
+        } else {
+            RegistrationModel registrationModel = new RegistrationModel();
+            registrationModel.setUsername(phone);
+            String code = CodeUtil.generateShortCode();
+            registrationModel.setPassword(code);
+            registrationModel.setEmail(phone);
+            registrationModel.setLastName(phone);
+            registrationModel.setFirstName(phone);
+            registrationModel.setEmail(phone);
+            User user = userFactory.create(registrationModel, RegistrationType.BASIC);
+            userRepository.save(user);
+
+            AuthPhoneResponse authPhoneResponse = new AuthPhoneResponse();
+            authPhoneResponse.setCode(code);
+            return authPhoneResponse;
+        }
+    }
 }

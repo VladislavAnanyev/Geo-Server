@@ -26,7 +26,6 @@ public class User implements UserDetails, OAuth2User {
 
     @NotBlank
     @NotNull
-    @Email
     private String email;
 
     private String activationCode;

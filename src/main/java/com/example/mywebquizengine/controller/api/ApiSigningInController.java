@@ -5,6 +5,7 @@ import com.example.mywebquizengine.model.userinfo.*;
 import com.example.mywebquizengine.model.userinfo.dto.input.*;
 import com.example.mywebquizengine.model.userinfo.dto.output.AuthResponse;
 import com.example.mywebquizengine.model.userinfo.dto.output.AuthResult;
+import com.example.mywebquizengine.service.AuthPhoneResponse;
 import com.example.mywebquizengine.service.AuthService;
 import com.example.mywebquizengine.model.common.Client;
 import org.springframework.web.bind.annotation.*;
@@ -61,6 +62,22 @@ public class ApiSigningInController {
     @GetMapping(path = "/user/check-username")
     public boolean checkExistUser(@RequestParam String username) {
         return authService.checkForExistUser(username);
+    }
+
+    @PostMapping("/signup/phone")
+    public SignInViaPhoneResponse signupViaPhone(@RequestBody AuthPhoneRequest authPhoneRequest) {
+        AuthPhoneResponse authPhoneResponse = authService.signUpViaPhone(
+                authPhoneRequest.getPhone(),
+                authPhoneRequest.getFirstName(),
+                authPhoneRequest.getLastName()
+        );
+        return new SignInViaPhoneResponse(authPhoneResponse);
+    }
+
+    @PostMapping("/signin/phone")
+    public SignInViaPhoneResponse signInViaPhone(@RequestBody AuthPhoneRequest authPhoneRequest) {
+        AuthPhoneResponse authPhoneResponse = authService.signInViaPhone(authPhoneRequest.getPhone());
+        return new SignInViaPhoneResponse(authPhoneResponse);
     }
 
 }
