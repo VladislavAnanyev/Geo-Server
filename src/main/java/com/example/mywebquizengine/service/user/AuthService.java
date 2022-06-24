@@ -223,7 +223,7 @@ public class AuthService implements UserDetailsService {
      * @return true - существует, false - не существует
      */
     public UserExistDto checkForExistUser(String username) {
-        if (userRepository.existsByUsername(username)) {
+        if (!userRepository.existsByUsername(username)) {
             throw new UserNotFoundException("exception.user.not.found", GlobalErrorCode.ERROR_USER_NOT_FOUND);
         }
 
