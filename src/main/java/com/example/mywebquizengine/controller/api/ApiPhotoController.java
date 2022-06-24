@@ -3,7 +3,7 @@ package com.example.mywebquizengine.controller.api;
 import com.example.mywebquizengine.model.exception.LogicException;
 import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.service.FileSystemStorageService;
-import com.example.mywebquizengine.service.PhotoService;
+import com.example.mywebquizengine.service.user.PhotoService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;

@@ -1,12 +1,20 @@
-package com.example.mywebquizengine.service;
+package com.example.mywebquizengine.service.user;
 
 import com.example.mywebquizengine.model.common.Client;
 import com.example.mywebquizengine.model.exception.*;
-import com.example.mywebquizengine.model.userinfo.*;
+import com.example.mywebquizengine.model.userinfo.RegistrationModel;
+import com.example.mywebquizengine.model.userinfo.RegistrationType;
+import com.example.mywebquizengine.model.userinfo.UserExistDto;
+import com.example.mywebquizengine.model.userinfo.UserFactory;
+import com.example.mywebquizengine.model.userinfo.domain.Device;
 import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.model.userinfo.dto.input.AuthRequest;
+import com.example.mywebquizengine.model.userinfo.dto.output.AuthPhoneResponse;
 import com.example.mywebquizengine.model.userinfo.dto.output.AuthResult;
+import com.example.mywebquizengine.repos.DeviceRepository;
 import com.example.mywebquizengine.repos.UserRepository;
+import com.example.mywebquizengine.service.sender.BusinessEmailSender;
+import com.example.mywebquizengine.service.sender.SmsSender;
 import com.example.mywebquizengine.service.utils.*;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -18,6 +26,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.Optional;
 
 /**
@@ -31,23 +41,35 @@ public class AuthService implements UserDetailsService {
     private final RabbitAdmin rabbitAdmin;
     private final UserRepository userRepository;
     private final BusinessEmailSender businessEmailSender;
+    private final SmsSender smsSender;
     private final UserFactory userFactory;
+    private final DeviceRepository deviceRepository;
     @Autowired
     private AuthenticationManager authenticationManager;
 
     public AuthService(PasswordEncoder passwordEncoder, JWTUtil jwtTokenUtil, RabbitAdmin rabbitAdmin,
-                       UserRepository userRepository,
-                       BusinessEmailSender businessEmailSender, UserFactory userFactory) {
+                       UserRepository userRepository, BusinessEmailSender businessEmailSender,
+                       SmsSender smsSender, UserFactory userFactory, DeviceRepository deviceRepository) {
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenUtil = jwtTokenUtil;
         this.rabbitAdmin = rabbitAdmin;
         this.userRepository = userRepository;
         this.businessEmailSender = businessEmailSender;
+        this.smsSender = smsSender;
         this.userFactory = userFactory;
+        this.deviceRepository = deviceRepository;
     }
 
     @Override
     public User loadUserByUsername(String username) throws UserNotFoundException {
+        Optional<User> user = userRepository.findUserByUsername(username);
+
+        if (user.isPresent()) {
+            return user.get();
+        } else throw new UserNotFoundException("exception.user.not.found", GlobalErrorCode.ERROR_USER_NOT_FOUND);
+    }
+
+    public User findUserByUsername(String username) throws UserNotFoundException {
         Optional<User> user = userRepository.findUserByUsername(username);
 
         if (user.isPresent()) {
@@ -63,6 +85,7 @@ public class AuthService implements UserDetailsService {
      * @param type              - тип регистрации
      */
     public AuthResult signUp(RegistrationModel registrationModel, RegistrationType type) {
+
         Optional<User> optionalUser = userRepository.findUserByUsername(registrationModel.getUsername());
         if (optionalUser.isPresent()) {
             throw new AlreadyRegisterException("exception.already.register", GlobalErrorCode.ERROR_USER_ALREADY_REGISTERED);
@@ -75,15 +98,7 @@ public class AuthService implements UserDetailsService {
         userRepository.save(user);
         businessEmailSender.sendWelcomeMessage(user);
 
-        String exchangeName = RabbitUtil.getExchangeName(user.getUserId());
-        rabbitAdmin.declareExchange(
-                new FanoutExchange(
-                        exchangeName,
-                        true,
-                        false
-                )
-        );
-
+        String exchangeName = createExchange(user.getUserId());
         return generateAuthResult(user, exchangeName);
     }
 
@@ -114,9 +129,15 @@ public class AuthService implements UserDetailsService {
      * Аутентификация происходит средствами spring
      *
      * @param authRequest - модель содержащая логин и пароль
-     * @return -
+     * @return - модель содержащая имя обмена, jwt и идентификатор пользователя
      */
     public AuthResult signInViaApi(AuthRequest authRequest) {
+        User user = findUserByUsername(authRequest.getUsername());
+        Calendar now = new GregorianCalendar();
+        if (now.after(user.getSignInViaPhoneCodeExpiration())) {
+            throw new CodeExpiredException("exception.code.expired", GlobalErrorCode.ERROR_CODE_EXPIRED);
+        }
+
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -128,7 +149,6 @@ public class AuthService implements UserDetailsService {
             throw new AuthorizationException("exception.authorization", GlobalErrorCode.ERROR_WRONG_USERNAME_OR_PASSWORD);
         }
 
-        User user = loadUserByUsername(authRequest.getUsername());
         return generateAuthResult(user);
     }
 
@@ -141,7 +161,7 @@ public class AuthService implements UserDetailsService {
      * @param client   - платформа, с которой пользователь желает сменить пароль
      */
     public void changePassword(String username, Client client) {
-        User user = loadUserByUsername(username);
+        User user = findUserByUsername(username);
 
         String code;
         if (client.equals(Client.MOBILE)) {
@@ -198,12 +218,20 @@ public class AuthService implements UserDetailsService {
 
     /**
      * Проверяет существует ли пользователь с указанным username в системе
+     *
      * @param username - проверяемое имя пользователя
      * @return true - существует, false - не существует
      */
-    public boolean checkForExistUser(String username) {
-        return userRepository.existsByUsername(username);
+    public UserExistDto checkForExistUser(String username) {
+        if (userRepository.existsByUsername(username)) {
+            throw new UserNotFoundException("exception.user.not.found", GlobalErrorCode.ERROR_USER_NOT_FOUND);
+        }
+
+        UserExistDto userExistDto = new UserExistDto();
+        userExistDto.setExist(true);
+        return userExistDto;
     }
+
 
     /**
      * Генерация jwt токена, который клиент будет прикреплять с каждым запросом,
@@ -219,7 +247,7 @@ public class AuthService implements UserDetailsService {
     /**
      * Генерация jwt токена, который клиент будет прикреплять с каждым запросом
      *
-     * @param user - пользователя
+     * @param user         - пользователя
      * @param exchangeName - Имя обмена
      */
     private AuthResult generateAuthResult(User user, String exchangeName) {
@@ -227,61 +255,78 @@ public class AuthService implements UserDetailsService {
         return new AuthResult(user.getUserId(), jwt, exchangeName);
     }
 
+    /**
+     * Регистрация при помощи телефона
+     *
+     * @param registrationModel - модель для регистрации пользователя
+     * @return - код для входа в систему (в качестве тестирования)
+     */
     @Transactional
-    public AuthPhoneResponse signUpViaPhone(String phone, String firstName, String lastName) {
+    public AuthPhoneResponse signUpViaPhone(RegistrationModel registrationModel) {
+        String code = CodeUtil.generateShortCode();
+        registrationModel.setPassword(code);
+        User user = userFactory.create(registrationModel, RegistrationType.PHONE);
 
-        Optional<User> userByUsername = userRepository.findUserByUsername(phone);
-        if (userByUsername.isPresent()) {
-            User user = userByUsername.get();
-            String code = CodeUtil.generateShortCode();
-            user.setPassword(passwordEncoder.encode(code));
-            AuthPhoneResponse authPhoneResponse = new AuthPhoneResponse();
-            authPhoneResponse.setCode(code);
-            return authPhoneResponse;
-        } else {
-            RegistrationModel registrationModel = new RegistrationModel();
-            registrationModel.setUsername(phone);
-            String code = CodeUtil.generateShortCode();
-            registrationModel.setPassword(code);
-            registrationModel.setEmail(phone);
-            registrationModel.setLastName(lastName);
-            registrationModel.setFirstName(firstName);
-            registrationModel.setEmail(phone);
-            User user = userFactory.create(registrationModel, RegistrationType.BASIC);
-            userRepository.save(user);
+        userRepository.save(user);
+        createExchange(user.getUserId());
 
-            AuthPhoneResponse authPhoneResponse = new AuthPhoneResponse();
-            authPhoneResponse.setCode(code);
-            return authPhoneResponse;
+        // сохранение токена apple устройства для отправки уведомлений
+        // если указанный токен ещё не принадлежит пользователю
+        if (registrationModel.getAppleToken() != null) {
+            boolean exist = user.getDevices().stream().anyMatch(
+                    device -> registrationModel.getAppleToken().equals(device.getDeviceToken())
+            );
+
+            if (!exist) {
+                Device device = new Device();
+                device.setDeviceToken(registrationModel.getAppleToken());
+                device.setUser(user);
+                deviceRepository.save(device);
+            }
         }
+
+        smsSender.sendCodeToPhone(code, registrationModel.getUsername());
+
+        AuthPhoneResponse authPhoneResponse = new AuthPhoneResponse();
+        authPhoneResponse.setCode(code);
+        return authPhoneResponse;
     }
 
+    /**
+     * Отправить код для входа в систему с телефона
+     * Используется когда, например, пользователь не успел ввести код за отведенное время при входе
+     * Или для входа, после разлогина
+     *
+     * @param phone - номер телефона
+     * @return - код для входа в систему
+     */
     @Transactional
-    public AuthPhoneResponse signInViaPhone(String phone) {
-
-        Optional<User> userByUsername = userRepository.findUserByUsername(phone);
-        if (userByUsername.isPresent()) {
-            User user = userByUsername.get();
-            String code = CodeUtil.generateShortCode();
-            user.setPassword(passwordEncoder.encode(code));
-            AuthPhoneResponse authPhoneResponse = new AuthPhoneResponse();
-            authPhoneResponse.setCode(code);
-            return authPhoneResponse;
-        } else {
-            RegistrationModel registrationModel = new RegistrationModel();
-            registrationModel.setUsername(phone);
-            String code = CodeUtil.generateShortCode();
-            registrationModel.setPassword(code);
-            registrationModel.setEmail(phone);
-            registrationModel.setLastName(phone);
-            registrationModel.setFirstName(phone);
-            registrationModel.setEmail(phone);
-            User user = userFactory.create(registrationModel, RegistrationType.BASIC);
-            userRepository.save(user);
-
-            AuthPhoneResponse authPhoneResponse = new AuthPhoneResponse();
-            authPhoneResponse.setCode(code);
-            return authPhoneResponse;
+    public AuthPhoneResponse generateCodeForSignInViaPhone(String phone) {
+        Optional<User> optionalUser = userRepository.findUserByUsername(phone);
+        if (optionalUser.isEmpty()) {
+            throw new UserNotFoundException("exception.user.not.found", GlobalErrorCode.ERROR_USER_NOT_FOUND);
         }
+
+        User user = optionalUser.get();
+        String code = CodeUtil.generateShortCode();
+        user.setPassword(passwordEncoder.encode(code));
+
+        smsSender.sendCodeToPhone(code, phone);
+
+        AuthPhoneResponse authPhoneResponse = new AuthPhoneResponse();
+        authPhoneResponse.setCode(code);
+        return authPhoneResponse;
+    }
+
+    private String createExchange(Long userId) {
+        String exchangeName = RabbitUtil.getExchangeName(userId);
+        rabbitAdmin.declareExchange(
+                new FanoutExchange(
+                        exchangeName,
+                        true,
+                        false
+                )
+        );
+        return exchangeName;
     }
 }

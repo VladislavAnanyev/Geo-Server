@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.service;
+package com.example.mywebquizengine.service.sender;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

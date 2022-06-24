@@ -1,17 +1,13 @@
 package com.example.mywebquizengine.controller.rabbit;
 
-import com.example.mywebquizengine.model.chat.domain.Dialog;
-import com.example.mywebquizengine.model.chat.domain.Message;
-import com.example.mywebquizengine.model.chat.domain.MessagePhoto;
 import com.example.mywebquizengine.model.chat.dto.input.SendMessageRequest;
 import com.example.mywebquizengine.model.chat.dto.input.Typing;
 import com.example.mywebquizengine.model.rabbit.MessageType;
 import com.example.mywebquizengine.model.rabbit.RealTimeEvent;
-import com.example.mywebquizengine.model.userinfo.domain.User;
-import com.example.mywebquizengine.service.FileSystemStorageService;
-import com.example.mywebquizengine.service.model.SendMessageModel;
+import com.example.mywebquizengine.model.rabbit.Type;
+import com.example.mywebquizengine.service.MessageFacade;
 import com.example.mywebquizengine.service.utils.JWTUtil;
-import com.example.mywebquizengine.service.MessageService;
+import com.example.mywebquizengine.service.chat.MessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
@@ -24,10 +20,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.server.ResponseStatusException;
 
+import static java.util.stream.Collectors.toMap;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 @Controller
 @EnableRabbit
@@ -35,13 +32,13 @@ import java.util.Collections;
 public class RabbitController {
 
     @Autowired
-    private MessageService messageService;
-
-    @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
     private JWTUtil jwtUtil;
+
+    @Autowired
+    private Map<Type, EventProcessor> map;
 
     private Long userId;
 
@@ -57,23 +54,9 @@ public class RabbitController {
 
         RealTimeEvent realTimeEvent = objectMapper.readValue(messageFromRabbit.getBody(), RealTimeEvent.class);
 
-        if (realTimeEvent.getType().equals(MessageType.MESSAGE)) {
-            SendMessageRequest sendMessageRequest = objectMapper
-                    .convertValue(
-                            realTimeEvent.getPayload(),
-                            SendMessageRequest.class
-                    );
+        EventProcessor eventProcessor = map.get(realTimeEvent.getType());
+        eventProcessor.process(realTimeEvent, userId);
 
-            SendMessageModel sendMessageModel = new SendMessageModel();
-            sendMessageModel.setContent(sendMessageRequest.getContent());
-            sendMessageModel.setDialogId(sendMessageRequest.getDialogId());
-            sendMessageModel.setUniqueCode(sendMessageRequest.getUniqueCode());
-            sendMessageModel.setSenderId(userId);
-            messageService.sendMessage(sendMessageModel);
-        } else if (realTimeEvent.getType().equals(MessageType.TYPING)) {
-            Typing typing = objectMapper.convertValue(realTimeEvent.getPayload(), Typing.class);
-            messageService.typingMessage(typing.getDialogId(), typing.getUser().getUserId());
-        } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
     }
 
     private boolean isAuthenticate(String token) {

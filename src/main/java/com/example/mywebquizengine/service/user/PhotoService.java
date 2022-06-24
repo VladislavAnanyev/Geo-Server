@@ -1,9 +1,10 @@
-package com.example.mywebquizengine.service;
+package com.example.mywebquizengine.service.user;
 
 import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.model.exception.LogicException;
 import com.example.mywebquizengine.model.userinfo.domain.Photo;
 import com.example.mywebquizengine.repos.PhotoRepository;
+import com.example.mywebquizengine.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

@@ -10,6 +10,8 @@ import com.example.mywebquizengine.model.request.dto.output.RequestView;
 import com.example.mywebquizengine.model.rabbit.RealTimeEvent;
 import com.example.mywebquizengine.model.rabbit.RequestType;
 import com.example.mywebquizengine.repos.RequestRepository;
+import com.example.mywebquizengine.service.chat.MessageService;
+import com.example.mywebquizengine.service.user.UserService;
 import com.example.mywebquizengine.service.utils.ProjectionUtil;
 import com.example.mywebquizengine.service.utils.RabbitUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -98,7 +100,7 @@ public class RequestService {
 
             requestRepository.save(request);
 
-            RequestView requestView = projectionUtil.parseToProjection(request, RequestView.class);
+            RequestView requestView = projectionUtil.parse(request, RequestView.class);
 
             RealTimeEvent<RequestView> realTimeEvent = new RealTimeEvent<>();
             realTimeEvent.setType(RequestType.REQUEST);
@@ -174,7 +176,7 @@ public class RequestService {
         authUser.addFriend(request.getSender());
         requestRepository.save(request);
 
-        UserCommonView toView = projectionUtil.parseToProjection(request.getTo(), UserCommonView.class);
+        UserCommonView toView = projectionUtil.parse(request.getTo(), UserCommonView.class);
 
         RealTimeEvent<UserCommonView> realTimeEvent = new RealTimeEvent<>();
         realTimeEvent.setType(FriendType.NEW_FRIEND);
@@ -185,7 +187,7 @@ public class RequestService {
         rabbitTemplate.convertAndSend(senderExchangeName, "",
                 JSONValue.parse(objectMapper.writeValueAsString(realTimeEvent)));
 
-        UserCommonView senderView = projectionUtil.parseToProjection(request.getSender(), UserCommonView.class);
+        UserCommonView senderView = projectionUtil.parse(request.getSender(), UserCommonView.class);
         realTimeEvent.setPayload(senderView);
         rabbitTemplate.convertAndSend(toExchangeName, "",
                 JSONValue.parse(objectMapper.writeValueAsString(realTimeEvent)));

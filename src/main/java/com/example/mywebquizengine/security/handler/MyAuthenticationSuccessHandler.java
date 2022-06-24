@@ -3,7 +3,7 @@ package com.example.mywebquizengine.security.handler;
 import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.security.ActiveUserStore;
 import com.example.mywebquizengine.security.LoggedUser;
-import com.example.mywebquizengine.service.AuthService;
+import com.example.mywebquizengine.service.user.AuthService;
 import com.example.mywebquizengine.service.utils.RabbitUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

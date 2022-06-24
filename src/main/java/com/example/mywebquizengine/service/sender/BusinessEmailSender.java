@@ -1,7 +1,8 @@
-package com.example.mywebquizengine.service;
+package com.example.mywebquizengine.service.sender;
 
 import com.example.mywebquizengine.model.common.Client;
 import com.example.mywebquizengine.model.userinfo.domain.User;
+import com.example.mywebquizengine.service.sender.MailSender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

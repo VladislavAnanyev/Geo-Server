@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.service;
+package com.example.mywebquizengine.service.model;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.controller.api;
 
 import com.example.mywebquizengine.model.common.SuccessfulResponse;
-import com.example.mywebquizengine.service.AuthPhoneResponse;
+import com.example.mywebquizengine.model.userinfo.dto.output.AuthPhoneResponse;
 
 public class SignInViaPhoneResponse extends SuccessfulResponse {
 

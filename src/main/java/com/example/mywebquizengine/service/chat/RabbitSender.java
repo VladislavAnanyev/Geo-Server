@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.service;
+package com.example.mywebquizengine.service.chat;
 
 import com.example.mywebquizengine.model.rabbit.RealTimeEvent;
 import com.example.mywebquizengine.service.utils.RabbitUtil;

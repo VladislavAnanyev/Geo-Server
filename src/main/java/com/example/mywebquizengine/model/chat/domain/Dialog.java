@@ -23,7 +23,7 @@ public class Dialog {
     private String image;
 
     @Size(min = 2)
-    @ManyToMany(mappedBy = "dialogs", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(mappedBy = "dialogs", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     private Set<User> users = new HashSet<>();
 
     @Transient

@@ -10,6 +10,8 @@ import com.example.mywebquizengine.model.rabbit.RealTimeEvent;
 import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.repos.GeolocationRepository;
 import com.example.mywebquizengine.repos.MeetingRepository;
+import com.example.mywebquizengine.service.model.GeolocationModel;
+import com.example.mywebquizengine.service.user.UserService;
 import com.example.mywebquizengine.service.utils.ProjectionUtil;
 import com.example.mywebquizengine.service.utils.RabbitUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -114,7 +116,7 @@ public class GeoService {
                          * */
 
                         MeetingView meetingViewForFirstUser = projectionUtil
-                                .parseToProjection(
+                                .parse(
                                         meeting,
                                         MeetingView.class
                                 );
@@ -136,7 +138,7 @@ public class GeoService {
                         meeting.setSecondUser(initialFirstUser);
 
                         MeetingView meetingViewForSecondUser = projectionUtil
-                                .parseToProjection(
+                                .parse(
                                         meeting,
                                         MeetingView.class
                                 );

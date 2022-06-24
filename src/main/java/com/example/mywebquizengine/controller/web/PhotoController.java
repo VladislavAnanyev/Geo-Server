@@ -2,7 +2,7 @@ package com.example.mywebquizengine.controller.web;
 
 import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.service.FileSystemStorageService;
-import com.example.mywebquizengine.service.PhotoService;
+import com.example.mywebquizengine.service.user.PhotoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;

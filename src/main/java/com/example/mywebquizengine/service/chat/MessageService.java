@@ -1,20 +1,23 @@
-package com.example.mywebquizengine.service;
+package com.example.mywebquizengine.service.chat;
 
 
 import com.example.mywebquizengine.model.chat.domain.Dialog;
 import com.example.mywebquizengine.model.chat.domain.Message;
 import com.example.mywebquizengine.model.chat.domain.MessageStatus;
+import com.example.mywebquizengine.service.user.UserService;
+import com.example.mywebquizengine.service.model.CreateGroupModel;
 import com.example.mywebquizengine.model.chat.dto.input.Typing;
 import com.example.mywebquizengine.model.chat.dto.output.DialogView;
 import com.example.mywebquizengine.model.chat.dto.output.LastDialog;
 import com.example.mywebquizengine.model.chat.dto.output.MessageView;
-import com.example.mywebquizengine.model.chat.dto.output.TypingView;
 import com.example.mywebquizengine.model.rabbit.MessageType;
 import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.repos.DialogRepository;
 import com.example.mywebquizengine.repos.MessageRepository;
 import com.example.mywebquizengine.service.model.SendMessageModel;
+import com.example.mywebquizengine.service.sender.NotificationService;
 import com.example.mywebquizengine.service.utils.ProjectionUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,20 +37,22 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final DialogRepository dialogRepository;
     private final UserService userService;
-    private final ProjectionUtil projectionUtil;
-    private final RealTimeEventSender realTimeEventSender;
     private final MessageFactory messageFactory;
+
+    @Autowired
+    private NotificationService notificationService;
+    @Autowired
+    private ProjectionUtil projectionUtil;
+
     @Value("${hostname}")
     private String hostname;
 
     public MessageService(MessageRepository messageRepository, DialogRepository dialogRepository,
-                          UserService userService, ProjectionUtil projectionUtil, RealTimeEventSender sender,
+                          UserService userService,
                           MessageFactory messageFactory) {
         this.messageRepository = messageRepository;
         this.dialogRepository = dialogRepository;
         this.userService = userService;
-        this.projectionUtil = projectionUtil;
-        this.realTimeEventSender = sender;
         this.messageFactory = messageFactory;
     }
 
@@ -79,8 +84,8 @@ public class MessageService {
             throw new SecurityException("Вы не можете удалить это сообщение");
         }
         message.setStatus(MessageStatus.DELETED);
-        MessageView messageDto = projectionUtil.parseToProjection(message, MessageView.class);
-        realTimeEventSender.send(messageDto, message.getDialog().getUsers(), MessageType.DELETE_MESSAGE);
+        MessageView messageDto = projectionUtil.parse(message, MessageView.class);
+        notificationService.send(messageDto, message.getDialog().getUsers(), MessageType.DELETE_MESSAGE);
     }
 
     @Transactional
@@ -108,7 +113,7 @@ public class MessageService {
         List<Message> result = new ArrayList<>(messages);
         Collections.reverse(result);
         dialog.setMessages(result);
-        return projectionUtil.parseToProjection(dialog, DialogView.class);
+        return projectionUtil.parse(dialog, DialogView.class);
     }
 
     @Transactional
@@ -122,12 +127,12 @@ public class MessageService {
         message.setContent(content);
         message.setStatus(MessageStatus.EDIT);
 
-        MessageView messageDto = projectionUtil.parseToProjection(message, MessageView.class);
-        realTimeEventSender.send(messageDto, message.getDialog().getUsers(), MessageType.EDIT_MESSAGE);
+        MessageView messageDto = projectionUtil.parse(message, MessageView.class);
+        notificationService.send(messageDto, message.getDialog().getUsers(), MessageType.EDIT_MESSAGE);
     }
 
     @Transactional
-    public void sendMessage(@Valid SendMessageModel sendMessageModel) {
+    public Message saveMessage(@Valid SendMessageModel sendMessageModel) {
         Dialog dialog = findDialogById(sendMessageModel.getDialogId());
         if (!isUserContainsInDialog(dialog, sendMessageModel.getSenderId())) {
             throw new SecurityException("Вы не состоите в этом диалоге");
@@ -136,9 +141,7 @@ public class MessageService {
                 sendMessageModel.getContent(), sendMessageModel.getUniqueCode(),
                 sendMessageModel.getSenderId(), dialog
         );
-        messageRepository.save(message);
-        MessageView messageDto = projectionUtil.parseToProjection(message, MessageView.class);
-        realTimeEventSender.send(messageDto, dialog.getUsers(), MessageType.MESSAGE);
+        return messageRepository.save(message);
     }
 
     public Long createGroup(CreateGroupModel model) {
@@ -163,13 +166,13 @@ public class MessageService {
         dialog.setImage(hostname + "/img/default.jpg");
         dialogRepository.save(dialog);
 
-        MessageView messageDto = projectionUtil.parseToProjection(message, MessageView.class);
-        realTimeEventSender.send(messageDto, dialog.getUsers(), MessageType.MESSAGE);
+        MessageView messageDto = projectionUtil.parse(message, MessageView.class);
+        notificationService.send(messageDto, dialog.getUsers(), MessageType.MESSAGE);
         return dialog.getDialogId();
     }
 
     @Transactional
-    public void typingMessage(Long dialogId, Long userId) {
+    public Typing typingMessage(Long dialogId, Long userId) {
         Dialog dialog = findDialogById(dialogId);
         User authUser = userService.loadUserByUserId(userId);
 
@@ -179,12 +182,8 @@ public class MessageService {
 
         Typing typing = new Typing();
         typing.setUser(authUser);
-        typing.setDialogId(dialogId);
-        TypingView typingView = projectionUtil.parseToProjection(typing, TypingView.class);
-
-        Set<User> users = new HashSet<>(dialog.getUsers());
-        users.remove(authUser);
-        realTimeEventSender.send(typingView, users, MessageType.TYPING);
+        typing.setDialog(dialog);
+        return typing;
     }
 
     private Dialog findDialogById(Long dialogId) {

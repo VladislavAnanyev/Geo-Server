@@ -3,9 +3,9 @@ package com.example.mywebquizengine.controller.web;
 
 import com.example.mywebquizengine.model.chat.dto.output.DialogView;
 import com.example.mywebquizengine.model.userinfo.domain.User;
-import com.example.mywebquizengine.service.CreateGroupModelMapper;
-import com.example.mywebquizengine.service.MessageService;
-import com.example.mywebquizengine.service.UserService;
+import com.example.mywebquizengine.service.model.CreateGroupModelMapper;
+import com.example.mywebquizengine.service.chat.MessageService;
+import com.example.mywebquizengine.service.user.UserService;
 import com.example.mywebquizengine.service.utils.RabbitUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;

@@ -4,7 +4,7 @@ import com.example.mywebquizengine.model.userinfo.dto.output.ProfileView;
 import com.example.mywebquizengine.model.userinfo.dto.output.UserCommonView;
 import com.example.mywebquizengine.model.userinfo.dto.output.AuthUserView;
 import com.example.mywebquizengine.model.userinfo.domain.User;
-import com.example.mywebquizengine.service.UserService;
+import com.example.mywebquizengine.service.user.UserService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;

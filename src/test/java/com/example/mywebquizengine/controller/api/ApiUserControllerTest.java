@@ -1,8 +1,11 @@
 package com.example.mywebquizengine.controller.api;
 
+import com.example.mywebquizengine.model.common.SuccessfulResponse;
 import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.repos.UserRepository;
-import com.example.mywebquizengine.service.BusinessEmailSender;
+import com.example.mywebquizengine.model.userinfo.dto.output.AuthPhoneResponse;
+import com.example.mywebquizengine.service.sender.BusinessEmailSender;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -41,6 +44,8 @@ public class ApiUserControllerTest {
 
     @MockBean
     private BusinessEmailSender businessEmailSender;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     public void testGetAuthUserWithoutAuth() throws Exception {
@@ -54,7 +59,6 @@ public class ApiUserControllerTest {
         mockMvc.perform(get("/api/authuser").secure(true))
                 .andExpect(status().isOk());
     }
-
 
     @Test
     public void testSignUp() throws Exception {
@@ -74,8 +78,8 @@ public class ApiUserControllerTest {
                         """;
 
         mockMvc.perform(post("/api/signup").secure(true)
-                .content(json)
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result.jwtToken").isString());
 
@@ -98,8 +102,8 @@ public class ApiUserControllerTest {
                 """;
 
         mockMvc.perform(post("/api/signup").secure(true)
-                .content(json)
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("FAIL"));
     }
@@ -154,8 +158,8 @@ public class ApiUserControllerTest {
                 """;
 
         mockMvc.perform(post("/api/signup").secure(true)
-                .content(json)
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("FAIL"));
     }
@@ -231,7 +235,6 @@ public class ApiUserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
     }
 
-
     @Test
     public void testSignIn() throws Exception {
 
@@ -240,34 +243,33 @@ public class ApiUserControllerTest {
 
         String json =
                 """
-                        {
-                            "username": "user1",
-                            "password": "user1"
-                        }
-                """;
+                                {
+                                    "username": "user1",
+                                    "password": "user1"
+                                }
+                        """;
 
         mockMvc.perform(post("/api/signin").secure(true)
-                .content(json)
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result.jwtToken").isString());
     }
-
 
     @Test
     public void testSignInFail() throws Exception {
 
         String json =
                 """
-                        {
-                            "username": "user1",
-                            "password": "12345"
-                        }
-                """;
+                                {
+                                    "username": "user1",
+                                    "password": "12345"
+                                }
+                        """;
 
         mockMvc.perform(post("/api/signin").secure(true)
-                .content(json)
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("FAIL"));
     }
@@ -288,19 +290,18 @@ public class ApiUserControllerTest {
         assertFalse(Boolean.parseBoolean(status));
     }
 
-
     @Test
     @WithUserDetails("user1")
     public void testChangeUserData() throws Exception {
         String json =
                 """
-                    {
-                        "firstName": "rename",
-                        "lastName": "user"
-                    }
-                """;
+                            {
+                                "firstName": "rename",
+                                "lastName": "user"
+                            }
+                        """;
         mockMvc.perform(put("/api/user").secure(true).contentType(MediaType.APPLICATION_JSON)
-                .content(json))
+                        .content(json))
                 .andExpect(status().isOk());
 
         User user = userRepository.findUserByUsername("user1").get();
@@ -313,18 +314,75 @@ public class ApiUserControllerTest {
     public void testFailChangeUserData() throws Exception {
         String json =
                 """
-                    {
-                        "firstName": "",
-                        "lastName": "user"
-                    }
-                """;
+                            {
+                                "firstName": "",
+                                "lastName": "user"
+                            }
+                        """;
         mockMvc.perform(put("/api/user").secure(true).contentType(MediaType.APPLICATION_JSON)
-                .content(json))
+                        .content(json))
                 .andExpect(status().isBadRequest());
 
         User user = userRepository.findUserByUsername("user1").get();
         assertEquals("user1", user.getFirstName());
         assertEquals("user1", user.getLastName());
+    }
+
+    @Test
+    public void testGetCodeForSignInViaPhone() throws Exception {
+
+        doAnswer(invocationOnMock -> null).when(rabbitAdmin).declareExchange(anyObject());
+
+        // Регистрация при помощи номера телефона, возвращается (отправляется смс) код для входа
+        String json = """
+                    {
+                        "phone": "+7(905)7970526",
+                        "firstName": "Владислав",
+                        "lastName": "Ананьев"
+                    }
+                """;
+
+        mockMvc.perform(post("/api/signup/phone")
+                        .secure(true)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk());
+
+        User user = userRepository.findUserByUsername("+7(905)7970526").get();
+        assertEquals("Владислав", user.getFirstName());
+        assertEquals("Ананьев", user.getLastName());
+
+
+        // Зарегестрировался, но не успел ввести код
+        String jsonForRequestCodeAgain = """
+                    {
+                        "phone": "+7(905)7970526"
+                    }
+                """;
+
+        String responseCodeAgain = mockMvc.perform(post("/api/signin/phone")
+                        .secure(true)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonForRequestCodeAgain))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        SuccessfulResponse successfulResponse = objectMapper.readValue(responseCodeAgain, SuccessfulResponse.class);
+        AuthPhoneResponse authPhoneResponse = objectMapper.convertValue(successfulResponse.getResult(), AuthPhoneResponse.class);
+
+        // Вход по полученному коду
+        String jsonForSignIn = String.format(
+                """
+                                {
+                                    "username": "+7(905)7970526",
+                                    "password": "%s"
+                                }
+                        """, authPhoneResponse.getCode());
+
+        mockMvc.perform(post("/api/signin").secure(true)
+                        .content(jsonForSignIn)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.jwtToken").isString());
     }
 
 }

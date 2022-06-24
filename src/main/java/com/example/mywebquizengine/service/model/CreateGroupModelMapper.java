@@ -1,6 +1,7 @@
-package com.example.mywebquizengine.service;
+package com.example.mywebquizengine.service.model;
 
 import com.example.mywebquizengine.controller.web.CreateGroupRequest;
+import com.example.mywebquizengine.service.model.CreateGroupModel;
 
 import java.util.ArrayList;
 import java.util.List;

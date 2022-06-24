@@ -31,6 +31,16 @@ public class RegistrationModel {
 
     private String avatar;
 
+    private String appleToken;
+
+    public String getAppleToken() {
+        return appleToken;
+    }
+
+    public void setAppleToken(String appleToken) {
+        this.appleToken = appleToken;
+    }
+
     public String getUsername() {
         return username;
     }

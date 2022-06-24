@@ -1,12 +1,10 @@
 package com.example.mywebquizengine.controller.api;
 
 import com.example.mywebquizengine.model.chat.dto.input.EditMessageRequest;
-import com.example.mywebquizengine.model.chat.domain.Message;
-import com.example.mywebquizengine.model.chat.dto.output.LastDialog;
 import com.example.mywebquizengine.model.chat.dto.output.DialogView;
+import com.example.mywebquizengine.model.chat.dto.output.LastDialog;
 import com.example.mywebquizengine.model.userinfo.domain.User;
-import com.example.mywebquizengine.service.MessageService;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.example.mywebquizengine.service.chat.MessageService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
@@ -25,21 +23,20 @@ public class ApiChatController {
 
     @DeleteMapping(path = "/message/{id}")
     public void deleteMessage(@PathVariable Long id,
-                              @ApiIgnore @AuthenticationPrincipal User authUser
-    ) throws JsonProcessingException {
+                              @ApiIgnore @AuthenticationPrincipal User authUser) {
         messageService.deleteMessage(id, authUser.getUserId());
     }
 
     @PutMapping(path = "/message/{id}")
     public void editMessage(@PathVariable Long id, @RequestBody EditMessageRequest editMessageRequest,
-                            @ApiIgnore @AuthenticationPrincipal User authUser)  {
+                            @ApiIgnore @AuthenticationPrincipal User authUser) {
         messageService.editMessage(id, editMessageRequest.getContent(), authUser.getUserId());
     }
 
     @GetMapping(path = "/dialog/{dialogId}")
     public DialogView getMessages(@PathVariable Long dialogId,
-                                  @RequestParam(required = false,defaultValue = "0") Integer page,
-                                  @RequestParam(required = false,defaultValue = "50") Integer pageSize,
+                                  @RequestParam(required = false, defaultValue = "0") Integer page,
+                                  @RequestParam(required = false, defaultValue = "50") Integer pageSize,
                                   @RequestParam(defaultValue = "timestamp") String sortBy,
                                   @ApiIgnore @AuthenticationPrincipal User authUser) {
         return messageService.getMessages(dialogId, page, pageSize, sortBy, authUser.getUserId());

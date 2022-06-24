@@ -4,6 +4,7 @@ import com.example.mywebquizengine.model.exception.ApiError;
 import com.example.mywebquizengine.model.exception.GlobalException;
 import com.example.mywebquizengine.model.exception.LogicException;
 import com.example.mywebquizengine.model.common.ErrorResponse;
+import com.example.mywebquizengine.model.exception.UserNotFoundException;
 import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -35,6 +36,15 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleEntityNotFoundEx(EntityNotFoundException ex, WebRequest request) {
         ApiError apiError = new ApiError(ex.getMessage());
         return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    protected ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException ex, Locale locale) {
+        ApiError apiError = new ApiError();
+        apiError.setMessage(messageSource.getMessage(ex.getMessage(), null, locale));
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setError(apiError);
+        return new ResponseEntity<>(errorResponse, HttpStatus.OK);
     }
 
     @Override

@@ -5,13 +5,16 @@ import com.example.mywebquizengine.model.userinfo.*;
 import com.example.mywebquizengine.model.userinfo.dto.input.*;
 import com.example.mywebquizengine.model.userinfo.dto.output.AuthResponse;
 import com.example.mywebquizengine.model.userinfo.dto.output.AuthResult;
-import com.example.mywebquizengine.service.AuthPhoneResponse;
-import com.example.mywebquizengine.service.AuthService;
+import com.example.mywebquizengine.model.userinfo.dto.output.AuthPhoneResponse;
+import com.example.mywebquizengine.service.user.AuthService;
 import com.example.mywebquizengine.model.common.Client;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
+/**
+ * Контроллер для входа в систему
+ */
 @RestController
 @RequestMapping(path = "/api")
 public class ApiSigningInController {
@@ -35,7 +38,9 @@ public class ApiSigningInController {
 
     @PostMapping(path = "/signin/google")
     public AuthResponse googleJwt(@Valid @RequestBody GoogleToken token) {
-        return new AuthResponse(authService.signInViaExternalServiceToken(token));
+        return new AuthResponse(
+                authService.signInViaExternalServiceToken(token)
+        );
     }
 
     @PostMapping(path = "/user/send-change-password-code")
@@ -60,24 +65,32 @@ public class ApiSigningInController {
     }
 
     @GetMapping(path = "/user/check-username")
-    public boolean checkExistUser(@RequestParam String username) {
-        return authService.checkForExistUser(username);
+    public SuccessfulResponse checkExistUser(@RequestParam String username) {
+        SuccessfulResponse successfulResponse = new SuccessfulResponse();
+        successfulResponse.setResult(authService.checkForExistUser(username));
+        return successfulResponse;
     }
 
     @PostMapping("/signup/phone")
     public SignInViaPhoneResponse signupViaPhone(@RequestBody AuthPhoneRequest authPhoneRequest) {
+
+        RegistrationModel registrationModel = new RegistrationModel();
+        registrationModel.setUsername(authPhoneRequest.getPhone());
+        registrationModel.setLastName(authPhoneRequest.getLastName());
+        registrationModel.setFirstName(authPhoneRequest.getFirstName());
+        registrationModel.setEmail(authPhoneRequest.getPhone());
+
         AuthPhoneResponse authPhoneResponse = authService.signUpViaPhone(
-                authPhoneRequest.getPhone(),
-                authPhoneRequest.getFirstName(),
-                authPhoneRequest.getLastName()
+                registrationModel
         );
         return new SignInViaPhoneResponse(authPhoneResponse);
     }
 
     @PostMapping("/signin/phone")
-    public SignInViaPhoneResponse signInViaPhone(@RequestBody AuthPhoneRequest authPhoneRequest) {
-        AuthPhoneResponse authPhoneResponse = authService.signInViaPhone(authPhoneRequest.getPhone());
-        return new SignInViaPhoneResponse(authPhoneResponse);
+    public SuccessfulResponse signInViaPhone(@RequestBody GetCodeRequest getCodeRequest) {
+        AuthPhoneResponse authPhoneResponse = authService.generateCodeForSignInViaPhone(getCodeRequest.getPhone());
+        SuccessfulResponse successfulResponse = new SuccessfulResponse();
+        successfulResponse.setResult(authPhoneResponse);
+        return successfulResponse;
     }
-
 }

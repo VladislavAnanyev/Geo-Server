@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.service;
+package com.example.mywebquizengine.service.user;
 
 import com.example.mywebquizengine.model.exception.GlobalErrorCode;
 import com.example.mywebquizengine.model.exception.UserNotFoundException;

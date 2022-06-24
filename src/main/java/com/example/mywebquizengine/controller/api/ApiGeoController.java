@@ -4,7 +4,7 @@ import com.example.mywebquizengine.model.geo.dto.input.GeolocationRequest;
 import com.example.mywebquizengine.model.geo.dto.output.MeetingViewCustomQuery;
 import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.service.GeoService;
-import com.example.mywebquizengine.service.GeolocationModel;
+import com.example.mywebquizengine.service.model.GeolocationModel;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;

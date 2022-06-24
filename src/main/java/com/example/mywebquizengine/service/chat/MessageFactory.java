@@ -1,9 +1,10 @@
-package com.example.mywebquizengine.service;
+package com.example.mywebquizengine.service.chat;
 
 import com.example.mywebquizengine.model.chat.domain.Dialog;
 import com.example.mywebquizengine.model.chat.domain.Message;
 import com.example.mywebquizengine.model.chat.domain.MessageStatus;
 import com.example.mywebquizengine.model.userinfo.domain.User;
+import com.example.mywebquizengine.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

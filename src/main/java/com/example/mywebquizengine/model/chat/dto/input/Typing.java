@@ -1,10 +1,11 @@
 package com.example.mywebquizengine.model.chat.dto.input;
 
+import com.example.mywebquizengine.model.chat.domain.Dialog;
 import com.example.mywebquizengine.model.userinfo.domain.User;
 
 public class Typing {
     private User user;
-    private Long dialogId;
+    private Dialog dialog;
 
     public Typing() {}
 
@@ -16,11 +17,11 @@ public class Typing {
         this.user = user;
     }
 
-    public Long getDialogId() {
-        return dialogId;
+    public Dialog getDialog() {
+        return dialog;
     }
 
-    public void setDialogId(Long dialogId) {
-        this.dialogId = dialogId;
+    public void setDialog(Dialog dialog) {
+        this.dialog = dialog;
     }
 }

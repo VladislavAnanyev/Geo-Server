@@ -14,7 +14,7 @@ public class ProjectionUtil {
     @Autowired
     private SpelAwareProxyProjectionFactory pf;
 
-    public <T> T parseToProjection(Object obj, Class<T> clazz) {
+    public <T> T parse(Object obj, Class<T> clazz) {
         return pf.createProjection(clazz, obj);
     }
 

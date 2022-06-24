@@ -3,7 +3,7 @@ package com.example.mywebquizengine.service.utils;
 import com.example.mywebquizengine.MywebquizengineApplication;
 import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.model.userinfo.dto.output.UserCommonView;
-import com.example.mywebquizengine.service.UserService;
+import com.example.mywebquizengine.service.user.UserService;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.http.HttpStatus;

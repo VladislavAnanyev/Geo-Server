@@ -8,6 +8,8 @@ import com.example.mywebquizengine.model.userinfo.domain.User;
 import com.example.mywebquizengine.model.userinfo.dto.input.ChangePasswordRequest;
 import com.example.mywebquizengine.model.userinfo.dto.input.RegistrationRequest;
 import com.example.mywebquizengine.service.*;
+import com.example.mywebquizengine.service.user.AuthService;
+import com.example.mywebquizengine.service.user.UserService;
 import com.example.mywebquizengine.service.utils.JWTUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.simple.parser.ParseException;

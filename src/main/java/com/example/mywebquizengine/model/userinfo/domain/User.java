@@ -2,7 +2,7 @@ package com.example.mywebquizengine.model.userinfo.domain;
 
 import com.example.mywebquizengine.model.chat.domain.Dialog;
 import com.example.mywebquizengine.MywebquizengineApplication;
-import com.example.mywebquizengine.service.UserService;
+import com.example.mywebquizengine.service.user.UserService;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -43,7 +43,9 @@ public class User implements UserDetails, OAuth2User {
     @Size(min = 5)
     private String password;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
+    private String avatar;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
     @OrderBy("position ASC")
     private List<Photo> photos;
 
@@ -74,6 +76,14 @@ public class User implements UserDetails, OAuth2User {
 
     private static final long serialVersionUID = -7422293274841574951L;
 
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
     @ManyToMany
     @JoinTable(name = "users_friends",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -89,18 +99,16 @@ public class User implements UserDetails, OAuth2User {
     @ColumnDefault("false")
     private boolean online;
 
-    public User(){
+    private Calendar signInViaPhoneCodeExpiration;
+
+    @OneToMany(mappedBy = "user")
+    private List<Device> devices;
+
+    public User() {
         this.accountNonExpired = true;
         this.accountNonLocked = true;
         this.credentialsNonExpired = true;
         this.enabled = true;
-    }
-
-    public User(String username, String firstName, String lastName, List<Photo> photos) {
-        this.username = username;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.photos = photos;
     }
 
     public User(Long userId, String username, String firstName, String lastName, String avatar, boolean online) {
@@ -115,6 +123,22 @@ public class User implements UserDetails, OAuth2User {
         photos.add(photo);
         this.photos = photos;
         this.online = online;
+    }
+
+    public List<Device> getDevices() {
+        return devices;
+    }
+
+    public void setDevices(List<Device> devices) {
+        this.devices = devices;
+    }
+
+    public Calendar getSignInViaPhoneCodeExpiration() {
+        return signInViaPhoneCodeExpiration;
+    }
+
+    public void setSignInViaPhoneCodeExpiration(Calendar signInViaPhoneCodeExpiration) {
+        this.signInViaPhoneCodeExpiration = signInViaPhoneCodeExpiration;
     }
 
     public void setOnline(boolean online) {
