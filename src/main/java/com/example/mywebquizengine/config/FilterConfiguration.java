@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.config;
 
-import com.example.mywebquizengine.security.JWTFilter;
+import com.example.mywebquizengine.auth.security.JWTFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

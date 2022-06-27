@@ -1,10 +1,10 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.model.chat.dto.input.EditMessageRequest;
-import com.example.mywebquizengine.model.chat.dto.output.DialogView;
-import com.example.mywebquizengine.model.chat.dto.output.LastDialog;
-import com.example.mywebquizengine.model.userinfo.domain.User;
-import com.example.mywebquizengine.service.chat.MessageService;
+import com.example.mywebquizengine.chat.model.dto.input.EditMessageRequest;
+import com.example.mywebquizengine.chat.model.dto.output.DialogView;
+import com.example.mywebquizengine.chat.model.dto.output.LastDialog;
+import com.example.mywebquizengine.user.model.domain.User;
+import com.example.mywebquizengine.chat.service.MessageFacade;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
@@ -15,22 +15,22 @@ import java.util.List;
 @RequestMapping(path = "/api")
 public class ApiChatController {
 
-    private final MessageService messageService;
+    private final MessageFacade messageFacade;
 
-    public ApiChatController(MessageService messageService) {
-        this.messageService = messageService;
+    public ApiChatController(MessageFacade messageFacade) {
+        this.messageFacade = messageFacade;
     }
 
     @DeleteMapping(path = "/message/{id}")
     public void deleteMessage(@PathVariable Long id,
                               @ApiIgnore @AuthenticationPrincipal User authUser) {
-        messageService.deleteMessage(id, authUser.getUserId());
+        messageFacade.deleteMessage(id, authUser.getUserId());
     }
 
     @PutMapping(path = "/message/{id}")
     public void editMessage(@PathVariable Long id, @RequestBody EditMessageRequest editMessageRequest,
                             @ApiIgnore @AuthenticationPrincipal User authUser) {
-        messageService.editMessage(id, editMessageRequest.getContent(), authUser.getUserId());
+        messageFacade.editMessage(id, editMessageRequest.getContent(), authUser.getUserId());
     }
 
     @GetMapping(path = "/dialog/{dialogId}")
@@ -39,17 +39,17 @@ public class ApiChatController {
                                   @RequestParam(required = false, defaultValue = "50") Integer pageSize,
                                   @RequestParam(defaultValue = "timestamp") String sortBy,
                                   @ApiIgnore @AuthenticationPrincipal User authUser) {
-        return messageService.getMessages(dialogId, page, pageSize, sortBy, authUser.getUserId());
+        return messageFacade.getChatRoom(dialogId, page, pageSize, sortBy, authUser.getUserId());
     }
 
     @GetMapping(path = "/dialogs")
     public List<LastDialog> getDialogs(@ApiIgnore @AuthenticationPrincipal User authUser) {
-        return messageService.getDialogs(authUser.getUserId());
+        return messageFacade.getLastDialogs(authUser.getUserId());
     }
 
     @PostMapping(path = "/dialog/create")
     public Long checkDialog(@RequestParam Long userId, @ApiIgnore @AuthenticationPrincipal User authUser) {
-        return messageService.createDialog(userId, authUser.getUserId());
+        return messageFacade.createDialog(userId, authUser.getUserId());
     }
 
 }

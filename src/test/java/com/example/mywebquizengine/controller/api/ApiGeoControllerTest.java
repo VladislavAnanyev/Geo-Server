@@ -1,8 +1,7 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.model.geo.dto.output.MeetingViewCustomQuery;
-import com.example.mywebquizengine.repos.MeetingRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.mywebquizengine.meeting.model.dto.output.MeetingView;
+import com.example.mywebquizengine.meeting.repository.MeetingRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +10,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -55,7 +53,7 @@ public class ApiGeoControllerTest {
         timestamp = Timestamp.from(new GregorianCalendar().toInstant());
         String time = timestamp.toString();
 
-        List<MeetingViewCustomQuery> myMeetings = meetingRepository.getMyMeetings(1005L, time.substring(0, 10));
+        List<MeetingView> myMeetings = meetingRepository.getMyMeetings(1005L, time.substring(0, 10));
         assertEquals(2, myMeetings.size());
     }
 

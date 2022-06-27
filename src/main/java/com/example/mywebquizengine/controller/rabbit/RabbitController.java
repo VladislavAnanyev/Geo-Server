@@ -1,13 +1,8 @@
 package com.example.mywebquizengine.controller.rabbit;
 
-import com.example.mywebquizengine.model.chat.dto.input.SendMessageRequest;
-import com.example.mywebquizengine.model.chat.dto.input.Typing;
-import com.example.mywebquizengine.model.rabbit.MessageType;
-import com.example.mywebquizengine.model.rabbit.RealTimeEvent;
-import com.example.mywebquizengine.model.rabbit.Type;
-import com.example.mywebquizengine.service.MessageFacade;
-import com.example.mywebquizengine.service.utils.JWTUtil;
-import com.example.mywebquizengine.service.chat.MessageService;
+import com.example.mywebquizengine.common.rabbit.RealTimeEvent;
+import com.example.mywebquizengine.common.rabbit.Type;
+import com.example.mywebquizengine.common.utils.JWTUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
@@ -20,11 +15,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.server.ResponseStatusException;
 
-import static java.util.stream.Collectors.toMap;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 @Controller
 @EnableRabbit
@@ -56,7 +48,6 @@ public class RabbitController {
 
         EventProcessor eventProcessor = map.get(realTimeEvent.getType());
         eventProcessor.process(realTimeEvent, userId);
-
     }
 
     private boolean isAuthenticate(String token) {

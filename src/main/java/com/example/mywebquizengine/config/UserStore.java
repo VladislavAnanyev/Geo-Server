@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.config;
 
-import com.example.mywebquizengine.security.ActiveUserStore;
+import com.example.mywebquizengine.auth.security.ActiveUserStore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

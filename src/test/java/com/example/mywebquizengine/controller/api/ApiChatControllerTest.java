@@ -1,10 +1,10 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.model.chat.domain.Dialog;
-import com.example.mywebquizengine.model.chat.domain.Message;
-import com.example.mywebquizengine.model.chat.domain.MessageStatus;
-import com.example.mywebquizengine.repos.DialogRepository;
-import com.example.mywebquizengine.repos.MessageRepository;
+import com.example.mywebquizengine.chat.model.domain.Dialog;
+import com.example.mywebquizengine.chat.model.domain.Message;
+import com.example.mywebquizengine.chat.model.domain.MessageStatus;
+import com.example.mywebquizengine.chat.repository.DialogRepository;
+import com.example.mywebquizengine.chat.repository.MessageRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
@@ -15,7 +15,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 

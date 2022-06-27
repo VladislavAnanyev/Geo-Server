@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.model.userinfo.domain.Photo;
-import com.example.mywebquizengine.repos.PhotoRepository;
+import com.example.mywebquizengine.photo.model.domain.Photo;
+import com.example.mywebquizengine.photo.repository.PhotoRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

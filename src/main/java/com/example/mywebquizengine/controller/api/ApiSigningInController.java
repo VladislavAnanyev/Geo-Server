@@ -1,13 +1,12 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.model.common.SuccessfulResponse;
-import com.example.mywebquizengine.model.userinfo.*;
-import com.example.mywebquizengine.model.userinfo.dto.input.*;
-import com.example.mywebquizengine.model.userinfo.dto.output.AuthResponse;
-import com.example.mywebquizengine.model.userinfo.dto.output.AuthResult;
-import com.example.mywebquizengine.model.userinfo.dto.output.AuthPhoneResponse;
-import com.example.mywebquizengine.service.user.AuthService;
-import com.example.mywebquizengine.model.common.Client;
+import com.example.mywebquizengine.auth.model.RegistrationType;
+import com.example.mywebquizengine.auth.model.dto.output.*;
+import com.example.mywebquizengine.auth.service.AuthService;
+import com.example.mywebquizengine.auth.util.RegistrationModelMapper;
+import com.example.mywebquizengine.common.common.SuccessfulResponse;
+import com.example.mywebquizengine.auth.model.dto.input.*;
+import com.example.mywebquizengine.common.common.Client;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;

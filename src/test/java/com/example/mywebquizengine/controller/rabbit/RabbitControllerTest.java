@@ -1,9 +1,9 @@
 package com.example.mywebquizengine.controller.rabbit;
 
-import com.example.mywebquizengine.model.chat.domain.Message;
-import com.example.mywebquizengine.repos.MessageRepository;
-import com.example.mywebquizengine.repos.UserRepository;
-import com.example.mywebquizengine.service.utils.JWTUtil;
+import com.example.mywebquizengine.chat.model.domain.Message;
+import com.example.mywebquizengine.chat.repository.MessageRepository;
+import com.example.mywebquizengine.user.repository.UserRepository;
+import com.example.mywebquizengine.common.utils.JWTUtil;
 import com.rabbitmq.client.Channel;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -19,10 +19,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.transaction.Transactional;
 import javax.validation.ConstraintViolationException;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 import static org.junit.Assert.*;

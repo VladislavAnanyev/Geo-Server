@@ -1,12 +1,12 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.model.chat.domain.Message;
-import com.example.mywebquizengine.model.geo.domain.Meeting;
-import com.example.mywebquizengine.model.request.dto.output.RequestView;
-import com.example.mywebquizengine.model.request.domain.Request;
-import com.example.mywebquizengine.model.request.dto.input.RequestDto;
-import com.example.mywebquizengine.model.userinfo.domain.User;
-import com.example.mywebquizengine.service.RequestService;
+import com.example.mywebquizengine.chat.model.domain.Message;
+import com.example.mywebquizengine.meeting.model.domain.Meeting;
+import com.example.mywebquizengine.request.model.dto.output.RequestView;
+import com.example.mywebquizengine.request.model.domain.Request;
+import com.example.mywebquizengine.request.model.dto.input.RequestDto;
+import com.example.mywebquizengine.user.model.domain.User;
+import com.example.mywebquizengine.request.service.RequestService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;

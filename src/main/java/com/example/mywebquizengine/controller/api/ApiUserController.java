@@ -1,10 +1,10 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.model.userinfo.dto.output.ProfileView;
-import com.example.mywebquizengine.model.userinfo.dto.output.UserCommonView;
-import com.example.mywebquizengine.model.userinfo.dto.output.AuthUserView;
-import com.example.mywebquizengine.model.userinfo.domain.User;
-import com.example.mywebquizengine.service.user.UserService;
+import com.example.mywebquizengine.user.model.dto.ProfileView;
+import com.example.mywebquizengine.user.model.dto.UserCommonView;
+import com.example.mywebquizengine.user.model.dto.AuthUserView;
+import com.example.mywebquizengine.user.model.domain.User;
+import com.example.mywebquizengine.user.service.UserService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;

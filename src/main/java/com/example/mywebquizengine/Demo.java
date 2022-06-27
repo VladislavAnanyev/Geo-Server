@@ -1,6 +1,6 @@
 package com.example.mywebquizengine;
 
-import com.example.mywebquizengine.repos.UserRepository;
+import com.example.mywebquizengine.user.repository.UserRepository;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;

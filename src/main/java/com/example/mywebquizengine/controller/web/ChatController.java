@@ -1,12 +1,13 @@
 package com.example.mywebquizengine.controller.web;
 
 
-import com.example.mywebquizengine.model.chat.dto.output.DialogView;
-import com.example.mywebquizengine.model.userinfo.domain.User;
-import com.example.mywebquizengine.service.model.CreateGroupModelMapper;
-import com.example.mywebquizengine.service.chat.MessageService;
-import com.example.mywebquizengine.service.user.UserService;
-import com.example.mywebquizengine.service.utils.RabbitUtil;
+import com.example.mywebquizengine.chat.model.dto.input.CreateGroupRequest;
+import com.example.mywebquizengine.chat.model.dto.output.DialogView;
+import com.example.mywebquizengine.user.model.domain.User;
+import com.example.mywebquizengine.chat.service.MessageFacade;
+import com.example.mywebquizengine.chat.util.CreateGroupModelMapper;
+import com.example.mywebquizengine.user.service.UserService;
+import com.example.mywebquizengine.common.utils.RabbitUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,13 +30,13 @@ public class ChatController {
     private UserService userService;
 
     @Autowired
-    private MessageService messageService;
+    private MessageFacade messageFacade;
 
     @GetMapping(path = "/chat")
     public String chat(Model model, @AuthenticationPrincipal User authUser) {
 
         model.addAttribute("myUsername", authUser.getUserId());
-        model.addAttribute("lastDialogs", messageService.getDialogs(authUser.getUserId()));
+        model.addAttribute("lastDialogs", messageFacade.getLastDialogs(authUser.getUserId()));
         model.addAttribute("userList", userService.findMyFriends(authUser.getUserId()));
         return "chat";
     }
@@ -50,7 +51,7 @@ public class ChatController {
     @ResponseBody
     @PreAuthorize(value = "!#authUser.userId.equals(#user.userId)")
     public Long checkDialog(@RequestBody User user, @AuthenticationPrincipal User authUser) {
-        return messageService.createDialog(user.getUserId(), authUser.getUserId());
+        return messageFacade.createDialog(user.getUserId(), authUser.getUserId());
     }
 
     @GetMapping(path = "/chat/{dialog_id}")
@@ -61,9 +62,9 @@ public class ChatController {
                                @RequestParam(defaultValue = "timestamp") String sortBy,
                                @AuthenticationPrincipal User authUser) {
 
-        DialogView dialog = messageService.getMessages(Long.valueOf(dialog_id), page, pageSize, sortBy, authUser.getUserId());
+        DialogView dialog = messageFacade.getChatRoom(Long.valueOf(dialog_id), page, pageSize, sortBy, authUser.getUserId());
 
-        model.addAttribute("lastDialogs", messageService.getDialogs(authUser.getUserId()));
+        model.addAttribute("lastDialogs", messageFacade.getLastDialogs(authUser.getUserId()));
         model.addAttribute("dialog", dialog.getDialogId());
         model.addAttribute("messages", dialog.getMessages());
         model.addAttribute("dialogObj", dialog);
@@ -79,13 +80,13 @@ public class ChatController {
                                         @RequestParam(required = false, defaultValue = "50") @Min(1) @Max(100) Integer pageSize,
                                         @RequestParam(defaultValue = "timestamp") String sortBy,
                                         @AuthenticationPrincipal User authUser) {
-        return messageService.getMessages(Long.valueOf(dialog_id), page, pageSize, sortBy, authUser.getUserId());
+        return messageFacade.getChatRoom(Long.valueOf(dialog_id), page, pageSize, sortBy, authUser.getUserId());
     }
 
     @PostMapping(path = "/createGroup")
     @ResponseBody
     public Long createGroup(@Valid @RequestBody CreateGroupRequest request, @AuthenticationPrincipal User authUser) {
-        return messageService.createGroup(CreateGroupModelMapper.map(request, authUser.getUserId()));
+        return messageFacade.createGroup(CreateGroupModelMapper.map(request, authUser.getUserId()));
     }
 
     @GetMapping(path = "/error")

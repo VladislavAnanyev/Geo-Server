@@ -1,9 +1,9 @@
 package com.example.mywebquizengine.controller.web;
 
-import com.example.mywebquizengine.model.order.Order;
-import com.example.mywebquizengine.model.userinfo.domain.User;
-import com.example.mywebquizengine.service.PaymentServices;
-import com.example.mywebquizengine.service.user.UserService;
+import com.example.mywebquizengine.order.model.domain.Order;
+import com.example.mywebquizengine.user.model.domain.User;
+import com.example.mywebquizengine.order.service.PaymentServices;
+import com.example.mywebquizengine.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;

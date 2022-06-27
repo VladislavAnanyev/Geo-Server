@@ -1,10 +1,10 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.model.common.SuccessfulResponse;
-import com.example.mywebquizengine.model.userinfo.domain.User;
-import com.example.mywebquizengine.repos.UserRepository;
-import com.example.mywebquizengine.model.userinfo.dto.output.AuthPhoneResponse;
-import com.example.mywebquizengine.service.sender.BusinessEmailSender;
+import com.example.mywebquizengine.common.common.SuccessfulResponse;
+import com.example.mywebquizengine.user.model.domain.User;
+import com.example.mywebquizengine.user.repository.UserRepository;
+import com.example.mywebquizengine.auth.model.dto.output.AuthPhoneResponse;
+import com.example.mywebquizengine.user.service.BusinessEmailSender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -276,10 +276,9 @@ public class ApiUserControllerTest {
 
     @Test
     public void testCheckExistUsername() throws Exception {
-        String status = mockMvc.perform(get("/api/user/check-username?username=user1").secure(true))
-                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        mockMvc.perform(get("/api/user/check-username?username=user1").secure(true))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.result.exist").value(true));
 
-        assertTrue(Boolean.parseBoolean(status));
     }
 
     @Test
