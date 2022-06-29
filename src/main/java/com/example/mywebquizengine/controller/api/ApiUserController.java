@@ -38,6 +38,7 @@ public class ApiUserController {
 
     @GetMapping(path = "/authuser")
     public AuthUserView getApiAuthUser(@ApiIgnore @AuthenticationPrincipal User authUser) {
+        //test
         return userService.getAuthUser(authUser.getUserId());
     }
 
