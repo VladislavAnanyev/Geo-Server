@@ -2,17 +2,20 @@ package com.example.mywebquizengine.chat.repository;
 
 import com.example.mywebquizengine.chat.model.domain.Message;
 import com.example.mywebquizengine.chat.model.domain.MessageStatus;
-
 import com.example.mywebquizengine.chat.model.dto.output.LastDialog;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.List;
 
-public interface MessageRepository extends CrudRepository<Message, Long>, PagingAndSortingRepository<Message, Long> {
+public interface MessageRepository extends
+        CrudRepository<Message, Long>,
+        JpaRepository<Message, Long>,
+        PagingAndSortingRepository<Message, Long> {
 
     Page<Message> findAllByDialog_DialogIdAndStatusNot(Long dialogId, MessageStatus status, Pageable paging);
 

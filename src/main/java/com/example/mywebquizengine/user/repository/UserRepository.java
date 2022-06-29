@@ -52,11 +52,6 @@ public interface UserRepository extends CrudRepository<User, Long>, JpaRepositor
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE USERS SET CHANGE_PASSWORD_CODE = :mes WHERE USERNAME = :username", nativeQuery = true)
-    void setChangePasswordCode(String username, String mes);
-
-    @Modifying
-    @Transactional
     @Query(value = "UPDATE USERS SET ONLINE = :status WHERE USERNAME = :username", nativeQuery = true)
     void setOnline(String username, String status);
 

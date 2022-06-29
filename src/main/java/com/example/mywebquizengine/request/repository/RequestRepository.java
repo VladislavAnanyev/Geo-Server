@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.request.repository;
 
+import com.example.mywebquizengine.request.model.domain.RequestStatus;
 import com.example.mywebquizengine.request.model.dto.output.RequestView;
 
 import com.example.mywebquizengine.request.model.domain.Request;
@@ -18,20 +19,20 @@ public interface RequestRepository extends CrudRepository<Request, Long>, JpaRep
 
     /*A and (B or C) <=> (A and B) or (A and C)
     * FindByStatusAnd(ToUsernameOrSenderUsername)*/
-    ArrayList<RequestView> findByStatusAndToUserIdOrStatusAndSenderUserId(String status, @NotBlank Long toUserId, String status2, @NotBlank Long senderUserId);
+    ArrayList<RequestView> findByStatusAndToUserIdOrStatusAndSenderUserId(RequestStatus status, @NotBlank Long toUserId, RequestStatus status2, @NotBlank Long senderUserId);
 
     ArrayList<RequestView> findByMeetingMeetingIdAndSenderUserId(Long meetingId, Long userId);
 
-    Optional<Request> findAllByMeetingMeetingIdAndStatusAndSenderUserId(Long meetingId, String status, Long userId);
+    Optional<Request> findAllByMeetingMeetingIdAndStatusAndSenderUserId(Long meetingId, RequestStatus status, Long userId);
 
     ArrayList<Request> findAllByMeetingMeetingId(Long meetingId);
 
-    ArrayList<RequestView> findAllBySenderUserIdAndStatus(Long userId, String status);
+    ArrayList<RequestView> findAllBySenderUserIdAndStatus(Long userId, RequestStatus status);
 
     @Modifying
     @Transactional
     @Query(nativeQuery = true, value = "UPDATE REQUESTS SET STATUS = :status WHERE REQUEST_ID = :id")
     void updateStatus(Long id, String status);
 
-    List<Request> findBySenderUserIdAndToUserIdAndStatus(Long username, Long username1, String pending);
+    List<Request> findBySenderUserIdAndToUserIdAndStatus(Long username, Long username1, RequestStatus pending);
 }

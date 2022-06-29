@@ -12,7 +12,7 @@ public interface ProfileView {
     String getUsername();
     String getFirstName();
     String getLastName();
-    List<Photo> getPhotos();
+    List<PhotoView> getPhotos();
     String getEmail();
     String getOnline();
 }

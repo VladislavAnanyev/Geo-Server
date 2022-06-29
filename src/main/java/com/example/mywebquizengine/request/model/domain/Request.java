@@ -5,6 +5,7 @@ import com.example.mywebquizengine.chat.model.domain.Message;
 import com.example.mywebquizengine.meeting.model.domain.Meeting;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity(name = "REQUESTS")
 public class Request {
@@ -19,7 +20,8 @@ public class Request {
     @ManyToOne(fetch = FetchType.LAZY)
     private User to;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private RequestStatus status;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "meeting_id")
@@ -53,12 +55,12 @@ public class Request {
         this.to = to;
     }
 
-    public String getStatus() {
-        return status;
+    public void setStatus(RequestStatus status) {
+        this.status = status;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public RequestStatus getStatus() {
+        return status;
     }
 
     public Meeting getMeeting() {
@@ -75,5 +77,9 @@ public class Request {
 
     public void setMessage(Message message) {
         this.message = message;
+    }
+
+    public Set<User> getUsers() {
+        return Set.of(sender, to);
     }
 }

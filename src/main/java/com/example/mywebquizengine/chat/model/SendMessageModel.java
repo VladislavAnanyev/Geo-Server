@@ -9,6 +9,7 @@ import javax.validation.constraints.NotNull;
 @Data
 @Accessors(chain = true)
 public class SendMessageModel {
+    @NotNull
     private Long senderId;
     @NotNull
     private Long dialogId;

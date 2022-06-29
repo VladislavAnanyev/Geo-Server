@@ -13,7 +13,7 @@ public interface AuthUserView {
     String getUsername();
     String getFirstName();
     String getLastName();
-    List<Photo> getPhotos();
+    List<PhotoView> getPhotos();
     String getEmail();
     Integer getBalance();
     List<Role> getRoles();

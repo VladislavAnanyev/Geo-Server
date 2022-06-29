@@ -1,13 +1,10 @@
 package com.example.mywebquizengine.auth.model.dto.output;
 
+import lombok.Data;
+import lombok.experimental.Accessors;
+
+@Data
+@Accessors(chain = true)
 public class UserExistDto {
     private boolean exist;
-
-    public boolean isExist() {
-        return exist;
-    }
-
-    public void setExist(boolean exist) {
-        this.exist = exist;
-    }
 }

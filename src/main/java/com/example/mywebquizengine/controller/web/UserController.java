@@ -1,9 +1,11 @@
 package com.example.mywebquizengine.controller.web;
 
+import com.example.mywebquizengine.auth.AuthFacade;
 import com.example.mywebquizengine.auth.model.dto.input.RegistrationModel;
 import com.example.mywebquizengine.auth.util.RegistrationModelMapper;
 import com.example.mywebquizengine.auth.model.RegistrationType;
 import com.example.mywebquizengine.common.common.Client;
+import com.example.mywebquizengine.request.RequestFacade;
 import com.example.mywebquizengine.user.model.dto.AuthUserView;
 import com.example.mywebquizengine.request.model.domain.Request;
 import com.example.mywebquizengine.user.model.domain.User;
@@ -13,8 +15,6 @@ import com.example.mywebquizengine.request.service.RequestService;
 import com.example.mywebquizengine.auth.service.AuthService;
 import com.example.mywebquizengine.user.service.UserService;
 import com.example.mywebquizengine.common.utils.JWTUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -26,7 +26,6 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 
@@ -37,13 +36,16 @@ public class UserController {
     private UserService userService;
 
     @Autowired
-    private RequestService requestService;
-
-    @Autowired
     private JWTUtil jwtUtil;
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private AuthFacade authFacade;
+
+    @Autowired
+    private RequestFacade requestFacade;
 
     @GetMapping(path = "/friends")
     public String getFriends(Model model, @ApiIgnore @AuthenticationPrincipal User authUser) {
@@ -87,7 +89,6 @@ public class UserController {
         return user.getBalance();
     }
 
-
     @GetMapping(path = "/activate/{activationCode}")
     public String activate(@PathVariable String activationCode) {
         userService.activateAccount(activationCode);
@@ -97,13 +98,13 @@ public class UserController {
     @PostMapping(path = "/register")
     public String checkIn(@Valid RegistrationRequest registrationRequest) {
         RegistrationModel registrationModel = RegistrationModelMapper.map(registrationRequest);
-        authService.signUp(registrationModel, RegistrationType.BASIC);
+        authService.saveUser(registrationModel, RegistrationType.BASIC);
         return "reg";
     }
 
     @PostMapping("/user/password/request")
     public void tryToChangePassword(@RequestBody String username) {
-        authService.changePassword(username, Client.WEB);
+        authService.setChangePassword(username, Client.WEB);
     }
 
     @GetMapping("/loginSuccess")
@@ -125,7 +126,7 @@ public class UserController {
     @PutMapping(path = "/updatepass/{changePasswordCode}", consumes = {"application/json"})
     public String changePasswordUsingCode(@RequestBody ChangePasswordRequest request, @PathVariable String changePasswordCode) {
         request.setCode(changePasswordCode);
-        authService.updatePassword(request.getUsername(), request.getCode(), request.getPassword());
+        authFacade.updatePassword(request.getUsername(), request.getCode(), request.getPassword());
         return "changePassword";
     }
 
@@ -146,7 +147,6 @@ public class UserController {
             model.addAttribute("user", user);
             return "user";
         }
-
     }
 
     @GetMapping(path = "/getUserList")
@@ -157,29 +157,34 @@ public class UserController {
 
     @PostMapping(path = "/sendRequest")
     @ResponseBody
-    public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal User authUser) throws JsonProcessingException, ParseException, NoSuchAlgorithmException {
-        requestService.sendRequest(request, authUser.getUserId());
+    public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal User authUser) {
+        requestFacade.sendRequest(
+                request.getMeeting().getMeetingId(),
+                authUser.getUserId(),
+                request.getTo().getUserId(),
+                request.getMessage().getContent()
+        );
     }
 
     @GetMapping(path = "/requests")
     public String getMyRequests(Model model, @AuthenticationPrincipal User authUser) {
 
         model.addAttribute("myUsername", authUser.getUserId());
-        model.addAttribute("meetings", requestService.getMyRequests(authUser.getUserId()));
+        model.addAttribute("meetings", requestFacade.getMyRequests(authUser.getUserId()));
 
         return "requests";
     }
 
     @PostMapping(path = "/acceptRequest")
     @ResponseBody
-    public Long acceptRequest(@RequestBody Request request, @AuthenticationPrincipal User authUser) throws JsonProcessingException, ParseException, NoSuchAlgorithmException {
-        return requestService.acceptRequest(request.getRequestId(), authUser.getUserId());
+    public Long acceptRequest(@RequestBody Request request, @AuthenticationPrincipal User authUser) {
+        return requestFacade.acceptRequest(request.getRequestId(), authUser.getUserId());
     }
 
     @PostMapping(path = "/rejectRequest")
     @ResponseBody
     public void rejectRequest(@RequestBody Request requestId, @AuthenticationPrincipal User authUser) {
-        requestService.rejectRequest(requestId.getRequestId(), authUser.getUserId());
+        requestFacade.rejectRequest(requestId.getRequestId(), authUser.getUserId());
     }
 
     @GetMapping(path = "/testConnection")

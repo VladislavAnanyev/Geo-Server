@@ -1,19 +1,14 @@
 package com.example.mywebquizengine.auth.model.dto.output;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Accessors(chain = true)
 public class AuthPhoneResponse {
     private String code;
-
-    public AuthPhoneResponse() {}
-
-    public AuthPhoneResponse(String code) {
-        this.code = code;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
 }

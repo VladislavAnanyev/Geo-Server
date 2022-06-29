@@ -1,12 +1,16 @@
 package com.example.mywebquizengine.controller.api;
 
+import com.example.mywebquizengine.auth.AuthFacade;
 import com.example.mywebquizengine.auth.model.RegistrationType;
-import com.example.mywebquizengine.auth.model.dto.output.*;
-import com.example.mywebquizengine.auth.service.AuthService;
-import com.example.mywebquizengine.auth.util.RegistrationModelMapper;
-import com.example.mywebquizengine.common.common.SuccessfulResponse;
 import com.example.mywebquizengine.auth.model.dto.input.*;
+import com.example.mywebquizengine.auth.model.dto.output.AuthPhoneResponse;
+import com.example.mywebquizengine.auth.model.dto.output.AuthResponse;
+import com.example.mywebquizengine.auth.model.dto.output.AuthResult;
+import com.example.mywebquizengine.auth.model.dto.output.SignInViaPhoneResponse;
+import com.example.mywebquizengine.auth.util.RegistrationModelMapper;
 import com.example.mywebquizengine.common.common.Client;
+import com.example.mywebquizengine.common.common.SuccessfulResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -18,39 +22,41 @@ import javax.validation.Valid;
 @RequestMapping(path = "/api")
 public class ApiSigningInController {
 
-    private final AuthService authService;
-
-    public ApiSigningInController(AuthService authService) {
-        this.authService = authService;
-    }
+    @Autowired
+    private AuthFacade authFacade;
 
     @PostMapping(path = "/signin")
     public AuthResponse jwtSignIn(@Valid @RequestBody AuthRequest authRequest) {
-        return new AuthResponse(authService.signInViaApi(authRequest));
+        return new AuthResponse(
+                authFacade.signIn(authRequest)
+        );
     }
 
     @PostMapping(path = "/signup")
     public AuthResponse signup(@Valid @RequestBody RegistrationRequest request) {
-        AuthResult authResult = authService.signUp(RegistrationModelMapper.map(request), RegistrationType.BASIC);
+        AuthResult authResult = authFacade.signUp(
+                RegistrationModelMapper.map(request),
+                RegistrationType.BASIC
+        );
         return new AuthResponse(authResult);
     }
 
     @PostMapping(path = "/signin/google")
     public AuthResponse googleJwt(@Valid @RequestBody GoogleToken token) {
         return new AuthResponse(
-                authService.signInViaExternalServiceToken(token)
+                authFacade.signInViaExternalService(token)
         );
     }
 
     @PostMapping(path = "/user/send-change-password-code")
     public SuccessfulResponse sendChangePasswordCode(@RequestParam String username) {
-        authService.changePassword(username, Client.MOBILE);
+        authFacade.createAndSendChangePasswordCodeToUser(username, Client.MOBILE);
         return new SuccessfulResponse();
     }
 
     @PostMapping(path = "/user/verify-password-code")
     public SuccessfulResponse verifyChangePasswordCode(@Valid @RequestBody VerifyCodeRequest verifyCodeRequest) {
-        authService.verifyChangePasswordCode(
+        authFacade.verifyChangePasswordCode(
                 verifyCodeRequest.getUsername(),
                 verifyCodeRequest.getCode()
         );
@@ -59,35 +65,32 @@ public class ApiSigningInController {
 
     @PutMapping(path = "/user/password")
     public SuccessfulResponse changePassword(@Valid @RequestBody ChangePasswordRequest request) {
-        authService.updatePassword(request.getUsername(), request.getCode(), request.getPassword());
+        authFacade.updatePassword(request.getUsername(), request.getCode(), request.getPassword());
         return new SuccessfulResponse();
     }
 
     @GetMapping(path = "/user/check-username")
     public SuccessfulResponse checkExistUser(@RequestParam String username) {
         SuccessfulResponse successfulResponse = new SuccessfulResponse();
-        successfulResponse.setResult(authService.checkForExistUser(username));
+        successfulResponse.setResult(authFacade.checkForExistUser(username));
         return successfulResponse;
     }
 
     @PostMapping("/signup/phone")
     public SignInViaPhoneResponse signupViaPhone(@RequestBody AuthPhoneRequest authPhoneRequest) {
-
-        RegistrationModel registrationModel = new RegistrationModel();
-        registrationModel.setUsername(authPhoneRequest.getPhone());
-        registrationModel.setLastName(authPhoneRequest.getLastName());
-        registrationModel.setFirstName(authPhoneRequest.getFirstName());
-        registrationModel.setEmail(authPhoneRequest.getPhone());
-
-        AuthPhoneResponse authPhoneResponse = authService.signUpViaPhone(
-                registrationModel
+        RegistrationModel registrationModel = new RegistrationModel()
+                .setUsername(authPhoneRequest.getPhone())
+                .setLastName(authPhoneRequest.getLastName())
+                .setFirstName(authPhoneRequest.getFirstName())
+                .setEmail(authPhoneRequest.getPhone());
+        return new SignInViaPhoneResponse(
+                authFacade.signUpViaPhone(registrationModel)
         );
-        return new SignInViaPhoneResponse(authPhoneResponse);
     }
 
     @PostMapping("/signin/phone")
     public SuccessfulResponse signInViaPhone(@RequestBody GetCodeRequest getCodeRequest) {
-        AuthPhoneResponse authPhoneResponse = authService.generateCodeForSignInViaPhone(getCodeRequest.getPhone());
+        AuthPhoneResponse authPhoneResponse = authFacade.createAndSendOneTimePassword(getCodeRequest.getPhone());
         SuccessfulResponse successfulResponse = new SuccessfulResponse();
         successfulResponse.setResult(authPhoneResponse);
         return successfulResponse;

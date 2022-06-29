@@ -57,7 +57,7 @@ public class User implements UserDetails, OAuth2User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "dialog_id")
     )
-    private List<Dialog> dialogs = new ArrayList<>();
+    private Set<Dialog> dialogs = new HashSet<>();
 
     @Transient
     private boolean accountNonExpired;
@@ -336,11 +336,11 @@ public class User implements UserDetails, OAuth2User {
         this.description = description;
     }
 
-    public List<Dialog> getDialogs() {
+    public Set<Dialog> getDialogs() {
         return dialogs;
     }
 
-    public void setDialogs(List<Dialog> dialogs) {
+    public void setDialogs(Set<Dialog> dialogs) {
         this.dialogs = dialogs;
     }
 }
