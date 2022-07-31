@@ -1,5 +1,5 @@
 # WebQuiz
-Web Quiz Service // Spring, Hibernate, freemarker
+Web Quiz Service // Spring, Hiber, freemarker
 
 https://webquizzes.me/
 ...
