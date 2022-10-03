@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.controller.rabbit;
+package com.example.mywebquizengine.common.rabbit;
 
 import javax.validation.constraints.NotNull;
 

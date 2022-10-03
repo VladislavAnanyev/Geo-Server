@@ -1,12 +1,9 @@
-package com.example.mywebquizengine.controller.rabbit;
+package com.example.mywebquizengine.common.rabbit;
 
 import com.example.mywebquizengine.chat.facade.MessageFacade;
 import com.example.mywebquizengine.chat.model.ForwardedMessages;
 import com.example.mywebquizengine.chat.model.SendMessageModel;
 import com.example.mywebquizengine.chat.model.dto.input.SendMessageRequest;
-import com.example.mywebquizengine.common.rabbit.MessageType;
-import com.example.mywebquizengine.common.rabbit.RealTimeEvent;
-import com.example.mywebquizengine.common.rabbit.Type;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,11 +19,10 @@ public class NewMessageEventHandler implements EventProcessor {
 
     @Override
     public void process(RealTimeEvent realTimeEvent, Long userId) {
-        SendMessageRequest sendMessageRequest = objectMapper
-                .convertValue(
-                        realTimeEvent.getPayload(),
-                        SendMessageRequest.class
-                );
+        SendMessageRequest sendMessageRequest = objectMapper.convertValue(
+                realTimeEvent.getPayload(),
+                SendMessageRequest.class
+        );
 
         SendMessageModel sendMessageModel = new SendMessageModel()
                 .setContent(sendMessageRequest.getContent())

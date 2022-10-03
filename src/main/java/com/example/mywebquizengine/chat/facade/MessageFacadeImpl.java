@@ -17,7 +17,7 @@ import com.example.mywebquizengine.common.rabbit.MessageType;
 import com.example.mywebquizengine.common.utils.ProjectionUtil;
 import com.example.mywebquizengine.chat.model.ChangeMessageStatusEvent;
 import com.example.mywebquizengine.chat.model.FileResponse;
-import com.example.mywebquizengine.controller.rabbit.ChangeMessageStatusEventView;
+import com.example.mywebquizengine.common.rabbit.ChangeMessageStatusEventView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -1,9 +1,6 @@
-package com.example.mywebquizengine.controller.rabbit;
+package com.example.mywebquizengine.common.rabbit;
 
 import com.example.mywebquizengine.chat.model.dto.input.TypingRequest;
-import com.example.mywebquizengine.common.rabbit.MessageType;
-import com.example.mywebquizengine.common.rabbit.RealTimeEvent;
-import com.example.mywebquizengine.common.rabbit.Type;
 import com.example.mywebquizengine.chat.facade.MessageFacade;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -11,24 +11,14 @@ import java.util.List;
 
 public interface MessageFacade {
     void sendMessage(SendMessageModel sendMessageModel);
-
     void typingMessage(Long dialogId, Long userId);
-
     void deleteMessage(Long messageId, Long userId);
-
     void editMessage(Long messageId, String content, Long userId);
-
     DialogView getChatRoom(Long dialogId, Integer page, Integer pageSize, String sortBy, Long userId);
-
     List<LastDialog> getLastDialogs(Long userId);
-
     List<NewLastDialog> getNewLastDialogs(Long userId);
-
     Long createGroup(CreateGroupModel model);
-
     Long createDialog(Long firstUserId, Long secondUserId);
-
     void receiveMessages(Long userId, Long dialogId);
-
     List<FileResponse> getAttachments(Long id);
 }

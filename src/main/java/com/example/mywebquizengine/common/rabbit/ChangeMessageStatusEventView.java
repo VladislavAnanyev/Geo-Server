@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.controller.rabbit;
+package com.example.mywebquizengine.common.rabbit;
 
 import com.example.mywebquizengine.chat.model.domain.MessageStatus;
 import org.springframework.beans.factory.annotation.Value;
