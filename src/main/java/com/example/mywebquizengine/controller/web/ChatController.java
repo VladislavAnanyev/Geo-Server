@@ -4,7 +4,7 @@ package com.example.mywebquizengine.controller.web;
 import com.example.mywebquizengine.chat.model.dto.input.CreateGroupRequest;
 import com.example.mywebquizengine.chat.model.dto.output.DialogView;
 import com.example.mywebquizengine.user.model.domain.User;
-import com.example.mywebquizengine.chat.service.MessageFacade;
+import com.example.mywebquizengine.chat.facade.MessageFacade;
 import com.example.mywebquizengine.chat.util.CreateGroupModelMapper;
 import com.example.mywebquizengine.user.service.UserService;
 import com.example.mywebquizengine.common.utils.RabbitUtil;
@@ -20,6 +20,7 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import java.util.ArrayList;
 
 
 @Controller
@@ -36,8 +37,8 @@ public class ChatController {
     public String chat(Model model, @AuthenticationPrincipal User authUser) {
 
         model.addAttribute("myUsername", authUser.getUserId());
-        model.addAttribute("lastDialogs", messageFacade.getLastDialogs(authUser.getUserId()));
-        model.addAttribute("userList", userService.findMyFriends(authUser.getUserId()));
+        model.addAttribute("lastDialogs", messageFacade.getNewLastDialogs(authUser.getUserId()));
+        model.addAttribute("userList", new ArrayList<>());
         return "chat";
     }
 

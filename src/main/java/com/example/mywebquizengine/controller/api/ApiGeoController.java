@@ -2,9 +2,8 @@ package com.example.mywebquizengine.controller.api;
 
 import com.example.mywebquizengine.meeting.model.dto.input.GeolocationRequest;
 import com.example.mywebquizengine.meeting.model.dto.output.MeetingView;
-import com.example.mywebquizengine.meeting.service.GeolocationFacade;
+import com.example.mywebquizengine.meeting.facade.GeolocationFacade;
 import com.example.mywebquizengine.user.model.domain.User;
-import com.example.mywebquizengine.meeting.service.GeoService;
 import com.example.mywebquizengine.meeting.GeolocationModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController

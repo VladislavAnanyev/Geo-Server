@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.controller.web;
 
 import com.example.mywebquizengine.user.model.domain.User;
-import com.example.mywebquizengine.common.FileSystemStorageService;
+import com.example.mywebquizengine.common.service.FileSystemStorageService;
 import com.example.mywebquizengine.photo.service.PhotoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

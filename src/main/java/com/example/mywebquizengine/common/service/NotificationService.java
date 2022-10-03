@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.common;
+package com.example.mywebquizengine.common.service;
 
 import com.example.mywebquizengine.common.rabbit.MessageType;
 import com.example.mywebquizengine.common.rabbit.RealTimeEvent;

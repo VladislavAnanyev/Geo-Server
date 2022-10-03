@@ -1,17 +1,16 @@
 package com.example.mywebquizengine.controller.web;
 
-import com.example.mywebquizengine.auth.AuthFacade;
+import com.example.mywebquizengine.auth.facade.AuthFacade;
 import com.example.mywebquizengine.auth.model.dto.input.RegistrationModel;
 import com.example.mywebquizengine.auth.util.RegistrationModelMapper;
 import com.example.mywebquizengine.auth.model.RegistrationType;
-import com.example.mywebquizengine.common.common.Client;
+import com.example.mywebquizengine.common.model.Client;
 import com.example.mywebquizengine.request.RequestFacade;
 import com.example.mywebquizengine.user.model.dto.AuthUserView;
 import com.example.mywebquizengine.request.model.domain.Request;
 import com.example.mywebquizengine.user.model.domain.User;
 import com.example.mywebquizengine.auth.model.dto.input.ChangePasswordRequest;
 import com.example.mywebquizengine.auth.model.dto.input.RegistrationRequest;
-import com.example.mywebquizengine.request.service.RequestService;
 import com.example.mywebquizengine.auth.service.AuthService;
 import com.example.mywebquizengine.user.service.UserService;
 import com.example.mywebquizengine.common.utils.JWTUtil;

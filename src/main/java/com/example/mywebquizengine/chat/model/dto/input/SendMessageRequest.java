@@ -1,8 +1,17 @@
 package com.example.mywebquizengine.chat.model.dto.input;
 
+import com.example.mywebquizengine.chat.model.FileResponse;
+import com.example.mywebquizengine.chat.model.ForwardedMessagesRequest;
+import lombok.Data;
+import lombok.experimental.Accessors;
+
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.util.List;
 
+@Data
+@Accessors(chain = true)
 public class SendMessageRequest {
 
     @NotNull
@@ -16,37 +25,8 @@ public class SendMessageRequest {
     @NotBlank
     private String uniqueCode;
 
-    private String photoUrl;
+    private ForwardedMessagesRequest forwardedMessagesRequest;
 
-    public String getPhotoUrl() {
-        return photoUrl;
-    }
-
-    public void setPhotoUrl(String photoUrl) {
-        this.photoUrl = photoUrl;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public Long getDialogId() {
-        return dialogId;
-    }
-
-    public void setDialogId(Long dialogId) {
-        this.dialogId = dialogId;
-    }
-
-    public String getUniqueCode() {
-        return uniqueCode;
-    }
-
-    public void setUniqueCode(String uniqueCode) {
-        this.uniqueCode = uniqueCode;
-    }
+    @Size(max = 5)
+    private List<FileResponse> files;
 }

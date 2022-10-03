@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.common.common.SuccessfulResponse;
+import com.example.mywebquizengine.common.model.SuccessfulResponse;
 import com.example.mywebquizengine.user.model.domain.User;
 import com.example.mywebquizengine.user.repository.UserRepository;
 import com.example.mywebquizengine.auth.model.dto.output.AuthPhoneResponse;

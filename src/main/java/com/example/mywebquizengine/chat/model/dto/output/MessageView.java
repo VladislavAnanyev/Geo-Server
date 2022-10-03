@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.chat.model.dto.output;
 
-import com.example.mywebquizengine.chat.model.domain.MessagePhoto;
+import com.example.mywebquizengine.chat.model.domain.MessageFile;
 import com.example.mywebquizengine.chat.model.domain.MessageStatus;
 import com.example.mywebquizengine.user.model.dto.UserCommonView;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +16,7 @@ public interface MessageView {
     //@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     Date getTimestamp();
     List<MessageView> getForwardedMessages();
-    List<MessagePhoto> getPhotos();
+    List<MessageFile> getFiles();
     @Value("#{target.dialog.dialogId}")
     Long getDialogId();
     String getUniqueCode();

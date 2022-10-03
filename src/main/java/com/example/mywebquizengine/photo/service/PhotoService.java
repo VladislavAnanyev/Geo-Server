@@ -39,7 +39,12 @@ public class PhotoService {
         }
 
         Photo savedPhoto = optionalPhoto.get();
+
         List<Photo> photos = photoRepository.findByUser_UserId(userId);
+
+        if (position == 0) {
+            savedPhoto.getUser().setAvatar(savedPhoto.getUrl());
+        }
 
         photos.remove(((int) savedPhoto.getPosition()));
         photos.add(position, savedPhoto);
@@ -75,8 +80,13 @@ public class PhotoService {
             throw new LogicException("You must have at least one photo");
         }
 
-        photoRepository.deleteById(photoId);
         List<Photo> photos = photoRepository.findByUser_UserId(authUserId);
+        if (photo.getPosition() == 0) {
+            photo.getUser().setAvatar(photos.get(1).getUrl());
+        }
+
+        photoRepository.deleteById(photoId);
+
         for (int i = 0; i < photos.size(); i++) {
             photos.get(i).setPosition(i);
         }

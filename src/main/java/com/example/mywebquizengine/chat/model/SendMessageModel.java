@@ -5,6 +5,7 @@ import lombok.experimental.Accessors;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Data
 @Accessors(chain = true)
@@ -19,4 +20,6 @@ public class SendMessageModel {
     @NotNull
     @NotBlank
     private String uniqueCode;
+    private ForwardedMessages forwardedMessages;
+    private List<FileResponse> files;
 }

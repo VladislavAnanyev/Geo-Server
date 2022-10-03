@@ -1,10 +1,11 @@
-package com.example.mywebquizengine.chat.service;
+package com.example.mywebquizengine.chat.facade;
 
 import com.example.mywebquizengine.chat.model.dto.output.DialogView;
 import com.example.mywebquizengine.chat.model.dto.output.LastDialog;
 import com.example.mywebquizengine.chat.model.CreateGroupModel;
 import com.example.mywebquizengine.chat.model.SendMessageModel;
-import org.springframework.stereotype.Component;
+import com.example.mywebquizengine.chat.model.FileResponse;
+import com.example.mywebquizengine.chat.service.NewLastDialog;
 
 import java.util.List;
 
@@ -21,7 +22,13 @@ public interface MessageFacade {
 
     List<LastDialog> getLastDialogs(Long userId);
 
+    List<NewLastDialog> getNewLastDialogs(Long userId);
+
     Long createGroup(CreateGroupModel model);
 
     Long createDialog(Long firstUserId, Long secondUserId);
+
+    void receiveMessages(Long userId, Long dialogId);
+
+    List<FileResponse> getAttachments(Long id);
 }

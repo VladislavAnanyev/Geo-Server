@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.auth;
+package com.example.mywebquizengine.auth.service;
 
 import com.example.mywebquizengine.auth.service.AuthService;
 import com.example.mywebquizengine.common.exception.CodeExpiredException;

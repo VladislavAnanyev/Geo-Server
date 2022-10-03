@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.user.service;
 
-import com.example.mywebquizengine.common.common.Client;
-import com.example.mywebquizengine.common.MailSender;
+import com.example.mywebquizengine.common.model.Client;
+import com.example.mywebquizengine.common.service.MailSender;
 import com.example.mywebquizengine.user.model.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

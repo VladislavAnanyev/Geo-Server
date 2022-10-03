@@ -1,11 +1,12 @@
 package com.example.mywebquizengine.controller.rabbit;
 
+import com.example.mywebquizengine.chat.facade.MessageFacade;
+import com.example.mywebquizengine.chat.model.ForwardedMessages;
+import com.example.mywebquizengine.chat.model.SendMessageModel;
 import com.example.mywebquizengine.chat.model.dto.input.SendMessageRequest;
 import com.example.mywebquizengine.common.rabbit.MessageType;
 import com.example.mywebquizengine.common.rabbit.RealTimeEvent;
 import com.example.mywebquizengine.common.rabbit.Type;
-import com.example.mywebquizengine.chat.service.MessageFacade;
-import com.example.mywebquizengine.chat.model.SendMessageModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,11 +28,19 @@ public class NewMessageEventHandler implements EventProcessor {
                         SendMessageRequest.class
                 );
 
-        SendMessageModel sendMessageModel = new SendMessageModel();
-        sendMessageModel.setContent(sendMessageRequest.getContent());
-        sendMessageModel.setDialogId(sendMessageRequest.getDialogId());
-        sendMessageModel.setUniqueCode(sendMessageRequest.getUniqueCode());
-        sendMessageModel.setSenderId(userId);
+        SendMessageModel sendMessageModel = new SendMessageModel()
+                .setContent(sendMessageRequest.getContent())
+                .setDialogId(sendMessageRequest.getDialogId())
+                .setUniqueCode(sendMessageRequest.getUniqueCode())
+                .setSenderId(userId)
+                .setFiles(sendMessageRequest.getFiles());
+
+        if (sendMessageRequest.getForwardedMessagesRequest() != null) {
+            ForwardedMessages forwardedMessages = new ForwardedMessages()
+                    .setDialogId(sendMessageRequest.getDialogId())
+                    .setMessagesId(sendMessageRequest.getForwardedMessagesRequest().getMessagesId());
+            sendMessageModel.setForwardedMessages(forwardedMessages);
+        }
 
         messageFacade.sendMessage(sendMessageModel);
     }

@@ -3,8 +3,10 @@ package com.example.mywebquizengine.controller.api;
 import com.example.mywebquizengine.chat.model.dto.input.EditMessageRequest;
 import com.example.mywebquizengine.chat.model.dto.output.DialogView;
 import com.example.mywebquizengine.chat.model.dto.output.LastDialog;
+import com.example.mywebquizengine.chat.model.FileResponse;
+import com.example.mywebquizengine.chat.service.NewLastDialog;
 import com.example.mywebquizengine.user.model.domain.User;
-import com.example.mywebquizengine.chat.service.MessageFacade;
+import com.example.mywebquizengine.chat.facade.MessageFacade;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
@@ -43,13 +45,18 @@ public class ApiChatController {
     }
 
     @GetMapping(path = "/dialogs")
-    public List<LastDialog> getDialogs(@ApiIgnore @AuthenticationPrincipal User authUser) {
-        return messageFacade.getLastDialogs(authUser.getUserId());
+    public List<NewLastDialog> getDialogs(@ApiIgnore @AuthenticationPrincipal User authUser) {
+        return messageFacade.getNewLastDialogs(authUser.getUserId());
     }
 
     @PostMapping(path = "/dialog/create")
     public Long checkDialog(@RequestParam Long userId, @ApiIgnore @AuthenticationPrincipal User authUser) {
         return messageFacade.createDialog(userId, authUser.getUserId());
+    }
+
+    @GetMapping("/dialog/{id}/attachments")
+    public List<FileResponse> loadAttachments(@PathVariable Long id) {
+        return messageFacade.getAttachments(id);
     }
 
 }

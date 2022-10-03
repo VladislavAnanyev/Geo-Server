@@ -21,18 +21,45 @@ public interface MessageRepository extends
 
     @Query(value = """
             SELECT MESSAGES.MESSAGE_ID, content, DIALOGS.dialog_id as dialogId,
+                   MESSAGES.SENDER_USER_ID as userId, U.USERNAME as username,
+                   email, first_name as firstName, ONLINE as online, last_name as lastName,
+                   MESSAGES.status as status, image, name, timestamp as timestamp, AVATAR
+            FROM DIALOGS
+                     LEFT OUTER JOIN MESSAGES
+                                     on DIALOGS.last_message_id = MESSAGES.MESSAGE_ID
+                     LEFT OUTER JOIN USERS U
+                                     on U.USER_ID = MESSAGES.SENDER_USER_ID
+            WHERE MESSAGES.DIALOG_ID IN (
+                SELECT USERS_DIALOGS.DIALOG_ID
+                FROM USERS_DIALOGS WHERE USERS_DIALOGS.USER_ID = :userId
+                )
+              and MESSAGES.DIALOG_ID IN (
+                SELECT * FROM (SELECT D.DIALOG_ID FROM USERS_DIALOGS JOIN DIALOGS D on D.DIALOG_ID = USERS_DIALOGS.DIALOG_ID
+                JOIN USERS_FRIENDS
+                     ON USERS_FRIENDS.FRIEND_ID = USERS_DIALOGS.USER_ID
+                WHERE USERS_FRIENDS.USER_ID = :userId and name is null)
+                UNION
+                (SELECT D.DIALOG_ID FROM USERS_DIALOGS JOIN DIALOGS D on D.DIALOG_ID = USERS_DIALOGS.DIALOG_ID
+                WHERE USER_ID = :userId and name is not null)
+                )
+            ORDER BY MESSAGES.TIMESTAMP DESC;
+            """, nativeQuery = true)
+    List<LastDialog> getLastDialogs(Long userId);
+
+    List<Message> findAllByDialog_DialogIdAndStatusNotAndSenderUserIdNot(Long dialogId, MessageStatus deleted, Long userId);
+
+    @Query(value = """
+            SELECT MESSAGES.MESSAGE_ID, content, DIALOGS.dialog_id as dialogId,
                    MESSAGES.SENDER_USER_ID as userId, U.USERNAME as username, activation_code,
-                   balance, change_password_code, email, first_name as firstName,
-                   ONLINE as online, last_name as lastName, password,
+                   balance, email, first_name as firstName,
+                   ONLINE as online, last_name as lastName,
                    MESSAGES.status as status, image, name, timestamp as timestamp,
-                   up.URL as avatar
+                   AVATAR
             FROM MESSAGES
                      LEFT OUTER JOIN USERS U
                                      on U.USER_ID = MESSAGES.SENDER_USER_ID
                      LEFT OUTER JOIN DIALOGS
                                      on DIALOGS.DIALOG_ID = MESSAGES.DIALOG_ID
-                     LEFT OUTER JOIN (SELECT * FROM USERS_PHOTOS WHERE POSITION = 0) AS UP
-                                     on U.USER_ID = UP.USER_ID
             WHERE MESSAGES.TIMESTAMP IN (
                 SELECT MAX(MESSAGES.TIMESTAMP)
                 FROM MESSAGES
@@ -54,6 +81,5 @@ public interface MessageRepository extends
                 )
             ORDER BY MESSAGES.TIMESTAMP DESC;
             """, nativeQuery = true)
-    List<LastDialog> getLastDialogs(Long userId);
-
+    List<LastDialog> getLastDialogs2(Long userId);
 }

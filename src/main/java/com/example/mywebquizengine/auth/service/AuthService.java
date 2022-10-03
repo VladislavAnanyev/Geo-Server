@@ -1,9 +1,11 @@
 package com.example.mywebquizengine.auth.service;
 
+import com.example.mywebquizengine.auth.repository.TokenRepository;
+import com.example.mywebquizengine.auth.model.UserToken;
 import com.example.mywebquizengine.auth.model.RegistrationType;
 import com.example.mywebquizengine.auth.model.dto.input.AuthRequest;
 import com.example.mywebquizengine.auth.model.dto.input.RegistrationModel;
-import com.example.mywebquizengine.common.common.Client;
+import com.example.mywebquizengine.common.model.Client;
 import com.example.mywebquizengine.common.exception.*;
 import com.example.mywebquizengine.common.utils.AuthenticationUtil;
 import com.example.mywebquizengine.common.utils.CodeUtil;
@@ -18,8 +20,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Сервис для регистрации/входа/смены пароля
@@ -35,6 +39,8 @@ public class AuthService implements UserDetailsService {
     private UserFactory userFactory;
     @Autowired
     private AuthenticationManager authenticationManager;
+    @Autowired
+    private TokenRepository tokenRepository;
 
     @Override
     public User loadUserByUsername(String username) throws UserNotFoundException {
@@ -105,7 +111,7 @@ public class AuthService implements UserDetailsService {
      * @param authRequest - модель содержащая логин и пароль
      * @return - модель содержащая имя обмена, jwt и идентификатор пользователя
      */
-    public User signIn(AuthRequest authRequest) {
+    public User authenticate(AuthRequest authRequest) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -119,7 +125,6 @@ public class AuthService implements UserDetailsService {
                     GlobalErrorCode.ERROR_WRONG_USERNAME_OR_PASSWORD
             );
         }
-
         return findUserByUsername(authRequest.getUsername());
     }
 
@@ -229,5 +234,15 @@ public class AuthService implements UserDetailsService {
         String code = CodeUtil.generateShortCode();
         user.setPassword(passwordEncoder.encode(code));
         return code;
+    }
+
+    public UserToken updateRefreshToken(String oldRefreshToken) {
+        Optional<UserToken> optionalUserToken = tokenRepository.findById(oldRefreshToken);
+        if (optionalUserToken.isPresent()) {
+            UserToken userToken = optionalUserToken.get();
+            String newRefreshToken = UUID.randomUUID().toString();
+            userToken.setRefreshToken(newRefreshToken);
+            return tokenRepository.save(userToken);
+        } else throw new EntityNotFoundException("Токен не найден");
     }
 }

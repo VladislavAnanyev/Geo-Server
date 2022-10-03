@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.common.common;
+package com.example.mywebquizengine.common.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;

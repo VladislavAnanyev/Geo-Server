@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.auth;
+package com.example.mywebquizengine.auth.facade;
 
 import com.example.mywebquizengine.auth.model.RegistrationType;
 import com.example.mywebquizengine.auth.model.dto.input.AuthRequest;
@@ -6,7 +6,7 @@ import com.example.mywebquizengine.auth.model.dto.input.RegistrationModel;
 import com.example.mywebquizengine.auth.model.dto.output.AuthPhoneResponse;
 import com.example.mywebquizengine.auth.model.dto.output.AuthResult;
 import com.example.mywebquizengine.auth.model.dto.output.UserExistDto;
-import com.example.mywebquizengine.common.common.Client;
+import com.example.mywebquizengine.common.model.Client;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,4 +21,6 @@ public interface AuthFacade {
     AuthPhoneResponse createAndSendOneTimePassword(String phone);
     UserExistDto checkForExistUser(String username);
     void verifyChangePasswordCode(String username, String changePasswordCode);
+
+    AuthResult getNewAccessToken(String refreshToken);
 }

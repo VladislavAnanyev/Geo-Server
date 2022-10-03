@@ -1,6 +1,6 @@
-package com.example.mywebquizengine.meeting.service;
+package com.example.mywebquizengine.meeting.facade;
 
-import com.example.mywebquizengine.common.NotificationService;
+import com.example.mywebquizengine.common.service.NotificationService;
 import com.example.mywebquizengine.common.rabbit.MeetingType;
 import com.example.mywebquizengine.common.utils.ProjectionUtil;
 import com.example.mywebquizengine.meeting.GeolocationModel;
@@ -9,6 +9,7 @@ import com.example.mywebquizengine.meeting.model.domain.Meeting;
 import com.example.mywebquizengine.meeting.model.dto.output.GeolocationView;
 import com.example.mywebquizengine.meeting.model.dto.output.MeetingView;
 import com.example.mywebquizengine.meeting.model.dto.output.MeetingViewForNotification;
+import com.example.mywebquizengine.meeting.service.GeoService;
 import com.example.mywebquizengine.user.model.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

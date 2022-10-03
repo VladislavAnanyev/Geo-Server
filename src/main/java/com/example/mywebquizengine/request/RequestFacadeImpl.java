@@ -2,7 +2,7 @@ package com.example.mywebquizengine.request;
 
 import com.example.mywebquizengine.chat.model.SendMessageModel;
 import com.example.mywebquizengine.chat.service.MessageService;
-import com.example.mywebquizengine.common.NotificationService;
+import com.example.mywebquizengine.common.service.NotificationService;
 import com.example.mywebquizengine.common.rabbit.FriendType;
 import com.example.mywebquizengine.common.rabbit.RequestType;
 import com.example.mywebquizengine.common.utils.ProjectionUtil;

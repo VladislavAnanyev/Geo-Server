@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.common;
+package com.example.mywebquizengine.common.service;
 
 import org.springframework.stereotype.Service;
 
@@ -6,6 +6,5 @@ import org.springframework.stereotype.Service;
 public class SmsSender {
     public void sendCodeToPhone(String code, String phone) {
         // todo реализовать
-
     }
 }

@@ -3,7 +3,7 @@ package com.example.mywebquizengine.common;
 import com.example.mywebquizengine.common.exception.ApiError;
 import com.example.mywebquizengine.common.exception.GlobalException;
 import com.example.mywebquizengine.common.exception.LogicException;
-import com.example.mywebquizengine.common.common.ErrorResponse;
+import com.example.mywebquizengine.common.model.ErrorResponse;
 import com.example.mywebquizengine.common.exception.UserNotFoundException;
 import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
 import org.springframework.beans.factory.annotation.Autowired;

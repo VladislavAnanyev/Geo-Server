@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.controller.api;
 
-import com.example.mywebquizengine.auth.AuthFacade;
+import com.example.mywebquizengine.auth.facade.AuthFacade;
 import com.example.mywebquizengine.auth.model.RegistrationType;
 import com.example.mywebquizengine.auth.model.dto.input.*;
 import com.example.mywebquizengine.auth.model.dto.output.AuthPhoneResponse;
@@ -8,8 +8,8 @@ import com.example.mywebquizengine.auth.model.dto.output.AuthResponse;
 import com.example.mywebquizengine.auth.model.dto.output.AuthResult;
 import com.example.mywebquizengine.auth.model.dto.output.SignInViaPhoneResponse;
 import com.example.mywebquizengine.auth.util.RegistrationModelMapper;
-import com.example.mywebquizengine.common.common.Client;
-import com.example.mywebquizengine.common.common.SuccessfulResponse;
+import com.example.mywebquizengine.common.model.Client;
+import com.example.mywebquizengine.common.model.SuccessfulResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -94,5 +94,12 @@ public class ApiSigningInController {
         SuccessfulResponse successfulResponse = new SuccessfulResponse();
         successfulResponse.setResult(authPhoneResponse);
         return successfulResponse;
+    }
+
+    @PostMapping("/refresh")
+    public AuthResponse getNewAccessToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+        return new AuthResponse(
+                authFacade.getNewAccessToken(refreshTokenRequest.getRefreshToken())
+        );
     }
 }

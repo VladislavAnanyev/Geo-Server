@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.auth.model.dto.output;
 
-import com.example.mywebquizengine.common.common.SuccessfulResponse;
+import com.example.mywebquizengine.common.model.SuccessfulResponse;
 
 public class AuthResponse extends SuccessfulResponse {
     private AuthResult result;

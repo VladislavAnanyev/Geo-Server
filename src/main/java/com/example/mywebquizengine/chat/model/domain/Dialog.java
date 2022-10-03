@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,8 +23,14 @@ public class Dialog {
 
     private String image;
 
+    private DialogType type;
+
+    @OneToOne
+    @JoinColumn(name = "last_message_id")
+    private Message lastMessage;
+
     @Size(min = 2)
-    @ManyToMany(mappedBy = "dialogs", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "dialogs", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     private Set<User> users = new HashSet<>();
 
     @Transient
@@ -81,6 +88,14 @@ public class Dialog {
         user.getDialogs().add(this);
     }
 
+    public Message getLastMessage() {
+        return lastMessage;
+    }
+
+    public void setLastMessage(Message lastMessage) {
+        this.lastMessage = lastMessage;
+    }
+
     public String getName() {
         return name;
     }
@@ -95,5 +110,13 @@ public class Dialog {
 
     public void setPaging(Pageable paging) {
         this.paging = paging;
+    }
+
+    public DialogType getType() {
+        return type;
+    }
+
+    public void setType(DialogType type) {
+        this.type = type;
     }
 }

@@ -1,10 +1,9 @@
 package com.example.mywebquizengine.controller.web;
 
-import com.example.mywebquizengine.meeting.GeolocationModel;
 import com.example.mywebquizengine.meeting.model.domain.Geolocation;
 import com.example.mywebquizengine.meeting.model.dto.input.GeolocationRequest;
 import com.example.mywebquizengine.meeting.model.dto.output.GeolocationView;
-import com.example.mywebquizengine.meeting.service.GeolocationFacade;
+import com.example.mywebquizengine.meeting.facade.GeolocationFacade;
 import com.example.mywebquizengine.user.model.domain.User;
 import com.example.mywebquizengine.user.model.dto.UserCommonView;
 import com.example.mywebquizengine.user.service.UserService;
@@ -33,12 +32,12 @@ public class GeoController {
 
     @PostMapping(path = "/sendGeolocation")
     @ResponseBody
-    public void sendGeolocation(@AuthenticationPrincipal User user,
+    public void sendGeolocation(/*@AuthenticationPrincipal User user,*/
                                 @RequestBody GeolocationRequest geolocationRequest) {
-        GeolocationModel geolocationModel = new GeolocationModel();
+        /*GeolocationModel geolocationModel = new GeolocationModel();
         geolocationModel.setLng(geolocationRequest.getLng());
         geolocationModel.setLat(geolocationRequest.getLat());
-        geolocationFacade.processGeolocation(user.getUserId(), geolocationModel);
+        geolocationFacade.processGeolocation(user.getUserId(), geolocationModel);*/
     }
 
     @GetMapping(path = "/getAllGeoWithoutMe")

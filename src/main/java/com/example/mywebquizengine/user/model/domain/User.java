@@ -93,7 +93,7 @@ public class User implements UserDetails, OAuth2User {
     private List<User> friends;
 
     @Enumerated(EnumType.STRING)
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(joinColumns = @JoinColumn(name = "user_id"))
     private List<Role> roles;
 

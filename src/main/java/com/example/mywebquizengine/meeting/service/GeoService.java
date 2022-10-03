@@ -9,6 +9,7 @@ import com.example.mywebquizengine.meeting.repository.GeolocationRepository;
 import com.example.mywebquizengine.meeting.repository.MeetingRepository;
 import com.example.mywebquizengine.user.service.UserService;
 import io.micrometer.core.instrument.util.IOUtils;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -27,6 +28,7 @@ import java.util.*;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class GeoService {
 
     @Autowired

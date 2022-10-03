@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.meeting.service;
+package com.example.mywebquizengine.meeting.facade;
 
 import com.example.mywebquizengine.meeting.GeolocationModel;
 import com.example.mywebquizengine.meeting.model.domain.Geolocation;

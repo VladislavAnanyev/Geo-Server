@@ -1,6 +1,5 @@
-package com.example.mywebquizengine.common;
+package com.example.mywebquizengine.common.service;
 
-import com.example.mywebquizengine.common.MailSender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

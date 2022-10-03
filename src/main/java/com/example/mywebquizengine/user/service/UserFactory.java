@@ -33,15 +33,21 @@ public class UserFactory {
         if (type.equals(RegistrationType.BASIC)) {
             user.setPassword(passwordEncoder.encode(registrationModel.getPassword()));
             user.setStatus(false);
-            user.setPhotos(Collections.singletonList(hostname + "/img/default.jpg"));
+            String avatar = hostname + "/img/default.jpg";
+            user.setAvatar(avatar);
+            user.setPhotos(Collections.singletonList(avatar));
             user.setActivationCode(CodeUtil.generateLongCode());
         } else if (type.equals(RegistrationType.OAUTH2)) {
+            user.setAvatar(registrationModel.getAvatar());
             user.setPhotos(Collections.singletonList(registrationModel.getAvatar()));
             user.setStatus(true);
         } else if (type.equals(RegistrationType.PHONE)) {
             user.setPassword(passwordEncoder.encode(registrationModel.getPassword()));
             user.setStatus(true);
-            user.setPhotos(Collections.singletonList(hostname + "/img/default.jpg"));
+            String avatar = hostname + "/img/default.jpg";
+            user.setAvatar(avatar);
+            user.setPhotos(Collections.singletonList(avatar));
+
             GregorianCalendar calendar = new GregorianCalendar();
             calendar.add(Calendar.MINUTE, 3);
             user.setSignInViaPhoneCodeExpiration(calendar);

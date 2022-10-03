@@ -16,6 +16,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Map;
 
 @Controller
@@ -37,6 +39,8 @@ public class RabbitController {
     @RabbitListener(queues = "incoming-messages", ackMode = "MANUAL")
     public void sendMessageFromAMQPClient(org.springframework.amqp.core.Message messageFromRabbit, Channel channel,
                                           @Header(AmqpHeaders.DELIVERY_TAG) Long tag) throws IOException {
+        System.out.println(LocalDateTime.now());
+        System.out.println("Начало");
         channel.basicAck(tag, false);
         Object authorizationToken = messageFromRabbit.getMessageProperties().getHeaders().get("Authorization");
         if (!isAuthenticate(authorizationToken.toString())) {
@@ -45,9 +49,10 @@ public class RabbitController {
         }
 
         RealTimeEvent realTimeEvent = objectMapper.readValue(messageFromRabbit.getBody(), RealTimeEvent.class);
-
         EventProcessor eventProcessor = map.get(realTimeEvent.getType());
         eventProcessor.process(realTimeEvent, userId);
+        System.out.println("Конец");
+        System.out.println(LocalDateTime.now());
     }
 
     private boolean isAuthenticate(String token) {

@@ -2,15 +2,16 @@ package com.example.mywebquizengine.chat.service;
 
 
 import com.example.mywebquizengine.chat.model.CreateGroupModel;
+import com.example.mywebquizengine.chat.model.FileResponse;
 import com.example.mywebquizengine.chat.model.SendMessageModel;
-import com.example.mywebquizengine.chat.model.domain.Dialog;
-import com.example.mywebquizengine.chat.model.domain.Message;
-import com.example.mywebquizengine.chat.model.domain.MessageStatus;
+import com.example.mywebquizengine.chat.model.domain.*;
 import com.example.mywebquizengine.chat.model.dto.input.Typing;
 import com.example.mywebquizengine.chat.model.dto.output.LastDialog;
 import com.example.mywebquizengine.chat.repository.DialogRepository;
 import com.example.mywebquizengine.chat.repository.MessageRepository;
+import com.example.mywebquizengine.common.utils.ProjectionUtil;
 import com.example.mywebquizengine.user.model.domain.User;
+import com.example.mywebquizengine.user.model.dto.UserCommonView;
 import com.example.mywebquizengine.user.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
@@ -22,10 +23,7 @@ import org.springframework.validation.annotation.Validated;
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Validated
@@ -37,13 +35,15 @@ public class MessageService {
     private final MessageFactory messageFactory;
     @Value("${hostname}")
     private String hostname;
+    private final ProjectionUtil projectionUtil;
 
     public MessageService(MessageRepository messageRepository, DialogRepository dialogRepository,
-                          UserService userService, MessageFactory messageFactory) {
+                          UserService userService, MessageFactory messageFactory, ProjectionUtil projectionUtil) {
         this.messageRepository = messageRepository;
         this.dialogRepository = dialogRepository;
         this.userService = userService;
         this.messageFactory = messageFactory;
+        this.projectionUtil = projectionUtil;
     }
 
     public Long createDialog(Long firstUserId, Long secondUserId) {
@@ -58,6 +58,7 @@ public class MessageService {
             Dialog dialog = new Dialog();
             dialog.addUser(userService.loadUserByUserId(firstUserId));
             dialog.addUser(userService.loadUserByUserId(secondUserId));
+            dialog.setType(DialogType.PRIVATE);
             dialogRepository.save(dialog);
             return dialog.getDialogId();
         }
@@ -68,12 +69,47 @@ public class MessageService {
     }
 
     @Transactional
+    public List<NewLastDialog> getDialogsV2(Long userId) {
+        User user = userService.loadUserByUserId(userId);
+        Set<Dialog> dialogs = user.getDialogs();
+
+        List<NewLastDialog> lastDialogs = new ArrayList<>();
+
+        for (Dialog dialog : dialogs) {
+            if (dialog.getLastMessage() != null) {
+                NewLastDialog newLastDialog = new NewLastDialog();
+                newLastDialog.setDialogId(dialog.getDialogId());
+                newLastDialog.setContent(dialog.getLastMessage().getContent());
+                newLastDialog.setTimestamp(dialog.getLastMessage().getTimestamp());
+
+                if (dialog.getName() == null) {
+                    Set<User> userSet = new HashSet<>(dialog.getUsers());
+                    userSet.removeIf(user2 -> user2.getUserId().equals(userId));
+                    newLastDialog.setName(userSet.iterator().next().getUsername());
+                    newLastDialog.setImage(userSet.iterator().next().getAvatar());
+                } else {
+                    newLastDialog.setName(dialog.getName());
+                    newLastDialog.setImage(dialog.getImage());
+                }
+
+                newLastDialog.setStatus(dialog.getLastMessage().getStatus().toString());
+                newLastDialog.setLastSender(projectionUtil.parse(dialog.getLastMessage().getSender(), UserCommonView.class));
+                lastDialogs.add(newLastDialog);
+            }
+        }
+
+        return lastDialogs;
+    }
+
+
+    @Transactional
     public Message setDeletedStatus(Long messageId, Long userId) {
         Message message = findMessageById(messageId);
         if (!isCanModifyMessage(message.getSender().getUserId(), userId)) {
             throw new SecurityException("Вы не можете удалить это сообщение");
         }
         message.setStatus(MessageStatus.DELETED);
+        updateMessageStatusHistory(userId, message, MessageStatus.DELETED);
         return message;
     }
 
@@ -92,11 +128,6 @@ public class MessageService {
                 paging
         ).getContent();
 
-        for (Message message : messages) {
-            if (message.getStatus().equals(MessageStatus.DELIVERED) && !message.getSender().getUserId().equals(userId)) {
-                message.setStatus(MessageStatus.RECEIVED);
-            }
-        }
 
         List<Message> messageList = new ArrayList<>(messages);
         Collections.reverse(messageList);
@@ -113,8 +144,9 @@ public class MessageService {
             throw new SecurityException("Вы не можете изменить это сообщение");
         }
 
+        message.setStatus(MessageStatus.EDITED);
         message.setContent(content);
-        message.setStatus(MessageStatus.EDIT);
+        updateMessageStatusHistory(authUserId, message, MessageStatus.EDITED);
         return message;
     }
 
@@ -128,11 +160,15 @@ public class MessageService {
                 sendMessageModel.getContent(), sendMessageModel.getUniqueCode(),
                 sendMessageModel.getSenderId(), dialog
         );
+        message.setStatus(MessageStatus.DELIVERED);
+        updateMessageStatusHistory(sendMessageModel.getSenderId(), message, MessageStatus.DELIVERED);
+        dialog.setLastMessage(message);
         return messageRepository.save(message);
     }
 
     public Dialog createGroup(CreateGroupModel model) {
         Dialog dialog = new Dialog();
+        dialog.setType(DialogType.GROUP);
         model.getUsers().forEach(userId -> dialog.addUser(userService.loadUserByUserId(userId)));
 
         if (!isUserContainsInDialog(dialog, model.getAuthUserId())) {
@@ -164,12 +200,91 @@ public class MessageService {
         return typing;
     }
 
-    private Dialog findDialogById(Long dialogId) {
+    public List<Message> readMessages(List<Message> messages, Long userId) {
+        return tryToChangeMessagesStatus(
+                messages,
+                userId,
+                MessageStatus.READ
+        );
+    }
+
+    public List<Message> receiveMessages(List<Message> messages, Long userId) {
+        return tryToChangeMessagesStatus(
+                messages,
+                userId,
+                MessageStatus.RECEIVED
+        );
+    }
+
+    public Dialog findDialogById(Long dialogId) {
         Optional<Dialog> dialog = dialogRepository.findById(dialogId);
         if (dialog.isPresent()) {
             return dialog.get();
         } else {
             throw new EntityNotFoundException("Dialog not found");
+        }
+    }
+
+    public List<FileResponse> getAttachments(Long dialogId) {
+        Optional<Dialog> optionalDialog = dialogRepository.findById(dialogId);
+        if (optionalDialog.isEmpty()) {
+            throw new EntityNotFoundException("dialog not found");
+        }
+
+        Dialog dialog = optionalDialog.get();
+        List<FileResponse> files = new ArrayList<>();
+        for (Message message : dialog.getMessages()) {
+            for (MessageFile file : message.getFiles()) {
+                FileResponse fileResponse = new FileResponse()
+                        .setFilename(file.getFilename())
+                        .setContentType(file.getContentType())
+                        .setOriginalName(file.getOriginalName());
+                files.add(fileResponse);
+            }
+        }
+        return files;
+    }
+
+    private List<Message> tryToChangeMessagesStatus(List<Message> messages, Long userId, MessageStatus messageStatus) {
+        List<Message> justNowReadMessages = new ArrayList<>();
+        for (Message message : messages) {
+            boolean isAlreadyRead = isStatusInfoExistInHistory(
+                    message,
+                    userId,
+                    messageStatus
+            );
+            if (!isAlreadyRead) {
+                updateMessageStatusHistory(userId, message, messageStatus);
+                justNowReadMessages.add(message);
+            }
+        }
+        return justNowReadMessages;
+    }
+
+    private boolean isStatusInfoExistInHistory(Message message, Long userId, MessageStatus messageStatus) {
+        List<MessageStatusHistory> historyList = message.getMessageStatusHistoryList();
+
+        return historyList.stream().anyMatch(
+                historyItem -> historyItem.getUser().getUserId().equals(userId) &&
+                        historyItem.getMessageStatus().equals(messageStatus)
+        );
+    }
+
+    private void updateMessageStatusHistory(Long authUserId, Message message, MessageStatus messageStatus) {
+        MessageStatusHistory statusHistoryInfo = new MessageStatusHistory()
+                .setUser(userService.loadUserByUserIdProxy(authUserId))
+                .setTimestamp(new Date())
+                .setMessage(message)
+                .setMessageStatus(messageStatus);
+
+        if (message.getMessageStatusHistoryList() == null) {
+            message.setMessageStatusHistoryList(
+                    Collections.singletonList(statusHistoryInfo)
+            );
+        } else {
+            message.getMessageStatusHistoryList().add(
+                    statusHistoryInfo
+            );
         }
     }
 

@@ -23,7 +23,6 @@ public class MessageFactory {
         message.setSender(sender);
         message.setContent(content);
         message.setTimestamp(new Date());
-        message.setStatus(MessageStatus.DELIVERED);
         message.setUniqueCode(uniqueCode == null ? UUID.randomUUID().toString() : uniqueCode);
         message.setDialog(dialog);
         return message;

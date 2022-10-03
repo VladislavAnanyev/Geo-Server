@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.auth;
+package com.example.mywebquizengine.auth.service;
 
 import com.example.mywebquizengine.user.model.domain.Device;
 import com.example.mywebquizengine.user.model.domain.User;

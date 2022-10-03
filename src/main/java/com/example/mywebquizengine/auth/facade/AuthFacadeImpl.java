@@ -1,5 +1,6 @@
-package com.example.mywebquizengine.auth;
+package com.example.mywebquizengine.auth.facade;
 
+import com.example.mywebquizengine.auth.model.UserToken;
 import com.example.mywebquizengine.auth.model.RegistrationType;
 import com.example.mywebquizengine.auth.model.dto.input.AuthRequest;
 import com.example.mywebquizengine.auth.model.dto.input.RegistrationModel;
@@ -7,13 +8,17 @@ import com.example.mywebquizengine.auth.model.dto.output.AuthPhoneResponse;
 import com.example.mywebquizengine.auth.model.dto.output.AuthResult;
 import com.example.mywebquizengine.auth.model.dto.output.UserExistDto;
 import com.example.mywebquizengine.auth.service.AuthService;
-import com.example.mywebquizengine.common.SmsSender;
-import com.example.mywebquizengine.common.common.Client;
+import com.example.mywebquizengine.auth.service.DeviceService;
+import com.example.mywebquizengine.auth.service.SignInCodeService;
+import com.example.mywebquizengine.auth.service.TokenService;
+import com.example.mywebquizengine.common.service.SmsSender;
+import com.example.mywebquizengine.common.model.Client;
 import com.example.mywebquizengine.common.utils.CodeUtil;
 import com.example.mywebquizengine.common.utils.JWTUtil;
 import com.example.mywebquizengine.common.utils.RabbitUtil;
 import com.example.mywebquizengine.user.model.domain.User;
 import com.example.mywebquizengine.user.service.BusinessEmailSender;
+import com.example.mywebquizengine.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,24 +27,22 @@ public class AuthFacadeImpl implements AuthFacade {
 
     @Autowired
     private AuthService authService;
-
     @Autowired
     private BusinessEmailSender businessEmailSender;
-
     @Autowired
     private JWTUtil jwtUtil;
-
     @Autowired
     private RabbitUtil rabbitUtil;
-
     @Autowired
     private SignInCodeService signInCodeService;
-
     @Autowired
     private DeviceService deviceService;
-
     @Autowired
     private SmsSender smsSender;
+    @Autowired
+    private TokenService tokenService;
+    @Autowired
+    private UserService userService;
 
     @Override
     public AuthResult signUp(RegistrationModel registrationModel, RegistrationType type) {
@@ -48,6 +51,7 @@ public class AuthFacadeImpl implements AuthFacade {
         return new AuthResult(
                 user.getUserId(),
                 jwtUtil.generateToken(user),
+                tokenService.createToken(user.getUserId()),
                 rabbitUtil.createExchange(user.getUserId())
         );
     }
@@ -55,10 +59,11 @@ public class AuthFacadeImpl implements AuthFacade {
     @Override
     public AuthResult signIn(AuthRequest authRequest) {
         signInCodeService.checkCodeExpire(authRequest.getUsername());
-        User user = authService.signIn(authRequest);
+        User user = authService.authenticate(authRequest);
         return new AuthResult(
                 user.getUserId(),
                 jwtUtil.generateToken(user),
+                tokenService.createToken(user.getUserId()),
                 RabbitUtil.getExchangeName(user.getUserId())
         );
     }
@@ -69,6 +74,7 @@ public class AuthFacadeImpl implements AuthFacade {
         return new AuthResult(
                 user.getUserId(),
                 jwtUtil.generateToken(user),
+                tokenService.createToken(user.getUserId()),
                 RabbitUtil.getExchangeName(user.getUserId())
         );
     }
@@ -114,5 +120,14 @@ public class AuthFacadeImpl implements AuthFacade {
     @Override
     public void verifyChangePasswordCode(String username, String changePasswordCode) {
         authService.verifyChangePasswordCode(username, changePasswordCode);
+    }
+
+    @Override
+    public AuthResult getNewAccessToken(String refreshToken) {
+        UserToken userToken = authService.updateRefreshToken(refreshToken);
+        return new AuthResult()
+                .setRefreshToken(userToken.getRefreshToken())
+                .setJwtToken(jwtUtil.generateToken(userService.loadUserByUserId(userToken.getUserId())))
+                .setUserId(userToken.getUserId());
     }
 }

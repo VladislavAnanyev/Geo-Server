@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.common;
+package com.example.mywebquizengine.common.service;
 
 import com.example.mywebquizengine.common.exception.FileNotFoundException;
 import com.example.mywebquizengine.common.exception.StorageException;

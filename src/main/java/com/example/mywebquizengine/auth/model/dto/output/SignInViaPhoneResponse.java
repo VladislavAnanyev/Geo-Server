@@ -1,7 +1,6 @@
 package com.example.mywebquizengine.auth.model.dto.output;
 
-import com.example.mywebquizengine.common.common.SuccessfulResponse;
-import com.example.mywebquizengine.auth.model.dto.output.AuthPhoneResponse;
+import com.example.mywebquizengine.common.model.SuccessfulResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

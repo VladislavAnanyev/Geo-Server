@@ -69,6 +69,10 @@ dependencies {
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-parent', version: '2.5.6', ext: 'pom'
     implementation 'io.springfox:springfox-swagger-ui:3.0.0'
     implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-redis'
+
+
+
     testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test'
     testImplementation group: 'org.junit.vintage', name: 'junit-vintage-engine', version: '5.8.1'
     testImplementation group: 'org.hamcrest', name: 'hamcrest-core', version: '1.3'
