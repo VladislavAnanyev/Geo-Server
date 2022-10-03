@@ -1,7 +1,11 @@
-# WebQuiz
-Web Quiz Service // Spring, Hiber, freemarker
+# Dating app
+Dating app based on geolocation tracking 
 
-https://webquizzes.me
+REST API & Web Interface
+
+// Spring Boot, Hibernate, RabbitMQ, freemarker
+
+https://meetings.studio/
 
 
 
