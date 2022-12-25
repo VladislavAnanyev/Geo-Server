@@ -41,13 +41,13 @@ public class ApiRequestControllerTest {
                 }
                 """;
 
-        mockMvc.perform(post("/api/request").secure(true)
+        mockMvc.perform(post("/api/v1/request").secure(true)
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
 
-        mockMvc.perform(post("/api/request").secure(true)
+        mockMvc.perform(post("/api/v1/request").secure(true)
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
@@ -66,7 +66,7 @@ public class ApiRequestControllerTest {
                 }
                 """;
 
-        mockMvc.perform(post("/api/request").secure(true)
+        mockMvc.perform(post("/api/v1/request").secure(true)
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -77,7 +77,7 @@ public class ApiRequestControllerTest {
     @Test
     @WithUserDetails(value = "user2")
     public void testRejectRequest() throws Exception {
-        mockMvc.perform(post("/api/request/800/reject").secure(true)
+        mockMvc.perform(post("/api/v1/request/800/reject").secure(true)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
@@ -94,7 +94,7 @@ public class ApiRequestControllerTest {
                 }
                 """;
 
-        mockMvc.perform(post("/api/request").secure(true)
+        mockMvc.perform(post("/api/v1/request").secure(true)
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());

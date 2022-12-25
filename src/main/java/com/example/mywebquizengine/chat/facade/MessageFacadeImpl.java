@@ -92,11 +92,6 @@ public class MessageFacadeImpl implements MessageFacade {
     }
 
     @Override
-    public List<NewLastDialog> getNewLastDialogs(Long userId) {
-        return messageService.getDialogsV2(userId);
-    }
-
-    @Override
     public Long createGroup(CreateGroupModel model) {
         Dialog dialog = messageService.createGroup(model);
         this.sendMessage(

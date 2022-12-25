@@ -12,7 +12,7 @@ import java.util.List;
 @Service
 public interface GeolocationFacade {
 
-    void processGeolocation(Long userId, GeolocationModel geolocationModel);
+    void addGeolocation(Long userId, GeolocationModel geolocationModel);
 
     List<MeetingView> getMeetings(Long userId, String date);
 

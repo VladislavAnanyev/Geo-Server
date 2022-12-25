@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.auth.security;
 
+import com.example.mywebquizengine.auth.security.model.AuthUserDetails;
 import com.example.mywebquizengine.user.model.domain.User;
 import com.example.mywebquizengine.common.utils.AuthenticationUtil;
 import com.example.mywebquizengine.common.utils.JWTUtil;
@@ -17,6 +18,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
+
+import static org.springframework.security.core.authority.AuthorityUtils.commaSeparatedStringToAuthorityList;
 
 @Component
 public class JWTFilter extends OncePerRequestFilter {
@@ -42,8 +45,8 @@ public class JWTFilter extends OncePerRequestFilter {
         }
         if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             String commaSeparatedListOfAuthorities = jwtUtil.extractAuthorities(jwt);
-            List<GrantedAuthority> authorities = AuthorityUtils.commaSeparatedStringToAuthorityList(commaSeparatedListOfAuthorities);
-            User authUser = new User();
+            List<GrantedAuthority> authorities = commaSeparatedStringToAuthorityList(commaSeparatedListOfAuthorities);
+            AuthUserDetails authUser = new AuthUserDetails();
             authUser.setUserId(userId);
             AuthenticationUtil.setAuthentication(authUser, authorities);
 

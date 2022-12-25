@@ -23,8 +23,11 @@ public class SignInCodeService {
 
     public void checkCodeExpire(String username) {
         User user = authService.findUserByUsername(username);
-        Calendar now = new GregorianCalendar();
-        if (now.after(user.getSignInViaPhoneCodeExpiration())) {
+        if (user.getSignInViaPhoneCodeExpiration() == null) {
+            return;
+        }
+
+        if (new GregorianCalendar().after(user.getSignInViaPhoneCodeExpiration())) {
             throw new CodeExpiredException("exception.code.expired", GlobalErrorCode.ERROR_CODE_EXPIRED);
         }
     }

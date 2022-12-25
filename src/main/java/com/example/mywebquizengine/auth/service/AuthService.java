@@ -1,12 +1,13 @@
 package com.example.mywebquizengine.auth.service;
 
-import com.example.mywebquizengine.auth.repository.TokenRepository;
-import com.example.mywebquizengine.auth.model.UserToken;
 import com.example.mywebquizengine.auth.model.RegistrationType;
+import com.example.mywebquizengine.auth.model.UserToken;
 import com.example.mywebquizengine.auth.model.dto.input.AuthRequest;
 import com.example.mywebquizengine.auth.model.dto.input.RegistrationModel;
-import com.example.mywebquizengine.common.model.Client;
+import com.example.mywebquizengine.auth.repository.TokenRepository;
+import com.example.mywebquizengine.auth.security.model.AuthUserDetails;
 import com.example.mywebquizengine.common.exception.*;
+import com.example.mywebquizengine.common.model.Client;
 import com.example.mywebquizengine.common.utils.AuthenticationUtil;
 import com.example.mywebquizengine.common.utils.CodeUtil;
 import com.example.mywebquizengine.common.utils.OauthUserMapper;
@@ -43,20 +44,28 @@ public class AuthService implements UserDetailsService {
     private TokenRepository tokenRepository;
 
     @Override
-    public User loadUserByUsername(String username) throws UserNotFoundException {
-        Optional<User> user = userRepository.findUserByUsername(username);
+    public AuthUserDetails loadUserByUsername(String username) throws UserNotFoundException {
+        Optional<User> optionalUser = userRepository.findUserByUsername(username);
+        if (optionalUser.isEmpty()) {
+            throw new UserNotFoundException(
+                    "exception.user.not.found",
+                    GlobalErrorCode.ERROR_USER_NOT_FOUND
+            );
+        }
 
-        if (user.isPresent()) {
-            return user.get();
-        } else throw new UserNotFoundException("exception.user.not.found", GlobalErrorCode.ERROR_USER_NOT_FOUND);
+        User user = optionalUser.get();
+        return new AuthUserDetails()
+                .setUserId(user.getUserId())
+                .setPassword(user.getPassword());
     }
 
     public User findUserByUsername(String username) throws UserNotFoundException {
         Optional<User> user = userRepository.findUserByUsername(username);
+        if (user.isEmpty()) {
+            throw new UserNotFoundException("exception.user.not.found", GlobalErrorCode.ERROR_USER_NOT_FOUND);
+        }
 
-        if (user.isPresent()) {
-            return user.get();
-        } else throw new UserNotFoundException("exception.user.not.found", GlobalErrorCode.ERROR_USER_NOT_FOUND);
+        return user.get();
     }
 
     /**
@@ -94,15 +103,16 @@ public class AuthService implements UserDetailsService {
     public User signInViaExternalServiceToken(Object token) {
         RegistrationModel registrationModel = OauthUserMapper.map(token);
         Optional<User> optionalUser = userRepository.findUserByUsername(registrationModel.getUsername());
-        User user;
+        AuthUserDetails user = new AuthUserDetails();
         if (optionalUser.isPresent()) {
-            user = optionalUser.get();
+            user.setUserId(optionalUser.get().getUserId());
         } else {
-            user = saveUser(registrationModel, RegistrationType.OAUTH2);
+            User saveUser = saveUser(registrationModel, RegistrationType.OAUTH2);
+            user.setUserId(saveUser.getUserId());
         }
 
         AuthenticationUtil.setAuthentication(user, user.getAuthorities());
-        return user;
+        return optionalUser.get();
     }
 
     /**

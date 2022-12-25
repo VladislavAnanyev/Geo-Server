@@ -1,12 +1,18 @@
 package com.example.mywebquizengine.photo.model.domain;
 
 import com.example.mywebquizengine.user.model.domain.User;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity(name = "USERS_PHOTOS")
+@Accessors(chain = true)
+@Getter
+@Setter
 public class Photo implements Comparable<Photo> {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -28,40 +34,9 @@ public class Photo implements Comparable<Photo> {
         return photos;
     }
 
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Long getPhotoId() {
-        return photoId;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setPhotoId(Long id) {
-        this.photoId = id;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public Integer getPosition() {
-        return position;
-    }
-
-    public void setPosition(Integer position) {
-        this.position = position;
-    }
-
     @Override
     public int compareTo(Photo photo) {
         return this.position.compareTo(photo.position);
     }
+
 }

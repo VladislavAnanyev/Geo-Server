@@ -22,6 +22,8 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.util.ArrayList;
 
+import static java.lang.Long.valueOf;
+
 
 @Controller
 @Validated
@@ -35,10 +37,10 @@ public class ChatController {
 
     @GetMapping(path = "/chat")
     public String chat(Model model, @AuthenticationPrincipal User authUser) {
-
         model.addAttribute("myUsername", authUser.getUserId());
-        model.addAttribute("lastDialogs", messageFacade.getNewLastDialogs(authUser.getUserId()));
+        model.addAttribute("lastDialogs", messageFacade.getLastDialogs(authUser.getUserId()));
         model.addAttribute("userList", new ArrayList<>());
+
         return "chat";
     }
 
@@ -62,14 +64,13 @@ public class ChatController {
                                @RequestParam(required = false, defaultValue = "50") @Min(1) @Max(100) Integer pageSize,
                                @RequestParam(defaultValue = "timestamp") String sortBy,
                                @AuthenticationPrincipal User authUser) {
-
-        DialogView dialog = messageFacade.getChatRoom(Long.valueOf(dialog_id), page, pageSize, sortBy, authUser.getUserId());
-
+        DialogView dialog = messageFacade.getChatRoom(valueOf(dialog_id), page, pageSize, sortBy, authUser.getUserId());
         model.addAttribute("lastDialogs", messageFacade.getLastDialogs(authUser.getUserId()));
         model.addAttribute("dialog", dialog.getDialogId());
         model.addAttribute("messages", dialog.getMessages());
         model.addAttribute("dialogObj", dialog);
         model.addAttribute("userList", userService.findMyFriends(authUser.getUserId()));
+
         return "chat";
     }
 
@@ -81,7 +82,7 @@ public class ChatController {
                                         @RequestParam(required = false, defaultValue = "50") @Min(1) @Max(100) Integer pageSize,
                                         @RequestParam(defaultValue = "timestamp") String sortBy,
                                         @AuthenticationPrincipal User authUser) {
-        return messageFacade.getChatRoom(Long.valueOf(dialog_id), page, pageSize, sortBy, authUser.getUserId());
+        return messageFacade.getChatRoom(valueOf(dialog_id), page, pageSize, sortBy, authUser.getUserId());
     }
 
     @PostMapping(path = "/createGroup")

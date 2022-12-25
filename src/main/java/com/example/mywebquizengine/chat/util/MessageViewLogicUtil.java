@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.chat.util;
 
+import com.example.mywebquizengine.auth.security.model.AuthUserDetails;
 import com.example.mywebquizengine.chat.model.domain.Dialog;
 import com.example.mywebquizengine.chat.model.domain.Message;
 import com.example.mywebquizengine.user.model.domain.User;
@@ -24,7 +25,7 @@ public class MessageViewLogicUtil {
         if (users.size() > 2) {
             return name;
         } else if (users.size() == 2) {
-            Long userId = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
+            Long userId = ((AuthUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
             Set<User> userSet = new HashSet<>(users);
             userSet.removeIf(user -> user.getUserId().equals(userId));
             return userSet.iterator().next().getUsername();
@@ -37,7 +38,7 @@ public class MessageViewLogicUtil {
         if (users.size() > 2) {
             return image;
         } else if (users.size() == 2) {
-            Long userId = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
+            Long userId = ((AuthUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
             Set<User> userSet = new HashSet<>(users);
             userSet.removeIf(user -> user.getUserId().equals(userId));
             return userSet.iterator().next().getAvatar();
@@ -56,7 +57,7 @@ public class MessageViewLogicUtil {
             if (users.size() > 2) {
                 return dialog.getName();
             } else if (users.size() == 2) {
-                Long userId = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
+                Long userId = ((AuthUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
                 Set<User> userSet = new HashSet<>(users);
                 userSet.removeIf(user -> user.getUserId().equals(userId));
                 return userSet.iterator().next().getUsername();
@@ -76,7 +77,7 @@ public class MessageViewLogicUtil {
             if (users.size() > 2) {
                 return dialog.getImage();
             } else if (users.size() == 2) {
-                Long userId = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
+                Long userId = ((AuthUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
                 Set<User> userSet = new HashSet<>(users);
                 userSet.removeIf(user -> user.getUserId().equals(userId));
                 return userSet.iterator().next().getAvatar();

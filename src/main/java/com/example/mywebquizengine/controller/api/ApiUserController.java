@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.controller.api;
 
+import com.example.mywebquizengine.auth.security.model.AuthUserDetails;
 import com.example.mywebquizengine.user.model.dto.ProfileView;
 import com.example.mywebquizengine.user.model.dto.UserCommonView;
 import com.example.mywebquizengine.user.model.dto.AuthUserView;
@@ -12,7 +13,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/api")
+@RequestMapping(path = "/api/v1")
 public class ApiUserController {
 
     private final UserService userService;
@@ -21,24 +22,13 @@ public class ApiUserController {
         this.userService = userService;
     }
 
-    @GetMapping(path = "/friends")
-    public List<UserCommonView> getFriends(@ApiIgnore @AuthenticationPrincipal User authUser) {
-        return userService.findMyFriends(authUser.getUserId());
-    }
-
-    @DeleteMapping(path = "/friend/{userId}")
-    public void deleteFriend(@PathVariable Long userId, @ApiIgnore @AuthenticationPrincipal User authUser) {
-        userService.deleteFriend(userId, authUser.getUserId());
-    }
-
     @GetMapping(path = "/findbyid")
     public UserCommonView getUserById(@RequestParam Long userId) {
         return userService.getUserView(userId);
     }
 
     @GetMapping(path = "/authuser")
-    public AuthUserView getApiAuthUser(@ApiIgnore @AuthenticationPrincipal User authUser) {
-        //test
+    public AuthUserView getApiAuthUser(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser) {
         return userService.getAuthUser(authUser.getUserId());
     }
 
@@ -50,7 +40,7 @@ public class ApiUserController {
 
     @PutMapping(path = "/user", consumes = {"application/json"})
     public void changeUser(@RequestBody User user,
-                           @ApiIgnore @AuthenticationPrincipal User authUser) {
+                           @ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser) {
         userService.updateUser(user.getLastName(), user.getFirstName(), authUser.getUserId());
     }
 

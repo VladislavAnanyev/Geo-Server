@@ -1,6 +1,7 @@
 package com.example.mywebquizengine.common.utils;
 
 import com.example.mywebquizengine.MywebquizengineApplication;
+import com.example.mywebquizengine.auth.security.model.AuthUserDetails;
 import com.example.mywebquizengine.user.model.domain.User;
 import com.example.mywebquizengine.user.model.dto.UserCommonView;
 import com.example.mywebquizengine.user.service.UserService;
@@ -13,7 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class UserUtil {
     public static UserCommonView getUserForMeeting(Long firstUserId, Long secondUserId) {
 
-        Long authName = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
+        Long authName = ((AuthUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
         User user;
         if (authName.equals(firstUserId)) {
             user = MywebquizengineApplication.ctx.getBean(UserService.class).loadUserByUserId(secondUserId);

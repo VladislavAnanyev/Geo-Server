@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.auth.security.handler;
 
+import com.example.mywebquizengine.auth.security.model.AuthUserDetails;
 import com.example.mywebquizengine.user.model.domain.User;
 import com.example.mywebquizengine.auth.security.ActiveUserStore;
 import com.example.mywebquizengine.auth.security.LoggedUser;
@@ -75,7 +76,7 @@ public class MyAuthenticationSuccessHandler extends
             targetUrl = "/profile";
         }
 
-        User principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        AuthUserDetails principal = (AuthUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         LoggedUser user = new LoggedUser(principal.getUserId(), activeUserStore);
         HttpSession session = request.getSession(false);

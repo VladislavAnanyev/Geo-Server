@@ -7,18 +7,28 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+import static java.util.UUID.randomUUID;
+
 @Service
 public class TokenService {
 
     @Autowired
     private TokenRepository tokenRepository;
 
+    /**
+     * Сгенерировать токен обновления для пользователя
+     *
+     * @param userId идентификатор пользователя
+     * @return сгенерированный токен
+     */
     public String createToken(Long userId) {
-        UserToken userToken = new UserToken();
-        String refreshToken = UUID.randomUUID().toString();
-        userToken.setRefreshToken(refreshToken);
-        userToken.setUserId(userId);
-        tokenRepository.save(userToken);
+        String refreshToken = randomUUID().toString();
+        tokenRepository.save(
+                new UserToken()
+                        .setRefreshToken(refreshToken)
+                        .setUserId(userId)
+        );
+
         return refreshToken;
     }
 

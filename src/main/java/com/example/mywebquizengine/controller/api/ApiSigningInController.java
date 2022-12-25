@@ -1,6 +1,7 @@
 package com.example.mywebquizengine.controller.api;
 
 import com.example.mywebquizengine.auth.facade.AuthFacade;
+import com.example.mywebquizengine.auth.model.RefreshTokenRequest;
 import com.example.mywebquizengine.auth.model.RegistrationType;
 import com.example.mywebquizengine.auth.model.dto.input.*;
 import com.example.mywebquizengine.auth.model.dto.output.AuthPhoneResponse;
@@ -19,14 +20,14 @@ import javax.validation.Valid;
  * Контроллер для входа в систему
  */
 @RestController
-@RequestMapping(path = "/api")
+@RequestMapping(path = "/api/v1")
 public class ApiSigningInController {
 
     @Autowired
     private AuthFacade authFacade;
 
     @PostMapping(path = "/signin")
-    public AuthResponse jwtSignIn(@Valid @RequestBody AuthRequest authRequest) {
+    public AuthResponse signIn(@Valid @RequestBody AuthRequest authRequest) {
         return new AuthResponse(
                 authFacade.signIn(authRequest)
         );
@@ -78,13 +79,14 @@ public class ApiSigningInController {
 
     @PostMapping("/signup/phone")
     public SignInViaPhoneResponse signupViaPhone(@RequestBody AuthPhoneRequest authPhoneRequest) {
-        RegistrationModel registrationModel = new RegistrationModel()
-                .setUsername(authPhoneRequest.getPhone())
-                .setLastName(authPhoneRequest.getLastName())
-                .setFirstName(authPhoneRequest.getFirstName())
-                .setEmail(authPhoneRequest.getPhone());
         return new SignInViaPhoneResponse(
-                authFacade.signUpViaPhone(registrationModel)
+                authFacade.signUpViaPhone(
+                        new RegistrationModel()
+                                .setUsername(authPhoneRequest.getPhone())
+                                .setLastName(authPhoneRequest.getLastName())
+                                .setFirstName(authPhoneRequest.getFirstName())
+                                .setEmail(authPhoneRequest.getPhone())
+                )
         );
     }
 

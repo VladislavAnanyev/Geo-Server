@@ -44,7 +44,7 @@ public class ApiGeoControllerTest {
                 """;
 
 
-        mockMvc.perform(post("/api/sendGeolocation").secure(true)
+        mockMvc.perform(post("/api/v1/geolocation").secure(true)
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());

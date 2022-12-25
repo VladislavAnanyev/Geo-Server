@@ -33,9 +33,9 @@ public class MessageService {
     private final DialogRepository dialogRepository;
     private final UserService userService;
     private final MessageFactory messageFactory;
+    private final ProjectionUtil projectionUtil;
     @Value("${hostname}")
     private String hostname;
-    private final ProjectionUtil projectionUtil;
 
     public MessageService(MessageRepository messageRepository, DialogRepository dialogRepository,
                           UserService userService, MessageFactory messageFactory, ProjectionUtil projectionUtil) {
@@ -54,14 +54,15 @@ public class MessageService {
         Long dialogId = dialogRepository.findDialogBetweenUsers(firstUserId, secondUserId);
         if (dialogId != null) {
             return dialogId;
-        } else {
-            Dialog dialog = new Dialog();
-            dialog.addUser(userService.loadUserByUserId(firstUserId));
-            dialog.addUser(userService.loadUserByUserId(secondUserId));
-            dialog.setType(DialogType.PRIVATE);
-            dialogRepository.save(dialog);
-            return dialog.getDialogId();
         }
+
+        Dialog dialog = new Dialog();
+        dialog.addUser(userService.loadUserByUserId(firstUserId));
+        dialog.addUser(userService.loadUserByUserId(secondUserId));
+        dialog.setType(DialogType.PRIVATE);
+        dialogRepository.save(dialog);
+
+        return dialog.getDialogId();
     }
 
     public List<LastDialog> getDialogs(Long userId) {
@@ -69,45 +70,12 @@ public class MessageService {
     }
 
     @Transactional
-    public List<NewLastDialog> getDialogsV2(Long userId) {
-        User user = userService.loadUserByUserId(userId);
-        Set<Dialog> dialogs = user.getDialogs();
-
-        List<NewLastDialog> lastDialogs = new ArrayList<>();
-
-        for (Dialog dialog : dialogs) {
-            if (dialog.getLastMessage() != null) {
-                NewLastDialog newLastDialog = new NewLastDialog();
-                newLastDialog.setDialogId(dialog.getDialogId());
-                newLastDialog.setContent(dialog.getLastMessage().getContent());
-                newLastDialog.setTimestamp(dialog.getLastMessage().getTimestamp());
-
-                if (dialog.getName() == null) {
-                    Set<User> userSet = new HashSet<>(dialog.getUsers());
-                    userSet.removeIf(user2 -> user2.getUserId().equals(userId));
-                    newLastDialog.setName(userSet.iterator().next().getUsername());
-                    newLastDialog.setImage(userSet.iterator().next().getAvatar());
-                } else {
-                    newLastDialog.setName(dialog.getName());
-                    newLastDialog.setImage(dialog.getImage());
-                }
-
-                newLastDialog.setStatus(dialog.getLastMessage().getStatus().toString());
-                newLastDialog.setLastSender(projectionUtil.parse(dialog.getLastMessage().getSender(), UserCommonView.class));
-                lastDialogs.add(newLastDialog);
-            }
-        }
-
-        return lastDialogs;
-    }
-
-
-    @Transactional
     public Message setDeletedStatus(Long messageId, Long userId) {
         Message message = findMessageById(messageId);
         if (!isCanModifyMessage(message.getSender().getUserId(), userId)) {
             throw new SecurityException("Вы не можете удалить это сообщение");
         }
+
         message.setStatus(MessageStatus.DELETED);
         updateMessageStatusHistory(userId, message, MessageStatus.DELETED);
         return message;
@@ -127,7 +95,6 @@ public class MessageService {
                 MessageStatus.DELETED,
                 paging
         ).getContent();
-
 
         List<Message> messageList = new ArrayList<>(messages);
         Collections.reverse(messageList);
@@ -266,7 +233,7 @@ public class MessageService {
 
         return historyList.stream().anyMatch(
                 historyItem -> historyItem.getUser().getUserId().equals(userId) &&
-                        historyItem.getMessageStatus().equals(messageStatus)
+                               historyItem.getMessageStatus().equals(messageStatus)
         );
     }
 

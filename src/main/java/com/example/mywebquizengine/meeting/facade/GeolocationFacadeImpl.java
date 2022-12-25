@@ -31,7 +31,7 @@ public class GeolocationFacadeImpl implements GeolocationFacade {
     private ProjectionUtil projectionUtil;
 
     @Override
-    public void processGeolocation(Long userId, GeolocationModel geolocationModel) {
+    public void addGeolocation(Long userId, GeolocationModel geolocationModel) {
         Geolocation geolocation = geoService.saveGeolocation(userId, geolocationModel);
         List<Meeting> meetings = geoService.findMeetings(geolocation);
         for (Meeting meeting : meetings) {

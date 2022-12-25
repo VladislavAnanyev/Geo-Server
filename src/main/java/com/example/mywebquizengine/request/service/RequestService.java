@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.request.service;
 
+import com.example.mywebquizengine.auth.security.model.AuthUserDetails;
 import com.example.mywebquizengine.chat.repository.MessageRepository;
 import com.example.mywebquizengine.meeting.repository.MeetingRepository;
 import com.example.mywebquizengine.request.RequestFacade;
@@ -19,6 +20,8 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static org.springframework.security.core.context.SecurityContextHolder.getContext;
 
 @Service
 public class RequestService {
@@ -59,11 +62,11 @@ public class RequestService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You already send request to this user");
             }
 
-            Request request = new Request();
-            request.setSender(userService.loadUserByUserId(fromUserId));
-            request.setTo(userService.loadUserByUserId(toUserId));
-            request.setMeeting(meetingRepository.findById(meetingId).get());
-            request.setStatus(RequestStatus.PENDING);
+            Request request = new Request()
+                    .setSender(userService.loadUserByUserId(fromUserId))
+                    .setTo(userService.loadUserByUserId(toUserId))
+                    .setMeeting(meetingRepository.findById(meetingId).get())
+                    .setStatus(RequestStatus.PENDING);
 
             if (messageId != null) {
                 request.setMessage(messageRepository.getOne(messageId));
@@ -94,7 +97,7 @@ public class RequestService {
         if (allRequests.size() == 0) {
             return true;
         } else {
-            Long authUserId = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
+            Long authUserId = ((AuthUserDetails) getContext().getAuthentication().getPrincipal()).getUserId();
             ArrayList<RequestView> sentRequest = requestRepository.findByMeetingMeetingIdAndSenderUserId(
                     meetingId,
                     authUserId

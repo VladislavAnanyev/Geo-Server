@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.controller.api;
 
+import com.example.mywebquizengine.auth.security.model.AuthUserDetails;
 import com.example.mywebquizengine.common.exception.LogicException;
 import com.example.mywebquizengine.user.model.domain.User;
 import com.example.mywebquizengine.common.service.FileSystemStorageService;
@@ -10,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 @RestController
-@RequestMapping(path = "/api")
+@RequestMapping(path = "/api/v1")
 public class ApiPhotoController {
 
     private final PhotoService photoService;
@@ -22,7 +23,7 @@ public class ApiPhotoController {
     }
 
     @PostMapping(path = "/user/photo/swap")
-    public void swapPhoto(@ApiIgnore @AuthenticationPrincipal User authUser,
+    public void swapPhoto(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser,
                           @RequestParam Long photoId,
                           @RequestParam Integer position) {
         photoService.swapPhoto(photoId, position, authUser.getUserId());
@@ -30,7 +31,7 @@ public class ApiPhotoController {
 
     @PostMapping(path = "/user/photo")
     public String uploadPhoto(@RequestParam("file") MultipartFile file,
-                              @ApiIgnore @AuthenticationPrincipal User authUser) {
+                              @ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser) {
         String fileName = fileSystemStorageService.store(file);
         return photoService.savePhoto(fileName, authUser.getUserId());
     }
@@ -41,7 +42,7 @@ public class ApiPhotoController {
     }
 
     @DeleteMapping(path = "/user/photo/{id}")
-    public void deletePhoto(@ApiIgnore @AuthenticationPrincipal User authUser,
+    public void deletePhoto(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser,
                             @PathVariable Long id) throws LogicException {
         photoService.deletePhoto(id, authUser.getUserId());
     }

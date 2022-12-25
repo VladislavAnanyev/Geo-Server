@@ -4,6 +4,7 @@ import com.example.mywebquizengine.common.exception.LogicException;
 import com.example.mywebquizengine.photo.model.domain.Photo;
 import com.example.mywebquizengine.photo.repository.PhotoRepository;
 import com.example.mywebquizengine.user.model.domain.User;
+import com.example.mywebquizengine.user.repository.UserRepository;
 import com.example.mywebquizengine.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +15,9 @@ import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Сервис для работы с изображениями пользователей
+ */
 @Service
 public class PhotoService {
 
@@ -23,55 +27,84 @@ public class PhotoService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Value("${hostname}")
     private String hostname;
 
-    @Transactional
-    public void swapPhoto(Long photoId, Integer position, Long userId) throws IllegalAccessError, EntityNotFoundException {
-
-        Optional<Photo> optionalPhoto = photoRepository.findById(photoId);
+    /**
+     * Получить фотографию пользователя по ее идентификатору
+     *
+     * @param id идентификатор фотографии
+     * @return информация о фотографии
+     */
+    public Photo findPhotoById(Long id) {
+        Optional<Photo> optionalPhoto = photoRepository.findById(id);
         if (optionalPhoto.isEmpty()) {
             throw new EntityNotFoundException("Photo with given photoId not found");
         }
 
-        if (!optionalPhoto.get().getUser().getUserId().equals(userId)) {
+        return optionalPhoto.get();
+    }
+
+    /**
+     * Поставить фотографию пользователя на указанную позицию в списке его фотографий
+     *
+     * @param photoId идентификатор фотографии
+     * @param position позиция
+     * @param userId идентификатор пользователя
+     */
+    @Transactional
+    public void swapPhoto(Long photoId, Integer position, Long userId) {
+        Photo photo = findPhotoById(photoId);
+
+        if (!photo.getUser().getUserId().equals(userId)) {
             throw new SecurityException("You are not loader of this photo");
         }
 
-        Photo savedPhoto = optionalPhoto.get();
-
-        List<Photo> photos = photoRepository.findByUser_UserId(userId);
+        List<Photo> photos = photoRepository.findPhotosByUserId(userId);
 
         if (position == 0) {
-            savedPhoto.getUser().setAvatar(savedPhoto.getUrl());
+            photo.getUser().setAvatar(photo.getUrl());
         }
 
-        photos.remove(((int) savedPhoto.getPosition()));
-        photos.add(position, savedPhoto);
+        photos.remove(((int) photo.getPosition()));
+        photos.add(position, photo);
 
         for (int i = 0; i < photos.size(); i++) {
             photos.get(i).setPosition(i);
         }
     }
 
+    /**
+     * Сохранить фотографию пользователя
+     *
+     * @param fileName имя файла
+     * @param userId идентификатор пользователя
+     * @return URI фотографии
+     */
     @Transactional
     public String savePhoto(String fileName, Long userId) {
         String photoUrl = hostname + "/img/" + fileName;
         User user = userService.loadUserByUserId(userId);
-        Photo photo = new Photo();
-        photo.setUrl(photoUrl);
-        photo.setPosition(user.getPhotos().size());
-        user.addPhoto(photo);
+        user.addPhoto(
+                new Photo()
+                        .setUrl(photoUrl)
+                        .setPosition(user.getPhotos().size())
+        );
+
         return photoUrl;
     }
 
-    @Transactional
-    public void deletePhoto(Long photoId, Long authUserId) throws LogicException {
-        Optional<Photo> optionalPhoto = photoRepository.findById(photoId);
-        if (optionalPhoto.isEmpty()) {
-            throw new EntityNotFoundException("Photo with given photoId not found");
-        }
-        Photo photo = optionalPhoto.get();
+    /**
+     * Удалить фотографию
+     *
+     * @param photoId идентификатор фотографии
+     * @param authUserId идентификатор пользователя
+     */
+    public void deletePhoto(Long photoId, Long authUserId) {
+        Photo photo = findPhotoById(photoId);
         if (!photo.getUser().getUserId().equals(authUserId)) {
             throw new SecurityException("You are not loader of this photo");
         }
@@ -80,15 +113,21 @@ public class PhotoService {
             throw new LogicException("You must have at least one photo");
         }
 
-        List<Photo> photos = photoRepository.findByUser_UserId(authUserId);
+        List<Photo> photos = photoRepository.findPhotosByUserId(authUserId);
+
+        // если удаляется фотография с первого места, то аватаром пользователя становится его вторая фотография
         if (photo.getPosition() == 0) {
-            photo.getUser().setAvatar(photos.get(1).getUrl());
+            User user = photo.getUser();
+            user.setAvatar(photos.get(1).getUrl());
+            userRepository.save(user);
         }
 
         photoRepository.deleteById(photoId);
+        photos.remove(photo);
 
         for (int i = 0; i < photos.size(); i++) {
             photos.get(i).setPosition(i);
         }
+        photoRepository.saveAll(photos);
     }
 }

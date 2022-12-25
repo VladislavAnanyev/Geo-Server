@@ -33,32 +33,34 @@ public class FileSystemStorageService {
 
     public String store(MultipartFile file) {
 
-        if (file.getContentType().equals("image/jpeg")) {
-            String filename = UUID.randomUUID().toString().substring(0, 8) +
-                    file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+        if (!file.getContentType().equals("image/jpeg")) {
+            throw new IllegalArgumentException("You must provide image/jpeg file");
+        }
 
-            filename = StringUtils.cleanPath(filename);
-            try {
-                if (file.isEmpty()) {
-                    throw new StorageException("Failed to store empty file " + filename);
-                }
-                if (filename.contains("..")) {
-                    // This is a security check
-                    throw new StorageException(
-                            "Cannot store file with relative path outside current directory "
-                                    + filename);
-                }
-                try (InputStream inputStream = file.getInputStream()) {
-                    Files.copy(inputStream, this.rootLocation.resolve(filename),
-                            StandardCopyOption.REPLACE_EXISTING);
-                }
-            }
-            catch (IOException e) {
-                throw new StorageException("Failed to store file " + filename, e);
-            }
+        String filename = UUID.randomUUID().toString().substring(0, 8) +
+                          file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
 
-            return filename;
-        } else throw new IllegalArgumentException("You must provide image/jpeg file");
+        filename = StringUtils.cleanPath(filename);
+        try {
+            if (file.isEmpty()) {
+                throw new StorageException("Failed to store empty file " + filename);
+            }
+            if (filename.contains("..")) {
+                // This is a security check
+                throw new StorageException(
+                        "Cannot store file with relative path outside current directory "
+                        + filename);
+            }
+            try (InputStream inputStream = file.getInputStream()) {
+                Files.copy(inputStream, this.rootLocation.resolve(filename),
+                        StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException e) {
+            throw new StorageException("Failed to store file " + filename, e);
+        }
+
+        return filename;
+
 
     }
 
@@ -67,8 +69,7 @@ public class FileSystemStorageService {
             return Files.walk(this.rootLocation, 1)
                     .filter(path -> !path.equals(this.rootLocation))
                     .map(this.rootLocation::relativize);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new StorageException("Failed to read stored files", e);
         }
 
@@ -84,13 +85,11 @@ public class FileSystemStorageService {
             Resource resource = new UrlResource(file.toUri());
             if (resource.exists() || resource.isReadable()) {
                 return resource;
-            }
-            else {
+            } else {
                 throw new FileNotFoundException(
                         "Could not read file: " + filename);
             }
-        }
-        catch (MalformedURLException e) {
+        } catch (MalformedURLException e) {
             throw new FileNotFoundException("Could not read file: " + filename, e);
         }
     }

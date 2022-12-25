@@ -3,6 +3,7 @@ package com.example.mywebquizengine.auth.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
@@ -12,6 +13,7 @@ import javax.persistence.Column;
 @AllArgsConstructor
 @NoArgsConstructor
 @RedisHash(value = "users", timeToLive = 18000000)
+@Accessors(chain = true)
 public class UserToken {
     @Id
     @Column(nullable = false)

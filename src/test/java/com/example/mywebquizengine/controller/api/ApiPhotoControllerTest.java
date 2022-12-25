@@ -38,7 +38,7 @@ public class ApiPhotoControllerTest {
     @Test
     @WithUserDetails(value = "user5")
     public void testDeletePhotoWhenPhotoSizeIsOne() throws Exception {
-        mockMvc.perform(delete("/api/user/photo/69").secure(true))
+        mockMvc.perform(delete("/api/v1/user/photo/69").secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("FAIL"));
     }
@@ -49,14 +49,20 @@ public class ApiPhotoControllerTest {
 
         Integer photoCountByUsernameBefore = photoRepository.getPhotoCountByUserId(1002L);
 
-        mockMvc.perform(delete("/api/user/photo/65").secure(true))
+        mockMvc.perform(delete("/api/v1/user/photo/65").secure(true))
                 .andExpect(status().isOk());
 
         Integer photoCountByUsernameAfter = photoRepository.getPhotoCountByUserId(1002L);
 
         assertNotEquals(photoCountByUsernameBefore, photoCountByUsernameAfter);
 
-        List<Photo> userPhotos = photoRepository.findByUser_UserId(1002L);
+        List<Photo> userPhotos = photoRepository.findPhotosByUserId(1002L);
+        for (Photo userPhoto : userPhotos) {
+            System.out.println(userPhoto.getPhotoId());
+            System.out.println(userPhoto.getPosition());
+        }
+
+
         int position = userPhotos.get(0).getPosition();
 
         assertEquals(0, position);
@@ -65,26 +71,26 @@ public class ApiPhotoControllerTest {
     @Test
     @WithUserDetails(value = "user3")
     public void testDeletePhotoForbidden() throws Exception {
-        mockMvc.perform(delete("/api/user/photo/68").secure(true))
+        mockMvc.perform(delete("/api/v1/user/photo/68").secure(true))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @WithUserDetails(value = "user2")
     public void testDeleteNotExistPhoto() throws Exception {
-        mockMvc.perform(delete("/api/user/photo/670").secure(true))
+        mockMvc.perform(delete("/api/v1/user/photo/670").secure(true))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     @WithUserDetails(value = "user1")
     public void testSwapPhoto() throws Exception {
-        List<Photo> userPhotoBefore = photoRepository.findByUser_UserId(1001L);
+        List<Photo> userPhotoBefore = photoRepository.findPhotosByUserId(1001L);
 
-        mockMvc.perform(post("/api/user/photo/swap?photoId=63&position=2").secure(true))
+        mockMvc.perform(post("/api/v1/user/photo/swap?photoId=63&position=2").secure(true))
                 .andExpect(status().isOk());
 
-        List<Photo> userPhotos = photoRepository.findByUser_UserId(1001L);
+        List<Photo> userPhotos = photoRepository.findPhotosByUserId(1001L);
         assertNotEquals(userPhotos.get(0).getUrl(), userPhotoBefore.get(0).getUrl());
         assertEquals("https://localhost/img/1.jpg", userPhotos.get(0).getUrl());
     }
@@ -92,14 +98,14 @@ public class ApiPhotoControllerTest {
     @Test
     @WithUserDetails(value = "user2")
     public void testForbiddenSwap() throws Exception {
-        mockMvc.perform(post("/api/user/photo/swap?photoId=67&position=2").secure(true))
+        mockMvc.perform(post("/api/v1/user/photo/swap?photoId=67&position=2").secure(true))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @WithUserDetails(value = "user2")
     public void testNotFoundSwap() throws Exception {
-        mockMvc.perform(post("/api/user/photo/swap?photoId=6896&position=4").secure(true))
+        mockMvc.perform(post("/api/v1/user/photo/swap?photoId=6896&position=4").secure(true))
                 .andExpect(status().isNotFound());
     }
 

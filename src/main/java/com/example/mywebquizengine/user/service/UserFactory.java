@@ -53,7 +53,7 @@ public class UserFactory {
             user.setSignInViaPhoneCodeExpiration(calendar);
         }
 
-        user.setEnabled(true);
+//        user.setEnabled(true);
         user.setBalance(0);
         user.grantAuthority(Role.ROLE_USER);
         user.setOnline(false);

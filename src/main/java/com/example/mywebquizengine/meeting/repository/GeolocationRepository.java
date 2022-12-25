@@ -21,13 +21,15 @@ public interface GeolocationRepository extends CrudRepository<Geolocation, Strin
     List<GeolocationView> getAllUserLastGeolocation(Long userId);
 
     @Query(value = """
-            select * from (SELECT * FROM GEOLOCATIONS WHERE TIME IN (SELECT MAX(TIME)
-                                               FROM GEOLOCATIONS
-                                               WHERE TIME <= timestampadd(MINUTE, 1, :time)
-                                                GROUP BY USER_ID)) where LAT between :myLat - :aroundLat and :myLat + :aroundLat 
-                                                and LNG between :myLng - :aroundLng and :myLng + :aroundLng 
-                                                and TIME BETWEEN timestampadd(MINUTE, -1, :time) 
-                                                AND timestampadd(MINUTE, 1, :time) and user_id != :userId""", nativeQuery = true)
+            SELECT *
+            FROM (SELECT * FROM GEOLOCATIONS WHERE TIME IN (SELECT MAX(TIME)
+                                                            FROM GEOLOCATIONS
+                                                            WHERE TIME <= CAST(:time AS TIMESTAMP) + INTERVAL '1 minute'
+                                                            GROUP BY USER_ID)) AS T
+            WHERE LAT BETWEEN :myLat - :aroundLat AND :myLat + :aroundLat
+              AND LNG BETWEEN :myLng - :aroundLng AND :myLng + :aroundLng
+              AND TIME BETWEEN CAST(:time AS TIMESTAMP) - INTERVAL '1 minute'
+                AND CAST(:time AS TIMESTAMP) + INTERVAL '1 minute' AND user_id != :userId""", nativeQuery = true)
     List<Geolocation> findInSquare(Double myLat, Double myLng, Double aroundLat, Double aroundLng, Long userId, String time);
 
 

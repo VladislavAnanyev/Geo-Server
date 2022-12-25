@@ -11,7 +11,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.joining;
 
 @Service
 public class JWTUtil {
@@ -22,7 +23,10 @@ public class JWTUtil {
     // генерация токена (кладем в него имя пользователя и authorities)
     public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
-        String commaSeparatedListOfAuthorities=  user.getAuthorities().stream().map(a->a.getAuthority()).collect(Collectors.joining(","));
+        String commaSeparatedListOfAuthorities=  user.getAuthorities()
+                .stream()
+                .map(a-> a.getAuthority())
+                .collect(joining(","));
         claims.put("authorities", commaSeparatedListOfAuthorities);
         return createToken(claims, user.getUserId());
     }

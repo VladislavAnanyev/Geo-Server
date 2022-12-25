@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.controller.rabbit;
 
+import com.example.mywebquizengine.auth.security.model.AuthUserDetails;
 import com.example.mywebquizengine.common.exception.AuthorizationException;
 import com.example.mywebquizengine.common.exception.GlobalErrorCode;
 import com.example.mywebquizengine.common.rabbit.EventProcessor;
@@ -26,6 +27,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import static com.example.mywebquizengine.common.utils.AuthenticationUtil.setAuthentication;
+import static org.springframework.security.core.authority.AuthorityUtils.commaSeparatedStringToAuthorityList;
+import static org.springframework.security.core.context.SecurityContextHolder.*;
+
 @Controller
 @EnableRabbit
 @Validated
@@ -45,8 +50,8 @@ public class RabbitController {
     public void sendMessageFromAMQPClient(org.springframework.amqp.core.Message messageFromRabbit, Channel channel,
                                           @Header(AmqpHeaders.DELIVERY_TAG) Long tag) throws IOException {
         channel.basicAck(tag, false);
-        Object authorizationToken = messageFromRabbit.getMessageProperties().getHeaders().get("Authorization");
-        if (!isAuthenticate(authorizationToken.toString())) {
+        String authorizationToken = (String) messageFromRabbit.getMessageProperties().getHeaders().get("Authorization");
+        if (!isAuthenticate(authorizationToken)) {
             throw new AuthorizationException("Unauthorized", GlobalErrorCode.UNAUTHORIZED);
         }
 
@@ -54,7 +59,7 @@ public class RabbitController {
         EventProcessor eventProcessor = map.get(realTimeEvent.getType());
         eventProcessor.process(
                 realTimeEvent,
-                ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId()
+                ((AuthUserDetails) getContext().getAuthentication().getPrincipal()).getUserId()
         );
     }
 
@@ -62,14 +67,18 @@ public class RabbitController {
         if (token == null) {
             throw new IllegalArgumentException("Jwt токен не передан");
         }
-        Long userId = jwtUtil.extractUserId(token);
-        String commaSeparatedListOfAuthorities = jwtUtil.extractAuthorities(token);
 
-        List<GrantedAuthority> authorities = AuthorityUtils.commaSeparatedStringToAuthorityList(commaSeparatedListOfAuthorities);
-        User authUser = new User();
-        authUser.setUserId(userId);
-        AuthenticationUtil.setAuthentication(authUser, authorities);
-        return userId != null;
+        Long userId = jwtUtil.extractUserId(token);
+        if (userId == null) {
+            return false;
+        }
+
+        setAuthentication(
+                new AuthUserDetails().setUserId(userId),
+                commaSeparatedStringToAuthorityList(jwtUtil.extractAuthorities(token))
+        );
+
+        return true;
     }
 
 }

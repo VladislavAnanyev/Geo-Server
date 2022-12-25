@@ -3,6 +3,7 @@ package com.example.mywebquizengine.controller.api;
 import com.example.mywebquizengine.chat.model.domain.Dialog;
 import com.example.mywebquizengine.chat.model.domain.Message;
 import com.example.mywebquizengine.chat.model.domain.MessageStatus;
+import com.example.mywebquizengine.chat.model.dto.input.EditMessageRequest;
 import com.example.mywebquizengine.chat.repository.DialogRepository;
 import com.example.mywebquizengine.chat.repository.MessageRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -23,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import static java.lang.Long.valueOf;
 import static java.util.Collections.reverse;
 import static java.util.Collections.sort;
 import static org.hamcrest.Matchers.*;
@@ -49,25 +51,24 @@ public class ApiChatControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-
     @Test
     @WithUserDetails(value = "user1")
     public void getMessagesInNotExistDialog() throws Exception {
-        mockMvc.perform(get("/api/dialog/" + 5555).secure(true))
+        mockMvc.perform(get("/api/v1/dialog/" + 5555).secure(true))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     @WithUserDetails(value = "user5")
     public void testGetEmptyDialogList() throws Exception {
-        mockMvc.perform(get("/api/dialogs").secure(true))
+        mockMvc.perform(get("/api/v1/dialogs").secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)));
     }
 
     @Test
     public void testGetEmptyDialogWithoutAuth() throws Exception {
-        mockMvc.perform(get("/api/dialogs").secure(true))
+        mockMvc.perform(get("/api/v1/dialogs").secure(true))
                 .andExpect(status().isForbidden());
     }
 
@@ -76,7 +77,7 @@ public class ApiChatControllerTest {
     @WithUserDetails(value = "user1")
     public void testGetDialogList() throws Exception {
 
-        mockMvc.perform(get("/api/dialogs").secure(true))
+        mockMvc.perform(get("/api/v1/dialogs").secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$[0].dialogId", instanceOf(Number.class)))
@@ -95,14 +96,12 @@ public class ApiChatControllerTest {
     @Test
     @WithUserDetails(value = "user1")
     public void testCreateDialog() throws Exception {
-
-        String dialogId = mockMvc.perform(post("/api/dialog/create?userId=1004")
+        String dialogId = mockMvc.perform(post("/api/v1/dialog/create?userId=1004")
                 .secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isNumber()).andReturn().getResponse().getContentAsString();
 
-        Optional<Dialog> dialog = dialogRepository.findById(Long.valueOf(dialogId));
-
+        Optional<Dialog> dialog = dialogRepository.findById(valueOf(dialogId));
         assertTrue(dialog.isPresent());
     }
 
@@ -110,14 +109,14 @@ public class ApiChatControllerTest {
     @WithUserDetails(value = "user1")
     public void testCreateExistDialog() throws Exception {
 
-        String existDialogId = mockMvc.perform(post("/api/dialog/create?userId=1004")
+        String existDialogId = mockMvc.perform(post("/api/v1/dialog/create?userId=1004")
                 .secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isNumber()).andReturn().getResponse().getContentAsString();
 
-        assertTrue(dialogRepository.findById(Long.valueOf(existDialogId)).isPresent());
+        assertTrue(dialogRepository.findById(valueOf(existDialogId)).isPresent());
 
-        String newDialogId = mockMvc.perform(post("/api/dialog/create?userId=1004")
+        String newDialogId = mockMvc.perform(post("/api/v1/dialog/create?userId=1004")
                 .secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isNumber()).andReturn().getResponse().getContentAsString();
@@ -130,17 +129,17 @@ public class ApiChatControllerTest {
     @WithUserDetails(value = "user1")
     public void getMessagesInEmptyDialog() throws Exception {
 
-        String dialogId = mockMvc.perform(post("/api/dialog/create?userId=1005")
+        String dialogId = mockMvc.perform(post("/api/v1/dialog/create?userId=1005")
                 .secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isNumber()).andReturn().getResponse().getContentAsString();
 
 
-        Optional<Dialog> dialog = dialogRepository.findById(Long.valueOf(dialogId));
+        Optional<Dialog> dialog = dialogRepository.findById(valueOf(dialogId));
 
         assertTrue(dialog.isPresent());
 
-        mockMvc.perform(get("/api/dialog/" + dialogId).secure(true))
+        mockMvc.perform(get("/api/v1/dialog/" + dialogId).secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.messages", hasSize(0)));
     }
@@ -149,7 +148,7 @@ public class ApiChatControllerTest {
     @Test
     @WithUserDetails(value = "user4")
     public void testGetMessagesInBigDialog() throws Exception {
-        mockMvc.perform(get("/api/dialog/1277").secure(true))
+        mockMvc.perform(get("/api/v1/dialog/1277").secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.messages", hasSize(50)))
                 .andExpect(jsonPath("$.messages[0].messageId").value("1324"))
@@ -161,7 +160,7 @@ public class ApiChatControllerTest {
     @Test
     @WithUserDetails(value = "user4")
     public void testGetMessagesOnSecondPageInDialog() throws Exception {
-        mockMvc.perform(get("/api/dialog/1277?page=1").secure(true))
+        mockMvc.perform(get("/api/v1/dialog/1277?page=1").secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.messages", hasSize(46)))
                 .andExpect(jsonPath("$.messages[0].messageId").value("1278"))
@@ -173,7 +172,7 @@ public class ApiChatControllerTest {
     @Test
     @WithUserDetails(value = "user2")
     public void testGetMessagesOnSecondPageInDialogForbidden() throws Exception {
-        mockMvc.perform(get("/api/dialog/1277?page=1").secure(true))
+        mockMvc.perform(get("/api/v1/dialog/1277?page=1").secure(true))
                 .andExpect(status().isForbidden());
     }
 
@@ -181,7 +180,7 @@ public class ApiChatControllerTest {
     @Test
     @WithUserDetails(value = "user1")
     public void testGetDialogsReturnDialogsSortedByTimestamp() throws Exception {
-        String json = mockMvc.perform(get("/api/dialogs").secure(true))
+        String json = mockMvc.perform(get("/api/v1/dialogs").secure(true))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].timestamp").isArray())
                 .andReturn().getResponse().getContentAsString();
@@ -205,44 +204,36 @@ public class ApiChatControllerTest {
     @Test
     @WithUserDetails(value = "user1")
     public void testEditMessage() throws Exception {
-
-        Message message = new Message();
+        EditMessageRequest message = new EditMessageRequest();
         message.setContent("1234");
-        message.setMessageId(1197L);
 
-        mockMvc.perform(put("/api/message/1197").secure(true)
+        mockMvc.perform(put("/api/v1/message/1197").secure(true)
                 .content(objectMapper.writeValueAsString(message))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
         assertEquals(message.getContent(), messageRepository.findById(1197L).get().getContent());
-
     }
 
     @Test
     @WithUserDetails(value = "user2")
     public void testEditMessageForbidden() throws Exception {
-
-        Message message = new Message();
+        EditMessageRequest message = new EditMessageRequest();
         message.setContent("1234");
-        message.setMessageId(1197L);
 
-        mockMvc.perform(put("/api/message/1197").secure(true)
+        mockMvc.perform(put("/api/v1/message/1197").secure(true)
                 .content(objectMapper.writeValueAsString(message))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
-
     }
 
     @Test
     @WithUserDetails(value = "user2")
     public void testEditMessageNotFound() throws Exception {
-
-        Message message = new Message();
+        EditMessageRequest message = new EditMessageRequest();
         message.setContent("1234");
-        message.setMessageId(54321L);
 
-        mockMvc.perform(put("/api/message/54321").secure(true)
+        mockMvc.perform(put("/api/v1/message/54321").secure(true)
                 .content(objectMapper.writeValueAsString(message))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -253,8 +244,7 @@ public class ApiChatControllerTest {
     @Test
     @WithUserDetails(value = "user1")
     public void testDeleteMessage() throws Exception {
-
-        mockMvc.perform(delete("/api/message/1199").secure(true))
+        mockMvc.perform(delete("/api/v1/message/1199").secure(true))
                 .andExpect(status().isOk());
 
         assertEquals(MessageStatus.DELETED, messageRepository.findById(1199L).get().getStatus());
@@ -264,14 +254,14 @@ public class ApiChatControllerTest {
     @Test
     @WithUserDetails(value = "user1")
     public void testDeleteMessageNotFound() throws Exception {
-        mockMvc.perform(delete("/api/message/54321").secure(true))
+        mockMvc.perform(delete("/api/v1/message/54321").secure(true))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     @WithUserDetails(value = "user1")
     public void testDeleteMessageForbidden() throws Exception {
-        mockMvc.perform(delete("/api/message/1198").secure(true))
+        mockMvc.perform(delete("/api/v1/message/1198").secure(true))
                 .andExpect(status().isForbidden());
     }
 

@@ -1,24 +1,31 @@
 package com.example.mywebquizengine.user.model.domain;
 
-import com.example.mywebquizengine.chat.model.domain.Dialog;
 import com.example.mywebquizengine.MywebquizengineApplication;
+import com.example.mywebquizengine.chat.model.domain.Dialog;
 import com.example.mywebquizengine.photo.model.domain.Photo;
 import com.example.mywebquizengine.user.service.UserService;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import javax.persistence.*;
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.*;
 
 @Entity(name = "USERS")
-public class User implements UserDetails, OAuth2User {
+@Getter
+@Setter
+public class User {
+
+    private static final long serialVersionUID = -7422293274841574951L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+
     private Long userId;
 
     @NotBlank
@@ -59,31 +66,9 @@ public class User implements UserDetails, OAuth2User {
     )
     private Set<Dialog> dialogs = new HashSet<>();
 
-    @Transient
-    private boolean accountNonExpired;
-
-    @Transient
-    private boolean accountNonLocked;
-
-    @Transient
-    private boolean credentialsNonExpired;
-
-    @Transient
-    private boolean enabled;
-
     private boolean status;
 
     private Integer balance;
-
-    private static final long serialVersionUID = -7422293274841574951L;
-
-    public String getAvatar() {
-        return avatar;
-    }
-
-    public void setAvatar(String avatar) {
-        this.avatar = avatar;
-    }
 
     @ManyToMany
     @JoinTable(name = "users_friends",
@@ -105,12 +90,7 @@ public class User implements UserDetails, OAuth2User {
     @OneToMany(mappedBy = "user")
     private List<Device> devices;
 
-    public User() {
-        this.accountNonExpired = true;
-        this.accountNonLocked = true;
-        this.credentialsNonExpired = true;
-        this.enabled = true;
-    }
+    public User() {}
 
     public User(Long userId, String username, String firstName, String lastName, String avatar, boolean online) {
         this.userId = userId;
@@ -126,135 +106,14 @@ public class User implements UserDetails, OAuth2User {
         this.online = online;
     }
 
-    public List<Device> getDevices() {
-        return devices;
-    }
-
-    public void setDevices(List<Device> devices) {
-        this.devices = devices;
-    }
-
-    public Calendar getSignInViaPhoneCodeExpiration() {
-        return signInViaPhoneCodeExpiration;
-    }
-
-    public void setSignInViaPhoneCodeExpiration(Calendar signInViaPhoneCodeExpiration) {
-        this.signInViaPhoneCodeExpiration = signInViaPhoneCodeExpiration;
-    }
-
-    public void setOnline(boolean online) {
-        this.online = online;
-    }
-
-    public boolean getOnline() {
-        return online;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    @Override
-    public List<GrantedAuthority> getAuthorities(){
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        roles.forEach(role -> authorities.add(new SimpleGrantedAuthority(role.toString())));
-        return authorities;
-    }
-
-    public String getActivationCode() {
-        return activationCode;
-    }
-
-    public void setActivationCode(String activationCode) {
-        this.activationCode = activationCode;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return accountNonExpired;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return accountNonLocked;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return credentialsNonExpired;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
     public boolean isAdmin(Long userId) {
         return MywebquizengineApplication.ctx.getBean(UserService.class)
                 .loadUserByUserId(userId).getRoles().contains(Role.ROLE_ADMIN);
     }
 
     public void grantAuthority(Role authority) {
-        if ( roles == null ) roles = new ArrayList<>();
+        if (roles == null) roles = new ArrayList<>();
         this.roles.add(authority);
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public void setStatus(boolean status) {
-        this.status = status;
-    }
-
-    public boolean isStatus() {
-        return status;
     }
 
     public List<Photo> getPhotos() {
@@ -267,30 +126,6 @@ public class User implements UserDetails, OAuth2User {
         photo.setUser(this);
         photo.setPosition(0);
         this.photos = Collections.singletonList(photo);
-    }
-
-    public List<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(List<Role> roles) {
-        this.roles = roles;
-    }
-
-    public String getChangePasswordCode() {
-        return changePasswordCode;
-    }
-
-    public void setChangePasswordCode(String changePasswordCode) {
-        this.changePasswordCode = changePasswordCode;
-    }
-
-    public void setBalance(Integer balance) {
-        this.balance = balance;
-    }
-
-    public Integer getBalance() {
-        return balance;
     }
 
     public List<User> getFriends() {
@@ -312,35 +147,15 @@ public class User implements UserDetails, OAuth2User {
         user.getFriends().remove(this);
     }
 
-    @Override
-    public String getName() {
-        return username;
-    }
-
-    @Override
-    public Map<String, Object> getAttributes() {
-        return null;
-    }
-
     public void addPhoto(Photo photo) {
         this.photos.add(photo);
         //photo.setUser(this);
         //photo.getUser().setPhotos(this.photos);
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Set<Dialog> getDialogs() {
-        return dialogs;
-    }
-
-    public void setDialogs(Set<Dialog> dialogs) {
-        this.dialogs = dialogs;
+    public List<GrantedAuthority> getAuthorities() {
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        roles.forEach(role -> authorities.add(new SimpleGrantedAuthority(role.toString())));
+        return authorities;
     }
 }
