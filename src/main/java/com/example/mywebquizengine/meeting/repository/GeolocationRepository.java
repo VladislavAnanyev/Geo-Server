@@ -9,7 +9,6 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 
 public interface GeolocationRepository extends CrudRepository<Geolocation, String>, JpaRepository<Geolocation, String> {
-
     @Query(value = """
             SELECT *
             FROM GEOLOCATIONS
@@ -31,7 +30,5 @@ public interface GeolocationRepository extends CrudRepository<Geolocation, Strin
               AND TIME BETWEEN CAST(:time AS TIMESTAMP) - INTERVAL '1 minute'
                 AND CAST(:time AS TIMESTAMP) + INTERVAL '1 minute' AND user_id != :userId""", nativeQuery = true)
     List<Geolocation> findInSquare(Double myLat, Double myLng, Double aroundLat, Double aroundLng, Long userId, String time);
-
-
 }
 
