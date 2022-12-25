@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.controller.web;
 
+import com.example.mywebquizengine.auth.security.model.AuthUserDetails;
 import com.example.mywebquizengine.user.model.domain.User;
 import com.example.mywebquizengine.common.service.FileSystemStorageService;
 import com.example.mywebquizengine.photo.service.PhotoService;
@@ -22,7 +23,7 @@ public class PhotoController {
 
     @PostMapping(path = "/upload")
     public String handleFileUpload(@RequestParam("file") MultipartFile file,
-                                   @AuthenticationPrincipal User principal) {
+                                   @AuthenticationPrincipal AuthUserDetails principal) {
 
         String fileName = fileSystemStorageService.store(file);
         photoService.savePhoto(fileName, principal.getUserId());

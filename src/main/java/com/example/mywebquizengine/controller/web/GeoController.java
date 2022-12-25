@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.controller.web;
 
+import com.example.mywebquizengine.auth.security.model.AuthUserDetails;
 import com.example.mywebquizengine.meeting.model.domain.Geolocation;
 import com.example.mywebquizengine.meeting.model.dto.input.GeolocationRequest;
 import com.example.mywebquizengine.meeting.model.dto.output.GeolocationView;
@@ -32,7 +33,7 @@ public class GeoController {
 
     @PostMapping(path = "/sendGeolocation")
     @ResponseBody
-    public void sendGeolocation(/*@AuthenticationPrincipal User user,*/
+    public void sendGeolocation(/*@AuthenticationPrincipal AuthUserDetails user,*/
                                 @RequestBody GeolocationRequest geolocationRequest) {
         /*GeolocationModel geolocationModel = new GeolocationModel();
         geolocationModel.setLng(geolocationRequest.getLng());
@@ -42,15 +43,15 @@ public class GeoController {
 
     @GetMapping(path = "/getAllGeoWithoutMe")
     @ResponseBody
-    public List<GeolocationView> getAllGeoWithoutMe(@AuthenticationPrincipal User user) {
+    public List<GeolocationView> getAllGeoWithoutMe(@AuthenticationPrincipal AuthUserDetails user) {
         return geolocationFacade.getAllUsersGeoNow(userService.loadUserByUserIdProxy(user.getUserId()).getUserId());
     }
 
     @GetMapping(path = "/square")
     @ResponseBody
-    public List<Geolocation> findInSquare(@AuthenticationPrincipal User authUser, Geolocation myGeolocation,
-                                               @RequestParam(required = false, defaultValue = "1000") String size,
-                                               String time) {
+    public List<Geolocation> findInSquare(@AuthenticationPrincipal AuthUserDetails authUser, Geolocation myGeolocation,
+                                          @RequestParam(required = false, defaultValue = "1000") String size,
+                                          String time) {
         return geolocationFacade.getPeopleInSquare(
                 authUser.getUserId(),
                 myGeolocation,
@@ -60,7 +61,7 @@ public class GeoController {
     }
 
     @GetMapping(path = "/meetings")
-    public String getMyMeetings(Model model, @AuthenticationPrincipal User user, @RequestParam(required = false) String date) {
+    public String getMyMeetings(Model model, @AuthenticationPrincipal AuthUserDetails user, @RequestParam(required = false) String date) {
         model.addAttribute("myUsername", user.getUsername());
         List<UserCommonView> friends = userService.findMyFriends(user.getUserId());
         List<Long> friendsName = friends.stream().map(UserCommonView::getUserId).collect(Collectors.toList());

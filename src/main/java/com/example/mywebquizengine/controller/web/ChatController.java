@@ -1,6 +1,7 @@
 package com.example.mywebquizengine.controller.web;
 
 
+import com.example.mywebquizengine.auth.security.model.AuthUserDetails;
 import com.example.mywebquizengine.chat.model.dto.input.CreateGroupRequest;
 import com.example.mywebquizengine.chat.model.dto.output.DialogView;
 import com.example.mywebquizengine.user.model.domain.User;
@@ -36,7 +37,7 @@ public class ChatController {
     private MessageFacade messageFacade;
 
     @GetMapping(path = "/chat")
-    public String chat(Model model, @AuthenticationPrincipal User authUser) {
+    public String chat(Model model, @AuthenticationPrincipal AuthUserDetails authUser) {
         model.addAttribute("myUsername", authUser.getUserId());
         model.addAttribute("lastDialogs", messageFacade.getLastDialogs(authUser.getUserId()));
         model.addAttribute("userList", new ArrayList<>());
@@ -46,14 +47,14 @@ public class ChatController {
 
     @GetMapping(path = "/exchange")
     @ResponseBody
-    public String getExchangeName(@AuthenticationPrincipal User authUser) {
+    public String getExchangeName(@AuthenticationPrincipal AuthUserDetails authUser) {
         return RabbitUtil.getExchangeName(authUser.getUserId());
     }
 
     @PostMapping(path = "/checkdialog")
     @ResponseBody
     @PreAuthorize(value = "!#authUser.userId.equals(#user.userId)")
-    public Long checkDialog(@RequestBody User user, @AuthenticationPrincipal User authUser) {
+    public Long checkDialog(@RequestBody User user, @AuthenticationPrincipal AuthUserDetails authUser) {
         return messageFacade.createDialog(user.getUserId(), authUser.getUserId());
     }
 
@@ -63,7 +64,7 @@ public class ChatController {
                                @RequestParam(required = false, defaultValue = "0") @Min(0) Integer page,
                                @RequestParam(required = false, defaultValue = "50") @Min(1) @Max(100) Integer pageSize,
                                @RequestParam(defaultValue = "timestamp") String sortBy,
-                               @AuthenticationPrincipal User authUser) {
+                               @AuthenticationPrincipal AuthUserDetails authUser) {
         DialogView dialog = messageFacade.getChatRoom(valueOf(dialog_id), page, pageSize, sortBy, authUser.getUserId());
         model.addAttribute("lastDialogs", messageFacade.getLastDialogs(authUser.getUserId()));
         model.addAttribute("dialog", dialog.getDialogId());
@@ -81,13 +82,13 @@ public class ChatController {
                                         @RequestParam(required = false, defaultValue = "0") @Min(0) Integer page,
                                         @RequestParam(required = false, defaultValue = "50") @Min(1) @Max(100) Integer pageSize,
                                         @RequestParam(defaultValue = "timestamp") String sortBy,
-                                        @AuthenticationPrincipal User authUser) {
+                                        @AuthenticationPrincipal AuthUserDetails authUser) {
         return messageFacade.getChatRoom(valueOf(dialog_id), page, pageSize, sortBy, authUser.getUserId());
     }
 
     @PostMapping(path = "/createGroup")
     @ResponseBody
-    public Long createGroup(@Valid @RequestBody CreateGroupRequest request, @AuthenticationPrincipal User authUser) {
+    public Long createGroup(@Valid @RequestBody CreateGroupRequest request, @AuthenticationPrincipal AuthUserDetails authUser) {
         return messageFacade.createGroup(CreateGroupModelMapper.map(request, authUser.getUserId()));
     }
 

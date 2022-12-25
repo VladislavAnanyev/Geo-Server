@@ -2,6 +2,7 @@ package com.example.mywebquizengine.controller.web;
 
 import com.example.mywebquizengine.auth.facade.AuthFacade;
 import com.example.mywebquizengine.auth.model.dto.input.RegistrationModel;
+import com.example.mywebquizengine.auth.security.model.AuthUserDetails;
 import com.example.mywebquizengine.auth.util.RegistrationModelMapper;
 import com.example.mywebquizengine.auth.model.RegistrationType;
 import com.example.mywebquizengine.common.model.Client;
@@ -47,7 +48,7 @@ public class UserController {
     private RequestFacade requestFacade;
 
     @GetMapping(path = "/friends")
-    public String getFriends(Model model, @ApiIgnore @AuthenticationPrincipal User authUser) {
+    public String getFriends(Model model, @ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser) {
 
         model.addAttribute("friends", userService.findMyFriends(authUser.getUserId()));
         return "friends";
@@ -55,12 +56,12 @@ public class UserController {
 
     @DeleteMapping(path = "/friend/{userId}")
     @ResponseBody
-    public void deleteFriend(@PathVariable Long userId, @ApiIgnore @AuthenticationPrincipal User authUser) {
+    public void deleteFriend(@PathVariable Long userId, @ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser) {
         userService.deleteFriend(userId, authUser.getUserId());
     }
 
     @GetMapping(path = "/profile")
-    public String getProfile(Model model, @AuthenticationPrincipal User authUser) {
+    public String getProfile(Model model, @AuthenticationPrincipal AuthUserDetails authUser) {
 
         AuthUserView user = userService.getAuthUser(authUser.getUserId());
         model.addAttribute("user", user);
@@ -71,19 +72,19 @@ public class UserController {
 
     @GetMapping(path = "/jwt")
     @ResponseBody
-    public String getJwtToken(@AuthenticationPrincipal User authUser) {
+    public String getJwtToken(@AuthenticationPrincipal AuthUserDetails authUser) {
         return jwtUtil.generateToken(userService.loadUserByUserId(authUser.getUserId()));
     }
 
     @GetMapping(path = "/authuser")
     @ResponseBody
-    public String getAuthUsername(@AuthenticationPrincipal User authUser) {
+    public String getAuthUsername(@AuthenticationPrincipal AuthUserDetails authUser) {
         return authUser.getUsername();
     }
 
     @GetMapping(path = "/getbalance")
     @ResponseBody
-    public Integer getBalance(@AuthenticationPrincipal User authUser) {
+    public Integer getBalance(@AuthenticationPrincipal AuthUserDetails authUser) {
         User user = userService.loadUserByUserId(authUser.getUserId());
         return user.getBalance();
     }
@@ -132,12 +133,12 @@ public class UserController {
     @Transactional
     @PutMapping(path = "/update/user/{userId}", consumes = {"application/json"})
     @PreAuthorize(value = "#authUser.userId.equals(#userId)")
-    public void changeUser(@PathVariable Long userId, @RequestBody User user, @AuthenticationPrincipal User authUser) {
+    public void changeUser(@PathVariable Long userId, @RequestBody User user, @AuthenticationPrincipal AuthUserDetails authUser) {
         userService.updateUser(user.getLastName(), user.getFirstName(), userId);
     }
 
     @GetMapping(path = "/about/{userId}")
-    public String getInfoAboutUser(Model model, @PathVariable Long userId, @AuthenticationPrincipal User authUser) {
+    public String getInfoAboutUser(Model model, @PathVariable Long userId, @AuthenticationPrincipal AuthUserDetails authUser) {
 
         if (authUser != null && userId.equals(userService.loadUserByUserId(authUser.getUserId()).getUserId())) {
             return "redirect:/profile";
@@ -156,7 +157,7 @@ public class UserController {
 
     @PostMapping(path = "/sendRequest")
     @ResponseBody
-    public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal User authUser) {
+    public void sendRequest(@RequestBody Request request, @AuthenticationPrincipal AuthUserDetails authUser) {
         requestFacade.sendRequest(
                 request.getMeeting().getMeetingId(),
                 authUser.getUserId(),
@@ -166,7 +167,7 @@ public class UserController {
     }
 
     @GetMapping(path = "/requests")
-    public String getMyRequests(Model model, @AuthenticationPrincipal User authUser) {
+    public String getMyRequests(Model model, @AuthenticationPrincipal AuthUserDetails authUser) {
 
         model.addAttribute("myUsername", authUser.getUserId());
         model.addAttribute("meetings", requestFacade.getMyRequests(authUser.getUserId()));
@@ -176,13 +177,13 @@ public class UserController {
 
     @PostMapping(path = "/acceptRequest")
     @ResponseBody
-    public Long acceptRequest(@RequestBody Request request, @AuthenticationPrincipal User authUser) {
+    public Long acceptRequest(@RequestBody Request request, @AuthenticationPrincipal AuthUserDetails authUser) {
         return requestFacade.acceptRequest(request.getRequestId(), authUser.getUserId());
     }
 
     @PostMapping(path = "/rejectRequest")
     @ResponseBody
-    public void rejectRequest(@RequestBody Request requestId, @AuthenticationPrincipal User authUser) {
+    public void rejectRequest(@RequestBody Request requestId, @AuthenticationPrincipal AuthUserDetails authUser) {
         requestFacade.rejectRequest(requestId.getRequestId(), authUser.getUserId());
     }
 
