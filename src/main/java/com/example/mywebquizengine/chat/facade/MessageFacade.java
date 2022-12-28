@@ -1,12 +1,12 @@
 package com.example.mywebquizengine.chat.facade;
 
-import com.example.mywebquizengine.chat.model.CreateGroupModel;
-import com.example.mywebquizengine.chat.model.FileResponse;
 import com.example.mywebquizengine.chat.model.SendMessageModel;
+import com.example.mywebquizengine.chat.model.dto.output.CreateDialogResult;
 import com.example.mywebquizengine.chat.model.dto.output.DialogView;
-import com.example.mywebquizengine.chat.model.dto.output.LastDialog;
+import com.example.mywebquizengine.chat.model.dto.output.GetDialogAttachmentsResult;
+import com.example.mywebquizengine.chat.model.dto.output.GetDialogsResult;
 
-import java.util.List;
+import java.io.InputStream;
 
 public interface MessageFacade {
     void sendMessage(SendMessageModel sendMessageModel);
@@ -19,13 +19,13 @@ public interface MessageFacade {
 
     DialogView getChatRoom(Long dialogId, Integer page, Integer pageSize, String sortBy, Long userId);
 
-    List<LastDialog> getLastDialogs(Long userId);
+    GetDialogsResult getLastDialogs(Long userId);
 
-    Long createGroup(CreateGroupModel model);
-
-    Long createDialog(Long firstUserId, Long secondUserId);
+    CreateDialogResult createDialog(Long firstUserId, Long secondUserId);
 
     void receiveMessages(Long userId, Long dialogId);
 
-    List<FileResponse> getAttachments(Long id);
+    GetDialogAttachmentsResult getAttachments(Long id);
+
+    UploadAttachmentResult store(InputStream inputStream, String originalFilename, String contentType);
 }

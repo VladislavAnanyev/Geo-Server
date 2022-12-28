@@ -4,7 +4,7 @@ import com.example.mywebquizengine.auth.model.UserToken;
 import com.example.mywebquizengine.auth.model.RegistrationType;
 import com.example.mywebquizengine.auth.model.dto.input.AuthRequest;
 import com.example.mywebquizengine.auth.model.dto.input.RegistrationModel;
-import com.example.mywebquizengine.auth.model.dto.output.AuthPhoneResponse;
+import com.example.mywebquizengine.auth.model.dto.output.AuthPhoneResult;
 import com.example.mywebquizengine.auth.model.dto.output.AuthResult;
 import com.example.mywebquizengine.auth.model.dto.output.UserExistDto;
 import com.example.mywebquizengine.auth.service.AuthService;
@@ -92,21 +92,22 @@ public class AuthFacadeImpl implements AuthFacade {
     }
 
     @Override
-    public AuthPhoneResponse signUpViaPhone(RegistrationModel registrationModel) {
+    public AuthPhoneResult signUpViaPhone(RegistrationModel registrationModel) {
         String code = CodeUtil.generateShortCode();
         registrationModel.setPassword(code);
         User user = authService.saveUser(registrationModel);
         deviceService.registerDevice(user, registrationModel.getAppleToken());
         smsSender.sendCodeToPhone(user.getPassword(), registrationModel.getUsername());
         rabbitUtil.createExchange(user.getUserId());
-        return new AuthPhoneResponse(user.getPassword());
+        return new AuthPhoneResult()
+                .setCode(user.getPassword());
     }
 
     @Override
-    public AuthPhoneResponse createAndSendOneTimePassword(String phone) {
+    public AuthPhoneResult createAndSendOneTimePassword(String phone) {
         String code = authService.setOneTimePasswordCode(phone);
         smsSender.sendCodeToPhone(code, phone);
-        return new AuthPhoneResponse()
+        return new AuthPhoneResult()
                 .setCode(code);
     }
 

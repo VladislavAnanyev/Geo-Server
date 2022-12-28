@@ -1,4 +1,4 @@
-package com.example.mywebquizengine.meeting;
+package com.example.mywebquizengine.meeting.model;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

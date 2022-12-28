@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.meeting.service;
 
-import com.example.mywebquizengine.meeting.GeolocationModel;
+import com.example.mywebquizengine.meeting.model.GeolocationModel;
 import com.example.mywebquizengine.meeting.model.domain.Geolocation;
 import com.example.mywebquizengine.meeting.model.domain.Meeting;
 import com.example.mywebquizengine.meeting.model.dto.output.GeolocationView;

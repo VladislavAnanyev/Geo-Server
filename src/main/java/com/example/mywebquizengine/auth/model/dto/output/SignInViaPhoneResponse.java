@@ -13,5 +13,5 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SignInViaPhoneResponse extends SuccessfulResponse {
-    private AuthPhoneResponse result;
+    private AuthPhoneResult result;
 }

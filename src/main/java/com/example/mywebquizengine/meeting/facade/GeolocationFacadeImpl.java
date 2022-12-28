@@ -3,11 +3,11 @@ package com.example.mywebquizengine.meeting.facade;
 import com.example.mywebquizengine.common.service.NotificationService;
 import com.example.mywebquizengine.common.rabbit.MeetingType;
 import com.example.mywebquizengine.common.utils.ProjectionUtil;
-import com.example.mywebquizengine.meeting.GeolocationModel;
+import com.example.mywebquizengine.meeting.model.GeolocationModel;
+import com.example.mywebquizengine.meeting.model.GetMeetingsResult;
 import com.example.mywebquizengine.meeting.model.domain.Geolocation;
 import com.example.mywebquizengine.meeting.model.domain.Meeting;
 import com.example.mywebquizengine.meeting.model.dto.output.GeolocationView;
-import com.example.mywebquizengine.meeting.model.dto.output.MeetingView;
 import com.example.mywebquizengine.meeting.model.dto.output.MeetingViewForNotification;
 import com.example.mywebquizengine.meeting.service.GeoService;
 import com.example.mywebquizengine.user.model.domain.User;
@@ -45,8 +45,9 @@ public class GeolocationFacadeImpl implements GeolocationFacade {
     }
 
     @Override
-    public List<MeetingView> getMeetings(Long userId, String date) {
-        return geoService.getMyMeetings(userId, date);
+    public GetMeetingsResult getMeetings(Long userId, String date) {
+        return new GetMeetingsResult()
+                .setMeetings(geoService.getMyMeetings(userId, date));
     }
 
     @Override

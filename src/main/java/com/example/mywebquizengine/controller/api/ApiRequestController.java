@@ -1,22 +1,19 @@
 package com.example.mywebquizengine.controller.api;
 
 import com.example.mywebquizengine.auth.security.model.AuthUserDetails;
+import com.example.mywebquizengine.common.model.SuccessfulResponse;
+import com.example.mywebquizengine.request.AcceptRequestResponse;
+import com.example.mywebquizengine.request.GetRequestsToUserResponse;
+import com.example.mywebquizengine.request.GetSentRequestsResponse;
 import com.example.mywebquizengine.request.RequestFacade;
-import com.example.mywebquizengine.request.model.domain.RequestStatus;
-import com.example.mywebquizengine.request.model.dto.output.RequestView;
 import com.example.mywebquizengine.request.model.dto.input.RequestDto;
-import com.example.mywebquizengine.user.model.domain.User;
-import com.example.mywebquizengine.request.service.RequestService;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import javax.transaction.Transactional;
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.List;
 
 @RestController
 @RequestMapping(path = "/api/v1")
@@ -25,37 +22,46 @@ public class ApiRequestController {
     @Autowired
     private RequestFacade requestFacade;
 
+    @ApiOperation(value = "Отправить заявку на добавление в друзья")
     @PostMapping(path = "/request")
-    @ResponseBody
-    @Transactional
-    public void sendRequest(@RequestBody @Valid RequestDto requestDto, @ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser) {
+    public SuccessfulResponse sendRequest(@RequestBody @Valid RequestDto requestDto, @ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser) {
         requestFacade.sendRequest(
                 requestDto.getMeetingId(),
                 authUser.getUserId(),
                 requestDto.getToUserId(),
                 requestDto.getMessageContent()
         );
+        return new SuccessfulResponse();
     }
 
+    @ApiOperation(value = "Принять заявку на добавление в друзья")
     @PostMapping(path = "/request/{id}/accept")
-    public Long acceptRequest(
-            @PathVariable Long id,
-            @ApiIgnore @AuthenticationPrincipal AuthUserDetails user) {
-        return requestFacade.acceptRequest(id, user.getUserId());
+    public AcceptRequestResponse acceptRequest(@PathVariable Long id, @ApiIgnore @AuthenticationPrincipal AuthUserDetails user) {
+        return new AcceptRequestResponse(
+                requestFacade.acceptRequest(id, user.getUserId())
+        );
     }
 
+    @ApiOperation(value = "Получить список заявок на добавление в друзья к аутентифицированному пользователю")
     @GetMapping(path = "/requests")
-    public ArrayList<RequestView> getMyRequests(@ApiIgnore @AuthenticationPrincipal AuthUserDetails user) {
-        return requestFacade.getMyRequests(user.getUserId());
+    public GetRequestsToUserResponse getRequestsFromUser(@ApiIgnore @AuthenticationPrincipal AuthUserDetails user) {
+        return new GetRequestsToUserResponse(
+                requestFacade.getRequestsToUser(user.getUserId())
+        );
     }
 
+    @ApiOperation(value = "Отклонить заявку на добавление в друзья")
     @PostMapping(path = "/request/{id}/reject")
-    public void rejectRequest(@PathVariable Long id, @ApiIgnore @AuthenticationPrincipal AuthUserDetails user) {
+    public SuccessfulResponse rejectRequest(@PathVariable Long id, @ApiIgnore @AuthenticationPrincipal AuthUserDetails user) {
         requestFacade.rejectRequest(id, user.getUserId());
+        return new SuccessfulResponse();
     }
 
-    @GetMapping(path = "/sentRequests")
-    public List<RequestView> getSentRequests(@ApiIgnore @AuthenticationPrincipal AuthUserDetails user) {
-        return requestFacade.getSentRequests(user.getUserId());
+    @ApiOperation(value = "Получить список отправленных пользователем заявок на добавление в друзья")
+    @GetMapping(path = "/requests/sent")
+    public GetSentRequestsResponse getSentRequests(@ApiIgnore @AuthenticationPrincipal AuthUserDetails user) {
+        return new GetSentRequestsResponse(
+                requestFacade.getSentToUserRequests(user.getUserId())
+        );
     }
 }

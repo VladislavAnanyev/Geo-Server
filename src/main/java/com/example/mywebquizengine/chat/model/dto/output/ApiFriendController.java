@@ -1,6 +1,7 @@
-package com.example.mywebquizengine.controller.api;
+package com.example.mywebquizengine.chat.model.dto.output;
 
 import com.example.mywebquizengine.auth.security.model.AuthUserDetails;
+import com.example.mywebquizengine.common.model.SuccessfulResponse;
 import com.example.mywebquizengine.user.model.dto.UserCommonView;
 import com.example.mywebquizengine.user.service.UserService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,7 +26,8 @@ public class ApiFriendController {
     }
 
     @DeleteMapping(path = "/friend/{userId}")
-    public void deleteFriend(@PathVariable Long userId, @ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser) {
+    public SuccessfulResponse deleteFriend(@PathVariable Long userId, @ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser) {
         userService.deleteFriend(userId, authUser.getUserId());
+        return new SuccessfulResponse();
     }
 }

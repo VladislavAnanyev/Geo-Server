@@ -21,6 +21,9 @@ import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import static java.util.UUID.randomUUID;
+import static org.springframework.util.StringUtils.cleanPath;
+
 @Service
 public class FileSystemStorageService {
 
@@ -31,27 +34,17 @@ public class FileSystemStorageService {
         this.rootLocation = Paths.get(storagePath);
     }
 
-    public String store(MultipartFile file) {
-
-        if (!file.getContentType().equals("image/jpeg")) {
+    public String store(String contentType, String originalFilename, InputStream inputStream) {
+        if (!contentType.equals("image/jpeg")) {
             throw new IllegalArgumentException("You must provide image/jpeg file");
         }
 
-        String filename = UUID.randomUUID().toString().substring(0, 8) +
-                          file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+        String filename = randomUUID().toString().substring(0, 8) +
+                          originalFilename.substring(originalFilename.lastIndexOf("."));
 
-        filename = StringUtils.cleanPath(filename);
+        filename = cleanPath(filename);
         try {
-            if (file.isEmpty()) {
-                throw new StorageException("Failed to store empty file " + filename);
-            }
-            if (filename.contains("..")) {
-                // This is a security check
-                throw new StorageException(
-                        "Cannot store file with relative path outside current directory "
-                        + filename);
-            }
-            try (InputStream inputStream = file.getInputStream()) {
+            try (inputStream) {
                 Files.copy(inputStream, this.rootLocation.resolve(filename),
                         StandardCopyOption.REPLACE_EXISTING);
             }
@@ -60,8 +53,6 @@ public class FileSystemStorageService {
         }
 
         return filename;
-
-
     }
 
     public Stream<Path> loadAll() {

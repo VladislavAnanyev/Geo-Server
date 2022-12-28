@@ -1,49 +1,54 @@
 package com.example.mywebquizengine.controller.api;
 
 import com.example.mywebquizengine.auth.security.model.AuthUserDetails;
-import com.example.mywebquizengine.common.exception.LogicException;
-import com.example.mywebquizengine.user.model.domain.User;
-import com.example.mywebquizengine.common.service.FileSystemStorageService;
-import com.example.mywebquizengine.photo.service.PhotoService;
+import com.example.mywebquizengine.common.model.SuccessfulResponse;
+import com.example.mywebquizengine.photo.facade.PhotoFacade;
+import com.example.mywebquizengine.photo.model.dto.UploadPhotoResponse;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping(path = "/api/v1")
 public class ApiPhotoController {
 
-    private final PhotoService photoService;
-    private final FileSystemStorageService fileSystemStorageService;
+    private final PhotoFacade photoFacade;
 
-    public ApiPhotoController(PhotoService photoService, FileSystemStorageService fileSystemStorageService) {
-        this.photoService = photoService;
-        this.fileSystemStorageService = fileSystemStorageService;
+    public ApiPhotoController(PhotoFacade photoFacade) {
+        this.photoFacade = photoFacade;
     }
 
+    @ApiOperation(value = "Поставить фотографию на указанную позицию в списке фотографий пользователя")
     @PostMapping(path = "/user/photo/swap")
-    public void swapPhoto(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser,
-                          @RequestParam Long photoId,
-                          @RequestParam Integer position) {
-        photoService.swapPhoto(photoId, position, authUser.getUserId());
+    public SuccessfulResponse swapPhoto(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser,
+                                        @RequestParam Long photoId,
+                                        @RequestParam Integer position) {
+        photoFacade.swapPhoto(photoId, position, authUser.getUserId());
+        return new SuccessfulResponse();
     }
 
+    @ApiOperation(value = "Загрузить фотографию")
     @PostMapping(path = "/user/photo")
-    public String uploadPhoto(@RequestParam("file") MultipartFile file,
-                              @ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser) {
-        String fileName = fileSystemStorageService.store(file);
-        return photoService.savePhoto(fileName, authUser.getUserId());
+    public UploadPhotoResponse uploadPhoto(@RequestParam("file") MultipartFile file,
+                                           @ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser) throws IOException {
+        return new UploadPhotoResponse(
+                photoFacade.uploadPhoto(
+                        file.getInputStream(),
+                        file.getOriginalFilename(),
+                        file.getContentType(),
+                        authUser.getUserId()
+                )
+        );
     }
 
-    @PostMapping(path = "/dialog/photo")
-    public String uploadPhotoInDialog(@RequestParam("file") MultipartFile file) {
-        return fileSystemStorageService.store(file);
-    }
-
+    @ApiOperation(value = "Удалить фотографию")
     @DeleteMapping(path = "/user/photo/{id}")
-    public void deletePhoto(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser,
-                            @PathVariable Long id) throws LogicException {
-        photoService.deletePhoto(id, authUser.getUserId());
+    public SuccessfulResponse deletePhoto(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser, @PathVariable Long id) {
+        photoFacade.deletePhoto(id, authUser.getUserId());
+        return new SuccessfulResponse();
     }
 }

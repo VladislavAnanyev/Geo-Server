@@ -4,6 +4,9 @@ import com.example.mywebquizengine.chat.model.domain.Dialog;
 import com.example.mywebquizengine.chat.model.domain.Message;
 import com.example.mywebquizengine.chat.model.domain.MessageStatus;
 import com.example.mywebquizengine.chat.model.dto.input.EditMessageRequest;
+import com.example.mywebquizengine.chat.model.dto.output.CreateDialogResponse;
+import com.example.mywebquizengine.chat.model.dto.output.GetDialogsResponse;
+import com.example.mywebquizengine.chat.model.dto.output.LastDialog;
 import com.example.mywebquizengine.chat.repository.DialogRepository;
 import com.example.mywebquizengine.chat.repository.MessageRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -63,7 +66,7 @@ public class ApiChatControllerTest {
     public void testGetEmptyDialogList() throws Exception {
         mockMvc.perform(get("/api/v1/dialogs").secure(true))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
+                .andExpect(jsonPath("$.result.dialogs", hasSize(1)));
     }
 
     @Test
@@ -79,69 +82,73 @@ public class ApiChatControllerTest {
 
         mockMvc.perform(get("/api/v1/dialogs").secure(true))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[0].dialogId", instanceOf(Number.class)))
-                .andExpect(jsonPath("$[0].dialogId").value("1277"))
-                .andExpect(jsonPath("$[0].name").value("user4"))
-                .andExpect(jsonPath("$[0].content").value("f"))
-                .andExpect(jsonPath("$[0].content").value("f"))
-                .andExpect(jsonPath("$[*].dialogId", notNullValue()))
-                .andExpect(jsonPath("$[*].name", notNullValue()))
-                .andExpect(jsonPath("$[*].image", notNullValue()))
-                .andExpect(jsonPath("$[*].timestamp", notNullValue()))
-                .andExpect(jsonPath("$[*].lastSender", notNullValue()));
+                .andExpect(jsonPath("$.result.dialogs", hasSize(3)))
+                .andExpect(jsonPath("$.result.dialogs[0].dialogId", instanceOf(Number.class)))
+                .andExpect(jsonPath("$.result.dialogs[0].dialogId").value("1277"))
+                .andExpect(jsonPath("$.result.dialogs[0].name").value("user4"))
+                .andExpect(jsonPath("$.result.dialogs[0].content").value("f"))
+                .andExpect(jsonPath("$.result.dialogs[0].content").value("f"))
+                .andExpect(jsonPath("$.result.dialogs[*].dialogId", notNullValue()))
+                .andExpect(jsonPath("$.result.dialogs[*].name", notNullValue()))
+                .andExpect(jsonPath("$.result.dialogs[*].image", notNullValue()))
+                .andExpect(jsonPath("$.result.dialogs[*].timestamp", notNullValue()))
+                .andExpect(jsonPath("$.result.dialogs[*].lastSender", notNullValue()));
     }
-
 
     @Test
     @WithUserDetails(value = "user1")
     public void testCreateDialog() throws Exception {
-        String dialogId = mockMvc.perform(post("/api/v1/dialog/create?userId=1004")
+        String json = mockMvc.perform(post("/api/v1/dialog/create?userId=1004")
                 .secure(true))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isNumber()).andReturn().getResponse().getContentAsString();
+                .andReturn().getResponse().getContentAsString();
 
-        Optional<Dialog> dialog = dialogRepository.findById(valueOf(dialogId));
+        CreateDialogResponse createDialogResponse = objectMapper.readValue(json, CreateDialogResponse.class);
+
+        Optional<Dialog> dialog = dialogRepository.findById(createDialogResponse.getCreateDialogResult().getDialogId());
         assertTrue(dialog.isPresent());
     }
 
     @Test
     @WithUserDetails(value = "user1")
     public void testCreateExistDialog() throws Exception {
-
-        String existDialogId = mockMvc.perform(post("/api/v1/dialog/create?userId=1004")
+        String json1 = mockMvc.perform(post("/api/v1/dialog/create?userId=1004")
                 .secure(true))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isNumber()).andReturn().getResponse().getContentAsString();
+                .andExpect(jsonPath("$.result.dialogId").isNumber()).andReturn().getResponse().getContentAsString();
+        CreateDialogResponse createDialogResponse1 = objectMapper.readValue(json1, CreateDialogResponse.class);
+        assertTrue(dialogRepository.findById(createDialogResponse1.getCreateDialogResult().getDialogId()).isPresent());
 
-        assertTrue(dialogRepository.findById(valueOf(existDialogId)).isPresent());
-
-        String newDialogId = mockMvc.perform(post("/api/v1/dialog/create?userId=1004")
+        String json2 = mockMvc.perform(post("/api/v1/dialog/create?userId=1004")
                 .secure(true))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isNumber()).andReturn().getResponse().getContentAsString();
-
-        assertEquals(existDialogId, newDialogId);
+                .andReturn().getResponse().getContentAsString();
+        CreateDialogResponse createDialogResponse2 = objectMapper.readValue(json2, CreateDialogResponse.class);
+        assertEquals(
+                createDialogResponse1.getCreateDialogResult().getDialogId(),
+                createDialogResponse2.getCreateDialogResult().getDialogId()
+        );
     }
 
 
     @Test
     @WithUserDetails(value = "user1")
     public void getMessagesInEmptyDialog() throws Exception {
-
-        String dialogId = mockMvc.perform(post("/api/v1/dialog/create?userId=1005")
+        String json = mockMvc.perform(post("/api/v1/dialog/create?userId=1005")
                 .secure(true))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isNumber()).andReturn().getResponse().getContentAsString();
+                .andExpect(jsonPath("$.result.dialogId").isNumber()).andReturn().getResponse().getContentAsString();
 
+        CreateDialogResponse createDialogResponse = objectMapper.readValue(json, CreateDialogResponse.class);
 
-        Optional<Dialog> dialog = dialogRepository.findById(valueOf(dialogId));
+        Long dialogId = createDialogResponse.getCreateDialogResult().getDialogId();
+        Optional<Dialog> dialog = dialogRepository.findById(dialogId);
 
         assertTrue(dialog.isPresent());
 
         mockMvc.perform(get("/api/v1/dialog/" + dialogId).secure(true))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.messages", hasSize(0)));
+                .andExpect(jsonPath("$.result.messages", hasSize(0)));
     }
 
 
@@ -150,11 +157,11 @@ public class ApiChatControllerTest {
     public void testGetMessagesInBigDialog() throws Exception {
         mockMvc.perform(get("/api/v1/dialog/1277").secure(true))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.messages", hasSize(50)))
-                .andExpect(jsonPath("$.messages[0].messageId").value("1324"))
-                .andExpect(jsonPath("$.messages[0].content").value("asdf"))
-                .andExpect(jsonPath("$.messages[49].messageId").value("1373"))
-                .andExpect(jsonPath("$.messages[49].content").value("f"));
+                .andExpect(jsonPath("$.result.messages", hasSize(50)))
+                .andExpect(jsonPath("$.result.messages[0].messageId").value("1324"))
+                .andExpect(jsonPath("$.result.messages[0].content").value("asdf"))
+                .andExpect(jsonPath("$.result.messages[49].messageId").value("1373"))
+                .andExpect(jsonPath("$.result.messages[49].content").value("f"));
     }
 
     @Test
@@ -162,11 +169,11 @@ public class ApiChatControllerTest {
     public void testGetMessagesOnSecondPageInDialog() throws Exception {
         mockMvc.perform(get("/api/v1/dialog/1277?page=1").secure(true))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.messages", hasSize(46)))
-                .andExpect(jsonPath("$.messages[0].messageId").value("1278"))
-                .andExpect(jsonPath("$.messages[0].content").value("1"))
-                .andExpect(jsonPath("$.messages[45].messageId").value("1323"))
-                .andExpect(jsonPath("$.messages[45].content").value("sdf"));
+                .andExpect(jsonPath("$.result.messages", hasSize(46)))
+                .andExpect(jsonPath("$.result.messages[0].messageId").value("1278"))
+                .andExpect(jsonPath("$.result.messages[0].content").value("1"))
+                .andExpect(jsonPath("$.result.messages[45].messageId").value("1323"))
+                .andExpect(jsonPath("$.result.messages[45].content").value("sdf"));
     }
 
     @Test
@@ -176,21 +183,19 @@ public class ApiChatControllerTest {
                 .andExpect(status().isForbidden());
     }
 
-
-    @Test
+    //todo включить тест когда будет осуществлен переход от интерфейс-проекций к классам
+/*    @Test
     @WithUserDetails(value = "user1")
     public void testGetDialogsReturnDialogsSortedByTimestamp() throws Exception {
         String json = mockMvc.perform(get("/api/v1/dialogs").secure(true))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].timestamp").isArray())
                 .andReturn().getResponse().getContentAsString();
 
-        List<Message> messages = objectMapper.readValue(json, new TypeReference<>() {
-        });
+        GetDialogsResponse getDialogsResponse = objectMapper.readValue(json, GetDialogsResponse.class);
 
         List<Date> datesFromRequest = new ArrayList<>();
-        for (Message message : messages) {
-            datesFromRequest.add(message.getTimestamp());
+        for (LastDialog lastDialog : getDialogsResponse.getGetDialogsResult().getDialogs()) {
+            datesFromRequest.add(lastDialog.getTimestamp());
         }
 
         List<Date> manualDates = new ArrayList<>(datesFromRequest);
@@ -198,7 +203,7 @@ public class ApiChatControllerTest {
         reverse(manualDates);
 
         assertEquals(datesFromRequest, manualDates);
-    }
+    }*/
 
 
     @Test

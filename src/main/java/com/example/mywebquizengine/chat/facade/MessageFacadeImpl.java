@@ -1,5 +1,8 @@
 package com.example.mywebquizengine.chat.facade;
 
+import com.example.mywebquizengine.chat.model.dto.output.CreateDialogResult;
+import com.example.mywebquizengine.chat.model.dto.output.GetDialogAttachmentsResult;
+import com.example.mywebquizengine.chat.model.dto.output.GetDialogsResult;
 import com.example.mywebquizengine.chat.model.CreateGroupModel;
 import com.example.mywebquizengine.chat.model.SendMessageModel;
 import com.example.mywebquizengine.chat.model.domain.Dialog;
@@ -7,20 +10,19 @@ import com.example.mywebquizengine.chat.model.domain.Message;
 import com.example.mywebquizengine.chat.model.domain.MessageStatus;
 import com.example.mywebquizengine.chat.model.dto.input.Typing;
 import com.example.mywebquizengine.chat.model.dto.output.DialogView;
-import com.example.mywebquizengine.chat.model.dto.output.LastDialog;
 import com.example.mywebquizengine.chat.model.dto.output.MessageView;
 import com.example.mywebquizengine.chat.model.dto.output.TypingView;
 import com.example.mywebquizengine.chat.service.MessageService;
-import com.example.mywebquizengine.chat.service.NewLastDialog;
+import com.example.mywebquizengine.common.service.FileSystemStorageService;
 import com.example.mywebquizengine.common.service.NotificationService;
 import com.example.mywebquizengine.common.rabbit.MessageType;
 import com.example.mywebquizengine.common.utils.ProjectionUtil;
 import com.example.mywebquizengine.chat.model.ChangeMessageStatusEvent;
-import com.example.mywebquizengine.chat.model.FileResponse;
 import com.example.mywebquizengine.common.rabbit.ChangeMessageStatusEventView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.InputStream;
 import java.util.List;
 
 @Component
@@ -32,6 +34,8 @@ public class MessageFacadeImpl implements MessageFacade {
     private NotificationService notificationService;
     @Autowired
     private ProjectionUtil projectionUtil;
+    @Autowired
+    private FileSystemStorageService fileSystemStorageService;
 
     @Override
     public void sendMessage(SendMessageModel sendMessageModel) {
@@ -87,25 +91,17 @@ public class MessageFacadeImpl implements MessageFacade {
     }
 
     @Override
-    public List<LastDialog> getLastDialogs(Long userId) {
-        return messageService.getDialogs(userId);
-    }
-
-    @Override
-    public Long createGroup(CreateGroupModel model) {
-        Dialog dialog = messageService.createGroup(model);
-        this.sendMessage(
-                new SendMessageModel()
-                        .setSenderId(model.getAuthUserId())
-                        .setContent("Группа создана")
-                        .setDialogId(dialog.getDialogId())
+    public GetDialogsResult getLastDialogs(Long userId) {
+        return new GetDialogsResult(
+                messageService.getDialogs(userId)
         );
-        return dialog.getDialogId();
     }
 
     @Override
-    public Long createDialog(Long firstUserId, Long secondUserId) {
-        return messageService.createDialog(firstUserId, secondUserId);
+    public CreateDialogResult createDialog(Long firstUserId, Long secondUserId) {
+        return new CreateDialogResult(
+                messageService.createDialog(firstUserId, secondUserId)
+        );
     }
 
     @Override
@@ -132,7 +128,27 @@ public class MessageFacadeImpl implements MessageFacade {
     }
 
     @Override
-    public List<FileResponse> getAttachments(Long dialogId) {
-        return messageService.getAttachments(dialogId);
+    public GetDialogAttachmentsResult getAttachments(Long dialogId) {
+        return new GetDialogAttachmentsResult(
+                messageService.getAttachments(dialogId)
+        );
     }
+
+    @Override
+    public UploadAttachmentResult store(InputStream inputStream, String originalFilename, String contentType) {
+        return new UploadAttachmentResult()
+                .setUri(fileSystemStorageService.store(contentType, originalFilename, inputStream));
+    }
+
+    public Long createGroup(CreateGroupModel model) {
+        Dialog dialog = messageService.createGroup(model);
+        this.sendMessage(
+                new SendMessageModel()
+                        .setSenderId(model.getAuthUserId())
+                        .setContent("Группа создана")
+                        .setDialogId(dialog.getDialogId())
+        );
+        return dialog.getDialogId();
+    }
+
 }

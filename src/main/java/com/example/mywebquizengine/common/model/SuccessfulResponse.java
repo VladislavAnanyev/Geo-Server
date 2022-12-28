@@ -1,13 +1,11 @@
 package com.example.mywebquizengine.common.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 @Data
 public class SuccessfulResponse implements Response {
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Object result;
+    
+    private String status;
 
     @Override
     public ResponseStatus getStatus() {

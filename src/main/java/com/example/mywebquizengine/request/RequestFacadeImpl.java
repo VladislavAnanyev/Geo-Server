@@ -2,9 +2,9 @@ package com.example.mywebquizengine.request;
 
 import com.example.mywebquizengine.chat.model.SendMessageModel;
 import com.example.mywebquizengine.chat.service.MessageService;
-import com.example.mywebquizengine.common.service.NotificationService;
 import com.example.mywebquizengine.common.rabbit.FriendType;
 import com.example.mywebquizengine.common.rabbit.RequestType;
+import com.example.mywebquizengine.common.service.NotificationService;
 import com.example.mywebquizengine.common.utils.ProjectionUtil;
 import com.example.mywebquizengine.request.model.domain.Request;
 import com.example.mywebquizengine.request.model.domain.RequestStatus;
@@ -16,8 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -65,7 +63,7 @@ public class RequestFacadeImpl implements RequestFacade {
     }
 
     @Override
-    public Long acceptRequest(Long requestId, Long userId) {
+    public AcceptRequestResult acceptRequest(Long requestId, Long userId) {
         Request request = requestService.changeRequestStatus(requestId, userId, RequestStatus.ACCEPTED);
         friendService.makeFriends(request.getSender().getUserId(), request.getTo().getUserId());
 
@@ -74,7 +72,13 @@ public class RequestFacadeImpl implements RequestFacade {
         UserCommonView senderView = projectionUtil.parse(request.getSender(), UserCommonView.class);
         notificationService.send(senderView, Set.of(request.getTo()), FriendType.NEW_FRIEND);
 
-        return messageService.createDialog(request.getSender().getUserId(), request.getTo().getUserId());
+        return new AcceptRequestResult()
+                .setDialogId(
+                        messageService.createDialog(
+                                request.getSender().getUserId(),
+                                request.getTo().getUserId()
+                        )
+                );
     }
 
     @Override
@@ -83,12 +87,14 @@ public class RequestFacadeImpl implements RequestFacade {
     }
 
     @Override
-    public List<RequestView> getSentRequests(Long userId) {
-        return requestService.getSentRequests(userId);
+    public GetSentFromUserRequestsResult getSentToUserRequests(Long userId) {
+        return new GetSentFromUserRequestsResult()
+                .setRequests(requestService.getSentRequests(userId));
     }
 
     @Override
-    public ArrayList<RequestView> getMyRequests(Long userId) {
-        return requestService.getMyRequests(userId);
+    public GetRequestsToUserResult getRequestsToUser(Long userId) {
+        return new GetRequestsToUserResult()
+                .setRequests(requestService.getMyRequests(userId));
     }
 }

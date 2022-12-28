@@ -1,7 +1,6 @@
 package com.example.mywebquizengine.chat.model.dto.input;
 
 import com.example.mywebquizengine.chat.model.FileResponse;
-import com.example.mywebquizengine.chat.model.ForwardedMessagesRequest;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -29,4 +28,16 @@ public class SendMessageRequest {
 
     @Size(max = 5)
     private List<FileResponse> files;
+
+    @Data
+    @Accessors(chain = true)
+    public static class ForwardedMessagesRequest {
+        @NotNull
+        @Size(min = 1)
+        private List<Long> messagesId;
+
+        @NotNull
+        private Long dialogId;
+    }
+
 }

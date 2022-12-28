@@ -1,10 +1,9 @@
 package com.example.mywebquizengine.controller.api;
 
 import com.example.mywebquizengine.auth.service.TokenService;
-import com.example.mywebquizengine.common.model.SuccessfulResponse;
+import com.example.mywebquizengine.user.model.GetAuthCodeResponse;
 import com.example.mywebquizengine.user.model.domain.User;
 import com.example.mywebquizengine.user.repository.UserRepository;
-import com.example.mywebquizengine.auth.model.dto.output.AuthPhoneResponse;
 import com.example.mywebquizengine.user.service.BusinessEmailSender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
@@ -14,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -63,7 +61,7 @@ public class ApiUserControllerTest {
     @Test
     @WithUserDetails("user1")
     public void testGetAuthUserWithAuth() throws Exception {
-        mockMvc.perform(get("/api/v1/authuser").secure(true))
+        mockMvc.perform(get("/api/v1/user/auth").secure(true))
                 .andExpect(status().isOk());
     }
 
@@ -298,44 +296,6 @@ public class ApiUserControllerTest {
     }
 
     @Test
-    @WithUserDetails("user1")
-    public void testChangeUserData() throws Exception {
-        String json =
-                """
-                            {
-                                "firstName": "rename",
-                                "lastName": "user"
-                            }
-                        """;
-        mockMvc.perform(put("/api/v1/user").secure(true).contentType(APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isOk());
-
-        User user = userRepository.findUserByUsername("user1").get();
-        assertEquals("rename", user.getFirstName());
-        assertEquals("user", user.getLastName());
-    }
-
-    @Test
-    @WithUserDetails("user1")
-    public void testFailChangeUserData() throws Exception {
-        String json =
-                """
-                            {
-                                "firstName": "",
-                                "lastName": "user"
-                            }
-                        """;
-        mockMvc.perform(put("/api/v1/user").secure(true).contentType(APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isBadRequest());
-
-        User user = userRepository.findUserByUsername("user1").get();
-        assertEquals("user1", user.getFirstName());
-        assertEquals("user1", user.getLastName());
-    }
-
-    @Test
     public void testGetCodeForSignInViaPhone() throws Exception {
 
         doAnswer(invocationOnMock -> null).when(rabbitAdmin).declareExchange(anyObject());
@@ -373,8 +333,7 @@ public class ApiUserControllerTest {
                         .content(jsonForRequestCodeAgain))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-        SuccessfulResponse successfulResponse = objectMapper.readValue(responseCodeAgain, SuccessfulResponse.class);
-        AuthPhoneResponse authPhoneResponse = objectMapper.convertValue(successfulResponse.getResult(), AuthPhoneResponse.class);
+        GetAuthCodeResponse getAuthCodeResponse = objectMapper.readValue(responseCodeAgain, GetAuthCodeResponse.class);
 
         // Вход по полученному коду
         String jsonForSignIn = String.format(
@@ -383,7 +342,7 @@ public class ApiUserControllerTest {
                                     "username": "+7(905)7970526",
                                     "password": "%s"
                                 }
-                        """, authPhoneResponse.getCode());
+                        """, getAuthCodeResponse.getResult().getCode());
 
         mockMvc.perform(post("/api/v1/signin").secure(true)
                         .content(jsonForSignIn)

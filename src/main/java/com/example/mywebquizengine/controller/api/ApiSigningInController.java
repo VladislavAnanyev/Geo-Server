@@ -4,13 +4,15 @@ import com.example.mywebquizengine.auth.facade.AuthFacade;
 import com.example.mywebquizengine.auth.model.RefreshTokenRequest;
 import com.example.mywebquizengine.auth.model.RegistrationType;
 import com.example.mywebquizengine.auth.model.dto.input.*;
-import com.example.mywebquizengine.auth.model.dto.output.AuthPhoneResponse;
+import com.example.mywebquizengine.auth.model.dto.output.AuthPhoneResult;
 import com.example.mywebquizengine.auth.model.dto.output.AuthResponse;
 import com.example.mywebquizengine.auth.model.dto.output.AuthResult;
 import com.example.mywebquizengine.auth.model.dto.output.SignInViaPhoneResponse;
 import com.example.mywebquizengine.auth.util.RegistrationModelMapper;
 import com.example.mywebquizengine.common.model.Client;
 import com.example.mywebquizengine.common.model.SuccessfulResponse;
+import com.example.mywebquizengine.user.model.CheckUserExistsResponse;
+import com.example.mywebquizengine.user.model.GetAuthCodeResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -71,10 +73,10 @@ public class ApiSigningInController {
     }
 
     @GetMapping(path = "/user/check-username")
-    public SuccessfulResponse checkExistUser(@RequestParam String username) {
-        SuccessfulResponse successfulResponse = new SuccessfulResponse();
-        successfulResponse.setResult(authFacade.checkForExistUser(username));
-        return successfulResponse;
+    public CheckUserExistsResponse checkExistUser(@RequestParam String username) {
+        return new CheckUserExistsResponse(
+                authFacade.checkForExistUser(username)
+        );
     }
 
     @PostMapping("/signup/phone")
@@ -91,11 +93,11 @@ public class ApiSigningInController {
     }
 
     @PostMapping("/signin/phone")
-    public SuccessfulResponse signInViaPhone(@RequestBody GetCodeRequest getCodeRequest) {
-        AuthPhoneResponse authPhoneResponse = authFacade.createAndSendOneTimePassword(getCodeRequest.getPhone());
-        SuccessfulResponse successfulResponse = new SuccessfulResponse();
-        successfulResponse.setResult(authPhoneResponse);
-        return successfulResponse;
+    public GetAuthCodeResponse signInViaPhoneCodeRequest(@RequestBody GetCodeRequest getCodeRequest) {
+        AuthPhoneResult authPhoneResult = authFacade.createAndSendOneTimePassword(getCodeRequest.getPhone());
+        return new GetAuthCodeResponse(
+                authPhoneResult
+        );
     }
 
     @PostMapping("/refresh")

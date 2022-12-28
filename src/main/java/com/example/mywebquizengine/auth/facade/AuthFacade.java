@@ -3,7 +3,7 @@ package com.example.mywebquizengine.auth.facade;
 import com.example.mywebquizengine.auth.model.RegistrationType;
 import com.example.mywebquizengine.auth.model.dto.input.AuthRequest;
 import com.example.mywebquizengine.auth.model.dto.input.RegistrationModel;
-import com.example.mywebquizengine.auth.model.dto.output.AuthPhoneResponse;
+import com.example.mywebquizengine.auth.model.dto.output.AuthPhoneResult;
 import com.example.mywebquizengine.auth.model.dto.output.AuthResult;
 import com.example.mywebquizengine.auth.model.dto.output.UserExistDto;
 import com.example.mywebquizengine.common.model.Client;
@@ -17,8 +17,8 @@ public interface AuthFacade {
     AuthResult signInViaExternalService(Object token);
     void createAndSendChangePasswordCodeToUser(String username, Client client);
     void updatePassword(String username, String code, String password);
-    AuthPhoneResponse signUpViaPhone(RegistrationModel registrationModel);
-    AuthPhoneResponse createAndSendOneTimePassword(String phone);
+    AuthPhoneResult signUpViaPhone(RegistrationModel registrationModel);
+    AuthPhoneResult createAndSendOneTimePassword(String phone);
     UserExistDto checkForExistUser(String username);
     void verifyChangePasswordCode(String username, String changePasswordCode);
 
