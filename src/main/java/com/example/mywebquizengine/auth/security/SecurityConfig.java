@@ -55,7 +55,6 @@ import java.util.Set;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-//    @Qualifier("userService")
     @Autowired
     protected AuthService userDetailsService;
 

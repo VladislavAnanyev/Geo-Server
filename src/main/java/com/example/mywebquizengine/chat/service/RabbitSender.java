@@ -1,6 +1,6 @@
 package com.example.mywebquizengine.chat.service;
 
-import com.example.mywebquizengine.common.rabbit.MessageType;
+import com.example.mywebquizengine.common.rabbit.eventtype.MessageType;
 import com.example.mywebquizengine.common.rabbit.RealTimeEvent;
 import com.example.mywebquizengine.common.utils.RabbitUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;

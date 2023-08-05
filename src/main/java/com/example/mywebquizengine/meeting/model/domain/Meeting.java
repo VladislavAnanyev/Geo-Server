@@ -2,13 +2,22 @@ package com.example.mywebquizengine.meeting.model.domain;
 
 import com.example.mywebquizengine.request.model.domain.Request;
 import com.example.mywebquizengine.user.model.domain.User;
+import lombok.Getter;
+import lombok.Setter;
 
-import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity(name = "MEETINGS")
+@Getter
+@Setter
 public class Meeting {
 
     @Id
@@ -29,63 +38,7 @@ public class Meeting {
     private Double lat;
     private Double lng;
 
-    private Date time;
-
-    public Long getMeetingId() {
-        return meetingId;
-    }
-
-    public void setMeetingId(Long id) {
-        this.meetingId = id;
-    }
-
-    public void setLng(Double lng) {
-        this.lng = lng;
-    }
-
-    public void setLat(Double lat) {
-        this.lat = lat;
-    }
-
-    public Double getLat() {
-        return lat;
-    }
-
-    public Double getLng() {
-        return lng;
-    }
-
-    public void setTime(Date time) {
-        this.time = time;
-    }
-
-    public void setFirstUser(User firstUser) {
-        this.firstUser = firstUser;
-    }
-
-    public void setSecondUser(User secondUser) {
-        this.secondUser = secondUser;
-    }
-
-    public User getSecondUser() {
-        return secondUser;
-    }
-
-    public Date getTime() {
-        return time;
-    }
-
-    public User getFirstUser() {
-        return firstUser;
-    }
-
-    public Request getRequest() {
-        return request;
-    }
-
-    public void setRequest(Request request) {
-        this.request = request;
-    }
+    private LocalDateTime time;
 
     public List<User> getUsers() {
         return List.of(firstUser, secondUser);

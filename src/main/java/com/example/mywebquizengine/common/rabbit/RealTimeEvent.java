@@ -1,25 +1,12 @@
 package com.example.mywebquizengine.common.rabbit;
 
+import com.example.mywebquizengine.common.rabbit.eventtype.Type;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class RealTimeEvent<T> {
-
     private Type type;
-
     private T payload;
-
-    public T getPayload() {
-        return payload;
-    }
-
-    public void setPayload(T payload) {
-        this.payload = payload;
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
-    }
-
 }

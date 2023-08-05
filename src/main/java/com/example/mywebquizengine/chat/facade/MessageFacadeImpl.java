@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.chat.facade;
 
+import com.example.mywebquizengine.chat.model.UploadAttachmentResult;
 import com.example.mywebquizengine.chat.model.dto.output.CreateDialogResult;
 import com.example.mywebquizengine.chat.model.dto.output.GetDialogAttachmentsResult;
 import com.example.mywebquizengine.chat.model.dto.output.GetDialogsResult;
@@ -15,7 +16,7 @@ import com.example.mywebquizengine.chat.model.dto.output.TypingView;
 import com.example.mywebquizengine.chat.service.MessageService;
 import com.example.mywebquizengine.common.service.FileSystemStorageService;
 import com.example.mywebquizengine.common.service.NotificationService;
-import com.example.mywebquizengine.common.rabbit.MessageType;
+import com.example.mywebquizengine.common.rabbit.eventtype.MessageType;
 import com.example.mywebquizengine.common.utils.ProjectionUtil;
 import com.example.mywebquizengine.chat.model.ChangeMessageStatusEvent;
 import com.example.mywebquizengine.common.rabbit.ChangeMessageStatusEventView;

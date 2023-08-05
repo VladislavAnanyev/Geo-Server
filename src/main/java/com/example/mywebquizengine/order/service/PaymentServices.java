@@ -47,9 +47,9 @@ public class PaymentServices {
 
         MessageDigest mDigest = MessageDigest.getInstance("SHA1");
         byte[] result = mDigest.digest(mySha.getBytes());
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < result.length; i++) {
-            sb.append(Integer.toString((result[i] & 0xff) + 0x100, 16).substring(1));
+        StringBuilder sb = new StringBuilder();
+        for (byte b : result) {
+            sb.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
         }
 
         if (sb.toString().equals(sha1_hash)) {

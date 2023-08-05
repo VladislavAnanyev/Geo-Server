@@ -1,7 +1,7 @@
 package com.example.mywebquizengine.config;
 
 import com.example.mywebquizengine.common.rabbit.EventProcessor;
-import com.example.mywebquizengine.common.rabbit.Type;
+import com.example.mywebquizengine.common.rabbit.eventtype.Type;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

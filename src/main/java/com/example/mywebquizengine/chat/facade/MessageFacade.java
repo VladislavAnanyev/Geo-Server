@@ -1,6 +1,7 @@
 package com.example.mywebquizengine.chat.facade;
 
 import com.example.mywebquizengine.chat.model.SendMessageModel;
+import com.example.mywebquizengine.chat.model.UploadAttachmentResult;
 import com.example.mywebquizengine.chat.model.dto.output.CreateDialogResult;
 import com.example.mywebquizengine.chat.model.dto.output.DialogView;
 import com.example.mywebquizengine.chat.model.dto.output.GetDialogAttachmentsResult;

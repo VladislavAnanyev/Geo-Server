@@ -89,6 +89,7 @@ public class AuthService implements UserDetailsService {
         }
 
         User user = userFactory.create(registrationModel, type);
+
         return userRepository.save(user);
     }
 
@@ -103,16 +104,13 @@ public class AuthService implements UserDetailsService {
     public User signInViaExternalServiceToken(Object token) {
         RegistrationModel registrationModel = OauthUserMapper.map(token);
         Optional<User> optionalUser = userRepository.findUserByUsername(registrationModel.getUsername());
-        AuthUserDetails user = new AuthUserDetails();
-        if (optionalUser.isPresent()) {
-            user.setUserId(optionalUser.get().getUserId());
-        } else {
-            User saveUser = saveUser(registrationModel, RegistrationType.OAUTH2);
-            user.setUserId(saveUser.getUserId());
-        }
+        User user = optionalUser.orElseGet(() -> saveUser(registrationModel, RegistrationType.OAUTH2));
 
-        AuthenticationUtil.setAuthentication(user, user.getAuthorities());
-        return optionalUser.get();
+        AuthUserDetails authUserDetails = new AuthUserDetails();
+        authUserDetails.setUserId(user.getUserId());
+        AuthenticationUtil.setAuthentication(authUserDetails, authUserDetails.getAuthorities());
+
+        return user;
     }
 
     /**
@@ -135,6 +133,7 @@ public class AuthService implements UserDetailsService {
                     GlobalErrorCode.ERROR_WRONG_USERNAME_OR_PASSWORD
             );
         }
+
         return findUserByUsername(authRequest.getUsername());
     }
 
@@ -165,6 +164,7 @@ public class AuthService implements UserDetailsService {
             code = CodeUtil.generateLongCode();
         }
         user.setChangePasswordCode(code);
+
         return user;
     }
 
@@ -211,6 +211,7 @@ public class AuthService implements UserDetailsService {
         if (!userRepository.existsByUsername(username)) {
             throw new UserNotFoundException("exception.user.not.found", GlobalErrorCode.ERROR_USER_NOT_FOUND);
         }
+
         return true;
     }
 
@@ -223,6 +224,7 @@ public class AuthService implements UserDetailsService {
     @Transactional
     public User saveUser(RegistrationModel registrationModel) {
         User user = userFactory.create(registrationModel, RegistrationType.PHONE);
+
         return userRepository.save(user);
     }
 
@@ -240,19 +242,23 @@ public class AuthService implements UserDetailsService {
         if (optionalUser.isEmpty()) {
             throw new UserNotFoundException("exception.user.not.found", GlobalErrorCode.ERROR_USER_NOT_FOUND);
         }
+
         User user = optionalUser.get();
         String code = CodeUtil.generateShortCode();
         user.setPassword(passwordEncoder.encode(code));
+
         return code;
     }
 
     public UserToken updateRefreshToken(String oldRefreshToken) {
         Optional<UserToken> optionalUserToken = tokenRepository.findById(oldRefreshToken);
-        if (optionalUserToken.isPresent()) {
-            UserToken userToken = optionalUserToken.get();
-            String newRefreshToken = UUID.randomUUID().toString();
-            userToken.setRefreshToken(newRefreshToken);
-            return tokenRepository.save(userToken);
-        } else throw new EntityNotFoundException("Токен не найден");
+        if (optionalUserToken.isEmpty()) {
+            throw new EntityNotFoundException("Токен не найден");
+        }
+
+        UserToken userToken = optionalUserToken.get();
+        userToken.setRefreshToken(UUID.randomUUID().toString());
+
+        return tokenRepository.save(userToken);
     }
 }

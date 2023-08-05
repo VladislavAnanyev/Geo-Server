@@ -1,10 +1,9 @@
 package com.example.mywebquizengine.common.service;
 
-import com.example.mywebquizengine.common.rabbit.MessageType;
-import com.example.mywebquizengine.common.rabbit.RealTimeEvent;
-import com.example.mywebquizengine.common.rabbit.Type;
-import com.example.mywebquizengine.user.model.domain.User;
 import com.example.mywebquizengine.chat.service.RabbitSender;
+import com.example.mywebquizengine.common.rabbit.RealTimeEvent;
+import com.example.mywebquizengine.common.rabbit.eventtype.Type;
+import com.example.mywebquizengine.user.model.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

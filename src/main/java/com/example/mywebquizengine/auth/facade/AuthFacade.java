@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface AuthFacade {
-
     AuthResult signUp(RegistrationModel registrationModel, RegistrationType type);
     AuthResult signIn(AuthRequest authRequest);
     AuthResult signInViaExternalService(Object token);
@@ -21,6 +20,5 @@ public interface AuthFacade {
     AuthPhoneResult createAndSendOneTimePassword(String phone);
     UserExistDto checkForExistUser(String username);
     void verifyChangePasswordCode(String username, String changePasswordCode);
-
     AuthResult getNewAccessToken(String refreshToken);
 }

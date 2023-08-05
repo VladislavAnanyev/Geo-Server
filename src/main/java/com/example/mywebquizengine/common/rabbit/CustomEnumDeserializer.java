@@ -1,5 +1,9 @@
 package com.example.mywebquizengine.common.rabbit;
 
+import com.example.mywebquizengine.common.rabbit.eventtype.MeetingType;
+import com.example.mywebquizengine.common.rabbit.eventtype.MessageType;
+import com.example.mywebquizengine.common.rabbit.eventtype.RequestType;
+import com.example.mywebquizengine.common.rabbit.eventtype.Type;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
@@ -11,7 +15,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 
 public class CustomEnumDeserializer extends StdDeserializer<Type> {
-
 
     protected CustomEnumDeserializer(Class<?> vc) {
         super(vc);

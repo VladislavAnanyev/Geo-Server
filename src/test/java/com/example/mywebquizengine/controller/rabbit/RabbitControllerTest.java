@@ -1,5 +1,6 @@
 package com.example.mywebquizengine.controller.rabbit;
 
+import com.example.mywebquizengine.chat.controller.RabbitController;
 import com.example.mywebquizengine.chat.model.domain.Message;
 import com.example.mywebquizengine.chat.repository.MessageRepository;
 import com.example.mywebquizengine.user.repository.UserRepository;
