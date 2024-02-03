@@ -1,8 +1,13 @@
 package com.example.meetings.user.model.domain;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.persistence.*;
 
 @Entity
+@Getter
+@Setter
 public class Device {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -13,28 +18,4 @@ public class Device {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-
-    public Long getDeviceId() {
-        return deviceId;
-    }
-
-    public void setDeviceId(Long deviceId) {
-        this.deviceId = deviceId;
-    }
-
-    public String getDeviceToken() {
-        return deviceToken;
-    }
-
-    public void setDeviceToken(String deviceToken) {
-        this.deviceToken = deviceToken;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public User getUser() {
-        return user;
-    }
 }

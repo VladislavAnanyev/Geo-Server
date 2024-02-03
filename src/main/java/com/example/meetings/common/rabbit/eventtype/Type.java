@@ -4,4 +4,5 @@ import com.example.meetings.common.rabbit.CustomEnumDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 @JsonDeserialize(using = CustomEnumDeserializer.class)
-public interface Type {}
+public interface Type {
+}

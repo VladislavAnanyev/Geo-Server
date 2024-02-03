@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -110,7 +109,7 @@ public class RequestService {
         return sentRequest.size() == 0 && !isRequestWithStatusRejectedOrAcceptedExist;
     }
 
-    public ArrayList<RequestView> getMyRequests(Long userId) {
+    public List<RequestView> getMyRequests(Long userId) {
         return requestRepository.findByStatusAndToUserIdOrStatusAndSenderUserId(
                 RequestStatus.PENDING, userId, RequestStatus.PENDING, userId
         );

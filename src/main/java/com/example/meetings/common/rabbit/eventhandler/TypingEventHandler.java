@@ -2,8 +2,8 @@ package com.example.meetings.common.rabbit.eventhandler;
 
 import com.example.meetings.chat.model.dto.input.TypingRequest;
 import com.example.meetings.common.rabbit.EventProcessor;
-import com.example.meetings.common.rabbit.eventtype.MessageType;
 import com.example.meetings.common.rabbit.RealTimeEvent;
+import com.example.meetings.common.rabbit.eventtype.MessageType;
 import com.example.meetings.common.rabbit.eventtype.Type;
 import org.springframework.stereotype.Service;
 

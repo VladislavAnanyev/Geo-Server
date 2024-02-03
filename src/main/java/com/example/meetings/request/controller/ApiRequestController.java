@@ -2,11 +2,9 @@ package com.example.meetings.request.controller;
 
 import com.example.meetings.auth.security.model.AuthUserDetails;
 import com.example.meetings.common.model.SuccessfulResponse;
-import com.example.meetings.request.model.dto.output.AcceptRequestResponse;
-import com.example.meetings.request.model.dto.output.GetRequestsToUserResponse;
-import com.example.meetings.request.model.dto.output.GetSentRequestsResponse;
 import com.example.meetings.request.facade.RequestFacade;
 import com.example.meetings.request.model.dto.input.RequestDto;
+import com.example.meetings.request.model.dto.output.*;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

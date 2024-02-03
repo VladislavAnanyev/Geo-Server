@@ -1,22 +1,26 @@
 package com.example.meetings.chat.model.domain;
 
 import com.example.meetings.user.model.domain.User;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Accessors(chain = true)
 public class MessageStatusHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name = "history_id")
     private Long historyId;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "message_status")
     private MessageStatus messageStatus;
 
     @ManyToOne
@@ -27,5 +31,6 @@ public class MessageStatusHistory {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Column(name = "timestamp")
     private Date timestamp;
 }

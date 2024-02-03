@@ -1,94 +1,67 @@
 package com.example.meetings.chat.facade;
 
-import com.example.meetings.chat.model.UploadAttachmentResult;
-import com.example.meetings.chat.model.dto.output.CreateDialogResult;
-import com.example.meetings.chat.model.dto.output.GetDialogAttachmentsResult;
-import com.example.meetings.chat.model.dto.output.GetDialogsResult;
-import com.example.meetings.chat.model.CreateGroupModel;
-import com.example.meetings.chat.model.SendMessageModel;
+import com.example.meetings.chat.mapper.DtoMapper;
+import com.example.meetings.chat.model.*;
 import com.example.meetings.chat.model.domain.Dialog;
 import com.example.meetings.chat.model.domain.Message;
-import com.example.meetings.chat.model.domain.MessageStatus;
 import com.example.meetings.chat.model.dto.input.Typing;
-import com.example.meetings.chat.model.dto.output.DialogView;
-import com.example.meetings.chat.model.dto.output.MessageView;
-import com.example.meetings.chat.model.dto.output.TypingView;
+import com.example.meetings.chat.model.dto.output.*;
 import com.example.meetings.chat.service.MessageService;
-import com.example.meetings.common.service.FileSystemStorageService;
-import com.example.meetings.common.service.NotificationService;
-import com.example.meetings.common.rabbit.eventtype.MessageType;
-import com.example.meetings.common.utils.ProjectionUtil;
-import com.example.meetings.chat.model.ChangeMessageStatusEvent;
-import com.example.meetings.common.rabbit.ChangeMessageStatusEventView;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.meetings.common.service.*;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.util.List;
 
+import static com.example.meetings.chat.mapper.DialogDTOMapper.map;
+import static com.example.meetings.chat.model.domain.MessageStatus.READ;
+import static com.example.meetings.common.rabbit.eventtype.MessageType.*;
+import static java.util.stream.Collectors.toSet;
+
 @Component
 public class MessageFacadeImpl implements MessageFacade {
 
-    @Autowired
-    private MessageService messageService;
-    @Autowired
-    private NotificationService notificationService;
-    @Autowired
-    private ProjectionUtil projectionUtil;
-    @Autowired
-    private FileSystemStorageService fileSystemStorageService;
+    private final MessageService messageService;
+    private final NotificationService notificationService;
+    private final FileStorageService fileStorageService;
+
+    public MessageFacadeImpl(MessageService messageService, NotificationService notificationService, @Qualifier("s3Service") FileStorageService fileStorageService) {
+        this.messageService = messageService;
+        this.notificationService = notificationService;
+        this.fileStorageService = fileStorageService;
+    }
 
     @Override
     public void sendMessage(SendMessageModel sendMessageModel) {
         Message message = messageService.saveMessage(sendMessageModel);
-        MessageView messageView = projectionUtil.parse(message, MessageView.class);
-        notificationService.send(messageView, message.getUsersToSendNotification(), MessageType.MESSAGE);
+        notificationService.send(DtoMapper.map(message), message.getUsersToSendNotification(), MESSAGE);
     }
 
     @Override
     public void typingMessage(Long dialogId, Long userId) {
         Typing typing = messageService.typingMessage(dialogId, userId);
-        TypingView typingView = projectionUtil.parse(typing, TypingView.class);
-        notificationService.send(typingView, typing.getUsersToSendNotification(), MessageType.TYPING);
+        notificationService.send(DtoMapper.map(typing), typing.getUsersToSendNotification(), TYPING);
     }
 
     @Override
     public void deleteMessage(Long messageId, Long userId) {
         Message message = messageService.setDeletedStatus(messageId, userId);
-        MessageView messageDto = projectionUtil.parse(message, MessageView.class);
-        notificationService.send(messageDto, message.getUsersToSendNotification(), MessageType.DELETE_MESSAGE);
+        notificationService.send(DtoMapper.map(message), message.getUsersToSendNotification(), DELETE_MESSAGE);
     }
 
     @Override
     public void editMessage(Long messageId, String content, Long userId) {
         Message message = messageService.editMessage(messageId, content, userId);
-        MessageView messageDto = projectionUtil.parse(message, MessageView.class);
-        notificationService.send(messageDto, message.getUsersToSendNotification(), MessageType.EDIT_MESSAGE);
+        notificationService.send(DtoMapper.map(message), message.getUsersToSendNotification(), EDIT_MESSAGE);
     }
 
     @Override
-    public DialogView getChatRoom(Long dialogId, Integer page, Integer pageSize, String sortBy, Long userId) {
+    public DialogDTO getChatRoom(Long dialogId, Integer page, Integer pageSize, String sortBy, Long userId) {
         Dialog dialog = messageService.getDialog(dialogId, page, pageSize, sortBy, userId);
-        List<Message> justNowReadMessages = messageService.readMessages(dialog.getMessages(), userId);
+        readMessages(userId, dialogId);
 
-        if (justNowReadMessages.size() > 0) {
-            ChangeMessageStatusEvent event = new ChangeMessageStatusEvent()
-                    .setDialog(dialog)
-                    .setStatus(MessageStatus.READ);
-
-            ChangeMessageStatusEventView changeMessageStatusEventView = projectionUtil.parse(
-                    event,
-                    ChangeMessageStatusEventView.class
-            );
-
-            notificationService.send(
-                    changeMessageStatusEventView,
-                    event.getUsersToSendNotification(),
-                    MessageType.CHANGE_STATUS
-            );
-        }
-
-        return projectionUtil.parse(dialog, DialogView.class);
+        return map(dialog, dialog.getMessages(), userId);
     }
 
     @Override
@@ -113,17 +86,28 @@ public class MessageFacadeImpl implements MessageFacade {
         if (justNowReceivedMessages.size() > 0) {
             ChangeMessageStatusEvent event = new ChangeMessageStatusEvent()
                     .setDialog(dialog)
-                    .setStatus(MessageStatus.READ);
-
-            ChangeMessageStatusEventView changeMessageStatusEventView = projectionUtil.parse(
-                    event,
-                    ChangeMessageStatusEventView.class
-            );
+                    .setStatus(READ);
 
             notificationService.send(
-                    changeMessageStatusEventView,
+                    DtoMapper.map(event),
                     event.getUsersToSendNotification(),
-                    MessageType.CHANGE_STATUS
+                    CHANGE_STATUS
+            );
+        }
+    }
+
+    @Override
+    public void readMessages(Long userId, Long dialogId) {
+        Dialog dialog = messageService.findDialogById(dialogId);
+        if (messageService.readMessages(dialog.getMessages(), userId).size() > 0) {
+            ChangeMessageStatusEvent event = new ChangeMessageStatusEvent()
+                    .setDialog(dialog)
+                    .setStatus(READ);
+
+            notificationService.send(
+                    DtoMapper.map(event),
+                    event.getDialog().getUsers().stream().filter(user -> !user.getUserId().equals(userId)).collect(toSet()),
+                    CHANGE_STATUS
             );
         }
     }
@@ -138,18 +122,7 @@ public class MessageFacadeImpl implements MessageFacade {
     @Override
     public UploadAttachmentResult store(InputStream inputStream, String originalFilename, String contentType) {
         return new UploadAttachmentResult()
-                .setUri(fileSystemStorageService.store(contentType, originalFilename, inputStream));
-    }
-
-    public Long createGroup(CreateGroupModel model) {
-        Dialog dialog = messageService.createGroup(model);
-        this.sendMessage(
-                new SendMessageModel()
-                        .setSenderId(model.getAuthUserId())
-                        .setContent("Группа создана")
-                        .setDialogId(dialog.getDialogId())
-        );
-        return dialog.getDialogId();
+                .setUri(fileStorageService.store(inputStream, originalFilename, contentType));
     }
 
 }

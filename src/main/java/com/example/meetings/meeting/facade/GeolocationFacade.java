@@ -1,9 +1,7 @@
 package com.example.meetings.meeting.facade;
 
-import com.example.meetings.meeting.model.GetGeolocationsResult;
-import com.example.meetings.meeting.model.GeolocationModel;
-import com.example.meetings.meeting.model.GetMeetingsResult;
 import com.example.meetings.geolocation.model.Geolocation;
+import com.example.meetings.meeting.model.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

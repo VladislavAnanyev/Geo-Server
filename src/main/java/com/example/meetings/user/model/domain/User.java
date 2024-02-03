@@ -2,79 +2,61 @@ package com.example.meetings.user.model.domain;
 
 import com.example.meetings.chat.model.domain.Dialog;
 import com.example.meetings.photo.model.domain.Photo;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import javax.persistence.CascadeType;
-import javax.persistence.CollectionTable;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import javax.persistence.*;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Entity(name = "USERS")
 @Getter
 @Setter
+@NoArgsConstructor
 public class User {
-
-    private static final long serialVersionUID = -7422293274841574951L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-
+    @Column(name = "user_id")
     private Long userId;
 
-    @NotBlank
-    @NotNull
+    @Column(name = "username")
     private String username;
 
-    @NotBlank
-    @NotNull
+    @Column(name = "email")
     private String email;
 
-    private String activationCode;
-
-    private String changePasswordCode;
-
-    @NotBlank
-    @NotNull
+    @Column(name = "first_name")
     private String firstName;
 
-    @NotBlank
-    @NotNull
+    @Column(name = "last_name")
     private String lastName;
 
-    @Size(min = 5)
+    @Column(name = "password")
     private String password;
 
-    private String avatar;
+    @Column(name = "description")
+    private String description;
+
+    @ColumnDefault("false")
+    @Column(name = "online")
+    private boolean online;
+
+    @Column(name = "signin_via_phone_code_expiration")
+    private LocalDateTime signInViaPhoneCodeExpiration;
+
+    @Column(name = "status")
+    private boolean status;
+
+    @OneToOne
+    @JoinColumn(name = "main_photo_id")
+    private Photo mainPhoto;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
     @OrderBy("position ASC")
-    private List<Photo> photos;
-
-    private String description;
+    private List<Photo> photos = new ArrayList<>();
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "users_dialogs",
@@ -83,71 +65,18 @@ public class User {
     )
     private Set<Dialog> dialogs = new HashSet<>();
 
-    private boolean status;
-
-    private Integer balance;
-
     @ManyToMany
     @JoinTable(name = "users_friends",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "friend_id")
     )
-    private List<User> friends;
-
-    @Enumerated(EnumType.STRING)
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(joinColumns = @JoinColumn(name = "user_id"))
-    private List<Role> roles;
-
-    @ColumnDefault("false")
-    private boolean online;
-
-    private Calendar signInViaPhoneCodeExpiration;
+    private List<User> friends = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private List<Device> devices;
+    private List<Device> devices = new ArrayList<>();
 
-    public User() {
-    }
-
-    public User(Long userId, String username, String firstName, String lastName, String avatar, boolean online) {
-        this.userId = userId;
-        this.username = username;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        Photo photo = new Photo();
-        photo.setUrl(avatar);
-        photo.setPosition(0);
-        List<Photo> photos = new ArrayList<>();
-        photos.add(photo);
-        this.photos = photos;
-        this.online = online;
-    }
-
-    public void grantAuthority(Role authority) {
-        if (roles == null) roles = new ArrayList<>();
-        this.roles.add(authority);
-    }
-
-    public List<Photo> getPhotos() {
-        return photos;
-    }
-
-    public void setPhotos(List<String> avatarName) {
-        Photo photo = new Photo();
-        photo.setUrl(avatarName.get(0));
-        photo.setUser(this);
-        photo.setPosition(0);
-        this.photos = Collections.singletonList(photo);
-    }
-
-    public List<User> getFriends() {
-        return friends;
-    }
-
-    public void setFriends(List<User> friends) {
-        this.friends = new ArrayList<>();
-        this.friends.addAll(friends);
+    public List<GrantedAuthority> getAuthorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
     public void addFriend(User user) {
@@ -162,11 +91,5 @@ public class User {
 
     public void addPhoto(Photo photo) {
         this.photos.add(photo);
-    }
-
-    public List<GrantedAuthority> getAuthorities() {
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        roles.forEach(role -> authorities.add(new SimpleGrantedAuthority(role.toString())));
-        return authorities;
     }
 }

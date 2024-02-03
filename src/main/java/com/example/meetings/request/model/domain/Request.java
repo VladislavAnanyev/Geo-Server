@@ -1,8 +1,8 @@
 package com.example.meetings.request.model.domain;
 
-import com.example.meetings.user.model.domain.User;
 import com.example.meetings.chat.model.domain.Message;
 import com.example.meetings.meeting.model.domain.Meeting;
+import com.example.meetings.user.model.domain.User;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;

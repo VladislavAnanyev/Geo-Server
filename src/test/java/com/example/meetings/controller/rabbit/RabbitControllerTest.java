@@ -3,14 +3,12 @@ package com.example.meetings.controller.rabbit;
 import com.example.meetings.chat.controller.RabbitController;
 import com.example.meetings.chat.model.domain.Message;
 import com.example.meetings.chat.repository.MessageRepository;
-import com.example.meetings.user.repository.UserRepository;
 import com.example.meetings.common.utils.JWTUtil;
-import com.rabbitmq.client.Channel;
+import com.example.meetings.user.repository.UserRepository;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +23,10 @@ import javax.validation.ConstraintViolationException;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
@@ -84,9 +85,9 @@ public class RabbitControllerTest {
         org.springframework.amqp.core.Message message =
                 new org.springframework.amqp.core.Message(json.getBytes(), messageProperties);
 
-        Integer expectedMessageCount = ((ArrayList<Message>) messageRepository.findAll()).size() + 1;
-        rabbitController.sendMessageFromAMQPClient(message, Mockito.mock(Channel.class), 1L);
-        Integer actualMessageCount = ((ArrayList<Message>) messageRepository.findAll()).size();
+        Integer expectedMessageCount = messageRepository.findAll().size() + 1;
+        rabbitController.sendMessageFromAMQPClient(message);
+        Integer actualMessageCount = messageRepository.findAll().size();
 
         assertEquals(expectedMessageCount, actualMessageCount);
 
@@ -115,7 +116,7 @@ public class RabbitControllerTest {
             return null;
         }).when(rabbitTemplate).convertAndSend(anyString(), (Object) anyObject());
 
-        Integer expectedMessageCount = ((ArrayList<Message>) messageRepository.findAll()).size();
+        Integer expectedMessageCount = messageRepository.findAll().size();
 
         String token = jwtTokenUtil.generateToken(userRepository.findUserByUsername("user3").get());
         MessageProperties messageProperties = new MessageProperties();
@@ -125,13 +126,13 @@ public class RabbitControllerTest {
                 new org.springframework.amqp.core.Message(json.getBytes(), messageProperties);
 
         try {
-            rabbitController.sendMessageFromAMQPClient(message, Mockito.mock(Channel.class), 1L);
+            rabbitController.sendMessageFromAMQPClient(message);
             fail("Expected SecurityException");
         } catch (SecurityException | IOException e) {
             assertNotEquals("", e.getMessage());
         }
 
-        Integer actualMessageCount = ((ArrayList<Message>) messageRepository.findAll()).size();
+        Integer actualMessageCount = messageRepository.findAll().size();
         assertEquals(expectedMessageCount, actualMessageCount);
 
     }
@@ -167,7 +168,7 @@ public class RabbitControllerTest {
 
 
         try {
-            rabbitController.sendMessageFromAMQPClient(message, Mockito.mock(Channel.class), 1L);
+            rabbitController.sendMessageFromAMQPClient(message);
             fail("Expected ConstraintViolationException");
         } catch (ConstraintViolationException e) {
             assertNotEquals("", e.getMessage());
@@ -207,7 +208,7 @@ public class RabbitControllerTest {
 
         org.springframework.amqp.core.Message message = new org.springframework.amqp.core.Message(json.getBytes(), messageProperties);
         try {
-            rabbitController.sendMessageFromAMQPClient(message, Mockito.mock(Channel.class), 1L);
+            rabbitController.sendMessageFromAMQPClient(message);
             fail("Expected ConstraintViolationException");
         } catch (ConstraintViolationException e) {
             assertNotEquals("", e.getMessage());

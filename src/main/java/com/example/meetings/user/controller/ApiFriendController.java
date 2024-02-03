@@ -1,4 +1,4 @@
-package com.example.meetings.chat.model.dto.output;
+package com.example.meetings.user.controller;
 
 import com.example.meetings.auth.security.model.AuthUserDetails;
 import com.example.meetings.common.model.SuccessfulResponse;

@@ -7,5 +7,6 @@ import org.springframework.stereotype.Service;
 @Service
 public interface UserFacade {
     AuthUserView getAuthUser(Long userId);
+
     ProfileView getUserProfileById(Long userId);
 }

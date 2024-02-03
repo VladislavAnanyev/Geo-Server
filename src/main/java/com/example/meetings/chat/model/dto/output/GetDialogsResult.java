@@ -1,8 +1,7 @@
 package com.example.meetings.chat.model.dto.output;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.example.meetings.chat.model.LastDialogDTO;
+import lombok.*;
 
 import java.util.List;
 
@@ -10,5 +9,5 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GetDialogsResult {
-    private List<LastDialog> dialogs;
+    private List<LastDialogDTO> dialogs;
 }

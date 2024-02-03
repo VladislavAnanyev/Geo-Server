@@ -16,7 +16,7 @@ public class UserFacadeImpl implements UserFacade {
 
     @Override
     public AuthUserView getAuthUser(Long userId) {
-        return userService.getAuthUser(userId);
+        return userService.getAuthUserInfo(userId);
     }
 
     @Override

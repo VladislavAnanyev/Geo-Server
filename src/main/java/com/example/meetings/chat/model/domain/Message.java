@@ -5,11 +5,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity(name = "MESSAGES")
 @Data
@@ -18,19 +14,21 @@ public class Message implements Notifiable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name = "message_id")
     private Long messageId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @NotNull
+    @JoinColumn(name = "sender_user_id")
     private User sender;
 
-    @Size(min = 1)
-    @NotNull
+    @Column(name = "content")
     private String content;
 
+    @Column(name = "timestamp")
     private Date timestamp;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status")
     private MessageStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -39,8 +37,8 @@ public class Message implements Notifiable {
 
     @ElementCollection
     @CollectionTable(
-            name="MESSAGES_PHOTOS",
-            joinColumns=@JoinColumn(name="MESSAGE_ID")
+            name = "MESSAGES_PHOTOS",
+            joinColumns = @JoinColumn(name = "MESSAGE_ID")
     )
     private List<MessageFile> files;
 

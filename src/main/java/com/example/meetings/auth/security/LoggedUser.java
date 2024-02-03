@@ -3,6 +3,7 @@ package com.example.meetings.auth.security;
 import com.example.meetings.user.model.domain.User;
 import com.example.meetings.user.repository.UserRepository;
 import org.springframework.stereotype.Component;
+
 import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionBindingListener;
 import java.util.List;
@@ -21,7 +22,8 @@ public class LoggedUser implements HttpSessionBindingListener {
         this.activeUserStore = activeUserStore;
     }
 
-    public LoggedUser() {}
+    public LoggedUser() {
+    }
 
     @Override
     public void valueBound(HttpSessionBindingEvent event) {

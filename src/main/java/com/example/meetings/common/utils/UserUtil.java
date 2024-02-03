@@ -20,7 +20,7 @@ public class UserUtil {
             user = MeetingsApplication.ctx.getBean(UserService.class).loadUserByUserId(secondUserId);
         } else if (authName.equals(secondUserId)) {
             user = MeetingsApplication.ctx.getBean(UserService.class).loadUserByUserId(firstUserId);
-        } else  {
+        } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 

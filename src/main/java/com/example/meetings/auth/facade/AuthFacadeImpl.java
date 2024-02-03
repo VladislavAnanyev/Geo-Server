@@ -1,60 +1,32 @@
 package com.example.meetings.auth.facade;
 
 import com.example.meetings.auth.model.UserToken;
-import com.example.meetings.auth.model.RegistrationType;
 import com.example.meetings.auth.model.dto.input.AuthRequest;
 import com.example.meetings.auth.model.dto.input.RegistrationModel;
 import com.example.meetings.auth.model.dto.output.AuthPhoneResult;
 import com.example.meetings.auth.model.dto.output.AuthResult;
-import com.example.meetings.auth.model.dto.output.UserExistDto;
-import com.example.meetings.auth.service.AuthService;
-import com.example.meetings.auth.service.DeviceService;
-import com.example.meetings.auth.service.SignInCodeService;
-import com.example.meetings.auth.service.TokenService;
+import com.example.meetings.auth.service.*;
 import com.example.meetings.common.service.SmsSender;
-import com.example.meetings.common.model.Client;
-import com.example.meetings.common.utils.CodeUtil;
-import com.example.meetings.common.utils.JWTUtil;
-import com.example.meetings.common.utils.RabbitUtil;
+import com.example.meetings.common.utils.*;
 import com.example.meetings.user.model.domain.User;
-import com.example.meetings.user.service.BusinessEmailSender;
 import com.example.meetings.user.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import static com.example.meetings.auth.model.RegistrationType.PHONE;
+
 @Service
+@RequiredArgsConstructor
 public class AuthFacadeImpl implements AuthFacade {
 
-    @Autowired
-    private AuthService authService;
-    @Autowired
-    private BusinessEmailSender businessEmailSender;
-    @Autowired
-    private JWTUtil jwtUtil;
-    @Autowired
-    private RabbitUtil rabbitUtil;
-    @Autowired
-    private SignInCodeService signInCodeService;
-    @Autowired
-    private DeviceService deviceService;
-    @Autowired
-    private SmsSender smsSender;
-    @Autowired
-    private TokenService tokenService;
-    @Autowired
-    private UserService userService;
-
-    @Override
-    public AuthResult signUp(RegistrationModel registrationModel, RegistrationType type) {
-        User user = authService.saveUser(registrationModel, type);
-        businessEmailSender.sendWelcomeMessage(user);
-        return new AuthResult(
-                user.getUserId(),
-                jwtUtil.generateToken(user),
-                tokenService.createToken(user.getUserId()),
-                rabbitUtil.createExchange(user.getUserId())
-        );
-    }
+    private final AuthService authService;
+    private final JWTUtil jwtUtil;
+    private final RabbitUtil rabbitUtil;
+    private final SignInCodeService signInCodeService;
+    private final DeviceService deviceService;
+    private final SmsSender smsSender;
+    private final TokenService tokenService;
+    private final UserService userService;
 
     @Override
     public AuthResult signIn(AuthRequest authRequest) {
@@ -69,58 +41,29 @@ public class AuthFacadeImpl implements AuthFacade {
     }
 
     @Override
-    public AuthResult signInViaExternalService(Object token) {
-        User user = authService.signInViaExternalServiceToken(token);
-        return new AuthResult(
-                user.getUserId(),
-                jwtUtil.generateToken(user),
-                tokenService.createToken(user.getUserId()),
-                RabbitUtil.getExchangeName(user.getUserId())
-        );
-    }
-
-    @Override
-    public void createAndSendChangePasswordCodeToUser(String username, Client client) {
-        User user = authService.setChangePassword(username, client);
-        businessEmailSender.sendChangePasswordMessage(user, user.getChangePasswordCode(), client);
-    }
-
-    @Override
-    public void updatePassword(String username, String code, String password) {
-        signInCodeService.verifyChangePasswordCode(username, code);
-        authService.changePassword(username, password);
-    }
-
-    @Override
-    public AuthPhoneResult signUpViaPhone(RegistrationModel registrationModel) {
+    public AuthPhoneResult signUpViaPhone(RegistrationModel registrationData) {
         String code = CodeUtil.generateShortCode();
-        registrationModel.setPassword(code);
-        User user = authService.saveUser(registrationModel);
-        deviceService.registerDevice(user, registrationModel.getAppleToken());
-        smsSender.sendCodeToPhone(user.getPassword(), registrationModel.getUsername());
+        registrationData.setPassword(code);
+        User user = authService.saveUser(registrationData, PHONE);
+        deviceService.registerDevice(user, registrationData.getAppleToken());
+        smsSender.sendCodeToPhone(code, registrationData.getUsername());
         rabbitUtil.createExchange(user.getUserId());
-        return new AuthPhoneResult()
-                .setCode(user.getPassword());
-    }
 
-    @Override
-    public AuthPhoneResult createAndSendOneTimePassword(String phone) {
-        String code = authService.setOneTimePasswordCode(phone);
-        smsSender.sendCodeToPhone(code, phone);
         return new AuthPhoneResult()
                 .setCode(code);
     }
 
     @Override
-    public UserExistDto checkForExistUser(String username) {
-        return new UserExistDto().setExist(
-                authService.checkForExistUser(username)
-        );
-    }
+    public AuthPhoneResult signInViaPhone(String phone) {
+        if (!authService.isUserExist(phone)) {
+            return signUpViaPhone(new RegistrationModel().setUsername(phone));
+        }
 
-    @Override
-    public void verifyChangePasswordCode(String username, String changePasswordCode) {
-        authService.verifyChangePasswordCode(username, changePasswordCode);
+        String code = authService.setOneTimePasswordCode(phone);
+        smsSender.sendCodeToPhone(code, phone);
+
+        return new AuthPhoneResult()
+                .setCode(code);
     }
 
     @Override

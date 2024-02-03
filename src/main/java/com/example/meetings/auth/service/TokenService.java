@@ -1,7 +1,7 @@
 package com.example.meetings.auth.service;
 
-import com.example.meetings.auth.repository.TokenRepository;
 import com.example.meetings.auth.model.UserToken;
+import com.example.meetings.auth.repository.TokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

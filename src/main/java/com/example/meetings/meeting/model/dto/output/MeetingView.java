@@ -12,7 +12,9 @@ public interface MeetingView {
     UserCommonView getUser();
 
     Double getLng();
+
     Double getLat();
+
     Date getTime();
 
     @Value("#{@requestService.isPossibleToSendRequest(target.meetingId)}")

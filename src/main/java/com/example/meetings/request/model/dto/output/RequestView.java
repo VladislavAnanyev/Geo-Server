@@ -6,9 +6,14 @@ import com.example.meetings.user.model.dto.UserCommonView;
 
 public interface RequestView {
     Long getRequestId();
+
     UserCommonView getSender();
+
     UserCommonView getTo();
+
     String getStatus();
+
     MeetingCommonView getMeeting();
+
     MessageView getMessage();
 }

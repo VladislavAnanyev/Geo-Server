@@ -2,14 +2,17 @@ version: "3"
 
 services:
   app:
-    image: vladislavananyev/meetings:test
+    image: cr.yandex/crp9529k0hh4fpr4apm6/meetings:release-24-12-23-1
     container_name: 'meetings'
     ports:
       - '80:80'
     environment:
       - "SPRING_PROFILES_ACTIVE=prod"
-      - "SPRING_DATASOURCE_URL=jdbc:postgresql://rc1b-i5o7l6b4pinc9jsg.mdb.yandexcloud.net:6432/meetings?targetServerType=master&ssl=true&sslmode=verify-full"
-
+      - "SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/meetings"
+    depends_on:
+      - rabbitmq
+      - db
+      - redis
 
   rabbitmq:
     image: rabbitmq:3.10.7-management
@@ -20,7 +23,7 @@ services:
       - RABBITMQ_DEFAULT_USER=application
       - RABBITMQ_DEFAULT_PASS=12345
     volumes:
-      - ./rabbitmq:/var/lib/rabbitmq
+      - rabbitmq_data:/var/lib/rabbitmq
     ports:
       - '15672:15672'
       - '5672:5672'
@@ -37,3 +40,20 @@ services:
     environment:
       - REDIS_PORT=6379
       - REDIS_DATABASES=16
+
+  db:
+    image: postgres:14.1-alpine
+    container_name: 'db'
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=meetings
+    ports:
+      - '5432:5432'
+    volumes:
+      - db:/var/lib/postgresql/data
+
+volumes:
+  rabbitmq_data:
+  db:

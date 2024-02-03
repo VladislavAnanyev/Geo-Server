@@ -1,13 +1,8 @@
 package com.example.meetings.common.rabbit;
 
-import com.example.meetings.common.rabbit.eventtype.MeetingType;
-import com.example.meetings.common.rabbit.eventtype.MessageType;
-import com.example.meetings.common.rabbit.eventtype.RequestType;
-import com.example.meetings.common.rabbit.eventtype.Type;
+import com.example.meetings.common.rabbit.eventtype.*;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -40,15 +35,18 @@ public class CustomEnumDeserializer extends StdDeserializer<Type> {
 
         try {
             return MessageType.valueOf(value);
-        } catch (IllegalArgumentException ignored) {}
+        } catch (IllegalArgumentException ignored) {
+        }
 
         try {
             return RequestType.valueOf(value);
-        } catch (IllegalArgumentException ignored) {}
+        } catch (IllegalArgumentException ignored) {
+        }
 
         try {
             return MeetingType.valueOf(value);
-        } catch (IllegalArgumentException ignored) {}
+        } catch (IllegalArgumentException ignored) {
+        }
 
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
     }

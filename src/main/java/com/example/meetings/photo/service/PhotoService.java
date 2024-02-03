@@ -51,9 +51,9 @@ public class PhotoService {
     /**
      * Поставить фотографию пользователя на указанную позицию в списке его фотографий
      *
-     * @param photoId идентификатор фотографии
+     * @param photoId  идентификатор фотографии
      * @param position позиция
-     * @param userId идентификатор пользователя
+     * @param userId   идентификатор пользователя
      */
     @Transactional
     public void swapPhoto(Long photoId, Integer position, Long userId) {
@@ -66,7 +66,12 @@ public class PhotoService {
         List<Photo> photos = photoRepository.findPhotosByUserId(userId);
 
         if (position == 0) {
-            photo.getUser().setAvatar(photo.getUrl());
+            photo.getUser().setMainPhoto(
+                    new Photo()
+                            .setUrl(photo.getUrl())
+                            .setPosition(0)
+                            .setUser(userRepository.getById(userId))
+            );
         }
 
         photos.remove(((int) photo.getPosition()));
@@ -80,27 +85,27 @@ public class PhotoService {
     /**
      * Сохранить фотографию пользователя
      *
-     * @param fileName имя файла
+     * @param url    ресурс по которому доступен файл
      * @param userId идентификатор пользователя
      * @return URI фотографии
      */
     @Transactional
-    public String savePhoto(String fileName, Long userId) {
-        String photoUrl = hostname + "/img/" + fileName;
+    public Photo savePhoto(String url, Long userId) {
         User user = userService.loadUserByUserId(userId);
-        user.addPhoto(
-                new Photo()
-                        .setUrl(photoUrl)
-                        .setPosition(user.getPhotos().size())
-        );
+        Photo photo = new Photo()
+                .setUrl(url)
+                .setUser(user)
+                .setPosition(user.getPhotos().size());
 
-        return photoUrl;
+        user.addPhoto(photo);
+
+        return photo;
     }
 
     /**
      * Удалить фотографию
      *
-     * @param photoId идентификатор фотографии
+     * @param photoId    идентификатор фотографии
      * @param authUserId идентификатор пользователя
      */
     public void deletePhoto(Long photoId, Long authUserId) {
@@ -118,7 +123,7 @@ public class PhotoService {
         // если удаляется фотография с первого места, то аватаром пользователя становится его вторая фотография
         if (photo.getPosition() == 0) {
             User user = photo.getUser();
-            user.setAvatar(photos.get(1).getUrl());
+            user.setMainPhoto(photos.get(1));
             userRepository.save(user);
         }
 

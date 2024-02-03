@@ -2,10 +2,8 @@ package com.example.meetings.geolocation.controller;
 
 import com.example.meetings.auth.security.model.AuthUserDetails;
 import com.example.meetings.common.model.SuccessfulResponse;
-import com.example.meetings.meeting.model.GeolocationModel;
-import com.example.meetings.meeting.model.GetGeolocationsResponse;
-import com.example.meetings.meeting.model.GetMeetingsResponse;
 import com.example.meetings.meeting.facade.GeolocationFacade;
+import com.example.meetings.meeting.model.*;
 import com.example.meetings.meeting.model.dto.input.GeolocationRequest;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +22,7 @@ public class ApiGeoController {
     @GetMapping(path = "/meetings")
     public GetMeetingsResponse getMeetings(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser,
                                            @RequestParam(required = false) String date) {
-        return new GetMeetingsResponse(
-                geolocationFacade.getMeetings(authUser.getUserId(), date)
-        );
+        return new GetMeetingsResponse(geolocationFacade.getMeetings(authUser.getUserId(), date));
     }
 
     @ApiOperation(value = "Получить информацию о геолокации друзей")

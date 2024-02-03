@@ -1,18 +1,13 @@
 package com.example.meetings.common;
 
-import com.example.meetings.common.exception.ApiError;
-import com.example.meetings.common.exception.GlobalException;
-import com.example.meetings.common.exception.LogicException;
+import com.example.meetings.common.exception.*;
 import com.example.meetings.common.model.ErrorResponse;
-import com.example.meetings.common.exception.UserNotFoundException;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -38,18 +33,21 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     private MessageSource messageSource;
 
     @ExceptionHandler(EntityNotFoundException.class)
-    protected ResponseEntity<Object> handleEntityNotFoundEx(EntityNotFoundException ex) {
+    protected ResponseEntity<ErrorResponse> handleEntityNotFoundEx(EntityNotFoundException ex) {
         ApiError apiError = new ApiError(ex.getMessage());
-        return new ResponseEntity<>(apiError, NOT_FOUND);
+
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setError(apiError);
+        return new ResponseEntity<>(errorResponse, NOT_FOUND);
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    protected ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException ex, Locale locale) {
+    protected ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException ex, Locale locale) {
         ApiError apiError = new ApiError();
         apiError.setMessage(messageSource.getMessage(ex.getMessage(), null, locale));
         ErrorResponse errorResponse = new ErrorResponse();
         errorResponse.setError(apiError);
-        return new ResponseEntity<>(errorResponse, OK);
+        return new ResponseEntity<>(errorResponse, NOT_FOUND);
     }
 
     @NotNull
@@ -57,14 +55,19 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         ApiError apiError = new ApiError(ex.getMessage());
-        return new ResponseEntity<>(apiError, status);
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setError(apiError);
+        return new ResponseEntity<>(errorResponse, BAD_REQUEST);
     }
 
     @NotNull
     @Override
     protected ResponseEntity<Object> handleNoHandlerFoundException(NoHandlerFoundException ex, HttpHeaders headers,
                                                                    HttpStatus status, WebRequest request) {
-        return new ResponseEntity<Object>(new ApiError(ex.getMessage()), status);
+        ApiError apiError = new ApiError(ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setError(apiError);
+        return new ResponseEntity<>(errorResponse, status);
     }
 
     @NotNull
@@ -78,28 +81,32 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 .collect(Collectors.toList());
 
         ApiError apiError = new ApiError(ex.getMessage(), errors);
-        return new ResponseEntity<>(apiError, status);
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setError(apiError);
+        return new ResponseEntity<>(errorResponse, BAD_REQUEST);
     }
 
     @ExceptionHandler(SecurityException.class)
-    public ResponseEntity<Object> handleException(SecurityException e) {
+    public ResponseEntity<ErrorResponse> handleException(SecurityException e) {
         ApiError apiError = new ApiError(e.getMessage());
-        return new ResponseEntity<>(apiError, FORBIDDEN);
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setError(apiError);
+        return new ResponseEntity<>(errorResponse, FORBIDDEN);
     }
 
     @ExceptionHandler(LogicException.class)
-    public ResponseEntity<Object> handleException(LogicException e, Locale locale) {
+    public ResponseEntity<ErrorResponse> handleException(LogicException e, Locale locale) {
 
         ErrorResponse errorResponse = new ErrorResponse();
         ApiError apiError = new ApiError();
         apiError.setMessage(messageSource.getMessage(e.getMessage(), null, locale));
         errorResponse.setError(apiError);
 
-        return new ResponseEntity<>(errorResponse, OK);
+        return new ResponseEntity<>(errorResponse, BAD_REQUEST);
     }
 
     @ExceptionHandler(GlobalException.class)
-    protected ResponseEntity<Object> handleGlobalException (GlobalException e, Locale locale) {
+    protected ResponseEntity<ErrorResponse> handleGlobalException(GlobalException e, Locale locale) {
         ErrorResponse errorResponse = new ErrorResponse();
         ApiError apiError = new ApiError();
         apiError.setMessage(messageSource.getMessage(e.getMessage(), null, locale));
@@ -111,9 +118,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(IOException.class)
-    public ResponseEntity<Object> handleException(IOException e) {
+    public ResponseEntity<ErrorResponse> handleException(IOException e) {
         ApiError apiError = new ApiError(e.getMessage());
-        return new ResponseEntity<>(apiError, INTERNAL_SERVER_ERROR);
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setError(apiError);
+        return new ResponseEntity<>(errorResponse, INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -129,9 +138,20 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(ListenerExecutionFailedException.class)
-    protected ResponseEntity<Object> handleAmqpFailure(ListenerExecutionFailedException e) {
+    protected ResponseEntity<ErrorResponse> handleAmqpFailure(ListenerExecutionFailedException e) {
         ApiError apiError = new ApiError(e.getMessage());
-        return new ResponseEntity<>(apiError, BAD_REQUEST);
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setError(apiError);
+        return new ResponseEntity<>(errorResponse, INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(Exception e) {
+        logger.info("Внутренняя ошибка сервера" + e);
+        ApiError apiError = new ApiError("Внутренняя ошибка сервера");
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setError(apiError);
+        return new ResponseEntity<>(errorResponse, INTERNAL_SERVER_ERROR);
     }
 
 }

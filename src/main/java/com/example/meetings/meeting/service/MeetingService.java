@@ -11,10 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -37,7 +34,7 @@ public class MeetingService {
         return meetingRepository.getMyMeetings(userId, date);
     }
 
-    public List<Meeting> findMeetings(Geolocation geolocation) {
+    public List<Meeting> findNowMeetings(Geolocation geolocation) {
         String time = geolocation.getUpdatedAt().toString();
 
         List<Geolocation> peopleNearMe = geolocationService.findInSquare(
@@ -58,12 +55,11 @@ public class MeetingService {
 
             if (meetings.size() == 0) {
                 if (!geolocation.getUser().getUserId().equals(peopleGeolocation.getUser().getUserId())) {
-                    Meeting meeting = new Meeting();
-                    meeting.setFirstUser(geolocation.getUser());
-                    meeting.setSecondUser(peopleGeolocation.getUser());
-                    meeting.setLat(geolocation.getLat());
-                    meeting.setLng(geolocation.getLng());
-                    meeting.setTime(geolocation.getUpdatedAt());
+                    Meeting meeting = new Meeting().setFirstUser(geolocation.getUser())
+                            .setSecondUser(peopleGeolocation.getUser())
+                            .setLat(geolocation.getLat())
+                            .setLng(geolocation.getLng())
+                            .setTime(geolocation.getUpdatedAt());
 
                     meetingRepository.save(meeting);
                     newMeetings.add(meeting);

@@ -5,7 +5,7 @@ public class AuthorizationException extends GlobalException {
         super(message, code);
     }
 
-    public AuthorizationException(){
+    public AuthorizationException() {
         super("Entity Not Found", GlobalErrorCode.ERROR_WRONG_USERNAME_OR_PASSWORD);
     }
 

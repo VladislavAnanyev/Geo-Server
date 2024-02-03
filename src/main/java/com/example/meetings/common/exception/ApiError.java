@@ -11,7 +11,8 @@ public class ApiError {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<String> errors;
 
-    public ApiError() {}
+    public ApiError() {
+    }
 
     public ApiError(String message) {
         this.message = message;

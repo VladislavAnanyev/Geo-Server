@@ -1,10 +1,7 @@
 package com.example.meetings.auth.model.dto.output;
 
 import com.example.meetings.common.model.SuccessfulResponse;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.Accessors;
 
 @EqualsAndHashCode(callSuper = true)

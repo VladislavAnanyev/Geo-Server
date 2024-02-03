@@ -1,8 +1,6 @@
 package com.example.meetings.auth.security;
 
-import com.example.meetings.auth.security.handler.ApiLogoutHandler;
-import com.example.meetings.auth.security.handler.MyAuthenticationSuccessHandler;
-import com.example.meetings.auth.security.handler.MyLogoutSuccessHandler;
+import com.example.meetings.auth.security.handler.*;
 import com.example.meetings.auth.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.ServletComponentScan;
@@ -26,17 +24,11 @@ import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
-import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.*;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
-import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
-import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
+import org.springframework.security.oauth2.core.oidc.user.*;
+import org.springframework.security.oauth2.core.user.*;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
@@ -44,10 +36,7 @@ import org.springframework.security.web.authentication.rememberme.JdbcTokenRepos
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
 import javax.sql.DataSource;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 @Configuration
@@ -107,7 +96,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers("/api/v1/register", "/api/v1/jwt", "/img/**",
                             "/api/v1/quizzes", "/api/v1/signin", "/api/v1/googleauth", "/api/v1/signup",
                             "/api/v1/user/check-username", "/api/v1/user/send-change-password-code",
-                            "/api/v1/signup/phone","/api/v1/signin/phone",
+                            "/api/v1/signup/phone", "/api/v1/signin/phone",
                             "/api/v1/user/verify-password-code", "/api/v1/user/password").permitAll()
 
                     .anyRequest().authenticated()
@@ -163,18 +152,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
             http
 
-                .authorizeRequests()
+                    .authorizeRequests()
                     .antMatchers(
-                         "/**"
+                            "/**"
                     ).permitAll()
 
-                .and()
-                .formLogin()
+                    .and()
+                    .formLogin()
                     .loginPage("/signin")
                     .successHandler(myAuthenticationSuccessHandler)
 
-                .and()
-                .oauth2Login()
+                    .and()
+                    .oauth2Login()
                     .userInfoEndpoint()
                     .oidcUserService(this.oidcUserService()).userService(this.oAuth2UserService())
                     .userAuthoritiesMapper(this.userAuthoritiesMapper()).and()
@@ -182,30 +171,30 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .loginPage("/signin")
 
 
-                .and()
-                .rememberMe()
+                    .and()
+                    .rememberMe()
                     .key("secretkey").alwaysRemember(true).userDetailsService(userDetailsService)
                     .tokenRepository(persistentTokenRepository())
                     .authenticationSuccessHandler(myAuthenticationSuccessHandler)
 
-                .and()
-                .logout()
+                    .and()
+                    .logout()
                     .logoutUrl("/logout")
                     .addLogoutHandler(new SecurityContextLogoutHandler())
                     .logoutSuccessHandler(myLogoutSuccessHandler)
 
 
-                .and()
-                // for h2-console correct view
-                .headers()
-                .frameOptions()
-                .sameOrigin().and()
-                .requiresChannel()
-                /*.anyRequest()
-                .requiresSecure()*/
+                    .and()
+                    // for h2-console correct view
+                    .headers()
+                    .frameOptions()
+                    .sameOrigin().and()
+                    .requiresChannel()
+                    /*.anyRequest()
+                    .requiresSecure()*/
 
-                .and()
-                .sessionManagement()
+                    .and()
+                    .sessionManagement()
                     .maximumSessions(100).sessionRegistry(sessionRegistry())
                     .and().sessionCreationPolicy(SessionCreationPolicy.NEVER).sessionFixation().none();
         }

@@ -20,10 +20,10 @@ public interface MessageRepository extends
     Page<Message> findAllByDialog_DialogIdAndStatusNot(Long dialogId, MessageStatus status, Pageable paging);
 
     @Query(value = """
-            SELECT MESSAGES.MESSAGE_ID, content, DIALOGS.dialog_id AS dialogId,
+            SELECT MESSAGES.MESSAGE_ID AS messageId, content, DIALOGS.dialog_id AS dialogId,
                    MESSAGES.SENDER_USER_ID AS userId, U.USERNAME AS username,
                    email, first_name AS firstName, ONLINE AS online, last_name AS lastName,
-                   MESSAGES.status AS status, image, name, timestamp AS timestamp, AVATAR
+                   MESSAGES.status AS status, timestamp AS timestamp
             FROM DIALOGS
                      LEFT OUTER JOIN MESSAGES
                                      ON DIALOGS.last_message_id = MESSAGES.MESSAGE_ID

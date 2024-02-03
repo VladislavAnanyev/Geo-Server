@@ -32,7 +32,6 @@ dependencies {
     implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
     implementation group: 'javax.inject', name: 'javax.inject', version: '1'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-client'
-    implementation group: 'org.freemarker', name: 'freemarker', version: '2.3.31'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation group: 'org.postgresql', name: 'postgresql'
     implementation group: 'com.opentable.components', name: 'otj-pg-embedded', version: '0.13.1'
@@ -56,6 +55,7 @@ dependencies {
     implementation 'io.springfox:springfox-swagger-ui:3.0.0'
     implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-redis'
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.12.650'
 
     testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test'
     testImplementation group: 'org.junit.vintage', name: 'junit-vintage-engine', version: '5.8.1'

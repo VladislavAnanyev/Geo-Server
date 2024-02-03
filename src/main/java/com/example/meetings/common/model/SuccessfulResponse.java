@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class SuccessfulResponse implements Response {
-    
+
     private String status;
 
     @Override

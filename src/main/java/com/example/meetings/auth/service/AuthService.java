@@ -7,10 +7,7 @@ import com.example.meetings.auth.model.dto.input.RegistrationModel;
 import com.example.meetings.auth.repository.TokenRepository;
 import com.example.meetings.auth.security.model.AuthUserDetails;
 import com.example.meetings.common.exception.*;
-import com.example.meetings.common.model.Client;
-import com.example.meetings.common.utils.AuthenticationUtil;
-import com.example.meetings.common.utils.CodeUtil;
-import com.example.meetings.common.utils.OauthUserMapper;
+import com.example.meetings.common.utils.*;
 import com.example.meetings.user.model.domain.User;
 import com.example.meetings.user.repository.UserRepository;
 import com.example.meetings.user.service.UserFactory;
@@ -25,6 +22,8 @@ import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.util.Optional;
 import java.util.UUID;
+
+import static java.time.LocalDateTime.now;
 
 /**
  * Сервис для регистрации/входа/смены пароля
@@ -75,6 +74,7 @@ public class AuthService implements UserDetailsService {
      * @param registrationModel - модель для регистрации
      * @param type              - тип регистрации
      */
+    @Transactional
     public User saveUser(RegistrationModel registrationModel, RegistrationType type) {
         Optional<User> optionalUser = userRepository.findUserByUsername(registrationModel.getUsername());
         if (optionalUser.isPresent()) {
@@ -138,94 +138,13 @@ public class AuthService implements UserDetailsService {
     }
 
     /**
-     * При попытке смены пароля пользователю отправляется сообщение на почту с ссылкой,
-     * содержащей уникальный код, который сохраняется в БД.
-     * В дальнейшем, пользователь, перейдя по ссылке получит доступ для смены пароля
-     *
-     * @param username - имя пользователя, желающего сменить пароль
-     * @param client   - платформа, с которой пользователь желает сменить пароль
-     */
-    @Transactional
-    public User setChangePassword(String username, Client client) {
-        User user = findUserByUsername(username);
-
-        String code;
-        if (client.equals(Client.MOBILE)) {
-            /*
-            В случае смены с телефона, пользователь будет вводить код вручную
-            поэтому генерируется короткий, удобный код.
-            */
-            code = CodeUtil.generateShortCode();
-        } else {
-            /*
-             В случае смены из браузера, пользователь будет переходить по ссылке из почты
-             поэтому код может быть длинным
-             */
-            code = CodeUtil.generateLongCode();
-        }
-        user.setChangePasswordCode(code);
-
-        return user;
-    }
-
-    /**
-     * При смене пароля валидируется присланный код для смены пароля,
-     * после чего меняется пароль, а код обнуляется
-     *
-     * @param username - имя пользователя, у которого меняется пароль
-     * @param password - новый пароль
-     */
-    @Transactional
-    public void changePassword(String username, String password) {
-        userRepository.changePassword(passwordEncoder.encode(password), username, null);
-    }
-
-    /**
-     * Проверка кода для смены пароля заключается в нахождении записи в БД
-     * с указанным именем пользователя и коду для смены пароля
-     *
-     * @param username           - имя пользователя
-     * @param changePasswordCode - код для смены пароля
-     */
-    public void verifyChangePasswordCode(String username, String changePasswordCode) {
-        boolean exists = userRepository.existsByChangePasswordCodeAndUsername(
-                changePasswordCode,
-                username
-        );
-
-        if (!exists) {
-            throw new WrongChangePasswordCodeException(
-                    "exception.wrong.change.password.code",
-                    GlobalErrorCode.ERROR_WRONG_CHANGE_PASSWORD_CODE
-            );
-        }
-    }
-
-    /**
      * Проверка существования пользователя с указанным username при входе
      *
      * @param username - проверяемое имя пользователя
      * @return true - существует
      */
-    public boolean checkForExistUser(String username) {
-        if (!userRepository.existsByUsername(username)) {
-            throw new UserNotFoundException("exception.user.not.found", GlobalErrorCode.ERROR_USER_NOT_FOUND);
-        }
-
-        return true;
-    }
-
-    /**
-     * Регистрация при помощи телефона
-     *
-     * @param registrationModel - модель для регистрации пользователя
-     * @return - сохраненный пользователь
-     */
-    @Transactional
-    public User saveUser(RegistrationModel registrationModel) {
-        User user = userFactory.create(registrationModel, RegistrationType.PHONE);
-
-        return userRepository.save(user);
+    public boolean isUserExist(String username) {
+        return userRepository.existsByUsername(username);
     }
 
     /**
@@ -246,6 +165,7 @@ public class AuthService implements UserDetailsService {
         User user = optionalUser.get();
         String code = CodeUtil.generateShortCode();
         user.setPassword(passwordEncoder.encode(code));
+        user.setSignInViaPhoneCodeExpiration(now().plusMinutes(3));
 
         return code;
     }

@@ -4,8 +4,8 @@ import com.example.meetings.chat.model.ForwardedMessages;
 import com.example.meetings.chat.model.SendMessageModel;
 import com.example.meetings.chat.model.dto.input.SendMessageRequest;
 import com.example.meetings.common.rabbit.EventProcessor;
-import com.example.meetings.common.rabbit.eventtype.MessageType;
 import com.example.meetings.common.rabbit.RealTimeEvent;
+import com.example.meetings.common.rabbit.eventtype.MessageType;
 import com.example.meetings.common.rabbit.eventtype.Type;
 import org.springframework.stereotype.Service;
 
@@ -27,10 +27,11 @@ public class NewMessageEventHandler extends CommonEventHandler implements EventP
                 .setFiles(sendMessageRequest.getFiles());
 
         if (sendMessageRequest.getForwardedMessagesRequest() != null) {
-            ForwardedMessages forwardedMessages = new ForwardedMessages()
-                    .setDialogId(sendMessageRequest.getDialogId())
-                    .setMessagesId(sendMessageRequest.getForwardedMessagesRequest().getMessagesId());
-            sendMessageModel.setForwardedMessages(forwardedMessages);
+            sendMessageModel.setForwardedMessages(
+                    new ForwardedMessages()
+                            .setDialogId(sendMessageRequest.getDialogId())
+                            .setMessagesId(sendMessageRequest.getForwardedMessagesRequest().getMessagesId())
+            );
         }
 
         messageFacade.sendMessage(sendMessageModel);

@@ -1,8 +1,8 @@
 package com.example.meetings.auth.security.handler;
 
-import com.example.meetings.auth.security.model.AuthUserDetails;
 import com.example.meetings.auth.security.ActiveUserStore;
 import com.example.meetings.auth.security.LoggedUser;
+import com.example.meetings.auth.security.model.AuthUserDetails;
 import com.example.meetings.auth.service.AuthService;
 import com.example.meetings.common.utils.RabbitUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +14,10 @@ import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.AbstractAuthenticationTargetUrlRequestHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
-import org.springframework.security.web.savedrequest.RequestCache;
-import org.springframework.security.web.savedrequest.SavedRequest;
+import org.springframework.security.web.savedrequest.*;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.*;
 import java.io.IOException;
 
 

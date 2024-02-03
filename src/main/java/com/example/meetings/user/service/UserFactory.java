@@ -1,24 +1,21 @@
 package com.example.meetings.user.service;
 
-import com.example.meetings.auth.model.dto.input.RegistrationModel;
 import com.example.meetings.auth.model.RegistrationType;
-import com.example.meetings.common.utils.CodeUtil;
-import com.example.meetings.user.model.domain.Role;
+import com.example.meetings.auth.model.dto.input.RegistrationModel;
+import com.example.meetings.photo.model.domain.Photo;
 import com.example.meetings.user.model.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.util.Calendar;
+import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.GregorianCalendar;
+
+import static com.example.meetings.common.utils.Const.DEFAULT_PHOTO;
 
 @Component
 public class UserFactory {
-
-    @Value("${hostname}")
-    private String hostname;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -29,34 +26,18 @@ public class UserFactory {
         user.setFirstName(registrationModel.getFirstName());
         user.setLastName(registrationModel.getLastName());
         user.setEmail(registrationModel.getEmail());
-
-        if (type.equals(RegistrationType.BASIC)) {
-            user.setPassword(passwordEncoder.encode(registrationModel.getPassword()));
-            user.setStatus(false);
-            String avatar = hostname + "/img/default.jpg";
-            user.setAvatar(avatar);
-            user.setPhotos(Collections.singletonList(avatar));
-            user.setActivationCode(CodeUtil.generateLongCode());
-        } else if (type.equals(RegistrationType.OAUTH2)) {
-            user.setAvatar(registrationModel.getAvatar());
-            user.setPhotos(Collections.singletonList(registrationModel.getAvatar()));
-            user.setStatus(true);
-        } else if (type.equals(RegistrationType.PHONE)) {
-            user.setPassword(passwordEncoder.encode(registrationModel.getPassword()));
-            user.setStatus(true);
-            String avatar = hostname + "/img/default.jpg";
-            user.setAvatar(avatar);
-            user.setPhotos(Collections.singletonList(avatar));
-
-            GregorianCalendar calendar = new GregorianCalendar();
-            calendar.add(Calendar.MINUTE, 3);
-            user.setSignInViaPhoneCodeExpiration(calendar);
-        }
-
-//        user.setEnabled(true);
-        user.setBalance(0);
-        user.grantAuthority(Role.ROLE_USER);
+        user.setPassword(passwordEncoder.encode(registrationModel.getPassword()));
+        user.setStatus(true);
+        user.setMainPhoto(
+                new Photo()
+                        .setUser(user)
+                        .setPosition(0)
+                        .setUrl(DEFAULT_PHOTO)
+        );
+        user.setPhotos(Collections.singletonList(user.getMainPhoto()));
+        user.setSignInViaPhoneCodeExpiration(LocalDateTime.now().plusMinutes(3));
         user.setOnline(false);
+
         return user;
     }
 }

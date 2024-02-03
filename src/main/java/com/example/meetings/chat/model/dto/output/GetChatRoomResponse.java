@@ -1,5 +1,6 @@
 package com.example.meetings.chat.model.dto.output;
 
+import com.example.meetings.chat.model.DialogDTO;
 import com.example.meetings.common.model.SuccessfulResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
@@ -13,5 +14,5 @@ import lombok.Data;
 public class GetChatRoomResponse extends SuccessfulResponse {
     @ApiModelProperty(value = "Информация о диалоге")
     @JsonProperty("result")
-    private DialogView dialog;
+    private DialogDTO dialog;
 }

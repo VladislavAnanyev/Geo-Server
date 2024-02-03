@@ -7,10 +7,16 @@ import java.util.List;
  */
 public interface ProfileView {
     Long getUserId();
+
     String getUsername();
+
     String getFirstName();
+
     String getLastName();
+
     List<PhotoView> getPhotos();
+
     String getEmail();
+
     String getOnline();
 }

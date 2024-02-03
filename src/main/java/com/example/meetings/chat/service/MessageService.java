@@ -1,21 +1,16 @@
 package com.example.meetings.chat.service;
 
 
-import com.example.meetings.chat.model.CreateGroupModel;
-import com.example.meetings.chat.model.FileResponse;
-import com.example.meetings.chat.model.SendMessageModel;
+import com.example.meetings.chat.mapper.DtoMapper;
+import com.example.meetings.chat.model.*;
 import com.example.meetings.chat.model.domain.*;
 import com.example.meetings.chat.model.dto.input.Typing;
 import com.example.meetings.chat.model.dto.output.LastDialog;
-import com.example.meetings.chat.repository.DialogRepository;
-import com.example.meetings.chat.repository.MessageRepository;
-import com.example.meetings.common.utils.ProjectionUtil;
+import com.example.meetings.chat.repository.*;
 import com.example.meetings.user.model.domain.User;
 import com.example.meetings.user.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -23,6 +18,12 @@ import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.*;
+
+import static com.example.meetings.chat.mapper.DialogDTOMapper.getImage;
+import static com.example.meetings.chat.mapper.DialogDTOMapper.getName;
+import static com.example.meetings.chat.mapper.DtoMapper.map;
+import static com.example.meetings.chat.model.domain.MessageStatus.DELIVERED;
+import static java.util.stream.Collectors.toSet;
 
 @Service
 @Validated
@@ -32,17 +33,17 @@ public class MessageService {
     private final DialogRepository dialogRepository;
     private final UserService userService;
     private final MessageFactory messageFactory;
-    private final ProjectionUtil projectionUtil;
+    private final MessageHistoryRepository messageHistoryRepository;
     @Value("${hostname}")
     private String hostname;
 
     public MessageService(MessageRepository messageRepository, DialogRepository dialogRepository,
-                          UserService userService, MessageFactory messageFactory, ProjectionUtil projectionUtil) {
+                          UserService userService, MessageFactory messageFactory, MessageHistoryRepository messageHistoryRepository) {
         this.messageRepository = messageRepository;
         this.dialogRepository = dialogRepository;
         this.userService = userService;
         this.messageFactory = messageFactory;
-        this.projectionUtil = projectionUtil;
+        this.messageHistoryRepository = messageHistoryRepository;
     }
 
     public Long createDialog(Long firstUserId, Long secondUserId) {
@@ -64,8 +65,10 @@ public class MessageService {
         return dialog.getDialogId();
     }
 
-    public List<LastDialog> getDialogs(Long userId) {
-        return messageRepository.getLastDialogs(userId);
+    public List<LastDialogDTO> getDialogs(Long userId) {
+        List<LastDialog> dialogs = messageRepository.getLastDialogs(userId);
+
+        return mapToLastDialogsDTO(userId, dialogs);
     }
 
     @Transactional
@@ -126,8 +129,8 @@ public class MessageService {
                 sendMessageModel.getContent(), sendMessageModel.getUniqueCode(),
                 sendMessageModel.getSenderId(), dialog
         );
-        message.setStatus(MessageStatus.DELIVERED);
-        updateMessageStatusHistory(sendMessageModel.getSenderId(), message, MessageStatus.DELIVERED);
+        message.setStatus(DELIVERED);
+        updateMessageStatusHistory(sendMessageModel.getSenderId(), message, DELIVERED);
         dialog.setLastMessage(message);
         return messageRepository.save(message);
     }
@@ -269,5 +272,36 @@ public class MessageService {
 
     private boolean isUserContainsInDialog(Dialog dialog, Long userId) {
         return dialog.getUsers().stream().anyMatch(user -> user.getUserId().equals(userId));
+    }
+
+    private List<LastDialogDTO> mapToLastDialogsDTO(Long userId, List<LastDialog> dialogs) {
+        List<LastDialogDTO> lastDialogs = new ArrayList<>();
+        for (LastDialog lastDialog : dialogs) {
+            Dialog dialog = findDialogById(lastDialog.getDialogId());
+            lastDialogs.add(
+                    new LastDialogDTO()
+                            .setDialogId(lastDialog.getDialogId())
+                            .setContent(lastDialog.getContent())
+                            .setTimestamp(lastDialog.getTimestamp())
+                            .setLastSender(map(userService.loadUserByUserId(lastDialog.getUserId())))
+                            .setUsers(
+                                    dialog.getUsers()
+                                            .stream()
+                                            .map(DtoMapper::map)
+                                            .collect(toSet())
+                            )
+                            .setUnreadMessages(
+                                    messageHistoryRepository.findCountOfUnreadMessagesInDialogByUser(
+                                            dialog.getDialogId(),
+                                            userId
+                                    )
+                            )
+                            .setType(dialog.getType().toString())
+                            .setName(getName(dialog, userId))
+                            .setImage(getImage(dialog, userId))
+            );
+        }
+
+        return lastDialogs;
     }
 }

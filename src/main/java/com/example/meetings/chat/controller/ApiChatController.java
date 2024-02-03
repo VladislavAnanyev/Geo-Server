@@ -1,13 +1,10 @@
 package com.example.meetings.chat.controller;
 
 import com.example.meetings.auth.security.model.AuthUserDetails;
-import com.example.meetings.chat.model.UploadAttachmentResponse;
-import com.example.meetings.chat.model.dto.output.CreateDialogResponse;
-import com.example.meetings.chat.model.dto.output.GetChatRoomResponse;
-import com.example.meetings.chat.model.dto.output.GetDialogAttachmentsResponse;
-import com.example.meetings.chat.model.dto.output.GetDialogsResponse;
 import com.example.meetings.chat.facade.MessageFacade;
+import com.example.meetings.chat.model.UploadAttachmentResponse;
 import com.example.meetings.chat.model.dto.input.EditMessageRequest;
+import com.example.meetings.chat.model.dto.output.*;
 import com.example.meetings.common.model.SuccessfulResponse;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

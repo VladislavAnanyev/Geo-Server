@@ -2,9 +2,7 @@ package com.example.meetings;
 
 import com.example.meetings.user.model.domain.User;
 import com.example.meetings.user.repository.UserRepository;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.FanoutExchange;
-import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;

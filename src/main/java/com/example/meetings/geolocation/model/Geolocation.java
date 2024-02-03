@@ -31,9 +31,9 @@ public class Geolocation {
     @Override
     public String toString() {
         return "Geolocation{" +
-                "id='" + geolocationId + '\'' +
-                ", lat='" + lat + '\'' +
-                ", lng='" + lng + '\'' +
-                '}';
+               "id='" + geolocationId + '\'' +
+               ", lat='" + lat + '\'' +
+               ", lng='" + lng + '\'' +
+               '}';
     }
 }

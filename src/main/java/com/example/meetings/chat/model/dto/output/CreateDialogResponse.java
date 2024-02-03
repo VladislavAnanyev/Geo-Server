@@ -2,9 +2,7 @@ package com.example.meetings.chat.model.dto.output;
 
 import com.example.meetings.common.model.SuccessfulResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @AllArgsConstructor

@@ -1,7 +1,6 @@
 package com.example.meetings.chat.repository;
 
 import com.example.meetings.chat.model.domain.Dialog;
-import com.example.meetings.chat.model.dto.output.DialogView;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -22,7 +21,5 @@ public interface DialogRepository extends CrudRepository<Dialog, Long>, JpaRepos
                   (SELECT COUNT(DIALOG_ID) FROM USERS_DIALOGS b where b.DIALOG_ID = a.DIALOG_ID) = 2
             GROUP BY DIALOG_ID HAVING COUNT(DIALOG_ID) = 2""", nativeQuery = true)
     Long findDialogBetweenUsers(Long firstUser, Long secondUser);
-
-    DialogView findAllDialogByDialogId(Long id);
 
 }

@@ -1,8 +1,6 @@
 package com.example.meetings.auth.model.dto.output;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.Accessors;
 
 @Data

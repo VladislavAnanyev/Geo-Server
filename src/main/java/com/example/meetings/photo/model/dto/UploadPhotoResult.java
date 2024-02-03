@@ -10,4 +10,12 @@ public class UploadPhotoResult {
      * URI по которой доступна фотография
      */
     private String uri;
+    /**
+     * Идентификатор
+     */
+    private Long id;
+    /**
+     * Текущая позиция
+     */
+    private Integer position;
 }

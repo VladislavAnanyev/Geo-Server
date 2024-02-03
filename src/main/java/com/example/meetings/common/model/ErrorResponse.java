@@ -9,7 +9,8 @@ public class ErrorResponse implements Response {
         this.error = new ApiError(message);
     }
 
-    public ErrorResponse() {}
+    public ErrorResponse() {
+    }
 
     public void setError(ApiError error) {
         this.error = error;

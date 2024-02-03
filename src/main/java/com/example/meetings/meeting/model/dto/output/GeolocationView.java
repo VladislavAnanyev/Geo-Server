@@ -6,8 +6,11 @@ import java.util.Date;
 
 public interface GeolocationView {
     Double getLat();
+
     Double getLng();
+
     Date getTime();
+
     @Value("#{target.username}")
     String getUser();
 }

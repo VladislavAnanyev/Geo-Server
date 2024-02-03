@@ -1,9 +1,7 @@
 package com.example.meetings.common.rabbit.eventhandler;
 
-import com.example.meetings.common.rabbit.EventProcessor;
+import com.example.meetings.common.rabbit.*;
 import com.example.meetings.common.rabbit.eventtype.MessageType;
-import com.example.meetings.common.rabbit.RealTimeEvent;
-import com.example.meetings.common.rabbit.ReceiveMessageRequest;
 import com.example.meetings.common.rabbit.eventtype.Type;
 import org.springframework.stereotype.Service;
 

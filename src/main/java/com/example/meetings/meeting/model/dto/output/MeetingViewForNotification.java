@@ -8,11 +8,16 @@ import java.util.List;
 
 public interface MeetingViewForNotification {
     Long getMeetingId();
+
     @Value("#{target.getUsers()}")
     List<UserCommonView> getUsers();
+
     Double getLng();
+
     Double getLat();
+
     Date getTime();
+
     @Value("TRUE")
     boolean isPossibleToSendRequest();
 }

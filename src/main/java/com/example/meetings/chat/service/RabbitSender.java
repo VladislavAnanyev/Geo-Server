@@ -1,7 +1,7 @@
 package com.example.meetings.chat.service;
 
-import com.example.meetings.common.rabbit.eventtype.MessageType;
 import com.example.meetings.common.rabbit.RealTimeEvent;
+import com.example.meetings.common.rabbit.eventtype.MessageType;
 import com.example.meetings.common.utils.RabbitUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -59,8 +59,8 @@ public class RabbitSender {
     /**
      * Отправляет сообщение во все связанные с каждым обменом очереди
      *
-     * @param userIds            список из имён идентификаторов пользователей, которые получат сообщение
-     * @param event              сообщение для отправки
+     * @param userIds список из имён идентификаторов пользователей, которые получат сообщение
+     * @param event   сообщение для отправки
      */
     public <T> void send(List<Long> userIds, RealTimeEvent<T> event) {
 

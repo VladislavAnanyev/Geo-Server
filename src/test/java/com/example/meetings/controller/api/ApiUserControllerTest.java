@@ -24,6 +24,7 @@ import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.Mockito.doAnswer;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -62,184 +63,8 @@ public class ApiUserControllerTest {
     @WithUserDetails("user1")
     public void testGetAuthUserWithAuth() throws Exception {
         mockMvc.perform(get("/api/v1/user/auth").secure(true))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    public void testSignUp() throws Exception {
-
-        doAnswer(i -> null).when(rabbitAdmin).declareExchange(anyObject());
-        doAnswer(i -> null).when(businessEmailSender).sendWelcomeMessage(anyObject());
-
-        String json =
-                """
-                        {
-                            "username": "application",
-                            "email": "a.vlad.v@ya.ru",
-                            "firstName": "Владислав",
-                            "lastName": "Ананьев",
-                            "password": "12345"
-                        }
-                        """;
-
-        mockMvc.perform(post("/api/v1/signup").secure(true)
-                        .content(json)
-                        .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result.jwtToken").isString());
-
-        User user = userRepository.findUserByUsername("application").get();
-        assertNotNull(user.getPassword());
-
-    }
-
-    @Test
-    public void testSignUpWithExistUsername() throws Exception {
-
-        String json = """
-                {   
-                    "username": "user1",
-                    "email": "a.vlad.c@ya.ru",
-                    "firstName": "Владислав",
-                    "lastName": "Ананьев",
-                    "password": "12345"
-                }
-                """;
-
-        mockMvc.perform(post("/api/v1/signup").secure(true)
-                        .content(json)
-                        .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("FAIL"));
-    }
-
-    @Test
-    public void testSignUpWithBadPassword() throws Exception {
-
-        String json = """
-                {
-                    "username": "application",
-                    "email": "a.vlad.c@ya.ru",
-                    "firstName": "Владислав",
-                    "lastName": "Ананьев",
-                    "password": "12"
-                }
-                """;
-
-        mockMvc.perform(post("/api/v1/signup").secure(true)
-                .content(json)
-                .contentType(APPLICATION_JSON)).andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void testSignUpWithBadUsername() throws Exception {
-
-        String json = """
-                {
-                    "username": "    ",
-                    "email": "a.vlad.c@ya.ru",
-                    "firstName": "Владислав",
-                    "lastName": "Ананьев",
-                    "password": "12345"
-                }
-                """;
-
-        mockMvc.perform(post("/api/v1/signup").secure(true)
-                .content(json)
-                .contentType(APPLICATION_JSON)).andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void testSignUpWithSpaceInUsername() throws Exception {
-
-        String json = """
-                {
-                    "username": "appli cation",
-                    "email": "a.vlad.c@ya.ru",
-                    "firstName": "Владислав",
-                    "lastName": "Ананьев",
-                    "password": "12345"
-                }
-                """;
-
-        mockMvc.perform(post("/api/v1/signup").secure(true)
-                        .content(json)
-                        .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("FAIL"));
-    }
-
-    @Test
-    public void testSignUpWithoutEmail() throws Exception {
-
-        String json = """
-                {
-                    "username": "application",
-                    "firstName": "Владислав",
-                    "lastName": "Ананьев",
-                    "password": "12345"
-                }
-                """;
-
-        mockMvc.perform(post("/api/v1/signup").secure(true)
-                .content(json)
-                .contentType(APPLICATION_JSON)).andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void testSignUpWithBadEmail() throws Exception {
-
-        String json = """
-                {   
-                    "username": "application",
-                    "email": "a.vlad.c@ya.",
-                    "firstName": "Владислав",
-                    "lastName": "Ананьев",
-                    "password": "12345"
-                }
-                """;
-
-        mockMvc.perform(post("/api/v1/signup").secure(true)
-                .content(json)
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void testSignUpWithBlankEmail() throws Exception {
-
-        String json = """
-                {   
-                    "username": "application",
-                    "email": "",
-                    "firstName": "Владислав",
-                    "lastName": "Ананьев",
-                    "password": "12345"
-                }
-                """;
-
-        mockMvc.perform(post("/api/v1/signup").secure(true)
-                .content(json)
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void testSignUpWithoutFirstName() throws Exception {
-        String json = """
-                {   
-                    "username": "application",
-                    "email": "a.vlad.c@ya.ru",
-                    "firstName": "",
-                    "lastName": "Ананьев",
-                    "password": "12345"
-                }
-                """;
-
-        mockMvc.perform(post("/api/v1/signup").secure(true)
-                .content(json)
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andDo(print());
     }
 
     @Test
@@ -280,22 +105,6 @@ public class ApiUserControllerTest {
     }
 
     @Test
-    public void testCheckExistUsername() throws Exception {
-        mockMvc.perform(get("/api/v1/user/check-username?username=user1").secure(true))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.result.exist").value(true));
-
-    }
-
-    @Test
-    public void testCheckNotExistUsername() throws Exception {
-        String status = mockMvc.perform(get("/api/v1/user/check-username?username=user100").secure(true))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-
-        assertFalse(Boolean.parseBoolean(status));
-    }
-
-    @Test
     public void testGetCodeForSignInViaPhone() throws Exception {
 
         doAnswer(invocationOnMock -> null).when(rabbitAdmin).declareExchange(anyObject());
@@ -309,18 +118,15 @@ public class ApiUserControllerTest {
                     }
                 """;
 
-        mockMvc.perform(post("/api/v1/signup/phone")
+        mockMvc.perform(post("/api/v1/signin/phone")
                         .secure(true)
                         .contentType(APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isOk());
 
         User user = userRepository.findUserByUsername("+7(905)7970526").get();
-        assertEquals("Владислав", user.getFirstName());
-        assertEquals("Ананьев", user.getLastName());
+        assertNotNull(user);
 
-
-        // Зарегестрировался, но не успел ввести код
         String jsonForRequestCodeAgain = """
                     {
                         "phone": "+7(905)7970526"
