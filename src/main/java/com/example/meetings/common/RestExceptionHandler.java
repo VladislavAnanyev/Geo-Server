@@ -35,9 +35,9 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     protected ResponseEntity<ErrorResponse> handleEntityNotFoundEx(EntityNotFoundException ex) {
         ApiError apiError = new ApiError(ex.getMessage());
-
         ErrorResponse errorResponse = new ErrorResponse();
         errorResponse.setError(apiError);
+
         return new ResponseEntity<>(errorResponse, NOT_FOUND);
     }
 
@@ -47,6 +47,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         apiError.setMessage(messageSource.getMessage(ex.getMessage(), null, locale));
         ErrorResponse errorResponse = new ErrorResponse();
         errorResponse.setError(apiError);
+
         return new ResponseEntity<>(errorResponse, NOT_FOUND);
     }
 
@@ -57,6 +58,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         ApiError apiError = new ApiError(ex.getMessage());
         ErrorResponse errorResponse = new ErrorResponse();
         errorResponse.setError(apiError);
+
         return new ResponseEntity<>(errorResponse, BAD_REQUEST);
     }
 
@@ -67,6 +69,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         ApiError apiError = new ApiError(ex.getMessage());
         ErrorResponse errorResponse = new ErrorResponse();
         errorResponse.setError(apiError);
+
         return new ResponseEntity<>(errorResponse, status);
     }
 
@@ -83,6 +86,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         ApiError apiError = new ApiError(ex.getMessage(), errors);
         ErrorResponse errorResponse = new ErrorResponse();
         errorResponse.setError(apiError);
+
         return new ResponseEntity<>(errorResponse, BAD_REQUEST);
     }
 
@@ -91,6 +95,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         ApiError apiError = new ApiError(e.getMessage());
         ErrorResponse errorResponse = new ErrorResponse();
         errorResponse.setError(apiError);
+
         return new ResponseEntity<>(errorResponse, FORBIDDEN);
     }
 
@@ -122,6 +127,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         ApiError apiError = new ApiError(e.getMessage());
         ErrorResponse errorResponse = new ErrorResponse();
         errorResponse.setError(apiError);
+
         return new ResponseEntity<>(errorResponse, INTERNAL_SERVER_ERROR);
     }
 
@@ -142,15 +148,17 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         ApiError apiError = new ApiError(e.getMessage());
         ErrorResponse errorResponse = new ErrorResponse();
         errorResponse.setError(apiError);
+
         return new ResponseEntity<>(errorResponse, INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
-        logger.info("Внутренняя ошибка сервера" + e);
+        logger.error("Внутренняя ошибка сервера", e);
         ApiError apiError = new ApiError("Внутренняя ошибка сервера");
         ErrorResponse errorResponse = new ErrorResponse();
         errorResponse.setError(apiError);
+
         return new ResponseEntity<>(errorResponse, INTERNAL_SERVER_ERROR);
     }
 
