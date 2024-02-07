@@ -2,8 +2,8 @@ package com.example.meetings.request.service;
 
 import com.example.meetings.auth.security.model.AuthUserDetails;
 import com.example.meetings.chat.repository.MessageRepository;
+import com.example.meetings.meeting.model.domain.Meeting;
 import com.example.meetings.meeting.repository.MeetingRepository;
-import com.example.meetings.request.facade.RequestFacade;
 import com.example.meetings.request.model.domain.Request;
 import com.example.meetings.request.model.domain.RequestStatus;
 import com.example.meetings.request.model.dto.output.RequestView;
@@ -14,10 +14,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+import static com.example.meetings.request.model.domain.RequestStatus.*;
+import static java.util.Objects.isNull;
 import static org.springframework.security.core.context.SecurityContextHolder.getContext;
 
 @Service
@@ -35,50 +38,35 @@ public class RequestService {
     @Autowired
     private MessageRepository messageRepository;
 
-    @Autowired
-    private RequestFacade requestFacade;
-
     @Transactional
     public Request createRequest(Long meetingId, Long fromUserId, Long toUserId, Long messageId) {
-        Optional<Request> optionalRequest = isPresentMyRequestByMeetingIdAndToUserId(
-                meetingId, toUserId
-        );
-
-        if (optionalRequest.isPresent()) {
-            requestFacade.acceptRequest(optionalRequest.get().getRequestId(), fromUserId);
-            return null;
+        Meeting meeting = meetingRepository.findById(meetingId).orElseThrow(() -> new EntityNotFoundException("Встреча не найдена"));
+        if (!isPossibleToSendRequest(meetingId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can not send request");
         }
 
-        List<Request> allMyPendingRequestsToUser = requestRepository.findBySenderUserIdAndToUserIdAndStatus(
+        boolean activeRequestExist = requestRepository.existBySenderUserIdAndToUserIdAndStatus(
                 fromUserId,
                 toUserId,
-                RequestStatus.PENDING
+                PENDING
         );
 
-        if (allMyPendingRequestsToUser.size() != 0) {
+        if (activeRequestExist) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You already send request to this user");
         }
 
         Request request = new Request()
                 .setSender(userService.loadUserByUserId(fromUserId))
                 .setTo(userService.loadUserByUserId(toUserId))
-                .setMeeting(meetingRepository.findById(meetingId).orElseThrow())
-                .setStatus(RequestStatus.PENDING);
-
-        if (messageId != null) {
-            request.setMessage(messageRepository.getOne(messageId));
-        }
-
-        if (!isPossibleToSendRequest(request.getMeeting().getMeetingId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can not send request");
-        }
+                .setMeeting(meeting)
+                .setMessage(isNull(messageId) ? null : messageRepository.getOne(messageId))
+                .setStatus(PENDING);
 
         return requestRepository.save(request);
-
     }
 
     public List<RequestView> getSentRequests(Long userId) {
-        return requestRepository.findAllBySenderUserIdAndStatus(userId, RequestStatus.PENDING);
+        return requestRepository.findAllBySenderUserIdAndStatus(userId, PENDING);
     }
 
     /**
@@ -86,10 +74,7 @@ public class RequestService {
      * от тебя и не существует заявок со статусом принята или отклонена
      */
     public boolean isPossibleToSendRequest(Long meetingId) {
-        List<Request> allRequests = requestRepository
-                .findAllByMeetingMeetingId(
-                        meetingId
-                );
+        List<Request> allRequests = requestRepository.findAllByMeetingMeetingId(meetingId);
 
         if (allRequests.size() == 0) {
             return true;
@@ -102,16 +87,15 @@ public class RequestService {
         );
 
         boolean isRequestWithStatusRejectedOrAcceptedExist = allRequests.stream().anyMatch(
-                request -> request.getStatus().equals(RequestStatus.REJECTED) ||
-                           request.getStatus().equals(RequestStatus.ACCEPTED)
+                request -> request.getStatus().equals(REJECTED) || request.getStatus().equals(ACCEPTED)
         );
 
         return sentRequest.size() == 0 && !isRequestWithStatusRejectedOrAcceptedExist;
     }
 
-    public List<RequestView> getMyRequests(Long userId) {
+    public List<RequestView> getRequestsByUser(Long userId) {
         return requestRepository.findByStatusAndToUserIdOrStatusAndSenderUserId(
-                RequestStatus.PENDING, userId, RequestStatus.PENDING, userId
+                PENDING, userId, PENDING, userId
         );
     }
 
@@ -130,10 +114,10 @@ public class RequestService {
         return requestRepository.save(request);
     }
 
-    private Optional<Request> isPresentMyRequestByMeetingIdAndToUserId(Long meetingId, Long toUserId) {
+    public Optional<Request> findMutualRequest(Long meetingId, Long toUserId) {
         return requestRepository.findAllByMeetingMeetingIdAndStatusAndSenderUserId(
                 meetingId,
-                RequestStatus.PENDING,
+                PENDING,
                 toUserId
         );
     }

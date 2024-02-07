@@ -18,17 +18,12 @@ public class MailSender {
     private String username;
 
     public void send(String emailTo, String subject, String message) {
-        try {
             SimpleMailMessage mailMessage = new SimpleMailMessage();
             mailMessage.setFrom(username);
             mailMessage.setTo(emailTo);
             mailMessage.setSubject(subject);
             mailMessage.setText(message);
             mailSender.send(mailMessage);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
     }
 
 }

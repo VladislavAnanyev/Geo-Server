@@ -12,18 +12,21 @@ public class DeviceService {
     @Autowired
     private DeviceRepository deviceRepository;
 
-    public void registerDevice(User user, String appleToken) {
-        if (appleToken != null) {
-            boolean alreadyRegister = user.getDevices().stream().anyMatch(
-                    device -> appleToken.equals(device.getDeviceToken())
-            );
+    public void processDevice(User user, String fcmToken) {
+        if (fcmToken == null) {
+            return;
+        }
 
-            if (!alreadyRegister) {
-                Device device = new Device();
-                device.setDeviceToken(appleToken);
-                device.setUser(user);
-                deviceRepository.save(device);
-            }
+        boolean alreadyRegister = user.getDevices().stream().anyMatch(
+                device -> fcmToken.equals(device.getFcmToken())
+        );
+
+        if (!alreadyRegister) {
+            deviceRepository.save(
+                    new Device()
+                            .setFcmToken(fcmToken)
+                            .setUser(user)
+            );
         }
     }
 }

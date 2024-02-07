@@ -15,11 +15,6 @@ public class RegistrationModel {
 
     @NotNull
     @NotBlank
-    @Email
-    private String email;
-
-    @NotNull
-    @NotBlank
     private String firstName;
 
     @NotNull
@@ -32,6 +27,4 @@ public class RegistrationModel {
     private String password;
 
     private String avatar;
-
-    private String appleToken;
 }

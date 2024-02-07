@@ -60,6 +60,9 @@ public class Message implements Notifiable {
 
     @Override
     public Set<User> getUsersToSendNotification() {
-        return dialog.getUsers();
+        Set<User> users = new HashSet<>(dialog.getUsers());
+        users.remove(sender);
+
+        return users;
     }
 }

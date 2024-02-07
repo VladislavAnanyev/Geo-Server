@@ -25,7 +25,6 @@ public class UserFactory {
         user.setUsername(registrationModel.getUsername());
         user.setFirstName(registrationModel.getFirstName());
         user.setLastName(registrationModel.getLastName());
-        user.setEmail(registrationModel.getEmail());
         user.setPassword(passwordEncoder.encode(registrationModel.getPassword()));
         user.setStatus(true);
         user.setMainPhoto(

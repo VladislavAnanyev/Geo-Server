@@ -16,7 +16,5 @@ public interface ProfileView {
 
     List<PhotoView> getPhotos();
 
-    String getEmail();
-
     String getOnline();
 }

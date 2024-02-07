@@ -1,5 +1,6 @@
 package com.example.meetings.meeting.model.domain;
 
+import com.example.meetings.chat.model.domain.Notifiable;
 import com.example.meetings.request.model.domain.Request;
 import com.example.meetings.user.model.domain.User;
 import lombok.Getter;
@@ -9,12 +10,13 @@ import lombok.experimental.Accessors;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Entity(name = "MEETINGS")
 @Getter
 @Setter
 @Accessors(chain = true)
-public class Meeting {
+public class Meeting implements Notifiable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -40,4 +42,8 @@ public class Meeting {
         return List.of(firstUser, secondUser);
     }
 
+    @Override
+    public Set<User> getUsersToSendNotification() {
+        return Set.of(firstUser, secondUser);
+    }
 }

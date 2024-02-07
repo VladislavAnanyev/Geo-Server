@@ -31,7 +31,6 @@ public class DialogDTOMapper {
     private static Set<UserDto> getUsers(Dialog dialog) {
         return dialog.getUsers().stream().map(user -> new UserDto()
                 .setAvatar(user.getMainPhoto().getUrl())
-                .setEmail(user.getEmail())
                 .setFirstName(user.getFirstName())
                 .setLastName(user.getLastName())
                 .setLogin(user.getUsername())
@@ -72,9 +71,7 @@ public class DialogDTOMapper {
     public static String getName(Dialog dialog, Long userId) {
         if (dialog.getType().equals(DialogType.GROUP)) {
             return dialog.getName();
-        }
-
-        if (dialog.getType().equals(DialogType.PRIVATE)) {
+        } else if (dialog.getType().equals(DialogType.PRIVATE)) {
             Set<User> userSet = new HashSet<>(dialog.getUsers());
             User companion = userSet
                     .stream()

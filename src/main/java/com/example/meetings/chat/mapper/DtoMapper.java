@@ -18,7 +18,6 @@ public class DtoMapper {
                 .setFirstName(user.getFirstName())
                 .setAvatar(user.getMainPhoto().getUrl())
                 .setLastName(user.getLastName())
-                .setEmail(user.getEmail())
                 .setLogin(user.getUsername());
     }
 

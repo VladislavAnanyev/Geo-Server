@@ -9,28 +9,30 @@ import com.example.meetings.common.rabbit.eventtype.MessageType;
 import com.example.meetings.common.rabbit.eventtype.Type;
 import org.springframework.stereotype.Service;
 
+import static java.util.Objects.isNull;
+
 @Service
 public class NewMessageEventHandler extends CommonEventHandler implements EventProcessor {
 
     @Override
     public void process(RealTimeEvent<?> realTimeEvent, Long userId) {
-        SendMessageRequest sendMessageRequest = objectMapper.convertValue(
+        SendMessageRequest request = objectMapper.convertValue(
                 realTimeEvent.getPayload(),
                 SendMessageRequest.class
         );
 
         SendMessageModel sendMessageModel = new SendMessageModel()
-                .setContent(sendMessageRequest.getContent())
-                .setDialogId(sendMessageRequest.getDialogId())
-                .setUniqueCode(sendMessageRequest.getUniqueCode())
+                .setContent(request.getContent())
+                .setDialogId(request.getDialogId())
+                .setUniqueCode(request.getUniqueCode())
                 .setSenderId(userId)
-                .setFiles(sendMessageRequest.getFiles());
+                .setFiles(request.getFiles());
 
-        if (sendMessageRequest.getForwardedMessagesRequest() != null) {
+        if (!isNull(request.getForwardedMessagesRequest())) {
             sendMessageModel.setForwardedMessages(
                     new ForwardedMessages()
-                            .setDialogId(sendMessageRequest.getDialogId())
-                            .setMessagesId(sendMessageRequest.getForwardedMessagesRequest().getMessagesId())
+                            .setDialogId(request.getDialogId())
+                            .setMessagesId(request.getForwardedMessagesRequest().getMessagesId())
             );
         }
 

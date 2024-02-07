@@ -30,7 +30,7 @@ public class S3Config {
                 .withPayloadSigningEnabled(false)
                 .withEndpointConfiguration(
                         new AmazonS3ClientBuilder.EndpointConfiguration(
-                                "storage.yandexcloud.net", "ru-central3"
+                                "storage.yandexcloud.net", "ru-central1"
                         )
                 )
                 .build();

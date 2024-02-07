@@ -1,6 +1,7 @@
 package com.example.meetings.request.model.domain;
 
 import com.example.meetings.chat.model.domain.Message;
+import com.example.meetings.chat.model.domain.Notifiable;
 import com.example.meetings.meeting.model.domain.Meeting;
 import com.example.meetings.user.model.domain.User;
 import lombok.Getter;
@@ -14,7 +15,7 @@ import java.util.Set;
 @Getter
 @Setter
 @Accessors(chain = true)
-public class Request {
+public class Request implements Notifiable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -39,5 +40,10 @@ public class Request {
 
     public Set<User> getUsers() {
         return Set.of(sender, to);
+    }
+
+    @Override
+    public Set<User> getUsersToSendNotification() {
+        return Set.of(to);
     }
 }

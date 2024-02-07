@@ -1,9 +1,11 @@
 package com.example.meetings.request.facade;
 
 import com.example.meetings.chat.model.SendMessageModel;
+import com.example.meetings.chat.model.domain.Message;
 import com.example.meetings.chat.service.MessageService;
 import com.example.meetings.common.rabbit.eventtype.FriendType;
 import com.example.meetings.common.rabbit.eventtype.RequestType;
+import com.example.meetings.common.service.EventService;
 import com.example.meetings.common.service.NotificationService;
 import com.example.meetings.common.utils.ProjectionUtil;
 import com.example.meetings.request.model.domain.Request;
@@ -12,52 +14,50 @@ import com.example.meetings.request.model.dto.output.*;
 import com.example.meetings.request.service.RequestService;
 import com.example.meetings.user.model.dto.UserCommonView;
 import com.example.meetings.user.service.FriendService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
+
+import static com.example.meetings.common.utils.Const.REQUEST;
+import static com.example.meetings.common.utils.Const.REQUEST_DESCRIPTION;
+import static java.util.Optional.ofNullable;
 
 @Service
+@RequiredArgsConstructor
 public class RequestFacadeImpl implements RequestFacade {
 
-    @Autowired
-    private RequestService requestService;
-
-    @Autowired
-    private ProjectionUtil projectionUtil;
-
-    @Autowired
-    private NotificationService notificationService;
-
-    @Autowired
-    private MessageService messageService;
-
-    @Autowired
-    private FriendService friendService;
+    private final RequestService requestService;
+    private final ProjectionUtil projectionUtil;
+    private final EventService eventService;
+    private final MessageService messageService;
+    private final FriendService friendService;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
     public void sendRequest(Long meetingId, Long fromUserId, Long toUserId, String messageContent) {
+        Long messageId = ofNullable(messageContent)
+                .map(s -> messageService.saveMessage(
+                        new SendMessageModel()
+                                .setSenderId(fromUserId)
+                                .setContent(messageContent)
+                                .setDialogId(messageService.createDialog(toUserId, fromUserId))))
+                .map(Message::getMessageId)
+                .orElse(null);
 
-        Long messageId = null;
-        if (messageContent != null) {
-            Long dialogId = messageService.createDialog(toUserId, fromUserId);
-            messageId = messageService.saveMessage(
-                    new SendMessageModel()
-                            .setSenderId(fromUserId)
-                            .setContent(messageContent)
-                            .setDialogId(dialogId)
-                            .setUniqueCode(UUID.randomUUID().toString())
-            ).getMessageId();
-        }
-
-        Request request = requestService.createRequest(meetingId, fromUserId, toUserId, messageId);
-        if (request != null) {
-            RequestView requestView = projectionUtil.parse(request, RequestView.class);
-            notificationService.send(requestView, request.getUsers(), RequestType.REQUEST);
-        }
+        Optional<Request> optionalRequest = requestService.findMutualRequest(meetingId, toUserId);
+        optionalRequest.ifPresentOrElse(
+                request -> this.acceptRequest(request.getRequestId(), fromUserId),
+                () -> {
+                    Request request = requestService.createRequest(meetingId, fromUserId, toUserId, messageId);
+                    RequestView requestView = projectionUtil.parse(request, RequestView.class);
+                    eventService.send(requestView, request.getUsers(), RequestType.REQUEST);
+                    notificationService.send(REQUEST, REQUEST_DESCRIPTION, request);
+                }
+        );
     }
 
     @Override
@@ -66,9 +66,9 @@ public class RequestFacadeImpl implements RequestFacade {
         friendService.makeFriends(request.getSender().getUserId(), request.getTo().getUserId());
 
         UserCommonView toUserView = projectionUtil.parse(request.getTo(), UserCommonView.class);
-        notificationService.send(toUserView, Set.of(request.getSender()), FriendType.NEW_FRIEND);
+        eventService.send(toUserView, Set.of(request.getSender()), FriendType.NEW_FRIEND);
         UserCommonView senderView = projectionUtil.parse(request.getSender(), UserCommonView.class);
-        notificationService.send(senderView, Set.of(request.getTo()), FriendType.NEW_FRIEND);
+        eventService.send(senderView, Set.of(request.getTo()), FriendType.NEW_FRIEND);
 
         return new AcceptRequestResult()
                 .setDialogId(
@@ -93,6 +93,6 @@ public class RequestFacadeImpl implements RequestFacade {
     @Override
     public GetRequestsToUserResult getRequestsToUser(Long userId) {
         return new GetRequestsToUserResult()
-                .setRequests(requestService.getMyRequests(userId));
+                .setRequests(requestService.getRequestsByUser(userId));
     }
 }

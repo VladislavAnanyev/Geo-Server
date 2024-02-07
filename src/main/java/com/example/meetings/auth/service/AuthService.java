@@ -7,7 +7,7 @@ import com.example.meetings.auth.model.dto.input.RegistrationModel;
 import com.example.meetings.auth.repository.TokenRepository;
 import com.example.meetings.auth.security.model.AuthUserDetails;
 import com.example.meetings.common.exception.*;
-import com.example.meetings.common.utils.*;
+import com.example.meetings.common.utils.CodeUtil;
 import com.example.meetings.user.model.domain.User;
 import com.example.meetings.user.repository.UserRepository;
 import com.example.meetings.user.service.UserFactory;
@@ -91,26 +91,6 @@ public class AuthService implements UserDetailsService {
         User user = userFactory.create(registrationModel, type);
 
         return userRepository.save(user);
-    }
-
-    /**
-     * Если пользователь с username из токена уже был зарегистирован - получаем его и аутентифицируем
-     * Иначе - регистрируем и аутентифицируем
-     * todo - пофиксить дыру в безопасности, благодаря которой используя сторонний сервис войти в чужой аккаунт
-     *
-     * @param token - токен стороннего сервиса
-     * @return - информация для входа в аккаунт
-     */
-    public User signInViaExternalServiceToken(Object token) {
-        RegistrationModel registrationModel = OauthUserMapper.map(token);
-        Optional<User> optionalUser = userRepository.findUserByUsername(registrationModel.getUsername());
-        User user = optionalUser.orElseGet(() -> saveUser(registrationModel, RegistrationType.OAUTH2));
-
-        AuthUserDetails authUserDetails = new AuthUserDetails();
-        authUserDetails.setUserId(user.getUserId());
-        AuthenticationUtil.setAuthentication(authUserDetails, authUserDetails.getAuthorities());
-
-        return user;
     }
 
     /**

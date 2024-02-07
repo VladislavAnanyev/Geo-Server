@@ -32,6 +32,8 @@ public class AuthFacadeImpl implements AuthFacade {
     public AuthResult signIn(AuthRequest authRequest) {
         signInCodeService.checkCodeExpire(authRequest.getUsername());
         User user = authService.authenticate(authRequest);
+        deviceService.processDevice(user, authRequest.getFcmToken());
+
         return new AuthResult(
                 user.getUserId(),
                 jwtUtil.generateToken(user),
@@ -41,12 +43,12 @@ public class AuthFacadeImpl implements AuthFacade {
     }
 
     @Override
-    public AuthPhoneResult signUpViaPhone(RegistrationModel registrationData) {
+    public AuthPhoneResult signUpViaPhone(RegistrationModel data) {
         String code = CodeUtil.generateShortCode();
-        registrationData.setPassword(code);
-        User user = authService.saveUser(registrationData, PHONE);
-        deviceService.registerDevice(user, registrationData.getAppleToken());
-        smsSender.sendCodeToPhone(code, registrationData.getUsername());
+        data.setPassword(code);
+
+        User user = authService.saveUser(data, PHONE);
+        smsSender.sendCodeToPhone(code, data.getUsername());
         rabbitUtil.createExchange(user.getUserId());
 
         return new AuthPhoneResult()

@@ -10,6 +10,7 @@ import com.example.meetings.chat.service.MessageService;
 import com.example.meetings.common.service.*;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.InputStream;
 import java.util.List;
@@ -23,37 +24,45 @@ import static java.util.stream.Collectors.toSet;
 public class MessageFacadeImpl implements MessageFacade {
 
     private final MessageService messageService;
-    private final NotificationService notificationService;
+    private final EventService eventService;
     private final FileStorageService fileStorageService;
+    private final NotificationService notificationService;
 
-    public MessageFacadeImpl(MessageService messageService, NotificationService notificationService, @Qualifier("s3Service") FileStorageService fileStorageService) {
+    public MessageFacadeImpl(MessageService messageService, EventService eventService, @Qualifier("s3Service") FileStorageService fileStorageService, NotificationService notificationService) {
         this.messageService = messageService;
-        this.notificationService = notificationService;
+        this.eventService = eventService;
         this.fileStorageService = fileStorageService;
+        this.notificationService = notificationService;
     }
 
     @Override
-    public void sendMessage(SendMessageModel sendMessageModel) {
-        Message message = messageService.saveMessage(sendMessageModel);
-        notificationService.send(DtoMapper.map(message), message.getUsersToSendNotification(), MESSAGE);
+    @Transactional
+    public void sendMessage(SendMessageModel model) {
+        Message message = messageService.saveMessage(model);
+        eventService.send(DtoMapper.map(message), message.getDialog().getUsers(), MESSAGE);
+        notificationService.send(
+                "%s %s".formatted(message.getSender().getFirstName(), message.getSender().getLastName()),
+                message.getContent(),
+                message
+        );
     }
 
     @Override
     public void typingMessage(Long dialogId, Long userId) {
         Typing typing = messageService.typingMessage(dialogId, userId);
-        notificationService.send(DtoMapper.map(typing), typing.getUsersToSendNotification(), TYPING);
+        eventService.send(DtoMapper.map(typing), typing.getUsersToSendNotification(), TYPING);
     }
 
     @Override
     public void deleteMessage(Long messageId, Long userId) {
         Message message = messageService.setDeletedStatus(messageId, userId);
-        notificationService.send(DtoMapper.map(message), message.getUsersToSendNotification(), DELETE_MESSAGE);
+        eventService.send(DtoMapper.map(message), message.getUsersToSendNotification(), DELETE_MESSAGE);
     }
 
     @Override
     public void editMessage(Long messageId, String content, Long userId) {
         Message message = messageService.editMessage(messageId, content, userId);
-        notificationService.send(DtoMapper.map(message), message.getUsersToSendNotification(), EDIT_MESSAGE);
+        eventService.send(DtoMapper.map(message), message.getUsersToSendNotification(), EDIT_MESSAGE);
     }
 
     @Override
@@ -88,7 +97,7 @@ public class MessageFacadeImpl implements MessageFacade {
                     .setDialog(dialog)
                     .setStatus(READ);
 
-            notificationService.send(
+            eventService.send(
                     DtoMapper.map(event),
                     event.getUsersToSendNotification(),
                     CHANGE_STATUS
@@ -104,7 +113,7 @@ public class MessageFacadeImpl implements MessageFacade {
                     .setDialog(dialog)
                     .setStatus(READ);
 
-            notificationService.send(
+            eventService.send(
                     DtoMapper.map(event),
                     event.getDialog().getUsers().stream().filter(user -> !user.getUserId().equals(userId)).collect(toSet()),
                     CHANGE_STATUS

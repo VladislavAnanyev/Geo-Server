@@ -1,6 +1,7 @@
 package com.example.meetings.meeting.facade;
 
 import com.example.meetings.common.rabbit.eventtype.MeetingType;
+import com.example.meetings.common.service.EventService;
 import com.example.meetings.common.service.NotificationService;
 import com.example.meetings.common.utils.ProjectionUtil;
 import com.example.meetings.geolocation.model.Geolocation;
@@ -12,8 +13,12 @@ import com.example.meetings.meeting.service.MeetingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import static com.example.meetings.common.utils.Const.MEETING;
+import static com.example.meetings.common.utils.Const.MEETING_DESCRIPTION;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 @Service
@@ -24,6 +29,9 @@ public class GeolocationFacadeImpl implements GeolocationFacade {
 
     @Autowired
     private GeolocationService geolocationService;
+
+    @Autowired
+    private EventService eventService;
 
     @Autowired
     private NotificationService notificationService;
@@ -37,11 +45,14 @@ public class GeolocationFacadeImpl implements GeolocationFacade {
         newSingleThreadExecutor().execute(
                 () -> {
                     List<Meeting> meetings = meetingService.findNowMeetings(geolocation);
-                    meetings.forEach(meeting -> notificationService.send(
-                            projectionUtil.parse(meeting, MeetingViewForNotification.class),
-                            Set.of(meeting.getFirstUser(), meeting.getSecondUser()),
-                            MeetingType.MEETING
-                    ));
+                    meetings.forEach(meeting -> {
+                        eventService.send(
+                                projectionUtil.parse(meeting, MeetingViewForNotification.class),
+                                Set.of(meeting.getFirstUser(), meeting.getSecondUser()),
+                                MeetingType.MEETING
+                        );
+                        notificationService.send(MEETING, MEETING_DESCRIPTION, meeting);
+                    });
                 }
         );
     }
@@ -55,25 +66,22 @@ public class GeolocationFacadeImpl implements GeolocationFacade {
     @Override
     public GetGeolocationsResult getFriendsGeolocations(Long userId) {
         List<Geolocation> geolocations = geolocationService.getFriendsGeolocations(userId);
-        List<GeolocationDto> geolocationDtoList = new ArrayList<>();
-        for (Geolocation geolocation : geolocations) {
-            geolocationDtoList.add(
-                    new GeolocationDto()
-                            .setUserId(geolocation.getUser().getUserId())
-                            .setLat(geolocation.getLat())
-                            .setLng(geolocation.getLng())
-                            .setFirstName(geolocation.getUser().getFirstName())
-                            .setLastName(geolocation.getUser().getLastName())
-            );
-        }
 
         return new GetGeolocationsResult()
-                .setItems(geolocationDtoList);
+                .setItems(
+                        geolocations.stream()
+                                .map(geolocation -> new GeolocationDto()
+                                        .setUserId(geolocation.getUser().getUserId())
+                                        .setLat(geolocation.getLat())
+                                        .setLng(geolocation.getLng())
+                                        .setFirstName(geolocation.getUser().getFirstName())
+                                        .setLastName(geolocation.getUser().getLastName()))
+                                .collect(Collectors.toList())
+                );
     }
 
     @Override
     public List<Geolocation> getPeopleInSquare(Long userId, Geolocation geolocation, Integer size, String time) {
         return geolocationService.findInSquare(userId, geolocation, size, time);
     }
-
 }

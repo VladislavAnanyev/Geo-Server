@@ -108,7 +108,6 @@ public class MessageService {
     @Transactional
     public Message editMessage(Long messageId, String content, Long authUserId) {
         Message message = findMessageById(messageId);
-
         if (!isCanModifyMessage(message.getSender().getUserId(), authUserId)) {
             throw new SecurityException("Вы не можете изменить это сообщение");
         }
@@ -132,6 +131,7 @@ public class MessageService {
         message.setStatus(DELIVERED);
         updateMessageStatusHistory(sendMessageModel.getSenderId(), message, DELIVERED);
         dialog.setLastMessage(message);
+
         return messageRepository.save(message);
     }
 

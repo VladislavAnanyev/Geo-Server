@@ -28,13 +28,13 @@ public class ApiSigningInController {
     }
 
     @PostMapping("/signin/phone")
-    public GetAuthCodeResponse signInViaPhoneCodeRequest(@RequestBody AuthPhoneRequest request) {
+    public GetAuthCodeResponse signInViaPhoneCodeRequest(@Valid @RequestBody AuthPhoneRequest request) {
         AuthPhoneResult authPhoneResult = authFacade.signInViaPhone(request.getPhone());
         return new GetAuthCodeResponse(authPhoneResult);
     }
 
     @PostMapping("/refresh")
-    public AuthResponse getNewAccessToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+    public AuthResponse getNewAccessToken(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
         return new AuthResponse(
                 authFacade.getNewAccessToken(refreshTokenRequest.getRefreshToken())
         );

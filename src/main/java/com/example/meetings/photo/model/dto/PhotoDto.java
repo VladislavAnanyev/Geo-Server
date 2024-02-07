@@ -3,17 +3,17 @@ package com.example.meetings.photo.model.dto;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-@Data
+@Data //todo объединить с PhotoView
 @Accessors(chain = true)
-public class UploadPhotoResult {
+public class PhotoDto {
     /**
      * URI по которой доступна фотография
      */
-    private String uri;
+    private String url;
     /**
      * Идентификатор
      */
-    private Long id;
+    private Long photoId;
     /**
      * Текущая позиция
      */

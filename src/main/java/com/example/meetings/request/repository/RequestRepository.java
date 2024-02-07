@@ -24,5 +24,5 @@ public interface RequestRepository extends CrudRepository<Request, Long>, JpaRep
 
     List<RequestView> findAllBySenderUserIdAndStatus(Long userId, RequestStatus status);
 
-    List<Request> findBySenderUserIdAndToUserIdAndStatus(Long username, Long username1, RequestStatus pending);
+    boolean existBySenderUserIdAndToUserIdAndStatus(Long username, Long username1, RequestStatus pending);
 }

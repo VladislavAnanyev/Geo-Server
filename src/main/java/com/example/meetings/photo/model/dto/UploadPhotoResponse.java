@@ -7,5 +7,5 @@ import lombok.Data;
 @AllArgsConstructor
 @Data
 public class UploadPhotoResponse extends SuccessfulResponse {
-    private UploadPhotoResult result;
+    private PhotoDto result;
 }

@@ -14,8 +14,6 @@ public interface UserRepository extends CrudRepository<User, Long>, JpaRepositor
 
     boolean existsByUsername(String username);
 
-    UserCommonView findByUserId(Long userId);
-
     AuthUserView findAllByUserId(Long userId);
 
     ProfileView findUserByUserIdOrderByUsernameAscPhotosAsc(Long userId);

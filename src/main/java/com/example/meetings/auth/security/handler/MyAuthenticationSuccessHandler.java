@@ -48,12 +48,6 @@ public class MyAuthenticationSuccessHandler extends
         String targetUrl = determineTargetUrl(request, response, authentication);
 
         if (authentication instanceof OAuth2AuthenticationToken) {
-
-            /*
-              Автоматическая регистрация при входе через oauth2 если пользователь еще не зарегистирован
-             */
-            authService.signInViaExternalServiceToken(authentication);
-
             if (savedRequest != null) {
                 targetUrl = savedRequest.getRedirectUrl();
             } else {

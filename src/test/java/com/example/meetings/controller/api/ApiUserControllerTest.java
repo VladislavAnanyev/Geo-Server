@@ -3,6 +3,7 @@ package com.example.meetings.controller.api;
 import com.example.meetings.auth.service.TokenService;
 import com.example.meetings.user.model.GetAuthCodeResponse;
 import com.example.meetings.user.model.domain.User;
+import com.example.meetings.user.repository.DeviceRepository;
 import com.example.meetings.user.repository.UserRepository;
 import com.example.meetings.user.service.BusinessEmailSender;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -53,6 +54,9 @@ public class ApiUserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private DeviceRepository deviceRepository;
+
     @Test
     public void testGetAuthUserWithoutAuth() throws Exception {
         mockMvc.perform(get("/api/v1/user/auth").secure(true))
@@ -75,7 +79,8 @@ public class ApiUserControllerTest {
                 """
                                 {
                                     "username": "user1",
-                                    "password": "user1"
+                                    "password": "user1",
+                                    "fcmToken": "123"
                                 }
                         """;
 
@@ -84,6 +89,8 @@ public class ApiUserControllerTest {
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result.jwtToken").isString());
+
+        assertNotNull(deviceRepository.findByFcmToken("123"));
     }
 
     @Test

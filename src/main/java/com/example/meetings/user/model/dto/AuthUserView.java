@@ -16,8 +16,6 @@ public interface AuthUserView {
 
     List<PhotoView> getPhotos();
 
-    String getEmail();
-
     boolean isStatus();
 
     boolean isOnline();
