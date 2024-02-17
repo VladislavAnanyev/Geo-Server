@@ -45,7 +45,7 @@ public class RequestService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can not send request");
         }
 
-        boolean activeRequestExist = requestRepository.existBySenderUserIdAndToUserIdAndStatus(
+        boolean activeRequestExist = requestRepository.existsBySenderUserIdAndToUserIdAndStatus(
                 fromUserId,
                 toUserId,
                 PENDING
