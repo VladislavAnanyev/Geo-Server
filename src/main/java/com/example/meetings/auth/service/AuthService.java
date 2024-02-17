@@ -84,10 +84,6 @@ public class AuthService implements UserDetailsService {
             );
         }
 
-        if (registrationModel.getUsername().contains(" ")) {
-            throw new LogicException("exception.space.exist");
-        }
-
         User user = userFactory.create(registrationModel, type);
 
         return userRepository.save(user);

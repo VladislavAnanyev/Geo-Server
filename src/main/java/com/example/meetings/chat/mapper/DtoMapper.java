@@ -18,6 +18,7 @@ public class DtoMapper {
                 .setFirstName(user.getFirstName())
                 .setAvatar(user.getMainPhoto().getUrl())
                 .setLastName(user.getLastName())
+                .setOnline(user.isOnline())
                 .setLogin(user.getUsername());
     }
 

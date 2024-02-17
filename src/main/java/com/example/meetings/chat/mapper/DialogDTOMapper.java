@@ -33,6 +33,7 @@ public class DialogDTOMapper {
                 .setAvatar(user.getMainPhoto().getUrl())
                 .setFirstName(user.getFirstName())
                 .setLastName(user.getLastName())
+                .setOnline(user.isOnline())
                 .setLogin(user.getUsername())
                 .setUserId(user.getUserId())).collect(Collectors.toSet());
     }
