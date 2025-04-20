@@ -5,6 +5,8 @@ import com.example.meetings.meeting.model.dto.output.MeetingView;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface MeetingRepository extends CrudRepository<Meeting, Long> {
@@ -12,11 +14,12 @@ public interface MeetingRepository extends CrudRepository<Meeting, Long> {
     @Query(value = """
             SELECT *
             FROM MEETINGS
-            WHERE (FIRST_USER_ID = :firstUserId\s
-              AND SECOND_USER_ID = :secondUserId OR FIRST_USER_ID = :secondUserId\s
-                AND SECOND_USER_ID = :firstUserId) AND TIME BETWEEN CAST(:date AS TIMESTAMP) + INTERVAL '0 days'
-                 AND CAST(:date AS TIMESTAMP) + INTERVAL '1 day'""", nativeQuery = true)
-    List<Meeting> getMeetings(Long firstUserId, Long secondUserId, String date);
+            WHERE (FIRST_USER_ID = :firstUserId
+              AND SECOND_USER_ID = :secondUserId OR FIRST_USER_ID = :secondUserId
+                AND SECOND_USER_ID = :firstUserId)
+                AND TIME BETWEEN :startAt AND :endAt
+                """, nativeQuery = true)
+    List<Meeting> getMeetings(Long firstUserId, Long secondUserId, LocalDateTime startAt, LocalDateTime endAt);
 
     @Query(value = """
             SELECT MEETINGS.MEETING_ID AS meetingId, lat, lng, time, f.USER_ID AS firstUserId, S.USER_ID AS secondUserId
@@ -26,7 +29,7 @@ public interface MeetingRepository extends CrudRepository<Meeting, Long> {
             WHERE (FIRST_USER_ID = :userId
                           AND SECOND_USER_ID != :userId OR FIRST_USER_ID != :userId
                           AND SECOND_USER_ID = :userId)
-            AND CAST(TIME AS VARCHAR) LIKE CONCAT(:date, '%')""", nativeQuery = true)
-    List<MeetingView> getMyMeetings(Long userId, String date);
+            AND TIME >=:startAt AND TIME <=:endAt""", nativeQuery = true)
+    List<MeetingView> getMyMeetings(Long userId, LocalDateTime startAt, LocalDateTime endAt);
 
 }

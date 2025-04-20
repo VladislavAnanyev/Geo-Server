@@ -54,7 +54,7 @@ public class NotificationService {
                             .setNotification(notification)
                             .build()
             );
-        } catch (FirebaseMessagingException e) {
+        } catch (Exception e) {
             log.error("Ошибка при отправке push уведомления", e);
         }
     }

@@ -7,6 +7,7 @@ import com.example.meetings.user.repository.DeviceRepository;
 import com.example.meetings.user.repository.UserRepository;
 import com.example.meetings.user.service.BusinessEmailSender;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.FirebaseApp;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -35,6 +36,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles({"test"})
 public class ApiUserControllerTest {
+
+    @MockBean
+    private FirebaseApp firebaseApp;
 
     @Autowired
     private MockMvc mockMvc;

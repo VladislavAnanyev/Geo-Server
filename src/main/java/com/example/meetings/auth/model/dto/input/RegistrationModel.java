@@ -11,7 +11,7 @@ public class RegistrationModel {
 
     @NotNull
     @NotBlank
-    private String username;
+    private String phoneNumber;
 
     @NotNull
     @NotBlank

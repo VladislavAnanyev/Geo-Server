@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -101,10 +102,16 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(LogicException.class)
     public ResponseEntity<ErrorResponse> handleException(LogicException e, Locale locale) {
+        String message;
+        try {
+            message = messageSource.getMessage(e.getMessage(), null, locale);
+        } catch (NoSuchMessageException ex) {
+            message = e.getMessage();
+        }
 
         ErrorResponse errorResponse = new ErrorResponse();
         ApiError apiError = new ApiError();
-        apiError.setMessage(messageSource.getMessage(e.getMessage(), null, locale));
+        apiError.setMessage(message);
         errorResponse.setError(apiError);
 
         return new ResponseEntity<>(errorResponse, BAD_REQUEST);

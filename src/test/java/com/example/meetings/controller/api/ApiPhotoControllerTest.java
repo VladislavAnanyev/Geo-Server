@@ -2,11 +2,13 @@ package com.example.meetings.controller.api;
 
 import com.example.meetings.photo.model.domain.Photo;
 import com.example.meetings.photo.repository.PhotoRepository;
+import com.google.firebase.FirebaseApp;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -19,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -32,6 +35,9 @@ public class ApiPhotoControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @MockBean
+    private FirebaseApp firebaseApp;
+
     @Autowired
     private PhotoRepository photoRepository;
 
@@ -39,7 +45,8 @@ public class ApiPhotoControllerTest {
     @WithUserDetails(value = "user5")
     public void testDeletePhotoWhenPhotoSizeIsOne() throws Exception {
         mockMvc.perform(delete("/api/v1/user/photo/69").secure(true))
-                .andExpect(status().isOk())
+                .andExpect(status().isBadRequest())
+                .andDo(print())
                 .andExpect(jsonPath("$.status").value("FAIL"));
     }
 

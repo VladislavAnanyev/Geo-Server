@@ -2,6 +2,7 @@ package com.example.meetings.request.service;
 
 import com.example.meetings.auth.security.model.AuthUserDetails;
 import com.example.meetings.chat.repository.MessageRepository;
+import com.example.meetings.common.exception.LogicException;
 import com.example.meetings.meeting.model.domain.Meeting;
 import com.example.meetings.meeting.repository.MeetingRepository;
 import com.example.meetings.request.model.domain.Request;
@@ -42,7 +43,7 @@ public class RequestService {
     public Request createRequest(Long meetingId, Long fromUserId, Long toUserId, Long messageId) {
         Meeting meeting = meetingRepository.findById(meetingId).orElseThrow(() -> new EntityNotFoundException("Встреча не найдена"));
         if (!isPossibleToSendRequest(meetingId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can not send request");
+            throw new LogicException("Can not send request");
         }
 
         boolean activeRequestExist = requestRepository.existsBySenderUserIdAndToUserIdAndStatus(

@@ -5,13 +5,18 @@ import com.example.meetings.geolocation.service.GeolocationService;
 import com.example.meetings.meeting.model.domain.Meeting;
 import com.example.meetings.meeting.model.dto.output.MeetingView;
 import com.example.meetings.meeting.repository.MeetingRepository;
+import com.example.meetings.user.model.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
+
+import static java.util.Objects.isNull;
 
 @Service
 @Slf4j
@@ -24,21 +29,19 @@ public class MeetingService {
     @Autowired
     private GeolocationService geolocationService;
 
-    public List<MeetingView> getMyMeetings(Long userId, String date) {
-        if (date == null) {
-            Calendar calendar = new GregorianCalendar();
-            Timestamp timestamp = Timestamp.from(calendar.toInstant());
-            date = timestamp.toString().substring(0, 10);
-        }
+    public List<MeetingView> getMyMeetings(Long userId, LocalDate startAt, LocalDate endAt) {
+        startAt = isNull(startAt) ? LocalDate.now() : startAt;
+        endAt = isNull(endAt) ? LocalDate.now() : endAt;
 
-        return meetingRepository.getMyMeetings(userId, date);
+        return meetingRepository.getMyMeetings(userId, startAt.atStartOfDay(), endAt.plusDays(1).atStartOfDay());
     }
 
     public List<Meeting> findNowMeetings(Geolocation geolocation) {
-        String time = geolocation.getUpdatedAt().toString();
+        LocalDateTime time = geolocation.getUpdatedAt();
+        User geolocationSender = geolocation.getUser();
 
         List<Geolocation> peopleNearMe = geolocationService.findInSquare(
-                geolocation.getUser().getUserId(), geolocation,
+                geolocationSender.getUserId(), geolocation,
                 20, time
         );
 
@@ -48,14 +51,15 @@ public class MeetingService {
         }
 
         for (Geolocation peopleGeolocation : peopleNearMe) {
-            List<Meeting> meetings = meetingRepository.getMeetings(geolocation.getUser().getUserId(),
+            List<Meeting> meetings = meetingRepository.getMeetings(
+                    geolocationSender.getUserId(),
                     peopleGeolocation.getUser().getUserId(),
-                    time.substring(0, 10)
+                    time.toLocalDate().atStartOfDay(), time.toLocalDate().plusDays(1).atStartOfDay()
             );
 
             if (meetings.size() == 0) {
-                if (!geolocation.getUser().getUserId().equals(peopleGeolocation.getUser().getUserId())) {
-                    Meeting meeting = new Meeting().setFirstUser(geolocation.getUser())
+                if (!geolocationSender.getUserId().equals(peopleGeolocation.getUser().getUserId())) {
+                    Meeting meeting = new Meeting().setFirstUser(geolocationSender)
                             .setSecondUser(peopleGeolocation.getUser())
                             .setLat(geolocation.getLat())
                             .setLng(geolocation.getLng())

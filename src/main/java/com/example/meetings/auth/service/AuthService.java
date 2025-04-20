@@ -1,6 +1,5 @@
 package com.example.meetings.auth.service;
 
-import com.example.meetings.auth.model.RegistrationType;
 import com.example.meetings.auth.model.UserToken;
 import com.example.meetings.auth.model.dto.input.AuthRequest;
 import com.example.meetings.auth.model.dto.input.RegistrationModel;
@@ -20,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -72,11 +72,10 @@ public class AuthService implements UserDetailsService {
      * а также создается обмен в rabbitmq для отправления уведомлений
      *
      * @param registrationModel - модель для регистрации
-     * @param type              - тип регистрации
      */
     @Transactional
-    public User saveUser(RegistrationModel registrationModel, RegistrationType type) {
-        Optional<User> optionalUser = userRepository.findUserByUsername(registrationModel.getUsername());
+    public User saveUser(RegistrationModel registrationModel) {
+        Optional<User> optionalUser = userRepository.findUserByUsername(registrationModel.getPhoneNumber());
         if (optionalUser.isPresent()) {
             throw new AlreadyRegisterException(
                     "exception.already.register",
@@ -84,7 +83,7 @@ public class AuthService implements UserDetailsService {
             );
         }
 
-        User user = userFactory.create(registrationModel, type);
+        User user = userFactory.create(registrationModel);
 
         return userRepository.save(user);
     }
@@ -97,6 +96,11 @@ public class AuthService implements UserDetailsService {
      */
     public User authenticate(AuthRequest authRequest) {
         try {
+            User user = findUserByUsername(authRequest.getUsername());
+            if (LocalDateTime.now().isAfter(user.getSignInViaPhoneCodeExpiration())) {
+                throw new CodeExpiredException("exception.code.expired", GlobalErrorCode.ERROR_CODE_EXPIRED);
+            }
+
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             authRequest.getUsername(),
@@ -129,21 +133,17 @@ public class AuthService implements UserDetailsService {
      * Или для входа, после выхода из аккаунта
      *
      * @param phone - номер телефона
-     * @return - код для входа в систему
      */
     @Transactional
-    public String setOneTimePasswordCode(String phone) {
+    public void setOneTimePasswordCode(String phone, String code) {
         Optional<User> optionalUser = userRepository.findUserByUsername(phone);
         if (optionalUser.isEmpty()) {
             throw new UserNotFoundException("exception.user.not.found", GlobalErrorCode.ERROR_USER_NOT_FOUND);
         }
 
         User user = optionalUser.get();
-        String code = CodeUtil.generateShortCode();
         user.setPassword(passwordEncoder.encode(code));
         user.setSignInViaPhoneCodeExpiration(now().plusMinutes(3));
-
-        return code;
     }
 
     public UserToken updateRefreshToken(String oldRefreshToken) {

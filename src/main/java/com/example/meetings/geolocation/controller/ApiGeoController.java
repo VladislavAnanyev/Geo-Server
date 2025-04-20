@@ -2,7 +2,7 @@ package com.example.meetings.geolocation.controller;
 
 import com.example.meetings.auth.security.model.AuthUserDetails;
 import com.example.meetings.common.model.SuccessfulResponse;
-import com.example.meetings.meeting.facade.GeolocationFacade;
+import com.example.meetings.geolocation.facade.GeolocationFacade;
 import com.example.meetings.meeting.model.*;
 import com.example.meetings.meeting.model.dto.input.GeolocationRequest;
 import io.swagger.annotations.ApiOperation;
@@ -17,13 +17,6 @@ public class ApiGeoController {
 
     @Autowired
     private GeolocationFacade geolocationFacade;
-
-    @ApiOperation(value = "Получить список встреч за указанную дату")
-    @GetMapping(path = "/meetings")
-    public GetMeetingsResponse getMeetings(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser,
-                                           @RequestParam(required = false) String date) {
-        return new GetMeetingsResponse(geolocationFacade.getMeetings(authUser.getUserId(), date));
-    }
 
     @ApiOperation(value = "Получить информацию о геолокации друзей")
     @GetMapping(path = "/geolocations")

@@ -7,11 +7,13 @@ import com.example.meetings.chat.model.dto.output.CreateDialogResponse;
 import com.example.meetings.chat.repository.DialogRepository;
 import com.example.meetings.chat.repository.MessageRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.FirebaseApp;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
@@ -39,6 +41,9 @@ public class ApiChatControllerTest {
 
     @Autowired
     private DialogRepository dialogRepository;
+
+    @MockBean
+    private FirebaseApp firebaseApp;
 
     @Autowired
     private MessageRepository messageRepository;

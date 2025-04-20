@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 public interface AuthFacade {
     AuthResult signIn(AuthRequest authRequest);
 
-    AuthPhoneResult signUpViaPhone(RegistrationModel registrationModel);
+    void signUpViaPhone(RegistrationModel registrationModel);
 
-    AuthPhoneResult signInViaPhone(String phone);
+    void signInViaPhone(String phone);
 
     AuthResult getNewAccessToken(String refreshToken);
 }

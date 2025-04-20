@@ -4,7 +4,7 @@ import com.example.meetings.geolocation.model.Geolocation;
 import com.example.meetings.geolocation.model.GeolocationHistory;
 import com.example.meetings.geolocation.repository.GeolocationHistoryRepository;
 import com.example.meetings.meeting.model.GeolocationModel;
-import com.example.meetings.meeting.repository.GeolocationRepository;
+import com.example.meetings.geolocation.repository.GeolocationRepository;
 import com.example.meetings.user.model.domain.User;
 import com.example.meetings.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +63,7 @@ public class GeolocationService {
         );
     }
 
-    public List<Geolocation> findInSquare(Long authUserId, Geolocation myGeolocation, Integer size, String time) {
+    public List<Geolocation> findInSquare(Long authUserId, Geolocation myGeolocation, Integer size, LocalDateTime time) {
         double myLatitude = myGeolocation.getLat(); //Интересующие нас координаты широты
         double myLongitude = myGeolocation.getLng();  //Интересующие нас координаты долготы
 
@@ -75,7 +75,8 @@ public class GeolocationService {
 
         return geolocationRepository.findInSquare(
                 myLatitude, myLongitude, aroundLat,
-                aroundLng, userService.loadUserByUserIdProxy(authUserId).getUserId(), time
+                aroundLng, userService.loadUserByUserIdProxy(authUserId).getUserId(),
+                time.minusMinutes(1), time.plusMinutes(1)
         );
     }
 

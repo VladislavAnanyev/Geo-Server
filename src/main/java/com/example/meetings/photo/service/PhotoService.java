@@ -115,7 +115,7 @@ public class PhotoService {
         }
 
         if (photoRepository.getPhotoCountByUserId(authUserId) <= 1) {
-            throw new LogicException("You must have at least one photo");
+            throw new LogicException("exception.photo.must.exist");
         }
 
         List<Photo> photos = photoRepository.findPhotosByUserId(authUserId);

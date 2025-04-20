@@ -6,6 +6,7 @@ import com.example.meetings.auth.model.dto.input.AuthPhoneRequest;
 import com.example.meetings.auth.model.dto.input.AuthRequest;
 import com.example.meetings.auth.model.dto.output.AuthPhoneResult;
 import com.example.meetings.auth.model.dto.output.AuthResponse;
+import com.example.meetings.common.model.SuccessfulResponse;
 import com.example.meetings.user.model.GetAuthCodeResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -28,15 +29,13 @@ public class ApiSigningInController {
     }
 
     @PostMapping("/signin/phone")
-    public GetAuthCodeResponse signInViaPhoneCodeRequest(@Valid @RequestBody AuthPhoneRequest request) {
-        AuthPhoneResult authPhoneResult = authFacade.signInViaPhone(request.getPhone());
-        return new GetAuthCodeResponse(authPhoneResult);
+    public SuccessfulResponse signInViaPhoneCodeRequest(@Valid @RequestBody AuthPhoneRequest request) {
+        authFacade.signInViaPhone(request.getPhone());
+        return new SuccessfulResponse();
     }
 
     @PostMapping("/refresh")
     public AuthResponse getNewAccessToken(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
-        return new AuthResponse(
-                authFacade.getNewAccessToken(refreshTokenRequest.getRefreshToken())
-        );
+        return new AuthResponse(authFacade.getNewAccessToken(refreshTokenRequest.getRefreshToken()));
     }
 }

@@ -1,10 +1,11 @@
-package com.example.meetings.meeting.repository;
+package com.example.meetings.geolocation.repository;
 
 import com.example.meetings.geolocation.model.Geolocation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface GeolocationRepository extends CrudRepository<Geolocation, String>, JpaRepository<Geolocation, String> {
@@ -25,21 +26,21 @@ public interface GeolocationRepository extends CrudRepository<Geolocation, Strin
     /**
      * Найти пользователей рядом
      *
-     * @param myLat
-     * @param myLng
+     * @param lat
+     * @param lng
      * @param aroundLat
      * @param aroundLng
      * @param userId
-     * @param time
+     * @param startAt
      * @return
      */
     @Query(value = """
             SELECT *
             FROM GEOLOCATIONS
-            WHERE LAT BETWEEN :myLat - :aroundLat AND :myLat + :aroundLat
-              AND LNG BETWEEN :myLng - :aroundLng AND :myLng + :aroundLng
-              AND UPDATED_AT BETWEEN CAST(:time AS TIMESTAMP) - INTERVAL '1 minute'
-                AND CAST(:time AS TIMESTAMP) + INTERVAL '1 minute' AND user_id != :userId""", nativeQuery = true)
-    List<Geolocation> findInSquare(Double myLat, Double myLng, Double aroundLat, Double aroundLng, Long userId, String time);
+            WHERE LAT BETWEEN :lat - :aroundLat AND :lat + :aroundLat
+              AND LNG BETWEEN :lng - :aroundLng AND :lng + :aroundLng
+              AND UPDATED_AT BETWEEN :startAt AND :endAt AND user_id != :userId""", nativeQuery = true)
+    List<Geolocation> findInSquare(Double lat, Double lng, Double aroundLat,
+                                   Double aroundLng, Long userId, LocalDateTime startAt, LocalDateTime endAt);
 }
 

@@ -17,8 +17,6 @@ public class SendMessageModel {
     @NotNull
     @NotBlank
     private String content;
-    @NotNull
-    @NotBlank
     private String uniqueCode;
     private ForwardedMessages forwardedMessages;
     private List<FileResponse> files;

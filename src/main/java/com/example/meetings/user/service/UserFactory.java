@@ -1,11 +1,9 @@
 package com.example.meetings.user.service;
 
-import com.example.meetings.auth.model.RegistrationType;
 import com.example.meetings.auth.model.dto.input.RegistrationModel;
 import com.example.meetings.photo.model.domain.Photo;
 import com.example.meetings.user.model.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -20,9 +18,9 @@ public class UserFactory {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public User create(RegistrationModel registrationModel, RegistrationType type) {
+    public User create(RegistrationModel registrationModel) {
         User user = new User();
-        user.setUsername(registrationModel.getUsername());
+        user.setUsername(registrationModel.getPhoneNumber());
         user.setFirstName(registrationModel.getFirstName());
         user.setLastName(registrationModel.getLastName());
         user.setPassword(passwordEncoder.encode(registrationModel.getPassword()));
