@@ -2,15 +2,13 @@ package com.example.meetings.integration.idirect;
 
 import com.example.meetings.integration.idirect.dto.IDirectMessageRequest;
 import com.example.meetings.integration.idirect.dto.IDirectMessageResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -24,6 +22,8 @@ import static org.springframework.http.HttpMethod.POST;
 public class IDirectClient {
 
     private final RestTemplate restTemplate;
+    @Value("${idirect.code}")
+    private String code;
 
     public IDirectClient(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -47,7 +47,7 @@ public class IDirectClient {
         return new HttpHeaders(
                 new LinkedMultiValueMap<>(
                         Map.of(
-                                "Authorization", List.of("Basic ODE3OTpkN0tud1JXcTdQSmZRQzdKYTFEVmhY"),
+                                "Authorization", List.of(code),
                                 HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_JSON_VALUE)
                         )
                 )

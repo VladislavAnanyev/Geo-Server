@@ -62,4 +62,11 @@ public class ApiRequestController {
                 requestFacade.getSentToUserRequests(user.getUserId())
         );
     }
+
+    @PostMapping(path = "/requests/meeting/{meetingId}")
+    @ApiOperation(value = "Не показывать указанную встречу в рекомендациях сегодня")
+    public SuccessfulResponse doNotShowInRecommendation(@ApiIgnore @AuthenticationPrincipal AuthUserDetails user, @PathVariable Long meetingId) {
+        requestFacade.doNotShowInRecommendation(meetingId, user.getUserId());
+        return new SuccessfulResponse();
+    }
 }

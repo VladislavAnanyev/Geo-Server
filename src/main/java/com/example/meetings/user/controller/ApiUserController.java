@@ -2,6 +2,7 @@ package com.example.meetings.user.controller;
 
 import com.example.meetings.auth.security.model.AuthUserDetails;
 import com.example.meetings.user.facade.UserFacade;
+import com.example.meetings.user.model.ChangeUserRequest;
 import com.example.meetings.user.model.GetAuthUserResponse;
 import com.example.meetings.user.model.GetUserProfileResponse;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,11 +26,15 @@ public class ApiUserController {
         );
     }
 
+    @PostMapping(path = "/user/change")
+    public GetUserProfileResponse changeUser(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser, @RequestBody ChangeUserRequest request) {
+        userFacade.changeUser(authUser.getUserId(), request);
+        return new GetUserProfileResponse(userFacade.getUserProfileById(authUser.getUserId()));
+    }
+
     @GetMapping(path = "/user/{userId}/profile")
     public GetUserProfileResponse getProfile(@PathVariable Long userId) {
-        return new GetUserProfileResponse(
-                userFacade.getUserProfileById(userId)
-        );
+        return new GetUserProfileResponse(userFacade.getUserProfileById(userId));
     }
 
 }

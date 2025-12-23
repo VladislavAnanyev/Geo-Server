@@ -11,7 +11,6 @@ public class UserDto {
     @JsonProperty("username")
     private String login;
     private String firstName;
-    private String lastName;
     private boolean online;
     private String avatar;
     private String meta;

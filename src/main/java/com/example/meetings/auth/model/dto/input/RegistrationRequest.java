@@ -16,10 +16,6 @@ public class RegistrationRequest {
 
     @NotNull
     @NotBlank
-    private String lastName;
-
-    @NotNull
-    @NotBlank
     @Size(min = 5)
     private String password;
 }

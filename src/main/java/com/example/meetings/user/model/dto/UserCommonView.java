@@ -12,9 +12,7 @@ public interface UserCommonView {
 
     String getFirstName();
 
-    String getLastName();
-
-    @Value("target.mainPhoto.url")
+    @Value("#{target.mainPhoto.url}")
     String getAvatar();
 
     String getOnline();

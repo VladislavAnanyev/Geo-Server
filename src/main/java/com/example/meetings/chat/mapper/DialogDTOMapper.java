@@ -32,7 +32,6 @@ public class DialogDTOMapper {
         return dialog.getUsers().stream().map(user -> new UserDto()
                 .setAvatar(user.getMainPhoto().getUrl())
                 .setFirstName(user.getFirstName())
-                .setLastName(user.getLastName())
                 .setOnline(user.isOnline())
                 .setLogin(user.getUsername())
                 .setUserId(user.getUserId())).collect(Collectors.toSet());
@@ -80,7 +79,7 @@ public class DialogDTOMapper {
                     .findFirst()
                     .orElseThrow();
 
-            return companion.getFirstName() + " " + companion.getLastName();
+            return companion.getFirstName();
         }
 
         throw new UnsupportedOperationException("Не поддерживаемый тип диалога");

@@ -1,5 +1,6 @@
 package com.example.meetings.user.facade;
 
+import com.example.meetings.user.model.ChangeUserRequest;
 import com.example.meetings.user.model.dto.AuthUserView;
 import com.example.meetings.user.model.dto.ProfileView;
 import com.example.meetings.user.service.UserService;
@@ -22,5 +23,10 @@ public class UserFacadeImpl implements UserFacade {
     @Override
     public ProfileView getUserProfileById(Long userId) {
         return userService.getUserProfileById(userId);
+    }
+
+    @Override
+    public void changeUser(Long userId, ChangeUserRequest request) {
+        userService.changeUser(userId, request);
     }
 }

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-@ConditionalOnProperty(value = "codesender.enabled", havingValue = "false")
+@ConditionalOnProperty(value = "codesender.type", havingValue = "mock")
 public class MockCodeSenderService implements CodeSenderService {
     @Override
     public void sendCodeToPhone(String code, String phone) {

@@ -52,8 +52,8 @@ public class GeolocationFacadeImpl implements GeolocationFacade {
         searchMeetings(geolocation);
     }
 
-    // todo проверить
-    @Async("threadPoolTaskExecutor")
+
+//    @Async("threadPoolTaskExecutor") // todo проверить
     public void searchMeetings(Geolocation geolocation) {
         List<Meeting> meetings = meetingService.findNowMeetings(geolocation);
         meetings.forEach(meeting -> {
@@ -77,8 +77,7 @@ public class GeolocationFacadeImpl implements GeolocationFacade {
                                         .setUserId(geolocation.getUser().getUserId())
                                         .setLat(geolocation.getLat())
                                         .setLng(geolocation.getLng())
-                                        .setFirstName(geolocation.getUser().getFirstName())
-                                        .setLastName(geolocation.getUser().getLastName()))
+                                        .setFirstName(geolocation.getUser().getFirstName()))
                                 .collect(toList())
                 );
     }

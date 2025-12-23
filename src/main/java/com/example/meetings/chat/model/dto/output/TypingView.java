@@ -9,9 +9,6 @@ public interface TypingView {
     @Value("#{target.user.firstName}")
     String getFirstName();
 
-    @Value("#{target.user.lastName}")
-    String getLastName();
-
     @Value("#{target.dialogId}")
     Long getDialogId();
 }

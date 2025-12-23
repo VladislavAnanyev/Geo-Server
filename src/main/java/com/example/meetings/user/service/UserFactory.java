@@ -22,7 +22,6 @@ public class UserFactory {
         User user = new User();
         user.setUsername(registrationModel.getPhoneNumber());
         user.setFirstName(registrationModel.getFirstName());
-        user.setLastName(registrationModel.getLastName());
         user.setPassword(passwordEncoder.encode(registrationModel.getPassword()));
         user.setStatus(true);
         user.setMainPhoto(

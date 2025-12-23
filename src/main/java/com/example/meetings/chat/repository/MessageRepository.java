@@ -22,7 +22,7 @@ public interface MessageRepository extends
     @Query(value = """
             SELECT MESSAGES.MESSAGE_ID AS messageId, content, DIALOGS.dialog_id AS dialogId,
                    MESSAGES.SENDER_USER_ID AS userId, U.USERNAME AS username,
-                   first_name AS firstName, ONLINE AS online, last_name AS lastName,
+                   first_name AS firstName, ONLINE AS online,
                    MESSAGES.status AS status, timestamp AS timestamp
             FROM DIALOGS
                      LEFT OUTER JOIN MESSAGES

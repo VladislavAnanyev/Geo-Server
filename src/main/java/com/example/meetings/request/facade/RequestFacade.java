@@ -7,6 +7,8 @@ public interface RequestFacade {
 
     AcceptRequestResult acceptRequest(Long requestId, Long userId);
 
+    void doNotShowInRecommendation(Long meetingId, Long userId);
+
     void rejectRequest(Long requestId, Long userId);
 
     GetSentFromUserRequestsResult getSentToUserRequests(Long userId);

@@ -35,11 +35,6 @@ public class GeolocationDto {
     private String firstName;
 
     /**
-     * Фамилия пользователя
-     */
-    private String lastName;
-
-    /**
      * Никнейм пользователя
      */
     private String username;

@@ -40,7 +40,7 @@ public class RequestService {
     private MessageRepository messageRepository;
 
     @Transactional
-    public Request createRequest(Long meetingId, Long fromUserId, Long toUserId, Long messageId) {
+    public Request createRequest(Long meetingId, Long fromUserId, Long toUserId, Long messageId, RequestStatus status) {
         Meeting meeting = meetingRepository.findById(meetingId).orElseThrow(() -> new EntityNotFoundException("Встреча не найдена"));
         if (!isPossibleToSendRequest(meetingId)) {
             throw new LogicException("Can not send request");
@@ -61,7 +61,7 @@ public class RequestService {
                 .setTo(userService.loadUserByUserId(toUserId))
                 .setMeeting(meeting)
                 .setMessage(isNull(messageId) ? null : messageRepository.getOne(messageId))
-                .setStatus(PENDING);
+                .setStatus(status);
 
         return requestRepository.save(request);
     }
@@ -77,7 +77,7 @@ public class RequestService {
     public boolean isPossibleToSendRequest(Long meetingId) {
         List<Request> allRequests = requestRepository.findAllByMeetingMeetingId(meetingId);
 
-        if (allRequests.size() == 0) {
+        if (allRequests.isEmpty()) {
             return true;
         }
 
@@ -91,7 +91,7 @@ public class RequestService {
                 request -> request.getStatus().equals(REJECTED) || request.getStatus().equals(ACCEPTED)
         );
 
-        return sentRequest.size() == 0 && !isRequestWithStatusRejectedOrAcceptedExist;
+        return sentRequest.isEmpty() && !isRequestWithStatusRejectedOrAcceptedExist;
     }
 
     public List<RequestView> getRequestsByUser(Long userId) {

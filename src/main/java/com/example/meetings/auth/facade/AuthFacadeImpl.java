@@ -5,18 +5,24 @@ import com.example.meetings.auth.model.dto.input.AuthRequest;
 import com.example.meetings.auth.model.dto.input.RegistrationModel;
 import com.example.meetings.auth.model.dto.output.AuthResult;
 import com.example.meetings.auth.service.*;
+import com.example.meetings.chat.model.SendMessageModel;
+import com.example.meetings.chat.service.MessageService;
 import com.example.meetings.common.service.CodeSenderService;
 import com.example.meetings.common.utils.*;
 import com.example.meetings.user.model.domain.User;
+import com.example.meetings.user.service.FriendService;
 import com.example.meetings.user.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
+
+import static com.example.meetings.util.Constants.ADMIN_ID;
+import static com.example.meetings.util.Constants.CONTENT;
 
 @Service
 @RequiredArgsConstructor
 public class AuthFacadeImpl implements AuthFacade {
-
     private final AuthService authService;
     private final JWTUtil jwtUtil;
     private final RabbitUtil rabbitUtil;
@@ -25,6 +31,8 @@ public class AuthFacadeImpl implements AuthFacade {
     private final CodeSenderService codeSenderService;
     private final TokenService tokenService;
     private final UserService userService;
+    private final MessageService messageService;
+    private final FriendService friendService;
 
     @Override
     public AuthResult signIn(AuthRequest authRequest) {
@@ -44,14 +52,23 @@ public class AuthFacadeImpl implements AuthFacade {
         String code = codeGenerationService.generate();
         data.setPassword(code);
 
-        User user = authService.saveUser(data);
+        User user = userService.saveUser(data);
         codeSenderService.sendCodeToPhone(code, data.getPhoneNumber());
         rabbitUtil.createExchange(user.getUserId());
+        Long dialogId = messageService.createDialog(ADMIN_ID, user.getUserId());
+        messageService.saveMessage(
+                new SendMessageModel()
+                        .setSenderId(ADMIN_ID)
+                        .setContent(CONTENT)
+                        .setDialogId(dialogId)
+                        .setUniqueCode(UUID.randomUUID().toString())
+        );
+        friendService.makeFriends(ADMIN_ID, user.getUserId());
     }
 
     @Override
     public void signInViaPhone(String phone) {
-        if (!authService.isUserExist(phone)) {
+        if (!userService.isUserExist(phone)) {
             signUpViaPhone(new RegistrationModel().setPhoneNumber(phone));
             return;
         }

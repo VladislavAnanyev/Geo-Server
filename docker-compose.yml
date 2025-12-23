@@ -9,8 +9,6 @@ services:
     environment:
       - "SPRING_PROFILES_ACTIVE=prod"
       - "SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/meetings"
-    volumes:
-      -
     depends_on:
       - rabbitmq
       - db

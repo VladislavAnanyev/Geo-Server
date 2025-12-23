@@ -42,11 +42,11 @@ public class MeetingService {
 
         List<Geolocation> peopleNearMe = geolocationService.findInSquare(
                 geolocationSender.getUserId(), geolocation,
-                20, time
+                50, time
         );
 
         List<Meeting> newMeetings = new ArrayList<>();
-        if (peopleNearMe.size() == 0) {
+        if (peopleNearMe.isEmpty()) {
             return newMeetings;
         }
 
@@ -57,7 +57,7 @@ public class MeetingService {
                     time.toLocalDate().atStartOfDay(), time.toLocalDate().plusDays(1).atStartOfDay()
             );
 
-            if (meetings.size() == 0) {
+            if (meetings.isEmpty()) {
                 if (!geolocationSender.getUserId().equals(peopleGeolocation.getUser().getUserId())) {
                     Meeting meeting = new Meeting().setFirstUser(geolocationSender)
                             .setSecondUser(peopleGeolocation.getUser())
@@ -74,4 +74,7 @@ public class MeetingService {
         return newMeetings;
     }
 
+    public Meeting findMeetingById(Long meetingId) {
+        return meetingRepository.findById(meetingId).orElseThrow();
+    }
 }

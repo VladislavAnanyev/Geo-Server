@@ -1,7 +1,10 @@
 package com.example.meetings.user.service;
 
+import com.example.meetings.auth.model.dto.input.RegistrationModel;
+import com.example.meetings.common.exception.AlreadyRegisterException;
 import com.example.meetings.common.exception.GlobalErrorCode;
 import com.example.meetings.common.exception.UserNotFoundException;
+import com.example.meetings.user.model.ChangeUserRequest;
 import com.example.meetings.user.model.domain.User;
 import com.example.meetings.user.model.dto.*;
 import com.example.meetings.user.repository.UserRepository;
@@ -13,12 +16,18 @@ import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+import static com.example.meetings.util.Constants.DEFAULT_FIRST_NAME;
+import static com.example.meetings.util.Constants.DEFAULT_LAST_NAME;
+
 
 @Service
 public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UserFactory userFactory;
 
     public AuthUserView getAuthUserInfo(Long userId) {
         return userRepository.findAllByUserId(userId);
@@ -40,6 +49,13 @@ public class UserService {
         user.removeFriend(friend);
     }
 
+    @Transactional
+    public void changeUser(Long userId, ChangeUserRequest request) {
+        User user = loadUserByUserId(userId);
+        user.setDescription(request.getDescription());
+        user.setFirstName(request.getFirstName());
+    }
+
     public User loadUserByUserId(Long userId) {
         Optional<User> user = userRepository.findById(userId);
         if (user.isEmpty()) {
@@ -51,5 +67,40 @@ public class UserService {
 
     public User loadUserByUserIdProxy(Long userId) throws UsernameNotFoundException {
         return userRepository.getOne(userId);
+    }
+
+    /**
+     * Регистрация в системе. Пользователь сохраняется в БД, ему отправляется приветственное сообщение на почту,
+     * а также создается обмен в rabbitmq для отправления уведомлений
+     *
+     * @param registrationModel - модель для регистрации
+     */
+    @Transactional
+    public User saveUser(RegistrationModel registrationModel) {
+        Optional<User> optionalUser = userRepository.findUserByUsername(registrationModel.getPhoneNumber());
+        if (optionalUser.isPresent()) {
+            throw new AlreadyRegisterException(
+                    "exception.already.register",
+                    GlobalErrorCode.ERROR_USER_ALREADY_REGISTERED
+            );
+        }
+
+        User user = userFactory.create(registrationModel);
+
+        if (user.getFirstName() == null) {
+            user.setFirstName(DEFAULT_FIRST_NAME + " " + DEFAULT_LAST_NAME);
+        }
+
+        return userRepository.save(user);
+    }
+
+    /**
+     * Проверка существования пользователя с указанным username при входе
+     *
+     * @param username - проверяемое имя пользователя
+     * @return true - существует
+     */
+    public boolean isUserExist(String username) {
+        return userRepository.existsByUsername(username);
     }
 }

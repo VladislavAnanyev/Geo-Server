@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @Service
-@ConditionalOnProperty(value = "codesender.enabled", havingValue = "true")
+@ConditionalOnProperty(value = "codesender.type", havingValue = "idirect")
 public class IDirectSenderService implements CodeSenderService {
 
     public static final String VOICECODE = "VOICECODE";

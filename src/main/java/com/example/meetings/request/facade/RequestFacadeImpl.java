@@ -8,9 +8,14 @@ import com.example.meetings.common.rabbit.eventtype.RequestType;
 import com.example.meetings.common.service.EventService;
 import com.example.meetings.common.service.NotificationService;
 import com.example.meetings.common.utils.ProjectionUtil;
+import com.example.meetings.meeting.model.domain.Meeting;
+import com.example.meetings.meeting.service.MeetingService;
 import com.example.meetings.request.model.domain.Request;
 import com.example.meetings.request.model.domain.RequestStatus;
-import com.example.meetings.request.model.dto.output.*;
+import com.example.meetings.request.model.dto.output.AcceptRequestResult;
+import com.example.meetings.request.model.dto.output.GetRequestsToUserResult;
+import com.example.meetings.request.model.dto.output.GetSentFromUserRequestsResult;
+import com.example.meetings.request.model.dto.output.RequestView;
 import com.example.meetings.request.service.RequestService;
 import com.example.meetings.user.model.dto.UserCommonView;
 import com.example.meetings.user.service.FriendService;
@@ -23,6 +28,8 @@ import java.util.Set;
 
 import static com.example.meetings.common.utils.Const.REQUEST;
 import static com.example.meetings.common.utils.Const.REQUEST_DESCRIPTION;
+import static com.example.meetings.request.model.domain.RequestStatus.PENDING;
+import static com.example.meetings.request.model.domain.RequestStatus.REJECTED;
 import static java.util.Optional.ofNullable;
 
 @Service
@@ -35,24 +42,24 @@ public class RequestFacadeImpl implements RequestFacade {
     private final MessageService messageService;
     private final FriendService friendService;
     private final NotificationService notificationService;
+    private final MeetingService meetingService;
 
     @Override
     @Transactional
     public void sendRequest(Long meetingId, Long fromUserId, Long toUserId, String messageContent) {
-        Long messageId = ofNullable(messageContent)
-                .map(s -> messageService.saveMessage(
-                        new SendMessageModel()
-                                .setSenderId(fromUserId)
-                                .setContent(messageContent)
-                                .setDialogId(messageService.createDialog(toUserId, fromUserId))))
-                .map(Message::getMessageId)
-                .orElse(null);
-
         Optional<Request> optionalRequest = requestService.findMutualRequest(meetingId, toUserId);
         optionalRequest.ifPresentOrElse(
                 request -> this.acceptRequest(request.getRequestId(), fromUserId),
                 () -> {
-                    Request request = requestService.createRequest(meetingId, fromUserId, toUserId, messageId);
+                    Long messageId = ofNullable(messageContent)
+                            .map(s -> messageService.saveMessage(
+                                    new SendMessageModel()
+                                            .setSenderId(fromUserId)
+                                            .setContent(messageContent)
+                                            .setDialogId(messageService.createDialog(toUserId, fromUserId))))
+                            .map(Message::getMessageId)
+                            .orElse(null);
+                    Request request = requestService.createRequest(meetingId, fromUserId, toUserId, messageId, PENDING);
                     RequestView requestView = projectionUtil.parse(request, RequestView.class);
                     eventService.send(requestView, request.getUsers(), RequestType.REQUEST);
                     notificationService.send(REQUEST, REQUEST_DESCRIPTION, request);
@@ -80,8 +87,15 @@ public class RequestFacadeImpl implements RequestFacade {
     }
 
     @Override
+    public void doNotShowInRecommendation(Long meetingId, Long userId) {
+        Meeting meeting = meetingService.findMeetingById(meetingId);
+        Long secondUserId = meeting.getFirstUser().getUserId().equals(userId) ? meeting.getSecondUser().getUserId() : meeting.getFirstUser().getUserId();
+        requestService.createRequest(meetingId, userId, secondUserId, null, REJECTED);
+    }
+
+    @Override
     public void rejectRequest(Long requestId, Long userId) {
-        requestService.changeRequestStatus(requestId, userId, RequestStatus.REJECTED);
+        requestService.changeRequestStatus(requestId, userId, REJECTED);
     }
 
     @Override

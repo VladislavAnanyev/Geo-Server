@@ -17,7 +17,6 @@ public class DtoMapper {
                 .setUserId(user.getUserId())
                 .setFirstName(user.getFirstName())
                 .setAvatar(user.getMainPhoto().getUrl())
-                .setLastName(user.getLastName())
                 .setOnline(user.isOnline())
                 .setLogin(user.getUsername());
     }
@@ -33,7 +32,6 @@ public class DtoMapper {
                 .setDialogId(typing.getDialog().getDialogId())
                 .setUsername(typing.getUser().getUsername())
                 .setFirstName(typing.getUser().getFirstName())
-                .setLastName(typing.getUser().getLastName())
                 .setUserId(typing.getUser().getUserId());
     }
 

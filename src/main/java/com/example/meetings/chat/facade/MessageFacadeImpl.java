@@ -41,7 +41,7 @@ public class MessageFacadeImpl implements MessageFacade {
         Message message = messageService.saveMessage(model);
         eventService.send(DtoMapper.map(message), message.getDialog().getUsers(), MESSAGE);
         notificationService.send(
-                "%s %s".formatted(message.getSender().getFirstName(), message.getSender().getLastName()),
+                "%s".formatted(message.getSender().getFirstName()),
                 message.getContent(),
                 message
         );

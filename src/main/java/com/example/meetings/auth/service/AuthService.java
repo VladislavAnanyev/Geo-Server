@@ -2,14 +2,14 @@ package com.example.meetings.auth.service;
 
 import com.example.meetings.auth.model.UserToken;
 import com.example.meetings.auth.model.dto.input.AuthRequest;
-import com.example.meetings.auth.model.dto.input.RegistrationModel;
 import com.example.meetings.auth.repository.TokenRepository;
 import com.example.meetings.auth.security.model.AuthUserDetails;
-import com.example.meetings.common.exception.*;
-import com.example.meetings.common.utils.CodeUtil;
+import com.example.meetings.common.exception.AuthorizationException;
+import com.example.meetings.common.exception.CodeExpiredException;
+import com.example.meetings.common.exception.GlobalErrorCode;
+import com.example.meetings.common.exception.UserNotFoundException;
 import com.example.meetings.user.model.domain.User;
 import com.example.meetings.user.repository.UserRepository;
-import com.example.meetings.user.service.UserFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,8 +35,6 @@ public class AuthService implements UserDetailsService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private UserFactory userFactory;
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
@@ -65,27 +63,6 @@ public class AuthService implements UserDetailsService {
         }
 
         return user.get();
-    }
-
-    /**
-     * Регистрация в системе. Пользователь сохраняется в БД, ему отправляется приветственное сообщение на почту,
-     * а также создается обмен в rabbitmq для отправления уведомлений
-     *
-     * @param registrationModel - модель для регистрации
-     */
-    @Transactional
-    public User saveUser(RegistrationModel registrationModel) {
-        Optional<User> optionalUser = userRepository.findUserByUsername(registrationModel.getPhoneNumber());
-        if (optionalUser.isPresent()) {
-            throw new AlreadyRegisterException(
-                    "exception.already.register",
-                    GlobalErrorCode.ERROR_USER_ALREADY_REGISTERED
-            );
-        }
-
-        User user = userFactory.create(registrationModel);
-
-        return userRepository.save(user);
     }
 
     /**
@@ -118,16 +95,6 @@ public class AuthService implements UserDetailsService {
     }
 
     /**
-     * Проверка существования пользователя с указанным username при входе
-     *
-     * @param username - проверяемое имя пользователя
-     * @return true - существует
-     */
-    public boolean isUserExist(String username) {
-        return userRepository.existsByUsername(username);
-    }
-
-    /**
      * Установить код для входа в систему с телефона
      * Используется, когда, например, пользователь не успел ввести код за отведенное время при входе
      * Или для входа, после выхода из аккаунта
@@ -136,12 +103,7 @@ public class AuthService implements UserDetailsService {
      */
     @Transactional
     public void setOneTimePasswordCode(String phone, String code) {
-        Optional<User> optionalUser = userRepository.findUserByUsername(phone);
-        if (optionalUser.isEmpty()) {
-            throw new UserNotFoundException("exception.user.not.found", GlobalErrorCode.ERROR_USER_NOT_FOUND);
-        }
-
-        User user = optionalUser.get();
+        User user = findUserByUsername(phone);
         user.setPassword(passwordEncoder.encode(code));
         user.setSignInViaPhoneCodeExpiration(now().plusMinutes(3));
     }

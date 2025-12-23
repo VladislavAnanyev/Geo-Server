@@ -12,11 +12,11 @@ public interface AuthUserView {
 
     String getFirstName();
 
-    String getLastName();
-
     List<PhotoView> getPhotos();
 
     boolean isStatus();
 
     boolean isOnline();
+
+    String getDescription();
 }

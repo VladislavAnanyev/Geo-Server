@@ -22,13 +22,12 @@ public interface MeetingRepository extends CrudRepository<Meeting, Long> {
     List<Meeting> getMeetings(Long firstUserId, Long secondUserId, LocalDateTime startAt, LocalDateTime endAt);
 
     @Query(value = """
-            SELECT MEETINGS.MEETING_ID AS meetingId, lat, lng, time, f.USER_ID AS firstUserId, S.USER_ID AS secondUserId
-            FROM MEETINGS
-                        LEFT OUTER JOIN USERS F ON MEETINGS.FIRST_USER_ID = F.USER_ID
-                        LEFT OUTER JOIN USERS S ON MEETINGS.SECOND_USER_ID = S.USER_ID
-            WHERE (FIRST_USER_ID = :userId
-                          AND SECOND_USER_ID != :userId OR FIRST_USER_ID != :userId
-                          AND SECOND_USER_ID = :userId)
+            SELECT M.MEETING_ID AS meetingId, lat, lng, time, f.USER_ID AS firstUserId, S.USER_ID AS secondUserId
+            FROM MEETINGS M
+                     LEFT OUTER JOIN USERS F ON M.FIRST_USER_ID = F.USER_ID
+                     LEFT OUTER JOIN USERS S ON M.SECOND_USER_ID = S.USER_ID
+                     LEFT OUTER JOIN REQUESTS R ON M.MEETING_ID = R.MEETING_ID AND sender_user_id = :userId
+            WHERE (FIRST_USER_ID = :userId OR SECOND_USER_ID = :userId) AND (R.status IS NULL OR NOT (R.status = 'REJECTED' AND R.sender_user_id = :userId))
             AND TIME >=:startAt AND TIME <=:endAt""", nativeQuery = true)
     List<MeetingView> getMyMeetings(Long userId, LocalDateTime startAt, LocalDateTime endAt);
 
