@@ -1,7 +1,7 @@
 HELP.md
 .gradle
 build/
-
+rabbitmq/
 
 
 
@@ -66,3 +66,5 @@ img/009ac8f9.jpg
 src/test/java/com/example/mywebquizengine/model/
 src/test/java/com/example/mywebquizengine/service/
 src/test/java/resources/
+!/rabbitmq/
+!/rabbitmq/

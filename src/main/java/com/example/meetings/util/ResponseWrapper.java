@@ -1,0 +1,50 @@
+package com.example.meetings.util;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.util.StreamUtils;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+/**
+ * Позволяет прочитать ответ несколько раз. Требуется для HttpRequestInterceptor
+ */
+public class ResponseWrapper implements ClientHttpResponse {
+    private final ClientHttpResponse response;
+
+    private byte[] body;
+
+    ResponseWrapper(ClientHttpResponse response) {
+        this.response = response;
+    }
+
+    public HttpStatus getStatusCode() throws IOException {
+        return this.response.getStatusCode();
+    }
+
+    public int getRawStatusCode() throws IOException {
+        return this.response.getRawStatusCode();
+    }
+
+    public String getStatusText() throws IOException {
+        return this.response.getStatusText();
+    }
+
+    public HttpHeaders getHeaders() {
+        return this.response.getHeaders();
+    }
+
+    public InputStream getBody() throws IOException {
+        if (this.body == null) {
+            this.body = StreamUtils.copyToByteArray(this.response.getBody());
+        }
+        return new ByteArrayInputStream(this.body);
+    }
+
+    public void close() {
+        this.response.close();
+    }
+}
