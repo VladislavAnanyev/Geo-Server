@@ -66,12 +66,7 @@ public class PhotoService {
         List<Photo> photos = photoRepository.findPhotosByUserId(userId);
 
         if (position == 0) {
-            photo.getUser().setMainPhoto(
-                    new Photo()
-                            .setUrl(photo.getUrl())
-                            .setPosition(0)
-                            .setUser(userRepository.getById(userId))
-            );
+            photo.getUser().setMainPhoto(photo);
         }
 
         photos.remove(((int) photo.getPosition()));

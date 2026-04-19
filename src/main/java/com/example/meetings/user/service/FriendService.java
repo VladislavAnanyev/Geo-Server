@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.stream.Collectors;
+
 @Service
 public class FriendService {
 
@@ -18,4 +20,8 @@ public class FriendService {
         firstUser.addFriend(secondUser);
     }
 
+    public boolean isFriends(Long fromUserId, Long toUserId) {
+        User firstUser = userService.loadUserByUserId(fromUserId);
+        return firstUser.getFriends().stream().map(User::getUserId).collect(Collectors.toSet()).contains(toUserId);
+    }
 }

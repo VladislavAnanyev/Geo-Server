@@ -63,9 +63,13 @@ public class GeolocationService {
         );
     }
 
-    public List<Geolocation> findInSquare(Long authUserId, Geolocation myGeolocation, Integer size, LocalDateTime time) {
-        double myLatitude = myGeolocation.getLat(); //Интересующие нас координаты широты
-        double myLongitude = myGeolocation.getLng();  //Интересующие нас координаты долготы
+    public List<Geolocation> findInSquare(Geolocation geolocation, Integer size, LocalDateTime time) {
+        return findInSquare(geolocation, size, time, 1L);
+    }
+
+    public List<Geolocation> findInSquare(Geolocation geolocation, Integer size, LocalDateTime time, Long interval) {
+        double myLatitude = geolocation.getLat(); //Интересующие нас координаты широты
+        double myLongitude = geolocation.getLng();  //Интересующие нас координаты долготы
 
         double deltaLat = computeDelta(myLatitude); //Получаем дельту по широте
         double deltaLon = computeDelta(myLongitude); // Дельту по долготе
@@ -75,8 +79,7 @@ public class GeolocationService {
 
         return geolocationRepository.findInSquare(
                 myLatitude, myLongitude, aroundLat,
-                aroundLng, userService.loadUserByUserIdProxy(authUserId).getUserId(),
-                time.minusMinutes(1), time.plusMinutes(1)
+                aroundLng, time.minusMinutes(interval), time.plusMinutes(interval)
         );
     }
 

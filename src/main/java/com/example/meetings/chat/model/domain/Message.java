@@ -50,7 +50,7 @@ public class Message implements Notifiable {
     private List<Message> forwardedMessages;
 
     @OneToMany(mappedBy = "message", cascade = CascadeType.ALL)
-    private List<MessageStatusHistory> messageStatusHistoryList;
+    private List<MessageStatusHistory> messageStatusHistoryList = new ArrayList<>();
 
     @Transient
     private String uniqueCode;

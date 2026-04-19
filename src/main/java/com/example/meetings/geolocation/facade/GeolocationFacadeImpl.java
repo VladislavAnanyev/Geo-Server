@@ -75,6 +75,7 @@ public class GeolocationFacadeImpl implements GeolocationFacade {
                         geolocations.stream()
                                 .map(geolocation -> new GeolocationDto()
                                         .setUserId(geolocation.getUser().getUserId())
+                                        .setLastUpdateAt(geolocation.getUpdatedAt())
                                         .setLat(geolocation.getLat())
                                         .setLng(geolocation.getLng())
                                         .setFirstName(geolocation.getUser().getFirstName()))
@@ -84,6 +85,6 @@ public class GeolocationFacadeImpl implements GeolocationFacade {
 
     @Override
     public List<Geolocation> getPeopleInSquare(Long userId, Geolocation geolocation, Integer size, LocalDateTime time) {
-        return geolocationService.findInSquare(userId, geolocation, size, time);
+        return geolocationService.findInSquare(geolocation, size, time);
     }
 }

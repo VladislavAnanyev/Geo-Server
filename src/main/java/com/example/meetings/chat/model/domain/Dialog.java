@@ -47,4 +47,9 @@ public class Dialog {
         this.users.add(user);
         user.getDialogs().add(this);
     }
+
+    public void removeUser(User user) {
+        this.users.remove(user);
+        user.getDialogs().remove(this);
+    }
 }

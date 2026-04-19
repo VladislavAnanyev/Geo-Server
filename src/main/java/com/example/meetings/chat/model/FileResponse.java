@@ -9,4 +9,5 @@ public class FileResponse {
     private String originalName;
     private String filename;
     private String contentType;
+    private String uri;
 }

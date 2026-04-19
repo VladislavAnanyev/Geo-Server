@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
@@ -23,7 +24,9 @@ import static com.example.meetings.chat.mapper.DialogDTOMapper.getImage;
 import static com.example.meetings.chat.mapper.DialogDTOMapper.getName;
 import static com.example.meetings.chat.mapper.DtoMapper.map;
 import static com.example.meetings.chat.model.domain.MessageStatus.DELIVERED;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 @Service
 @Validated
@@ -32,17 +35,15 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final DialogRepository dialogRepository;
     private final UserService userService;
-    private final MessageFactory messageFactory;
     private final MessageHistoryRepository messageHistoryRepository;
     @Value("${hostname}")
     private String hostname;
 
     public MessageService(MessageRepository messageRepository, DialogRepository dialogRepository,
-                          UserService userService, MessageFactory messageFactory, MessageHistoryRepository messageHistoryRepository) {
+                          UserService userService, MessageHistoryRepository messageHistoryRepository) {
         this.messageRepository = messageRepository;
         this.dialogRepository = dialogRepository;
         this.userService = userService;
-        this.messageFactory = messageFactory;
         this.messageHistoryRepository = messageHistoryRepository;
     }
 
@@ -124,10 +125,7 @@ public class MessageService {
         if (!isUserContainsInDialog(dialog, sendMessageModel.getSenderId())) {
             throw new SecurityException("Вы не состоите в этом диалоге");
         }
-        Message message = messageFactory.create(
-                sendMessageModel.getContent(), sendMessageModel.getUniqueCode(),
-                sendMessageModel.getSenderId(), dialog
-        );
+        Message message = create(sendMessageModel, dialog);
         message.setStatus(DELIVERED);
         updateMessageStatusHistory(sendMessageModel.getSenderId(), message, DELIVERED);
         dialog.setLastMessage(message);
@@ -138,13 +136,14 @@ public class MessageService {
     public Dialog createGroup(CreateGroupModel model) {
         Dialog dialog = new Dialog();
         dialog.setType(DialogType.GROUP);
+        dialog.setImage(model.getImage());
         model.getUsers().forEach(userId -> dialog.addUser(userService.loadUserByUserId(userId)));
 
         if (!isUserContainsInDialog(dialog, model.getAuthUserId())) {
             throw new SecurityException("Вы не состоите в этом диалоге");
         }
 
-        if (model.getName() == null || model.getName().equals("")) {
+        if (model.getName() == null || model.getName().isEmpty()) {
             dialog.setName("Конференция");
         } else {
             dialog.setName(model.getName());
@@ -152,6 +151,18 @@ public class MessageService {
 
         dialog.setImage(hostname + "/img/default.jpg");
         return dialogRepository.save(dialog);
+    }
+
+    @Transactional
+    public void addUserToGroupDialog(Long userId, Long dialogId) {
+        Dialog dialog = dialogRepository.findById(dialogId).orElseThrow();
+        dialog.addUser(userService.loadUserByUserId(userId));
+    }
+
+    @Transactional
+    public void deleteUserFromGroupDialog(Long userId, Long dialogId) {
+        Dialog dialog = dialogRepository.findById(dialogId).orElseThrow();
+        dialog.removeUser(userService.loadUserByUserId(userId));
     }
 
     @Transactional
@@ -169,20 +180,27 @@ public class MessageService {
         return typing;
     }
 
+    @Transactional
     public List<Message> readMessages(List<Message> messages, Long userId) {
-        return tryToChangeMessagesStatus(
+        return addMessagesStatus(
                 messages,
                 userId,
                 MessageStatus.READ
         );
     }
 
+    @Transactional
     public List<Message> receiveMessages(List<Message> messages, Long userId) {
-        return tryToChangeMessagesStatus(
+        return addMessagesStatus(
                 messages,
                 userId,
                 MessageStatus.RECEIVED
         );
+    }
+
+    public Message findMessageByDialogIdAndMessageId(Long dialogId, Long messageId) {
+        return messageRepository.findMessageByDialogDialogIdAndMessageId(dialogId, messageId)
+                .orElseThrow(() -> new EntityNotFoundException("Сообщение не найдено"));
     }
 
     public Dialog findDialogById(Long dialogId) {
@@ -214,7 +232,7 @@ public class MessageService {
         return files;
     }
 
-    private List<Message> tryToChangeMessagesStatus(List<Message> messages, Long userId, MessageStatus messageStatus) {
+    private List<Message> addMessagesStatus(List<Message> messages, Long userId, MessageStatus messageStatus) {
         List<Message> justNowReadMessages = new ArrayList<>();
         for (Message message : messages) {
             boolean isAlreadyRead = isStatusInfoExistInHistory(
@@ -240,21 +258,13 @@ public class MessageService {
     }
 
     private void updateMessageStatusHistory(Long authUserId, Message message, MessageStatus messageStatus) {
-        MessageStatusHistory statusHistoryInfo = new MessageStatusHistory()
-                .setUser(userService.loadUserByUserIdProxy(authUserId))
-                .setTimestamp(new Date())
-                .setMessage(message)
-                .setMessageStatus(messageStatus);
-
-        if (message.getMessageStatusHistoryList() == null) {
-            message.setMessageStatusHistoryList(
-                    Collections.singletonList(statusHistoryInfo)
-            );
-        } else {
-            message.getMessageStatusHistoryList().add(
-                    statusHistoryInfo
-            );
-        }
+        messageHistoryRepository.save(
+                new MessageStatusHistory()
+                        .setUser(userService.loadUserByUserIdProxy(authUserId))
+                        .setTimestamp(new Date())
+                        .setMessage(message)
+                        .setMessageStatus(messageStatus)
+        );
     }
 
     private Message findMessageById(Long messageId) {
@@ -303,5 +313,56 @@ public class MessageService {
         }
 
         return lastDialogs;
+    }
+
+    public Message create(SendMessageModel request, Dialog dialog) {
+        User sender = userService.loadUserByUserIdProxy(request.getSenderId());
+        Message message = new Message();
+        message.setSender(sender);
+        message.setContent(request.getContent());
+        message.setTimestamp(new Date());
+        message.setUniqueCode(request.getUniqueCode() == null ? UUID.randomUUID().toString() : request.getUniqueCode());
+        message.setDialog(dialog);
+        if (request.getForwardedMessages() != null) {
+            List<Message> processedForwardedMessages = processForwardedMessages(
+                    request.getForwardedMessages(),
+                    request.getSenderId()
+            );
+            message.setForwardedMessages(processedForwardedMessages);
+        }
+
+        if (request.getFiles() != null) {
+            List<MessageFile> messageFiles = request.getFiles().stream().map(file -> new MessageFile()
+                    .setFilename(file.getFilename())
+                    .setUri(file.getUri())
+                    .setContentType(file.getContentType())
+                    .setOriginalName(file.getOriginalName())).collect(toList());
+
+            message.setFiles(messageFiles);
+        }
+
+        return message;
+    }
+
+    private List<Message> processForwardedMessages(ForwardedMessages messages, Long userId) {
+        Dialog dialog = findDialogById(messages.getDialogId());
+        if (dialog.getUsers().stream().noneMatch(user -> user.getUserId().equals(userId))) {
+            throw new ResponseStatusException(
+                    FORBIDDEN,
+                    "You are not contains in forwarded messages dialog"
+            );
+        }
+
+        List<Message> forwardedMessages = new ArrayList<>();
+        for (Long messageId : messages.getMessagesId()) {
+            forwardedMessages.add(
+                    findMessageByDialogIdAndMessageId(
+                            dialog.getDialogId(),
+                            messageId
+                    )
+            );
+        }
+
+        return forwardedMessages;
     }
 }

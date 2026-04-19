@@ -40,10 +40,10 @@ public class MeetingService {
         LocalDateTime time = geolocation.getUpdatedAt();
         User geolocationSender = geolocation.getUser();
 
-        List<Geolocation> peopleNearMe = geolocationService.findInSquare(
-                geolocationSender.getUserId(), geolocation,
-                50, time
-        );
+        List<Geolocation> peopleNearMe = geolocationService.findInSquare(geolocation, 50, time)
+                .stream()
+                .filter(geo -> !geo.getUser().getUserId().equals(geolocationSender.getUserId()))
+                .toList();
 
         List<Meeting> newMeetings = new ArrayList<>();
         if (peopleNearMe.isEmpty()) {

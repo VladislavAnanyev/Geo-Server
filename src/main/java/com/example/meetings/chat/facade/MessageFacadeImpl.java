@@ -41,7 +41,7 @@ public class MessageFacadeImpl implements MessageFacade {
         Message message = messageService.saveMessage(model);
         eventService.send(DtoMapper.map(message), message.getDialog().getUsers(), MESSAGE);
         notificationService.send(
-                "%s".formatted(message.getSender().getFirstName()),
+                message.getSender().getFirstName(),
                 message.getContent(),
                 message
         );
@@ -92,23 +92,19 @@ public class MessageFacadeImpl implements MessageFacade {
         Dialog dialog = messageService.findDialogById(dialogId);
         List<Message> justNowReceivedMessages = messageService.receiveMessages(dialog.getMessages(), userId);
 
-        if (justNowReceivedMessages.size() > 0) {
+        if (!justNowReceivedMessages.isEmpty()) {
             ChangeMessageStatusEvent event = new ChangeMessageStatusEvent()
                     .setDialog(dialog)
                     .setStatus(READ);
 
-            eventService.send(
-                    DtoMapper.map(event),
-                    event.getUsersToSendNotification(),
-                    CHANGE_STATUS
-            );
+            eventService.send(DtoMapper.map(event), event.getUsersToSendNotification(), CHANGE_STATUS);
         }
     }
 
     @Override
     public void readMessages(Long userId, Long dialogId) {
         Dialog dialog = messageService.findDialogById(dialogId);
-        if (messageService.readMessages(dialog.getMessages(), userId).size() > 0) {
+        if (!messageService.readMessages(dialog.getMessages(), userId).isEmpty()) {
             ChangeMessageStatusEvent event = new ChangeMessageStatusEvent()
                     .setDialog(dialog)
                     .setStatus(READ);
@@ -133,5 +129,4 @@ public class MessageFacadeImpl implements MessageFacade {
         return new UploadAttachmentResult()
                 .setUri(fileStorageService.store(inputStream, originalFilename, contentType));
     }
-
 }

@@ -10,6 +10,8 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
 
+import static com.example.meetings.util.Constants.ADMIN_ID;
+
 @RestController
 @RequestMapping(path = "/api/v1")
 public class ApiFriendController {
@@ -22,7 +24,10 @@ public class ApiFriendController {
 
     @GetMapping(path = "/friends")
     public List<UserCommonView> getFriends(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser) {
-        return userService.findMyFriends(authUser.getUserId());
+        List<UserCommonView> friends = userService.findMyFriends(authUser.getUserId());
+        friends.removeIf(userCommonView -> userCommonView.getUserId().equals(ADMIN_ID));
+
+        return friends;
     }
 
     @DeleteMapping(path = "/friend/{userId}")

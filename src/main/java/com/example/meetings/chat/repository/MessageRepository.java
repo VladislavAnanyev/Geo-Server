@@ -11,6 +11,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MessageRepository extends
         CrudRepository<Message, Long>,
@@ -18,6 +19,8 @@ public interface MessageRepository extends
         PagingAndSortingRepository<Message, Long> {
 
     Page<Message> findAllByDialog_DialogIdAndStatusNot(Long dialogId, MessageStatus status, Pageable paging);
+
+    Optional<Message> findMessageByDialogDialogIdAndMessageId(Long dialogId, Long messageId);
 
     @Query(value = """
             SELECT MESSAGES.MESSAGE_ID AS messageId, content, DIALOGS.dialog_id AS dialogId,

@@ -6,6 +6,7 @@ import com.example.meetings.geolocation.facade.GeolocationFacade;
 import com.example.meetings.meeting.model.*;
 import com.example.meetings.meeting.model.dto.input.GeolocationRequest;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 @RestController
 @RequestMapping(path = "/api/v1")
+@Slf4j
 public class ApiGeoController {
 
     @Autowired

@@ -11,6 +11,6 @@ import org.springframework.stereotype.Service;
 public class MockCodeSenderService implements CodeSenderService {
     @Override
     public void sendCodeToPhone(String code, String phone) {
-        log.info("Отправка кода на номер телефона отключена");
+        log.info("Отправка кода на номер телефона отключена. Код: " + code);
     }
 }

@@ -47,6 +47,10 @@ public class RequestFacadeImpl implements RequestFacade {
     @Override
     @Transactional
     public void sendRequest(Long meetingId, Long fromUserId, Long toUserId, String messageContent) {
+        if (friendService.isFriends(fromUserId, toUserId)) {
+            throw new RuntimeException("Пользователь уже в друзьях");
+        }
+
         Optional<Request> optionalRequest = requestService.findMutualRequest(meetingId, toUserId);
         optionalRequest.ifPresentOrElse(
                 request -> this.acceptRequest(request.getRequestId(), fromUserId),

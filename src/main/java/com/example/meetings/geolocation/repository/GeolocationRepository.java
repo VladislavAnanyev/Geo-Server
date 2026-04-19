@@ -19,7 +19,9 @@ public interface GeolocationRepository extends CrudRepository<Geolocation, Strin
     @Query(value = """
             SELECT *
             FROM USERS JOIN GEOLOCATIONS G ON USERS.USER_ID = G.USER_ID
-            WHERE G.USER_ID IN :userIds
+            WHERE G.USER_ID IN :userIds AND G.geolocation_id IN (select max(E.geolocation_id)
+                                                                                          from GEOLOCATIONS E
+                                                                                          GROUP BY E.user_id)
             """, nativeQuery = true)
     List<Geolocation> getUsersGeolocations(List<Long> userIds);
 
@@ -39,8 +41,8 @@ public interface GeolocationRepository extends CrudRepository<Geolocation, Strin
             FROM GEOLOCATIONS
             WHERE LAT BETWEEN :lat - :aroundLat AND :lat + :aroundLat
               AND LNG BETWEEN :lng - :aroundLng AND :lng + :aroundLng
-              AND UPDATED_AT BETWEEN :startAt AND :endAt AND user_id != :userId""", nativeQuery = true)
+              AND UPDATED_AT BETWEEN :startAt AND :endAt""", nativeQuery = true)
     List<Geolocation> findInSquare(Double lat, Double lng, Double aroundLat,
-                                   Double aroundLng, Long userId, LocalDateTime startAt, LocalDateTime endAt);
+                                   Double aroundLng, LocalDateTime startAt, LocalDateTime endAt);
 }
 

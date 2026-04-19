@@ -14,8 +14,6 @@ public class SendMessageModel {
     private Long senderId;
     @NotNull
     private Long dialogId;
-    @NotNull
-    @NotBlank
     private String content;
     private String uniqueCode;
     private ForwardedMessages forwardedMessages;

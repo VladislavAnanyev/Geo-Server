@@ -15,6 +15,6 @@ public interface UserCommonView {
     @Value("#{target.mainPhoto.url}")
     String getAvatar();
 
-    String getOnline();
+    boolean getOnline();
 }
 

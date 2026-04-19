@@ -5,6 +5,7 @@ import com.example.meetings.common.model.SuccessfulResponse;
 import com.example.meetings.photo.facade.PhotoFacade;
 import com.example.meetings.photo.model.dto.UploadPhotoResponse;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,6 +15,7 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping(path = "/api/v1")
+@Slf4j
 public class ApiPhotoController {
 
     private final PhotoFacade photoFacade;
@@ -27,6 +29,7 @@ public class ApiPhotoController {
     public SuccessfulResponse swapPhoto(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser,
                                         @RequestParam Long photoId,
                                         @RequestParam Integer position) {
+        log.info("swap photo");
         photoFacade.swapPhoto(photoId, position, authUser.getUserId());
         return new SuccessfulResponse();
     }

@@ -37,12 +37,13 @@ public class AuthFacadeImpl implements AuthFacade {
     @Override
     public AuthResult signIn(AuthRequest authRequest) {
         User user = authService.authenticate(authRequest);
-        deviceService.processDevice(user, authRequest.getFcmToken());
+//        deviceService.processDevice(user, authRequest.getFcmToken());
 
         return new AuthResult(
                 user.getUserId(),
                 jwtUtil.generateToken(user),
-                tokenService.createToken(user.getUserId()),
+"1",
+//                tokenService.createToken(user.getUserId()),
                 RabbitUtil.getExchangeName(user.getUserId())
         );
     }
