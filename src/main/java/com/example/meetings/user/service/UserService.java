@@ -54,6 +54,8 @@ public class UserService {
         User user = loadUserByUserId(userId);
         user.setDescription(request.getDescription());
         user.setFirstName(request.getFirstName());
+        user.setGender(request.getGender());
+        user.setBirthDate(request.getBirthDate());
     }
 
     public User loadUserByUserId(Long userId) {

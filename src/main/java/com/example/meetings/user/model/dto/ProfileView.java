@@ -1,5 +1,8 @@
 package com.example.meetings.user.model.dto;
 
+import com.example.meetings.user.model.domain.Gender;
+
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -13,6 +16,10 @@ public interface ProfileView {
     String getFirstName();
 
     String getDescription();
+
+    Gender getGender();
+
+    LocalDate getBirthDate();
 
     List<PhotoView> getPhotos();
 

@@ -8,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -33,6 +34,13 @@ public class User {
 
     @Column(name = "description")
     private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender")
+    private Gender gender;
+
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
 
     @ColumnDefault("false")
     @Column(name = "online")

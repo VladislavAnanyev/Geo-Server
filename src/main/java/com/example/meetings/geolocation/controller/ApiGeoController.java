@@ -20,6 +20,15 @@ public class ApiGeoController {
     @Autowired
     private GeolocationFacade geolocationFacade;
 
+    @ApiOperation(value = "Проверить, была ли недавняя геолокация")
+    @GetMapping(path = "/geolocation/recent")
+    public RecentGeolocationResponse getRecentGeolocation(@AuthenticationPrincipal AuthUserDetails authUser) {
+        return new RecentGeolocationResponse()
+                .setLastGeolocation(
+                        geolocationFacade.getRecentOwnGeolocation(authUser.getUserId()).orElse(null)
+                );
+    }
+
     @ApiOperation(value = "Получить информацию о геолокации друзей")
     @GetMapping(path = "/geolocations")
     public GetGeolocationsResponse getFriendsGeolocations(@AuthenticationPrincipal AuthUserDetails authUser) {

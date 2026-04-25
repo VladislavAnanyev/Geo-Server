@@ -6,29 +6,31 @@ import com.example.meetings.common.service.NotificationService;
 import com.example.meetings.common.utils.ProjectionUtil;
 import com.example.meetings.geolocation.model.Geolocation;
 import com.example.meetings.geolocation.service.GeolocationService;
-import com.example.meetings.meeting.model.*;
+import com.example.meetings.meeting.model.GeolocationDto;
+import com.example.meetings.meeting.model.GeolocationModel;
+import com.example.meetings.meeting.model.GetGeolocationsResult;
 import com.example.meetings.meeting.model.domain.Meeting;
 import com.example.meetings.meeting.model.dto.output.MeetingViewForNotification;
 import com.example.meetings.meeting.service.MeetingService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Executor;
 
 import static com.example.meetings.common.utils.Const.MEETING;
 import static com.example.meetings.common.utils.Const.MEETING_DESCRIPTION;
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.stream.Collectors.toList;
 
 @Service
 public class GeolocationFacadeImpl implements GeolocationFacade {
+
+    @Value("${geolocation.recent-window-minutes:30}")
+    private int recentWindowMinutes;
 
     @Autowired
     private MeetingService meetingService;
@@ -81,6 +83,11 @@ public class GeolocationFacadeImpl implements GeolocationFacade {
                                         .setFirstName(geolocation.getUser().getFirstName()))
                                 .collect(toList())
                 );
+    }
+
+    @Override
+    public Optional<GeolocationDto> getRecentOwnGeolocation(Long userId) {
+        return geolocationService.getRecentGeolocation(userId, recentWindowMinutes);
     }
 
     @Override

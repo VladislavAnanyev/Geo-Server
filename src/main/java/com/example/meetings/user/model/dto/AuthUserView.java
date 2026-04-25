@@ -1,5 +1,8 @@
 package com.example.meetings.user.model.dto;
 
+import com.example.meetings.user.model.domain.Gender;
+
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -19,4 +22,8 @@ public interface AuthUserView {
     boolean isOnline();
 
     String getDescription();
+
+    Gender getGender();
+
+    LocalDate getBirthDate();
 }

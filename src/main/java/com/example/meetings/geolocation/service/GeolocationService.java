@@ -3,6 +3,7 @@ package com.example.meetings.geolocation.service;
 import com.example.meetings.geolocation.model.Geolocation;
 import com.example.meetings.geolocation.model.GeolocationHistory;
 import com.example.meetings.geolocation.repository.GeolocationHistoryRepository;
+import com.example.meetings.meeting.model.GeolocationDto;
 import com.example.meetings.meeting.model.GeolocationModel;
 import com.example.meetings.geolocation.repository.GeolocationRepository;
 import com.example.meetings.user.model.domain.User;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
@@ -43,6 +45,26 @@ public class GeolocationService {
         return geolocationRepository.getUsersGeolocations(friendsIds);
     }
 
+    /**
+     * Последняя геолокация пользователя, если она не старше заданного окна (включительно по нижней границе времени).
+     */
+    public Optional<GeolocationDto> getRecentGeolocation(Long userId, int windowMinutes) {
+        LocalDateTime threshold = LocalDateTime.now().minusMinutes(windowMinutes);
+        return geolocationRepository.findLatestByUserId(userId)
+                .filter(g -> g.getUpdatedAt() != null && !g.getUpdatedAt().isBefore(threshold))
+                .map(this::toDto);
+    }
+
+    private GeolocationDto toDto(Geolocation geolocation) {
+        return new GeolocationDto()
+                .setLat(geolocation.getLat())
+                .setLng(geolocation.getLng())
+                .setLastUpdateAt(geolocation.getUpdatedAt())
+                .setUserId(geolocation.getUser().getUserId())
+                .setFirstName(geolocation.getUser().getFirstName())
+                .setUsername(geolocation.getUser().getUsername());
+    }
+
     public Geolocation saveGeolocation(Long userId, GeolocationModel geolocationModel) {
         LocalDateTime now = LocalDateTime.now();
 
@@ -64,7 +86,7 @@ public class GeolocationService {
     }
 
     public List<Geolocation> findInSquare(Geolocation geolocation, Integer size, LocalDateTime time) {
-        return findInSquare(geolocation, size, time, 1L);
+        return findInSquare(geolocation, size, time, 5L);
     }
 
     public List<Geolocation> findInSquare(Geolocation geolocation, Integer size, LocalDateTime time, Long interval) {

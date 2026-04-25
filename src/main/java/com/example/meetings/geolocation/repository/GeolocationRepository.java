@@ -4,9 +4,11 @@ import com.example.meetings.geolocation.model.Geolocation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface GeolocationRepository extends CrudRepository<Geolocation, String>, JpaRepository<Geolocation, String> {
 
@@ -44,5 +46,14 @@ public interface GeolocationRepository extends CrudRepository<Geolocation, Strin
               AND UPDATED_AT BETWEEN :startAt AND :endAt""", nativeQuery = true)
     List<Geolocation> findInSquare(Double lat, Double lng, Double aroundLat,
                                    Double aroundLng, LocalDateTime startAt, LocalDateTime endAt);
+
+    @Query(value = """
+            SELECT *
+            FROM GEOLOCATIONS
+            WHERE user_id = :userId
+            ORDER BY updated_at DESC NULLS LAST
+            LIMIT 1
+            """, nativeQuery = true)
+    Optional<Geolocation> findLatestByUserId(@Param("userId") Long userId);
 }
 
