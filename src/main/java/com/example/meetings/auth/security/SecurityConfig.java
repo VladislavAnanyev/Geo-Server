@@ -96,7 +96,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers("/api/v1/register", "/api/v1/jwt", "/img/**",
                             "/api/v1/quizzes", "/api/v1/signin", "/api/v1/googleauth", "/api/v1/signup",
                             "/api/v1/user/check-username", "/api/v1/user/send-change-password-code",
-                            "/api/v1/signup/phone", "/api/v1/signin/phone",
+                            "/api/v1/signup/phone", "/api/v1/signin/phone", "/api/v1/signin/email",
                             "/api/v1/user/verify-password-code", "/api/v1/user/password").permitAll()
 
                     .anyRequest().authenticated()

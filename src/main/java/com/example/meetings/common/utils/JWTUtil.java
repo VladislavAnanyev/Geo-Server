@@ -10,7 +10,6 @@ import java.util.*;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.joining;
-
 @Service
 public class JWTUtil {
     @Value("${jwt.secret}")

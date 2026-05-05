@@ -12,6 +12,7 @@ import com.example.meetings.meeting.model.GetGeolocationsResult;
 import com.example.meetings.meeting.model.domain.Meeting;
 import com.example.meetings.meeting.model.dto.output.MeetingViewForNotification;
 import com.example.meetings.meeting.service.MeetingService;
+import com.example.meetings.user.model.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -31,6 +33,9 @@ public class GeolocationFacadeImpl implements GeolocationFacade {
 
     @Value("${geolocation.recent-window-minutes:30}")
     private int recentWindowMinutes;
+
+    @Value("${geolocation.people-nearby-radius-meters:1000}")
+    private int peopleNearbyRadiusMeters;
 
     @Autowired
     private MeetingService meetingService;
@@ -75,23 +80,43 @@ public class GeolocationFacadeImpl implements GeolocationFacade {
         return new GetGeolocationsResult()
                 .setItems(
                         geolocations.stream()
-                                .map(geolocation -> new GeolocationDto()
-                                        .setUserId(geolocation.getUser().getUserId())
-                                        .setLastUpdateAt(geolocation.getUpdatedAt())
-                                        .setLat(geolocation.getLat())
-                                        .setLng(geolocation.getLng())
-                                        .setFirstName(geolocation.getUser().getFirstName()))
+                                .map(this::toGeolocationDto)
                                 .collect(toList())
                 );
     }
 
     @Override
     public Optional<GeolocationDto> getRecentOwnGeolocation(Long userId) {
-        return geolocationService.getRecentGeolocation(userId, recentWindowMinutes);
+        return geolocationService.getRecentGeolocation(userId, recentWindowMinutes).map(this::toGeolocationDto);
     }
 
     @Override
-    public List<Geolocation> getPeopleInSquare(Long userId, Geolocation geolocation, Integer size, LocalDateTime time) {
-        return geolocationService.findInSquare(geolocation, size, time);
+    public List<GeolocationDto> getPeopleInSquare(Long userId) {
+        Optional<GeolocationDto> recent = geolocationService.getRecentGeolocation(userId, recentWindowMinutes).map(this::toGeolocationDto);
+        if (recent.isEmpty()) {
+            return List.of();
+        }
+        GeolocationDto centerDto = recent.get();
+        if (centerDto.getLat() == null || centerDto.getLng() == null) {
+            return List.of();
+        }
+        Geolocation center = new Geolocation().setLat(centerDto.getLat()).setLng(centerDto.getLng());
+        return geolocationService.findInSquare(center, peopleNearbyRadiusMeters, LocalDateTime.now())
+                .stream()
+                .filter(g -> g.getUser() != null && !Objects.equals(g.getUser().getUserId(), userId))
+                .map(this::toGeolocationDto)
+                .collect(toList());
+    }
+
+    private GeolocationDto toGeolocationDto(Geolocation geolocation) {
+        User user = geolocation.getUser();
+        return new GeolocationDto()
+                .setLat(geolocation.getLat())
+                .setLng(geolocation.getLng())
+                .setLastUpdateAt(geolocation.getUpdatedAt())
+                .setUserId(user.getUserId())
+                .setFirstName(user.getFirstName())
+                .setUsername(user.getUsername())
+                .setAvatar(user.getMainPhoto().getUrl());
     }
 }

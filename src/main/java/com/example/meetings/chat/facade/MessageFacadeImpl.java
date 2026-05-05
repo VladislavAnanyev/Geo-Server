@@ -55,6 +55,7 @@ public class MessageFacadeImpl implements MessageFacade {
 
     @Override
     public void deleteMessage(Long messageId, Long userId) {
+        // todo добавить изменение ссылки на последнее сообщение если удаляется последнее
         Message message = messageService.setDeletedStatus(messageId, userId);
         eventService.send(DtoMapper.map(message), message.getUsersToSendNotification(), DELETE_MESSAGE);
     }

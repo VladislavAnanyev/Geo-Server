@@ -53,7 +53,7 @@ public class ApiUserControllerTest {
     private BusinessEmailSender businessEmailSender;
 
     @MockBean
-    private TokenService tokenService;
+    private TokenService TokenService;
 
     @Autowired
     private ObjectMapper objectMapper;

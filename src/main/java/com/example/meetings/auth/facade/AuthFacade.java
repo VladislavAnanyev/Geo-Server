@@ -2,7 +2,6 @@ package com.example.meetings.auth.facade;
 
 import com.example.meetings.auth.model.dto.input.AuthRequest;
 import com.example.meetings.auth.model.dto.input.RegistrationModel;
-import com.example.meetings.auth.model.dto.output.AuthPhoneResult;
 import com.example.meetings.auth.model.dto.output.AuthResult;
 import org.springframework.stereotype.Service;
 
@@ -10,9 +9,9 @@ import org.springframework.stereotype.Service;
 public interface AuthFacade {
     AuthResult signIn(AuthRequest authRequest);
 
-    void signUpViaPhone(RegistrationModel registrationModel);
-
     void signInViaPhone(String phone);
+
+    void signInViaEmail(String email);
 
     AuthResult getNewAccessToken(String refreshToken);
 }

@@ -3,6 +3,10 @@ package com.example.meetings.auth.model.dto.output;
 import lombok.*;
 import lombok.experimental.Accessors;
 
+import com.example.meetings.user.model.domain.Role;
+
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -12,5 +16,6 @@ public class AuthResult {
     private String jwtToken;
     private String refreshToken;
     private String exchangeName;
+    private List<Role> roles;
 }
 

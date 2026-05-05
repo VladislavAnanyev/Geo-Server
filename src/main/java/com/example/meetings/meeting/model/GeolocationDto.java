@@ -38,4 +38,9 @@ public class GeolocationDto {
      * Никнейм пользователя
      */
     private String username;
+
+    /**
+     * Аватар пользователя
+     */
+    private String avatar;
 }

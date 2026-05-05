@@ -48,21 +48,10 @@ public class GeolocationService {
     /**
      * Последняя геолокация пользователя, если она не старше заданного окна (включительно по нижней границе времени).
      */
-    public Optional<GeolocationDto> getRecentGeolocation(Long userId, int windowMinutes) {
+    public Optional<Geolocation> getRecentGeolocation(Long userId, int windowMinutes) {
         LocalDateTime threshold = LocalDateTime.now().minusMinutes(windowMinutes);
         return geolocationRepository.findLatestByUserId(userId)
-                .filter(g -> g.getUpdatedAt() != null && !g.getUpdatedAt().isBefore(threshold))
-                .map(this::toDto);
-    }
-
-    private GeolocationDto toDto(Geolocation geolocation) {
-        return new GeolocationDto()
-                .setLat(geolocation.getLat())
-                .setLng(geolocation.getLng())
-                .setLastUpdateAt(geolocation.getUpdatedAt())
-                .setUserId(geolocation.getUser().getUserId())
-                .setFirstName(geolocation.getUser().getFirstName())
-                .setUsername(geolocation.getUser().getUsername());
+                .filter(g -> g.getUpdatedAt() != null && !g.getUpdatedAt().isBefore(threshold));
     }
 
     public Geolocation saveGeolocation(Long userId, GeolocationModel geolocationModel) {
@@ -114,5 +103,4 @@ public class GeolocationService {
     private double deg2rad(double degrees) {
         return degrees * Math.PI / 180;
     }
-
 }

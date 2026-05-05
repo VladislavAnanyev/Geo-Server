@@ -11,6 +11,7 @@ import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity(name = "USERS")
 @Getter
@@ -77,8 +78,19 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Device> devices = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private List<UserRole> roles = new ArrayList<>();
+
     public List<GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+        if (roles == null || roles.isEmpty()) {
+            return Collections.singletonList(new SimpleGrantedAuthority(Role.ROLE_USER.name()));
+        }
+        return roles.stream()
+                .map(UserRole::getRole)
+                .filter(Objects::nonNull)
+                .distinct()
+                .map(r -> new SimpleGrantedAuthority(r.name()))
+                .collect(Collectors.toList());
     }
 
     public void addFriend(User user) {

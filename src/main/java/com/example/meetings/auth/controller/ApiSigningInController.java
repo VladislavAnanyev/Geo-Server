@@ -2,6 +2,7 @@ package com.example.meetings.auth.controller;
 
 import com.example.meetings.auth.facade.AuthFacade;
 import com.example.meetings.auth.model.RefreshTokenRequest;
+import com.example.meetings.auth.model.dto.input.AuthEmailRequest;
 import com.example.meetings.auth.model.dto.input.AuthPhoneRequest;
 import com.example.meetings.auth.model.dto.input.AuthRequest;
 import com.example.meetings.auth.model.dto.output.AuthResponse;
@@ -32,6 +33,12 @@ public class ApiSigningInController {
     @PostMapping("/signin/phone")
     public SuccessfulResponse signInViaPhoneCodeRequest(@Valid @RequestBody AuthPhoneRequest request) {
         authFacade.signInViaPhone(request.getPhone());
+        return new SuccessfulResponse();
+    }
+
+    @PostMapping("/signin/email")
+    public SuccessfulResponse signInViaEmailCodeRequest(@Valid @RequestBody AuthEmailRequest request) {
+        authFacade.signInViaEmail(request.getEmail());
         return new SuccessfulResponse();
     }
 
