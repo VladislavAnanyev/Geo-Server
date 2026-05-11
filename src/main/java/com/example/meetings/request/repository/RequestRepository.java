@@ -16,13 +16,11 @@ public interface RequestRepository extends CrudRepository<Request, Long>, JpaRep
      * FindByStatusAnd(ToUsernameOrSenderUsername)*/
     List<RequestView> findByStatusAndToUserIdOrStatusAndSenderUserId(RequestStatus status, @NotBlank Long toUserId, RequestStatus status2, @NotBlank Long senderUserId);
 
-    List<RequestView> findByMeetingMeetingIdAndSenderUserId(Long meetingId, Long userId);
-
-    Optional<Request> findAllByMeetingMeetingIdAndStatusAndSenderUserId(Long meetingId, RequestStatus status, Long userId);
-
-    List<Request> findAllByMeetingMeetingId(Long meetingId);
-
     List<RequestView> findAllBySenderUserIdAndStatus(Long userId, RequestStatus status);
 
     boolean existsBySenderUserIdAndToUserIdAndStatus(Long username, Long username1, RequestStatus pending);
+
+    Optional<Request> findBySenderUserIdAndToUserIdAndStatus(Long senderUserId, Long toUserId, RequestStatus status);
+
+    Optional<Request> findFirstBySenderUserIdAndToUserIdAndStatusOrderByRequestIdDesc(Long senderUserId, Long toUserId, RequestStatus status);
 }

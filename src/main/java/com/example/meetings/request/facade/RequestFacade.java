@@ -3,7 +3,7 @@ package com.example.meetings.request.facade;
 import com.example.meetings.request.model.dto.output.*;
 
 public interface RequestFacade {
-    void sendRequest(Long meetingId, Long fromUserId, Long toUserId, String messageContent);
+    void sendRequest(Long fromUserId, Long toUserId, String messageContent);
 
     AcceptRequestResult acceptRequest(Long requestId, Long userId);
 

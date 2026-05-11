@@ -2,7 +2,6 @@ package com.example.meetings.request.model.domain;
 
 import com.example.meetings.chat.model.domain.Message;
 import com.example.meetings.chat.model.domain.Notifiable;
-import com.example.meetings.meeting.model.domain.Meeting;
 import com.example.meetings.user.model.domain.User;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,10 +28,6 @@ public class Request implements Notifiable {
 
     @Enumerated(EnumType.STRING)
     private RequestStatus status;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "meeting_id")
-    private Meeting meeting;
 
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY)
     @JoinColumn(name = "message_id")

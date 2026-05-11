@@ -30,9 +30,6 @@ public class Meeting implements Notifiable {
     @JoinColumn(name = "second_user_id")
     private User secondUser;
 
-    @OneToOne(mappedBy = "meeting")
-    private Request request;
-
     private Double lat;
     private Double lng;
 

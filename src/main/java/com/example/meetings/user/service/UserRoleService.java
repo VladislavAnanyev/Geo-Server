@@ -17,12 +17,22 @@ public class UserRoleService {
     private final UserRoleRepository userRoleRepository;
 
     public List<Role> getRoles(Long userId) {
-        return userRoleRepository.findRolesByUserId(userId);
+        return userRoleRepository.findRolesByUserId(userId).stream()
+                .map(r -> {
+                    try {
+                        return Role.valueOf(r);
+                    } catch (Exception e) {
+                        return null;
+                    }
+                })
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .toList();
     }
 
     @Transactional
     public void ensureDefaultRole(User user) {
-        List<Role> roles = userRoleRepository.findRolesByUserId(user.getUserId());
+        List<String> roles = userRoleRepository.findRolesByUserId(user.getUserId());
         if (roles.isEmpty()) {
             userRoleRepository.save(new UserRole().setUser(user).setRole(Role.ROLE_USER));
         }

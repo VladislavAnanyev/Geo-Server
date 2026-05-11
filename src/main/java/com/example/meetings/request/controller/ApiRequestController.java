@@ -24,7 +24,6 @@ public class ApiRequestController {
     @PostMapping(path = "/request")
     public SuccessfulResponse sendRequest(@RequestBody @Valid RequestDto requestDto, @ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser) {
         requestFacade.sendRequest(
-                requestDto.getMeetingId(),
                 authUser.getUserId(),
                 requestDto.getToUserId(),
                 requestDto.getMessageContent()

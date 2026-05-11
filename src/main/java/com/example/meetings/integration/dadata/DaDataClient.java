@@ -25,11 +25,11 @@ public class DaDataClient {
     public static final String TOKEN = "Token ";
     private final RestTemplate restTemplate;
 
-    @Value("dadata.key")
+    @Value("${dadata.key}")
     private String apiKey;
-    @Value("dadata.secret")
+    @Value("${dadata.secret}")
     private String apiSecret;
-    @Value("dadata.url")
+    @Value("${dadata.url}")
     private String url;
 
     public DaDataClient(RestTemplate restTemplate) {

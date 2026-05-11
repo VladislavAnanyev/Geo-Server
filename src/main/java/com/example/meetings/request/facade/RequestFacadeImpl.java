@@ -46,12 +46,12 @@ public class RequestFacadeImpl implements RequestFacade {
 
     @Override
     @Transactional
-    public void sendRequest(Long meetingId, Long fromUserId, Long toUserId, String messageContent) {
+    public void sendRequest(Long fromUserId, Long toUserId, String messageContent) {
         if (friendService.isFriends(fromUserId, toUserId)) {
             throw new RuntimeException("Пользователь уже в друзьях");
         }
 
-        Optional<Request> optionalRequest = requestService.findMutualRequest(meetingId, toUserId);
+        Optional<Request> optionalRequest = requestService.findMutualRequest(fromUserId, toUserId);
         optionalRequest.ifPresentOrElse(
                 request -> this.acceptRequest(request.getRequestId(), fromUserId),
                 () -> {
@@ -63,7 +63,7 @@ public class RequestFacadeImpl implements RequestFacade {
                                             .setDialogId(messageService.createDialog(toUserId, fromUserId))))
                             .map(Message::getMessageId)
                             .orElse(null);
-                    Request request = requestService.createRequest(meetingId, fromUserId, toUserId, messageId, PENDING);
+                    Request request = requestService.createRequest(fromUserId, toUserId, messageId, PENDING);
                     RequestView requestView = projectionUtil.parse(request, RequestView.class);
                     eventService.send(requestView, request.getUsers(), RequestType.REQUEST);
                     notificationService.send(REQUEST, REQUEST_DESCRIPTION, request);
@@ -94,7 +94,7 @@ public class RequestFacadeImpl implements RequestFacade {
     public void doNotShowInRecommendation(Long meetingId, Long userId) {
         Meeting meeting = meetingService.findMeetingById(meetingId);
         Long secondUserId = meeting.getFirstUser().getUserId().equals(userId) ? meeting.getSecondUser().getUserId() : meeting.getFirstUser().getUserId();
-        requestService.createRequest(meetingId, userId, secondUserId, null, REJECTED);
+        requestService.createRequest(userId, secondUserId, null, REJECTED);
     }
 
     @Override

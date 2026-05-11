@@ -7,18 +7,7 @@ public class RequestDto {
     @NotNull
     private Long toUserId;
 
-    @NotNull
-    private Long meetingId;
-
     private String messageContent;
-
-    public Long getMeetingId() {
-        return meetingId;
-    }
-
-    public void setMeetingId(Long meetingId) {
-        this.meetingId = meetingId;
-    }
 
     public String getMessageContent() {
         return messageContent;

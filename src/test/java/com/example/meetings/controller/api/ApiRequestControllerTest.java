@@ -49,7 +49,6 @@ public class ApiRequestControllerTest {
         String json = """
                 {
                     "toUserId": 1004,
-                    "meetingId": 993,
                     "messageContent": "Привет"
                 }
                 """;
@@ -72,8 +71,7 @@ public class ApiRequestControllerTest {
     public void testSendRequestWithoutMessage() throws Exception {
         String json = """
                 {
-                    "toUserId": 1004,
-                    "meetingId": 990
+                    "toUserId": 1004
                 }
                 """;
 
@@ -98,7 +96,6 @@ public class ApiRequestControllerTest {
         String json = """
                 {
                     "toUserId": 1005,
-                    "meetingId": 992,
                     "messageContent": "Привет"
                 }
                 """;
