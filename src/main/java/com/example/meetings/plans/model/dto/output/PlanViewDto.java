@@ -1,5 +1,7 @@
 package com.example.meetings.plans.model.dto.output;
 
+import com.example.meetings.plans.model.domain.PlanMode;
+import com.example.meetings.plans.model.domain.PlanResponseStatus;
 import com.example.meetings.plans.model.domain.PlanType;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -11,6 +13,7 @@ import java.time.LocalDateTime;
 public class PlanViewDto {
     private Long planId;
     private PlanType type;
+    private PlanMode mode;
     private PlanUserDto user;
     private String title;
     private String description;
@@ -21,5 +24,8 @@ public class PlanViewDto {
     private boolean isOwnPlan;
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
+    private Long dialogId;
+    private PlanResponseStatus responseStatus;
+    private Long pendingResponsesCount;
 }
 

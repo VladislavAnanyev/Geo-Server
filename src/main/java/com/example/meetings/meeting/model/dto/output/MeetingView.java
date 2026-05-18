@@ -17,6 +17,6 @@ public interface MeetingView {
 
     Date getTime();
 
-    @Value("#{@requestService.isPossibleToSendRequest(target.meetingId)}")
+    @Value("#{@requestService.isPossibleToSendRequest(target.firstUserId, target.secondUserId)}")
     boolean isPossibleToSendRequest();
 }

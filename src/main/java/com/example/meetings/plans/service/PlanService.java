@@ -1,7 +1,10 @@
 package com.example.meetings.plans.service;
 
+import com.example.meetings.chat.model.domain.Dialog;
 import com.example.meetings.plans.model.domain.Plan;
 import com.example.meetings.plans.model.domain.PlanLookupMode;
+import com.example.meetings.plans.model.domain.PlanMode;
+import com.example.meetings.plans.model.domain.PlanResponseStatus;
 import com.example.meetings.plans.model.domain.PlanStatus;
 import com.example.meetings.plans.model.domain.PlanType;
 import com.example.meetings.plans.model.dto.input.CreateScheduledPlanRequest;
@@ -12,6 +15,7 @@ import com.example.meetings.plans.model.dto.output.PlanLocationDto;
 import com.example.meetings.plans.model.dto.output.PlanUserDto;
 import com.example.meetings.plans.model.dto.output.PlanViewDto;
 import com.example.meetings.plans.repository.PlanRepository;
+import com.example.meetings.plans.repository.PlanResponseRepository;
 import com.example.meetings.user.model.domain.User;
 import com.example.meetings.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +29,12 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.util.List;
 import java.util.Objects;
 
+import static com.example.meetings.plans.model.domain.PlanResponseStatus.PENDING;
+import static com.example.meetings.plans.model.domain.PlanMode.GROUP;
+import static com.example.meetings.plans.model.domain.PlanMode.PERSONAL;
 import static com.example.meetings.plans.model.domain.PlanStatus.*;
 import static com.example.meetings.plans.model.domain.PlanType.LIVE;
 import static com.example.meetings.plans.model.domain.PlanType.SCHEDULED;
@@ -42,6 +50,7 @@ import static org.springframework.http.HttpStatus.*;
 public class PlanService {
 
     private final PlanRepository planRepository;
+    private final PlanResponseRepository planResponseRepository;
     private final UserService userService;
 
     @Value("${plans.live.ttl-minutes:120}")
@@ -63,10 +72,13 @@ public class PlanService {
     }
 
     @Transactional
-    public PlanViewDto createScheduled(Long authUserId, CreateScheduledPlanRequest request) {
-        LocalDateTime expiresAt = validateAndResolveScheduledExpiresAt(request);
-        User owner = userService.loadUserByUserId(authUserId);
-        Plan plan = buildScheduledPlan(owner, request, expiresAt, LocalDateTime.now());
+    public PlanViewDto createScheduled(Long authUserId, CreateScheduledPlanRequest request, Dialog groupDialog) {
+        LocalDateTime expires = validateAndResolveScheduledExpiresAt(request);
+        PlanMode mode = request.getMode();
+        if (GROUP.equals(mode) && groupDialog == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "group plan requires dialog");
+        }
+        Plan plan = buildScheduledPlan(userService.loadUserByUserId(authUserId), request, expires, LocalDateTime.now(), mode, groupDialog);
         return toView(planRepository.save(plan), authUserId);
     }
 
@@ -77,7 +89,7 @@ public class PlanService {
         Page<Plan> plans = planRepository.findNearby(
                 request.getLat(),
                 request.getLon(),
-                request.getRadiusM(),
+                50000,
                 typeFilter,
                 request.getFromTime(),
                 request.getToTime(),
@@ -113,9 +125,14 @@ public class PlanService {
     }
 
     @Transactional(readOnly = true)
-    public PlanViewDto getMyActiveLive(Long authUserId) {
-        Plan active = findActiveLivePlan(authUserId);
-        return active == null ? null : toView(active, authUserId);
+    public PlanListResult getMyPlans(Long authUserId) {
+        LocalDateTime now = LocalDateTime.now();
+        List<Plan> plans = planRepository.findMyPlansExcludingStaleLive(authUserId, now);
+        return new PlanListResult()
+                .setItems(plans.stream().map(p -> toView(p, authUserId)).toList())
+                .setPage(0)
+                .setSize(plans.size())
+                .setTotal(plans.size());
     }
 
     private Plan loadPlan(Long planId) {
@@ -128,7 +145,7 @@ public class PlanService {
 
     private PlanViewDto closeLivePlan(Plan active, Long authUserId) {
         if (active == null) {
-            return getMyActiveLive(authUserId);
+            return null;
         }
         return toView(closePlan(active, CLOSED), authUserId);
     }
@@ -141,7 +158,8 @@ public class PlanService {
 
     private Plan saveLivePlan(Plan active, Long authUserId, ToggleLivePlanRequest request) {
         User owner = userService.loadUserByUserId(authUserId);
-        return planRepository.save(upsertLivePlan(active, owner, request, LocalDateTime.now()));
+        LocalDateTime now = LocalDateTime.now();
+        return planRepository.save(upsertLivePlan(active, owner, request, now));
     }
 
     private Plan upsertLivePlan(Plan active, User owner, ToggleLivePlanRequest request, LocalDateTime now) {
@@ -168,14 +186,17 @@ public class PlanService {
                 .setVisibilityRadiusM(defaultVisibilityRadiusM)
                 .setExpiresAt(now.plusMinutes(liveTtlMinutes))
                 .setUpdatedAt(now)
+                .setMode(PERSONAL)
+                .setDialog(null)
                 .setClosedAt(null);
     }
 
-    private Plan buildScheduledPlan(User owner, CreateScheduledPlanRequest request, LocalDateTime expiresAt, LocalDateTime now) {
+    private Plan buildScheduledPlan(User owner, CreateScheduledPlanRequest request, LocalDateTime expiresAt, LocalDateTime now, PlanMode mode, Dialog groupDialog) {
         return new Plan()
                 .setOwner(owner)
                 .setType(SCHEDULED)
                 .setStatus(ACTIVE)
+                .setMode(mode)
                 .setTitle(request.getTitle().trim())
                 .setDescription(trimToNull(request.getDescription()))
                 .setStartAt(request.getStartAt())
@@ -185,6 +206,7 @@ public class PlanService {
                 .setLon(request.getLon())
                 .setVisibilityRadiusM(defaultVisibilityRadiusM)
                 .setCreatedAt(now)
+                .setDialog(GROUP.equals(mode) ? groupDialog : null)
                 .setUpdatedAt(now);
     }
 
@@ -201,6 +223,7 @@ public class PlanService {
         return new PlanViewDto()
                 .setPlanId(plan.getId())
                 .setType(plan.getType())
+                .setMode(plan.getMode())
                 .setUser(toUserDto(owner))
                 .setTitle(plan.getTitle())
                 .setDescription(plan.getDescription())
@@ -210,7 +233,10 @@ public class PlanService {
                 .setLocation(toLocationDto(plan))
                 .setOwnPlan(Objects.equals(owner.getUserId(), authUserId))
                 .setCreatedAt(plan.getCreatedAt())
-                .setExpiresAt(plan.getExpiresAt());
+                .setExpiresAt(plan.getExpiresAt())
+                .setDialogId(resolveDialogIdForViewer(plan))
+                .setResponseStatus(resolveResponseStatus(plan, authUserId))
+                .setPendingResponsesCount(resolvePendingResponsesCount(plan, authUserId));
     }
 
     private PlanUserDto toUserDto(User owner) {
@@ -341,6 +367,29 @@ public class PlanService {
 
     private int resolveSize(NearbyPlansRequest request) {
         return request.getSize() == null ? 20 : Math.min(Math.max(1, request.getSize()), 100);
+    }
+
+    private Long resolveDialogIdForViewer(Plan plan) {
+        if (!GROUP.equals(plan.getMode())) {
+            return null;
+        }
+        return plan.getDialog() == null ? null : plan.getDialog().getDialogId();
+    }
+
+    private PlanResponseStatus resolveResponseStatus(Plan plan, Long authUserId) {
+        if (!GROUP.equals(plan.getMode()) || Objects.equals(plan.getOwner().getUserId(), authUserId)) {
+            return null;
+        }
+        return planResponseRepository.findByPlanIdAndUserUserId(plan.getId(), authUserId)
+                .map(com.example.meetings.plans.model.domain.PlanResponse::getStatus)
+                .orElse(null);
+    }
+
+    private Long resolvePendingResponsesCount(Plan plan, Long authUserId) {
+        if (!GROUP.equals(plan.getMode()) || !Objects.equals(plan.getOwner().getUserId(), authUserId)) {
+            return null;
+        }
+        return planResponseRepository.countByPlanIdAndStatus(plan.getId(), PENDING);
     }
 }
 

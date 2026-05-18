@@ -136,7 +136,7 @@ public class MessageService {
     public Dialog createGroup(CreateGroupModel model) {
         Dialog dialog = new Dialog();
         dialog.setType(DialogType.GROUP);
-        dialog.setImage(model.getImage());
+        dialog.setImage(model.getImage() == null ? "https://storage.yandexcloud.net/meetings-file-storage/free-icon-dog-17617815.png" : model.getImage());
         model.getUsers().forEach(userId -> dialog.addUser(userService.loadUserByUserId(userId)));
 
         if (!isUserContainsInDialog(dialog, model.getAuthUserId())) {
@@ -149,7 +149,6 @@ public class MessageService {
             dialog.setName(model.getName());
         }
 
-        dialog.setImage(hostname + "/img/default.jpg");
         return dialogRepository.save(dialog);
     }
 

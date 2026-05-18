@@ -11,11 +11,25 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface PlanRepository extends JpaRepository<Plan, Long> {
 
     Optional<Plan> findFirstByOwnerUserIdAndTypeAndStatus(Long ownerUserId, PlanType type, PlanStatus status);
+
+    @Query("""
+            SELECT p FROM PLANS p
+            WHERE p.owner.userId = :ownerUserId
+              AND (
+                   p.type <> com.example.meetings.plans.model.domain.PlanType.LIVE
+                   OR (p.type = com.example.meetings.plans.model.domain.PlanType.LIVE
+                       AND p.status = com.example.meetings.plans.model.domain.PlanStatus.ACTIVE
+                       AND p.expiresAt > :now)
+              )
+            ORDER BY p.createdAt DESC
+            """)
+    List<Plan> findMyPlansExcludingStaleLive(@Param("ownerUserId") Long ownerUserId, @Param("now") LocalDateTime now);
 
     @Query(value = """
             SELECT *

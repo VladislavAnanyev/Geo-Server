@@ -1,5 +1,6 @@
 package com.example.meetings.plans.model.dto.input;
 
+import com.example.meetings.plans.model.domain.PlanMode;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
@@ -17,5 +18,7 @@ public class CreateScheduledPlanRequest {
     private String locationName;
     private Double lat;
     private Double lon;
+    @NotNull
+    private PlanMode mode;
 }
 

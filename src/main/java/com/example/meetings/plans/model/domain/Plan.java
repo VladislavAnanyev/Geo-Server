@@ -1,5 +1,6 @@
 package com.example.meetings.plans.model.domain;
 
+import com.example.meetings.chat.model.domain.Dialog;
 import com.example.meetings.user.model.domain.User;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,6 +30,10 @@ public class Plan {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private PlanStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "mode", nullable = false)
+    private PlanMode mode;
 
     @Column(name = "title")
     private String title;
@@ -62,5 +67,9 @@ public class Plan {
 
     @Column(name = "closed_at")
     private LocalDateTime closedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "dialog_id")
+    private Dialog dialog;
 }
 

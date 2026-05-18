@@ -53,6 +53,10 @@ public class RequestService {
         return requestRepository.save(request);
     }
 
+    public boolean isPossibleToSendRequest(Long firstUserId, Long secondUserId) {
+        return true;
+    }
+
     public List<RequestView> getSentRequests(Long userId) {
         return requestRepository.findAllBySenderUserIdAndStatus(userId, PENDING);
     }

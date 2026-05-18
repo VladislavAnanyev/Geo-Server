@@ -7,5 +7,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class PlanRespondResult {
     private Long planId;
+    private Long responseId;
+    private String status;
 }
 

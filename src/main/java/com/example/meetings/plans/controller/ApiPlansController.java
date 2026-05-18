@@ -2,6 +2,7 @@ package com.example.meetings.plans.controller;
 
 import com.example.meetings.auth.security.model.AuthUserDetails;
 import com.example.meetings.plans.facade.PlanFacade;
+import com.example.meetings.plans.model.domain.PlanResponseStatus;
 import com.example.meetings.plans.model.domain.PlanStatus;
 import com.example.meetings.plans.model.dto.input.*;
 import com.example.meetings.plans.model.dto.output.*;
@@ -52,10 +53,34 @@ public class ApiPlansController {
     @ApiOperation("Откликнуться на план")
     @PostMapping("/plans/{planId}/respond")
     public PlanRespondResponse respond(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser,
-                                       @PathVariable Long planId,
-                                       @RequestBody(required = false) RespondToPlanRequest request) {
-        String message = request == null ? null : request.getMessage();
-        return new PlanRespondResponse(planFacade.respond(authUser.getUserId(), planId, message));
+                                       @PathVariable Long planId) {
+        return new PlanRespondResponse(planFacade.respond(authUser.getUserId(), planId));
+    }
+
+    @ApiOperation("Список откликов на групповой план (owner)")
+    @GetMapping("/plans/{planId}/responses")
+    public PlanResponseListResponse getResponses(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser,
+                                                 @PathVariable Long planId,
+                                                 @RequestParam(required = false) PlanResponseStatus status,
+                                                 @RequestParam(required = false, defaultValue = "0") Integer page,
+                                                 @RequestParam(required = false, defaultValue = "20") Integer size) {
+        return new PlanResponseListResponse(planFacade.getResponses(authUser.getUserId(), planId, status, page, size));
+    }
+
+    @ApiOperation("Одобрить отклик на групповой план")
+    @PostMapping("/plans/{planId}/responses/{responseId}/approve")
+    public PlanResponseActionResponse approveResponse(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser,
+                                                      @PathVariable Long planId,
+                                                      @PathVariable Long responseId) {
+        return new PlanResponseActionResponse(planFacade.approveResponse(authUser.getUserId(), planId, responseId));
+    }
+
+    @ApiOperation("Отклонить отклик на групповой план")
+    @PostMapping("/plans/{planId}/responses/{responseId}/reject")
+    public PlanResponseActionResponse rejectResponse(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser,
+                                                     @PathVariable Long planId,
+                                                     @PathVariable Long responseId) {
+        return new PlanResponseActionResponse(planFacade.rejectResponse(authUser.getUserId(), planId, responseId));
     }
 
     @ApiOperation("Обновить статус плана владельцем")
@@ -70,10 +95,10 @@ public class ApiPlansController {
         }
     }
 
-    @ApiOperation("Получить мой активный live-план")
-    @GetMapping("/plans/me/active-live")
-    public PlanResponse getMyActiveLive(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser) {
-        return new PlanResponse(planFacade.getMyActiveLive(authUser.getUserId()));
+    @ApiOperation("Мои планы")
+    @GetMapping("/plans/me")
+    public PlanListResponse getMyPlans(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser) {
+        return new PlanListResponse(planFacade.getMyPlans(authUser.getUserId()));
     }
 }
 
