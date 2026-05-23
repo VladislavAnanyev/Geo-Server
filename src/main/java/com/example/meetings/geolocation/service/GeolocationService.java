@@ -75,7 +75,7 @@ public class GeolocationService {
     }
 
     public List<Geolocation> findInSquare(Geolocation geolocation, Integer size, LocalDateTime time) {
-        return findInSquare(geolocation, size, time, 5L);
+        return findInSquare(geolocation, size, time, 30L);
     }
 
     public List<Geolocation> findInSquare(Geolocation geolocation, Integer size, LocalDateTime time, Long interval) {

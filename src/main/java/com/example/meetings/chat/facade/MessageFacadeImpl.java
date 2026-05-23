@@ -18,6 +18,7 @@ import java.util.List;
 import static com.example.meetings.chat.mapper.DialogDTOMapper.map;
 import static com.example.meetings.chat.model.domain.MessageStatus.READ;
 import static com.example.meetings.common.rabbit.eventtype.MessageType.*;
+import static com.example.meetings.util.Constants.ADMIN_ID;
 import static java.util.stream.Collectors.toSet;
 
 @Component
@@ -85,6 +86,13 @@ public class MessageFacadeImpl implements MessageFacade {
     public CreateDialogResult createDialog(Long firstUserId, Long secondUserId) {
         return new CreateDialogResult(
                 messageService.createDialog(firstUserId, secondUserId)
+        );
+    }
+
+    @Override
+    public CreateDialogResult getSupportDialog(Long authUserId) {
+        return new CreateDialogResult(
+                messageService.createDialog(ADMIN_ID, authUserId)
         );
     }
 

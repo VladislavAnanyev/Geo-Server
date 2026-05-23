@@ -20,6 +20,8 @@ public interface MessageFacade {
 
     CreateDialogResult createDialog(Long firstUserId, Long secondUserId);
 
+    CreateDialogResult getSupportDialog(Long authUserId);
+
     void receiveMessages(Long userId, Long dialogId);
 
     void readMessages(Long userId, Long dialogId);

@@ -5,6 +5,7 @@ import com.example.meetings.plans.model.domain.PlanResponseStatus;
 import com.example.meetings.plans.model.dto.input.CreateScheduledPlanRequest;
 import com.example.meetings.plans.model.dto.input.NearbyPlansRequest;
 import com.example.meetings.plans.model.dto.input.ToggleLivePlanRequest;
+import com.example.meetings.plans.model.dto.input.UpdateScheduledPlanRequest;
 import com.example.meetings.plans.model.dto.output.*;
 
 public interface PlanFacade {
@@ -25,6 +26,10 @@ public interface PlanFacade {
     PlanResponseViewDto rejectResponse(Long authUserId, Long planId, Long responseId);
 
     PlanViewDto patchStatus(Long authUserId, Long planId, PlanStatus status);
+
+    PlanViewDto updateScheduled(Long authUserId, Long planId, UpdateScheduledPlanRequest request);
+
+    void deletePlan(Long authUserId, Long planId);
 
     PlanListResult getMyPlans(Long authUserId);
 }

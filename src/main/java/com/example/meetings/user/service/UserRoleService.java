@@ -37,5 +37,16 @@ public class UserRoleService {
             userRoleRepository.save(new UserRole().setUser(user).setRole(Role.ROLE_USER));
         }
     }
+
+    @Transactional
+    public void syncPremiumRole(User user, boolean premium) {
+        Long userId = user.getUserId();
+        boolean hasPremium = userRoleRepository.existsByUserUserIdAndRole(userId, Role.ROLE_PREMIUM);
+        if (premium && !hasPremium) {
+            userRoleRepository.save(new UserRole().setUser(user).setRole(Role.ROLE_PREMIUM));
+        } else if (!premium && hasPremium) {
+            userRoleRepository.deleteByUserUserIdAndRole(userId, Role.ROLE_PREMIUM);
+        }
+    }
 }
 

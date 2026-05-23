@@ -3,10 +3,12 @@ package com.example.meetings.chat.mapper;
 import com.example.meetings.chat.model.*;
 import com.example.meetings.chat.model.domain.*;
 import com.example.meetings.chat.model.dto.input.Typing;
+import com.example.meetings.photo.model.domain.Photo;
 import com.example.meetings.user.model.domain.User;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.example.meetings.chat.model.domain.MessageStatus.READ;
 import static java.util.stream.Collectors.toList;
@@ -16,7 +18,7 @@ public class DtoMapper {
         return new UserDto()
                 .setUserId(user.getUserId())
                 .setFirstName(user.getFirstName())
-                .setAvatar(user.getMainPhoto().getUrl())
+                .setAvatar(Optional.ofNullable(user.getMainPhoto()).map(Photo::getUrl).orElse(null))
                 .setOnline(user.isOnline())
                 .setLogin(user.getUsername());
     }

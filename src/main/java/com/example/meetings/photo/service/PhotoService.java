@@ -87,12 +87,19 @@ public class PhotoService {
     @Transactional
     public Photo savePhoto(String url, Long userId) {
         User user = userService.loadUserByUserId(userId);
+        boolean firstPhoto = user.getPhotos().isEmpty();
         Photo photo = new Photo()
                 .setUrl(url)
                 .setUser(user)
                 .setPosition(user.getPhotos().size());
 
+        photo = photoRepository.save(photo);
         user.addPhoto(photo);
+
+        if (firstPhoto) {
+            user.setMainPhoto(photo);
+            userRepository.save(user);
+        }
 
         return photo;
     }

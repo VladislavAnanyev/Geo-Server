@@ -1,6 +1,7 @@
 package com.example.meetings.plans.controller;
 
 import com.example.meetings.auth.security.model.AuthUserDetails;
+import com.example.meetings.common.model.SuccessfulResponse;
 import com.example.meetings.plans.facade.PlanFacade;
 import com.example.meetings.plans.model.domain.PlanResponseStatus;
 import com.example.meetings.plans.model.domain.PlanStatus;
@@ -81,6 +82,22 @@ public class ApiPlansController {
                                                      @PathVariable Long planId,
                                                      @PathVariable Long responseId) {
         return new PlanResponseActionResponse(planFacade.rejectResponse(authUser.getUserId(), planId, responseId));
+    }
+
+    @ApiOperation("Редактировать запланированный план")
+    @PutMapping("/plans/{planId}")
+    public PlanResponse updateScheduled(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser,
+                                        @PathVariable Long planId,
+                                        @RequestBody @Valid UpdateScheduledPlanRequest request) {
+        return new PlanResponse(planFacade.updateScheduled(authUser.getUserId(), planId, request));
+    }
+
+    @ApiOperation("Удалить план")
+    @DeleteMapping("/plans/{planId}")
+    public SuccessfulResponse deletePlan(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser,
+                                         @PathVariable Long planId) {
+        planFacade.deletePlan(authUser.getUserId(), planId);
+        return new SuccessfulResponse();
     }
 
     @ApiOperation("Обновить статус плана владельцем")

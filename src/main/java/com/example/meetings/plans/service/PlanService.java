@@ -10,6 +10,7 @@ import com.example.meetings.plans.model.domain.PlanType;
 import com.example.meetings.plans.model.dto.input.CreateScheduledPlanRequest;
 import com.example.meetings.plans.model.dto.input.NearbyPlansRequest;
 import com.example.meetings.plans.model.dto.input.ToggleLivePlanRequest;
+import com.example.meetings.plans.model.dto.input.UpdateScheduledPlanRequest;
 import com.example.meetings.plans.model.dto.output.PlanListResult;
 import com.example.meetings.plans.model.dto.output.PlanLocationDto;
 import com.example.meetings.plans.model.dto.output.PlanUserDto;
@@ -78,7 +79,7 @@ public class PlanService {
         if (GROUP.equals(mode) && groupDialog == null) {
             throw new ResponseStatusException(BAD_REQUEST, "group plan requires dialog");
         }
-        Plan plan = buildScheduledPlan(userService.loadUserByUserId(authUserId), request, expires, LocalDateTime.now(), mode, groupDialog);
+        Plan plan = buildScheduledPlan(userService.loadUserByUserId(authUserId), request, expires, mode, groupDialog);
         return toView(planRepository.save(plan), authUserId);
     }
 
@@ -89,7 +90,7 @@ public class PlanService {
         Page<Plan> plans = planRepository.findNearby(
                 request.getLat(),
                 request.getLon(),
-                50000,
+                100000,
                 typeFilter,
                 request.getFromTime(),
                 request.getToTime(),
@@ -124,6 +125,40 @@ public class PlanService {
         return toView(closePlan(plan, status), authUserId);
     }
 
+    @Transactional
+    public PlanViewDto updateScheduled(Long authUserId, Long planId, UpdateScheduledPlanRequest request) {
+        Plan plan = loadPlan(planId);
+        validatePlanOwner(plan, authUserId);
+        validatePlanIsActiveForEdit(plan);
+        if (!SCHEDULED.equals(plan.getType())) {
+            throw new ResponseStatusException(BAD_REQUEST, "only scheduled plans can be updated");
+        }
+        plan.setTitle(request.getTitle().trim())
+                .setDescription(trimToNull(request.getDescription()))
+                .setStartAt(request.getStartAt())
+                .setExpiresAt(validateAndResolveScheduledExpiresAt(request))
+                .setLocationName(trimToNull(request.getLocationName()))
+                .setLat(request.getLat())
+                .setLon(request.getLon())
+                .setUpdatedAt(LocalDateTime.now());
+
+        return toView(planRepository.save(plan), authUserId);
+    }
+
+    @Transactional
+    public void deletePlan(Long authUserId, Long planId) {
+        Plan plan = loadPlan(planId);
+        validatePlanOwner(plan, authUserId);
+        validatePlanIsActiveForEdit(plan);
+        LocalDateTime now = LocalDateTime.now();
+        plan.setDeleted(true).setUpdatedAt(now);
+        if (LIVE.equals(plan.getType()) && ACTIVE.equals(plan.getStatus())) {
+            plan.setStatus(CLOSED).setClosedAt(now);
+        }
+
+        planRepository.save(plan);
+    }
+
     @Transactional(readOnly = true)
     public PlanListResult getMyPlans(Long authUserId) {
         LocalDateTime now = LocalDateTime.now();
@@ -136,11 +171,12 @@ public class PlanService {
     }
 
     private Plan loadPlan(Long planId) {
-        return planRepository.findById(planId).orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "plan not found"));
+        return planRepository.findByIdAndDeletedFalse(planId)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "plan not found"));
     }
 
     private Plan findActiveLivePlan(Long authUserId) {
-        return planRepository.findFirstByOwnerUserIdAndTypeAndStatus(authUserId, LIVE, ACTIVE).orElse(null);
+        return planRepository.findFirstByOwnerUserIdAndTypeAndStatusAndDeletedFalse(authUserId, LIVE, ACTIVE).orElse(null);
     }
 
     private PlanViewDto closeLivePlan(Plan active, Long authUserId) {
@@ -172,6 +208,7 @@ public class PlanService {
                 .setOwner(owner)
                 .setType(LIVE)
                 .setStatus(ACTIVE)
+                .setDeleted(false)
                 .setCreatedAt(now)
                 : active;
     }
@@ -191,7 +228,7 @@ public class PlanService {
                 .setClosedAt(null);
     }
 
-    private Plan buildScheduledPlan(User owner, CreateScheduledPlanRequest request, LocalDateTime expiresAt, LocalDateTime now, PlanMode mode, Dialog groupDialog) {
+    private Plan buildScheduledPlan(User owner, CreateScheduledPlanRequest request, LocalDateTime expiresAt, PlanMode mode, Dialog groupDialog) {
         return new Plan()
                 .setOwner(owner)
                 .setType(SCHEDULED)
@@ -205,9 +242,10 @@ public class PlanService {
                 .setLat(request.getLat())
                 .setLon(request.getLon())
                 .setVisibilityRadiusM(defaultVisibilityRadiusM)
-                .setCreatedAt(now)
+                .setCreatedAt(LocalDateTime.now())
                 .setDialog(GROUP.equals(mode) ? groupDialog : null)
-                .setUpdatedAt(now);
+                .setUpdatedAt(LocalDateTime.now())
+                .setDeleted(false);
     }
 
     private PlanListResult toListResult(Page<Plan> plans, Long authUserId) {
@@ -279,23 +317,47 @@ public class PlanService {
     }
 
     private LocalDateTime validateAndResolveScheduledExpiresAt(CreateScheduledPlanRequest request) {
-        if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
+        return validateAndResolveScheduledExpiresAt(
+                request.getTitle(),
+                request.getStartAt(),
+                request.getExpiresAt(),
+                request.getLat(),
+                request.getLon()
+        );
+    }
+
+    private LocalDateTime validateAndResolveScheduledExpiresAt(UpdateScheduledPlanRequest request) {
+        return validateAndResolveScheduledExpiresAt(
+                request.getTitle(),
+                request.getStartAt(),
+                request.getExpiresAt(),
+                request.getLat(),
+                request.getLon()
+        );
+    }
+
+    private LocalDateTime validateAndResolveScheduledExpiresAt(String title,
+                                                               LocalDateTime startAt,
+                                                               LocalDateTime expiresAt,
+                                                               Double lat,
+                                                               Double lon) {
+        if (title == null || title.trim().isEmpty()) {
             throw new ResponseStatusException(BAD_REQUEST, "title is required");
         }
-        if (request.getStartAt() == null) {
+        if (startAt == null) {
             throw new ResponseStatusException(BAD_REQUEST, "startAt is required");
         }
-        if ((request.getLat() == null) != (request.getLon() == null)) {
+        if ((lat == null) != (lon == null)) {
             throw new ResponseStatusException(BAD_REQUEST, "lat and lon must be provided together");
         }
-        if (request.getLat() != null) {
-            validateCoordinates(request.getLat(), request.getLon());
+        if (lat != null) {
+            validateCoordinates(lat, lon);
         }
-        LocalDateTime expiresAt = request.getExpiresAt() == null ? request.getStartAt().plusHours(6) : request.getExpiresAt();
-        if (!request.getStartAt().isBefore(expiresAt)) {
+        LocalDateTime resolvedExpiresAt = expiresAt == null ? startAt.plusHours(6) : expiresAt;
+        if (!startAt.isBefore(resolvedExpiresAt)) {
             throw new ResponseStatusException(UNPROCESSABLE_ENTITY, "startAt must be before expiresAt");
         }
-        return expiresAt;
+        return resolvedExpiresAt;
     }
 
     private void validateNearbyRequest(NearbyPlansRequest request) {
@@ -306,6 +368,17 @@ public class PlanService {
     }
 
     private void validatePlanIsActiveForRespond(Plan plan) {
+        validatePlanIsActive(plan);
+    }
+
+    private void validatePlanIsActiveForEdit(Plan plan) {
+        validatePlanIsActive(plan);
+    }
+
+    private void validatePlanIsActive(Plan plan) {
+        if (plan.isDeleted()) {
+            throw new ResponseStatusException(NOT_FOUND, "plan not found");
+        }
         if (!ACTIVE.equals(plan.getStatus()) || !plan.getExpiresAt().isAfter(LocalDateTime.now())) {
             throw new ResponseStatusException(CONFLICT, "plan is not active");
         }

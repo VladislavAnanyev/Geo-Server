@@ -1,5 +1,6 @@
 package com.example.meetings.plans.facade;
 
+import com.example.meetings.moderation.TextModerationService;
 import com.example.meetings.chat.model.CreateGroupModel;
 import com.example.meetings.chat.model.SendMessageModel;
 import com.example.meetings.chat.model.domain.Dialog;
@@ -10,6 +11,7 @@ import com.example.meetings.plans.model.domain.PlanStatus;
 import com.example.meetings.plans.model.dto.input.CreateScheduledPlanRequest;
 import com.example.meetings.plans.model.dto.input.NearbyPlansRequest;
 import com.example.meetings.plans.model.dto.input.ToggleLivePlanRequest;
+import com.example.meetings.plans.model.dto.input.UpdateScheduledPlanRequest;
 import com.example.meetings.plans.model.dto.output.*;
 import com.example.meetings.plans.service.PlanResponseService;
 import com.example.meetings.plans.service.PlanService;
@@ -18,7 +20,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 import static com.example.meetings.plans.model.domain.PlanLookupMode.RESPOND;
 import static com.example.meetings.plans.model.domain.PlanMode.GROUP;
@@ -30,11 +33,16 @@ import static java.util.List.of;
 public class PlanFacadeImpl implements PlanFacade {
 
     public static final String PLAN_RESPONSE_MARKER = "Отклик на план: ";
+    public static final String MESSAGE = "Это чат плана: «%s», начало: %s.";
+
+    private static final DateTimeFormatter PLAN_START_AT_FORMAT =
+            DateTimeFormatter.ofPattern("d MMMM yyyy, HH:mm", Locale.forLanguageTag("ru"));
 
     private final PlanService planService;
     private final PlanResponseService planResponseService;
     private final RequestFacade requestFacade;
     private final MessageService messageService;
+    private final TextModerationService textModerationService;
 
     @Override
     @Transactional
@@ -45,18 +53,19 @@ public class PlanFacadeImpl implements PlanFacade {
     @Override
     @Transactional
     public PlanViewDto createScheduled(Long authUserId, CreateScheduledPlanRequest request) {
+        textModerationService.validatePlanText(request.getTitle(), request.getDescription());
         Dialog groupDialog = null;
         if (GROUP.equals(request.getMode())) {
             groupDialog = messageService.createGroup(
                     new CreateGroupModel()
                             .setAuthUserId(authUserId)
-                            .setName("План: " + request.getDescription())
+                            .setName("План: " + request.getTitle())
                             .setUsers(of(authUserId, ADMIN_ID))
             );
             String supportNotice = String.format(
-                    "Это чат плана: «%s», начало: %s.",
+                    MESSAGE,
                     request.getTitle().trim(),
-                    request.getStartAt());
+                    request.getStartAt().format(PLAN_START_AT_FORMAT));
             messageService.saveMessage(new SendMessageModel()
                     .setSenderId(ADMIN_ID)
                     .setDialogId(groupDialog.getDialogId())
@@ -116,6 +125,19 @@ public class PlanFacadeImpl implements PlanFacade {
     @Transactional
     public PlanViewDto patchStatus(Long authUserId, Long planId, PlanStatus status) {
         return planService.patchStatus(authUserId, planId, status);
+    }
+
+    @Override
+    @Transactional
+    public PlanViewDto updateScheduled(Long authUserId, Long planId, UpdateScheduledPlanRequest request) {
+        textModerationService.validatePlanText(request.getTitle(), request.getDescription());
+        return planService.updateScheduled(authUserId, planId, request);
+    }
+
+    @Override
+    @Transactional
+    public void deletePlan(Long authUserId, Long planId) {
+        planService.deletePlan(authUserId, planId);
     }
 
     @Override

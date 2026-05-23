@@ -16,25 +16,29 @@ import java.util.Optional;
 
 public interface PlanRepository extends JpaRepository<Plan, Long> {
 
-    Optional<Plan> findFirstByOwnerUserIdAndTypeAndStatus(Long ownerUserId, PlanType type, PlanStatus status);
+    Optional<Plan> findByIdAndDeletedFalse(Long id);
+
+    Optional<Plan> findFirstByOwnerUserIdAndTypeAndStatusAndDeletedFalse(Long ownerUserId, PlanType type, PlanStatus status);
 
     @Query("""
             SELECT p FROM PLANS p
             WHERE p.owner.userId = :ownerUserId
+              AND p.deleted = false
               AND (
                    p.type <> com.example.meetings.plans.model.domain.PlanType.LIVE
                    OR (p.type = com.example.meetings.plans.model.domain.PlanType.LIVE
                        AND p.status = com.example.meetings.plans.model.domain.PlanStatus.ACTIVE
                        AND p.expiresAt > :now)
               )
-            ORDER BY p.createdAt DESC
+            ORDER BY p.startAt DESC
             """)
     List<Plan> findMyPlansExcludingStaleLive(@Param("ownerUserId") Long ownerUserId, @Param("now") LocalDateTime now);
 
     @Query(value = """
             SELECT *
             FROM PLANS P
-            WHERE P.status = 'ACTIVE'
+            WHERE P.deleted = FALSE
+              AND P.status = 'ACTIVE'
               AND P.expires_at > CAST(:now AS TIMESTAMP)
               AND ((CAST(:excludeOwn AS BOOLEAN) IS FALSE) OR P.owner_user_id <> CAST(:authUserId AS BIGINT))
               AND (CAST(:typeFilter AS VARCHAR) IS NULL OR P.type = CAST(:typeFilter AS VARCHAR))
@@ -57,12 +61,13 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
                        + sin(radians(CAST(:lat AS DOUBLE PRECISION))) * sin(radians(P.lat))
                    )
               ) <= CAST(:radiusM AS INTEGER)
-            ORDER BY P.created_at DESC
+            ORDER BY P.start_at DESC
             """,
             countQuery = """
             SELECT COUNT(*)
             FROM PLANS P
-            WHERE P.status = 'ACTIVE'
+            WHERE P.deleted = FALSE
+              AND P.status = 'ACTIVE'
               AND P.expires_at > CAST(:now AS TIMESTAMP)
               AND ((CAST(:excludeOwn AS BOOLEAN) IS FALSE) OR P.owner_user_id <> CAST(:authUserId AS BIGINT))
               AND (CAST(:typeFilter AS VARCHAR) IS NULL OR P.type = CAST(:typeFilter AS VARCHAR))
@@ -102,7 +107,7 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
     @Query(value = """
             UPDATE PLANS
             SET status = 'EXPIRED', updated_at = :now, closed_at = :now
-            WHERE status = 'ACTIVE' AND expires_at <= :now
+            WHERE deleted = FALSE AND status = 'ACTIVE' AND expires_at <= :now
             """, nativeQuery = true)
     int expireActivePlans(@Param("now") LocalDateTime now);
 }

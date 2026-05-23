@@ -68,6 +68,14 @@ public class ApiChatController {
         );
     }
 
+    @ApiOperation(value = "Получить диалог с технической поддержкой")
+    @GetMapping(path = "/dialog/support")
+    public CreateDialogResponse getSupportDialog(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser) {
+        return new CreateDialogResponse(
+                messageFacade.getSupportDialog(authUser.getUserId())
+        );
+    }
+
     @ApiOperation(value = "Получить вложения диалога")
     @GetMapping("/dialog/{id}/attachments")
     public GetDialogAttachmentsResponse getDialogAttachments(@PathVariable Long id) {

@@ -9,10 +9,32 @@ services:
     environment:
       - "SPRING_PROFILES_ACTIVE=prod"
       - "SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/meetings"
+      - "OLLAMA_MODERATION_ENABLED=true"
+      - "OLLAMA_BASE_URL=http://ollama:11434"
+      - "OLLAMA_MODEL=qwen2.5:3b-instruct"
     depends_on:
       - rabbitmq
       - db
       - redis
+      - ollama
+
+  # LLM для модерации. На стенде — свой образ с моделью внутри (см. docker/ollama/README.md).
+  # Сборка: docker build -f docker/ollama/Dockerfile -t <registry>/meetings-ollama:qwen2.5-3b-instruct .
+  # Не монтируйте ollama_data на /root/.ollama — пустой volume скроет модели из образа.
+  ollama:
+    image: ${OLLAMA_IMAGE:-ollama/ollama:latest}
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen2.5:3b-instruct}
+      - OLLAMA_KEEP_ALIVE=5m
+      - OLLAMA_NUM_PARALLEL=1
+      - OLLAMA_MAX_LOADED_MODELS=1
+    # Только CPU (без NVIDIA runtime). На слабой машине хватит 1b-модели.
+    mem_limit: 8g
+    cpus: 4
 
   rabbitmq:
     image: rabbitmq:3.10.7-management

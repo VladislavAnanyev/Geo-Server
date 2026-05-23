@@ -71,5 +71,8 @@ public class Plan {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dialog_id")
     private Dialog dialog;
+
+    @Column(name = "deleted", nullable = false, columnDefinition = "boolean not null default false")
+    private boolean deleted;
 }
 

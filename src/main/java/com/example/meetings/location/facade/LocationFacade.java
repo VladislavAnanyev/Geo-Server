@@ -19,8 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import static com.example.meetings.util.Constants.ADMIN_ID;
 
@@ -101,12 +101,17 @@ public class LocationFacade {
                     location.getRadius(), LocalDateTime.now(), 5L
             );
 
-            Set<User> users = location.getDialog().getUsers();
-            for (User user : users) {
-                List<Long> userList = geolocations.stream().map(Geolocation::getUser).map(User::getUserId).toList();
-                if (!userList.contains(user.getUserId()) && !user.getUserId().equals(ADMIN_ID)) {
-                    log.info("Удаляю пользователя {} из диалога локации {}", user.getUserId(), location.getName());
-                    messageService.deleteUserFromGroupDialog(user.getUserId(), location.getDialog().getDialogId());
+            List<Long> usersInArea = geolocations.stream()
+                    .map(Geolocation::getUser)
+                    .map(User::getUserId)
+                    .toList();
+            List<Long> dialogUserIds = new ArrayList<>(
+                    location.getDialog().getUsers().stream().map(User::getUserId).toList()
+            );
+            for (Long userId : dialogUserIds) {
+                if (!usersInArea.contains(userId) && !userId.equals(ADMIN_ID)) {
+                    log.info("Удаляю пользователя {} из диалога локации {}", userId, location.getName());
+                    messageService.deleteUserFromGroupDialog(userId, location.getDialog().getDialogId());
                 }
             }
         }
