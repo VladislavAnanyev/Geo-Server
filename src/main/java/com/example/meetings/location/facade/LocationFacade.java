@@ -5,13 +5,18 @@ import com.example.meetings.chat.model.CreateGroupModel;
 import com.example.meetings.chat.model.SendMessageModel;
 import com.example.meetings.chat.model.domain.Dialog;
 import com.example.meetings.chat.service.MessageService;
+import com.example.meetings.common.exception.GlobalErrorCode;
+import com.example.meetings.common.exception.SubscriptionRequiredException;
+import com.example.meetings.common.utils.ProjectionUtil;
 import com.example.meetings.geolocation.model.Geolocation;
 import com.example.meetings.geolocation.service.GeolocationService;
 import com.example.meetings.location.model.Location;
 import com.example.meetings.location.model.dto.LocationDTO;
 import com.example.meetings.location.model.dto.LocationRequest;
 import com.example.meetings.location.service.LocationService;
+import com.example.meetings.subscription.service.SubscriptionService;
 import com.example.meetings.user.model.domain.User;
+import com.example.meetings.user.model.dto.UserCommonView;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -31,11 +36,19 @@ public class LocationFacade {
     private final LocationService locationService;
     private final GeolocationService geolocationService;
     private final MessageService messageService;
+    private final SubscriptionService subscriptionService;
+    private final ProjectionUtil projectionUtil;
 
-    public LocationFacade(LocationService locationService, GeolocationService geolocationService, MessageService messageService) {
+    public LocationFacade(LocationService locationService,
+                          GeolocationService geolocationService,
+                          MessageService messageService,
+                          SubscriptionService subscriptionService,
+                          ProjectionUtil projectionUtil) {
         this.locationService = locationService;
         this.geolocationService = geolocationService;
         this.messageService = messageService;
+        this.subscriptionService = subscriptionService;
+        this.projectionUtil = projectionUtil;
     }
 
     @Transactional
@@ -68,6 +81,22 @@ public class LocationFacade {
                     location.setPeopleCount(location.getDialog().getUsers().size());
                     return new LocationDTO(location);
                 })
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserCommonView> getLocationPeople(Long authUserId, Long locationId) {
+        if (!subscriptionService.isPremium(authUserId)) {
+            throw new SubscriptionRequiredException(
+                    "exception.subscription.location.people.premium.required",
+                    GlobalErrorCode.ERROR_SUBSCRIPTION_LOCATION_PEOPLE
+            );
+        }
+
+        Location location = locationService.findById(locationId);
+        return location.getDialog().getUsers().stream()
+                .filter(user -> !user.getUserId().equals(ADMIN_ID))
+                .map(user -> projectionUtil.parse(user, UserCommonView.class))
                 .toList();
     }
 

@@ -19,7 +19,7 @@ public interface UserCommonView {
 
     LocalDate getBirthDate();
 
-    @Value("#{target.mainPhoto.url}")
+    @Value("#{target.mainPhoto?.url}")
     String getAvatar();
 
     boolean getOnline();

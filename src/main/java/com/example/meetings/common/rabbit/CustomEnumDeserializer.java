@@ -48,6 +48,16 @@ public class CustomEnumDeserializer extends StdDeserializer<Type> {
         } catch (IllegalArgumentException ignored) {
         }
 
+        try {
+            return LocationSharingType.valueOf(value);
+        } catch (IllegalArgumentException ignored) {
+        }
+
+        try {
+            return FriendType.valueOf(value);
+        } catch (IllegalArgumentException ignored) {
+        }
+
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
     }
 }

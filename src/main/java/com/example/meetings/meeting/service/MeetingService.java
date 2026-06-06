@@ -2,9 +2,12 @@ package com.example.meetings.meeting.service;
 
 import com.example.meetings.geolocation.model.Geolocation;
 import com.example.meetings.geolocation.service.GeolocationService;
+import com.example.meetings.common.exception.GlobalErrorCode;
+import com.example.meetings.common.exception.SubscriptionRequiredException;
 import com.example.meetings.meeting.model.domain.Meeting;
 import com.example.meetings.meeting.model.dto.output.MeetingView;
 import com.example.meetings.meeting.repository.MeetingRepository;
+import com.example.meetings.subscription.service.SubscriptionService;
 import com.example.meetings.user.model.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,11 +32,36 @@ public class MeetingService {
     @Autowired
     private GeolocationService geolocationService;
 
+    @Autowired
+    private SubscriptionService subscriptionService;
+
     public List<MeetingView> getMyMeetings(Long userId, LocalDate startAt, LocalDate endAt) {
         startAt = isNull(startAt) ? LocalDate.now() : startAt;
         endAt = isNull(endAt) ? LocalDate.now() : endAt;
 
         return meetingRepository.getMyMeetings(userId, startAt.atStartOfDay(), endAt.plusDays(1).atStartOfDay());
+    }
+
+    /**
+     * Для бесплатной подписки доступны встречи только за сегодня и вчера.
+     */
+    public void validateMeetingHistoryAccess(Long userId, LocalDate startAt, LocalDate endAt) {
+        startAt = isNull(startAt) ? LocalDate.now() : startAt;
+        endAt = isNull(endAt) ? LocalDate.now() : endAt;
+
+        if (subscriptionService.isPremium(userId)) {
+            return;
+        }
+
+        LocalDate today = LocalDate.now();
+        LocalDate freeStart = today.minusDays(1);
+
+        if (startAt.isBefore(freeStart) || endAt.isAfter(today)) {
+            throw new SubscriptionRequiredException(
+                    "exception.subscription.meetings.history.limit",
+                    GlobalErrorCode.ERROR_SUBSCRIPTION_MEETINGS_HISTORY_LIMIT
+            );
+        }
     }
 
     public List<Meeting> findNowMeetings(Geolocation geolocation) {

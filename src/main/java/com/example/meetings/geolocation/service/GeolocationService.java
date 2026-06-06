@@ -3,10 +3,9 @@ package com.example.meetings.geolocation.service;
 import com.example.meetings.geolocation.model.Geolocation;
 import com.example.meetings.geolocation.model.GeolocationHistory;
 import com.example.meetings.geolocation.repository.GeolocationHistoryRepository;
-import com.example.meetings.meeting.model.GeolocationDto;
+import com.example.meetings.geolocation.sharing.service.LocationSharingService;
 import com.example.meetings.meeting.model.GeolocationModel;
 import com.example.meetings.geolocation.repository.GeolocationRepository;
-import com.example.meetings.user.model.domain.User;
 import com.example.meetings.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,8 +13,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
-import static java.util.stream.Collectors.toList;
 
 @Service
 public class GeolocationService {
@@ -29,20 +26,21 @@ public class GeolocationService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private LocationSharingService locationSharingService;
+
     /**
-     * Получить координаты друзей пользователя
+     * Получить координаты друзей с активным согласием на обмен геолокацией.
      *
      * @param userId идентификатор пользователя
-     * @return координаты друзей пользователя
+     * @return координаты друзей с активным согласием на обмен
      */
     public List<Geolocation> getFriendsGeolocations(Long userId) {
-        User user = userService.loadUserByUserId(userId);
-        List<Long> friendsIds = user.getFriends()
-                .stream()
-                .map(User::getUserId)
-                .collect(toList());
-
-        return geolocationRepository.getUsersGeolocations(friendsIds);
+        List<Long> partnerIds = locationSharingService.findActivePartnerIds(userId);
+        if (partnerIds.isEmpty()) {
+            return List.of();
+        }
+        return geolocationRepository.getUsersGeolocations(partnerIds);
     }
 
     /**

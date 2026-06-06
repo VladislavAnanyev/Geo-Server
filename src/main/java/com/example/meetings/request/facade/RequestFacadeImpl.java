@@ -55,6 +55,7 @@ public class RequestFacadeImpl implements RequestFacade {
         optionalRequest.ifPresentOrElse(
                 request -> this.acceptRequest(request.getRequestId(), fromUserId),
                 () -> {
+                    requestService.validateOutgoingFriendRequestLimit(fromUserId);
                     Long messageId = ofNullable(messageContent)
                             .map(s -> messageService.saveMessage(
                                     new SendMessageModel()

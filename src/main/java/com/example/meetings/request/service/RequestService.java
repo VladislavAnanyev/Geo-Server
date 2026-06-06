@@ -1,35 +1,64 @@
 package com.example.meetings.request.service;
 
 import com.example.meetings.chat.repository.MessageRepository;
+import com.example.meetings.common.exception.GlobalErrorCode;
+import com.example.meetings.common.exception.SubscriptionRequiredException;
 import com.example.meetings.request.model.domain.Request;
 import com.example.meetings.request.model.domain.RequestStatus;
 import com.example.meetings.request.model.dto.output.RequestView;
 import com.example.meetings.request.repository.RequestRepository;
+import com.example.meetings.subscription.service.SubscriptionService;
 import com.example.meetings.user.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import static com.example.meetings.request.model.domain.RequestStatus.*;
+import static java.util.List.of;
 import static java.util.Objects.isNull;
 
 @Service
+@RequiredArgsConstructor
 public class RequestService {
 
-    @Autowired
-    private RequestRepository requestRepository;
+    private static final List<RequestStatus> OUTGOING_FRIEND_REQUEST_STATUSES = of(PENDING, ACCEPTED);
 
-    @Autowired
-    private UserService userService;
+    private final RequestRepository requestRepository;
+    private final UserService userService;
+    private final MessageRepository messageRepository;
+    private final SubscriptionService subscriptionService;
 
-    @Autowired
-    private MessageRepository messageRepository;
+    @Value("${subscription.free.daily-friend-requests-limit:5}")
+    private int dailyFriendRequestsLimit;
+
+    /**
+     * Проверяет дневной лимит исходящих заявок в друзья для пользователя без премиум-подписки.
+     */
+    public void validateOutgoingFriendRequestLimit(Long fromUserId) {
+        if (subscriptionService.isPremium(fromUserId)) {
+            return;
+        }
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        long sentToday = requestRepository.countBySender_UserIdAndCreatedAtGreaterThanEqualAndStatusIn(
+                fromUserId,
+                startOfDay,
+                OUTGOING_FRIEND_REQUEST_STATUSES
+        );
+        if (sentToday >= dailyFriendRequestsLimit) {
+            throw new SubscriptionRequiredException(
+                    "exception.subscription.friend.requests.daily.limit",
+                    GlobalErrorCode.ERROR_SUBSCRIPTION_FRIEND_REQUESTS_DAILY_LIMIT
+            );
+        }
+    }
 
     @Transactional
     public Request createRequest(Long fromUserId, Long toUserId, Long messageId, RequestStatus status) {
@@ -48,7 +77,8 @@ public class RequestService {
                 .setSender(userService.loadUserByUserId(fromUserId))
                 .setTo(userService.loadUserByUserId(toUserId))
                 .setMessage(isNull(messageId) ? null : messageRepository.getOne(messageId))
-                .setStatus(status);
+                .setStatus(status)
+                .setCreatedAt(LocalDateTime.now());
 
         return requestRepository.save(request);
     }

@@ -53,6 +53,7 @@ public class PlanFacadeImpl implements PlanFacade {
     @Override
     @Transactional
     public PlanViewDto createScheduled(Long authUserId, CreateScheduledPlanRequest request) {
+        planService.validateScheduledPlanCreationAccess(authUserId);
         textModerationService.validatePlanText(request.getTitle(), request.getDescription());
         Dialog groupDialog = null;
         if (GROUP.equals(request.getMode())) {

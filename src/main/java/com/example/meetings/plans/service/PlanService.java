@@ -1,6 +1,8 @@
 package com.example.meetings.plans.service;
 
 import com.example.meetings.chat.model.domain.Dialog;
+import com.example.meetings.common.exception.GlobalErrorCode;
+import com.example.meetings.common.exception.SubscriptionRequiredException;
 import com.example.meetings.plans.model.domain.Plan;
 import com.example.meetings.plans.model.domain.PlanLookupMode;
 import com.example.meetings.plans.model.domain.PlanMode;
@@ -17,6 +19,7 @@ import com.example.meetings.plans.model.dto.output.PlanUserDto;
 import com.example.meetings.plans.model.dto.output.PlanViewDto;
 import com.example.meetings.plans.repository.PlanRepository;
 import com.example.meetings.plans.repository.PlanResponseRepository;
+import com.example.meetings.subscription.service.SubscriptionService;
 import com.example.meetings.user.model.domain.User;
 import com.example.meetings.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -53,12 +56,16 @@ public class PlanService {
     private final PlanRepository planRepository;
     private final PlanResponseRepository planResponseRepository;
     private final UserService userService;
+    private final SubscriptionService subscriptionService;
 
     @Value("${plans.live.ttl-minutes:120}")
     private int liveTtlMinutes;
 
     @Value("${plans.default-visibility-radius-m:3000}")
     private int defaultVisibilityRadiusM;
+
+    @Value("${plans.radius}")
+    private int planRadius;
 
     @Transactional
     public PlanViewDto toggleLive(Long authUserId, ToggleLivePlanRequest request) {
@@ -83,6 +90,30 @@ public class PlanService {
         return toView(planRepository.save(plan), authUserId);
     }
 
+    /**
+     * Для бесплатной подписки доступен только один активный запланированный план.
+     */
+    @Transactional(readOnly = true)
+    public void validateScheduledPlanCreationAccess(Long authUserId) {
+        if (subscriptionService.isPremium(authUserId)) {
+            return;
+        }
+
+        long activeScheduledPlans = planRepository.countByOwnerUserIdAndTypeAndStatusAndDeletedFalseAndExpiresAtAfter(
+                authUserId,
+                SCHEDULED,
+                ACTIVE,
+                LocalDateTime.now()
+        );
+
+        if (activeScheduledPlans >= 1) {
+            throw new SubscriptionRequiredException(
+                    "exception.subscription.scheduled.plans.active.limit",
+                    GlobalErrorCode.ERROR_SUBSCRIPTION_SCHEDULED_PLANS_ACTIVE_LIMIT
+            );
+        }
+    }
+
     @Transactional(readOnly = true)
     public PlanListResult getNearby(Long authUserId, NearbyPlansRequest request) {
         validateNearbyRequest(request);
@@ -90,10 +121,10 @@ public class PlanService {
         Page<Plan> plans = planRepository.findNearby(
                 request.getLat(),
                 request.getLon(),
-                100000,
+                planRadius,
                 typeFilter,
                 request.getFromTime(),
-                request.getToTime(),
+                request.getFromTime().plusMonths(3),
                 isExcludeOwn(request),
                 authUserId,
                 LocalDateTime.now(),

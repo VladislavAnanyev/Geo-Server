@@ -1,18 +1,28 @@
 package com.example.meetings.user.service;
 
 import com.example.meetings.user.model.domain.User;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.meetings.user.model.dto.UserCommonView;
+import com.example.meetings.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Сервис операций со списком друзей пользователя.
+ */
 @Service
+@RequiredArgsConstructor
 public class FriendService {
 
-    @Autowired
-    private UserService userService;
+    private final UserRepository userRepository;
+    private final UserService userService;
 
+    /**
+     * Добавляет двух пользователей в друзья (двусторонняя связь).
+     */
     @Transactional
     public void makeFriends(Long firstUserId, Long secondUserId) {
         User firstUser = userService.loadUserByUserId(firstUserId);
@@ -20,8 +30,32 @@ public class FriendService {
         firstUser.addFriend(secondUser);
     }
 
+    /**
+     * Проверяет, являются ли пользователи друзьями.
+     */
     public boolean isFriends(Long fromUserId, Long toUserId) {
         User firstUser = userService.loadUserByUserId(fromUserId);
-        return firstUser.getFriends().stream().map(User::getUserId).collect(Collectors.toSet()).contains(toUserId);
+        return firstUser.getFriends().stream()
+                .map(User::getUserId)
+                .collect(Collectors.toSet())
+                .contains(toUserId);
+    }
+
+    /**
+     * Возвращает список друзей пользователя.
+     */
+    @Transactional(readOnly = true)
+    public List<UserCommonView> findMyFriends(Long userId) {
+        return userRepository.findUsersByFriendsUserId(userId);
+    }
+
+    /**
+     * Удаляет пользователя из списка друзей (двусторонняя связь).
+     */
+    @Transactional
+    public void deleteFriend(Long friendUserId, Long authUserId) {
+        User user = userService.loadUserByUserId(authUserId);
+        User friend = userService.loadUserByUserId(friendUserId);
+        user.removeFriend(friend);
     }
 }

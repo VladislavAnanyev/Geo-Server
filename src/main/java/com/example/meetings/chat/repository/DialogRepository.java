@@ -15,11 +15,11 @@ public interface DialogRepository extends CrudRepository<Dialog, Long>, JpaRepos
     то диалог существует и возвращается его идентификатор
      */
     @Query(value = """
-            SELECT DIALOG_ID, COUNT(DIALOG_ID)
-            FROM USERS_DIALOGS a
+            SELECT a.DIALOG_ID, COUNT(a.DIALOG_ID)
+            FROM USERS_DIALOGS a join public.dialogs d on a.dialog_id = d.dialog_id
             WHERE (USER_ID = :firstUser or USER_ID = :secondUser) AND
-                  (SELECT COUNT(DIALOG_ID) FROM USERS_DIALOGS b where b.DIALOG_ID = a.DIALOG_ID) = 2
-            GROUP BY DIALOG_ID HAVING COUNT(DIALOG_ID) = 2""", nativeQuery = true)
+                (SELECT COUNT(DIALOG_ID) FROM USERS_DIALOGS b where b.DIALOG_ID = a.DIALOG_ID) = 2 AND type = 'PRIVATE'
+            GROUP BY a.DIALOG_ID HAVING COUNT(a.DIALOG_ID) = 2""", nativeQuery = true)
     Long findDialogBetweenUsers(Long firstUser, Long secondUser);
 
 }

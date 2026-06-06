@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity(name = "REQUESTS")
@@ -32,6 +33,9 @@ public class Request implements Notifiable {
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY)
     @JoinColumn(name = "message_id")
     private Message message;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     public Set<User> getUsers() {
         return Set.of(sender, to);

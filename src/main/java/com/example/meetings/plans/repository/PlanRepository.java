@@ -20,6 +20,13 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
 
     Optional<Plan> findFirstByOwnerUserIdAndTypeAndStatusAndDeletedFalse(Long ownerUserId, PlanType type, PlanStatus status);
 
+    long countByOwnerUserIdAndTypeAndStatusAndDeletedFalseAndExpiresAtAfter(
+            Long ownerUserId,
+            PlanType type,
+            PlanStatus status,
+            LocalDateTime now
+    );
+
     @Query("""
             SELECT p FROM PLANS p
             WHERE p.owner.userId = :ownerUserId

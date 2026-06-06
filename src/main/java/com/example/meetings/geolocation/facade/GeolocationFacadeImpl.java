@@ -1,17 +1,11 @@
 package com.example.meetings.geolocation.facade;
 
-import com.example.meetings.common.rabbit.eventtype.MeetingType;
-import com.example.meetings.common.service.EventService;
-import com.example.meetings.common.service.NotificationService;
-import com.example.meetings.common.utils.ProjectionUtil;
 import com.example.meetings.geolocation.model.Geolocation;
 import com.example.meetings.geolocation.service.GeolocationService;
 import com.example.meetings.meeting.model.GeolocationDto;
 import com.example.meetings.meeting.model.GeolocationModel;
 import com.example.meetings.meeting.model.GetGeolocationsResult;
-import com.example.meetings.meeting.model.domain.Meeting;
-import com.example.meetings.meeting.model.dto.output.MeetingViewForNotification;
-import com.example.meetings.meeting.service.MeetingService;
+import com.example.meetings.photo.model.domain.Photo;
 import com.example.meetings.user.model.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,10 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
-import static com.example.meetings.common.utils.Const.MEETING;
-import static com.example.meetings.common.utils.Const.MEETING_DESCRIPTION;
 import static java.util.stream.Collectors.toList;
 
 @Service
@@ -38,39 +29,21 @@ public class GeolocationFacadeImpl implements GeolocationFacade {
     private int peopleNearbyRadiusMeters;
 
     @Autowired
-    private MeetingService meetingService;
-
-    @Autowired
     private GeolocationService geolocationService;
 
     @Autowired
-    private EventService eventService;
-
-    @Autowired
-    private NotificationService notificationService;
-
-    @Autowired
-    private ProjectionUtil projectionUtil;
+    private GeolocationMeetingAsyncService geolocationMeetingAsyncService;
 
     @Override
     @Transactional
     public void addGeolocation(Long userId, GeolocationModel geolocationModel) {
         Geolocation geolocation = geolocationService.saveGeolocation(userId, geolocationModel);
-        searchMeetings(geolocation);
-    }
-
-
-//    @Async("threadPoolTaskExecutor") // todo проверить
-    public void searchMeetings(Geolocation geolocation) {
-        List<Meeting> meetings = meetingService.findNowMeetings(geolocation);
-        meetings.forEach(meeting -> {
-            eventService.send(
-                    projectionUtil.parse(meeting, MeetingViewForNotification.class),
-                    Set.of(meeting.getFirstUser(), meeting.getSecondUser()),
-                    MeetingType.MEETING
-            );
-            notificationService.send(MEETING, MEETING_DESCRIPTION, meeting);
-        });
+        geolocationMeetingAsyncService.searchMeetings(
+                userId,
+                geolocation.getLat(),
+                geolocation.getLng(),
+                geolocation.getUpdatedAt()
+        );
     }
 
     @Override
@@ -117,6 +90,6 @@ public class GeolocationFacadeImpl implements GeolocationFacade {
                 .setUserId(user.getUserId())
                 .setFirstName(user.getFirstName())
                 .setUsername(user.getUsername())
-                .setAvatar(user.getMainPhoto().getUrl());
+                .setAvatar(Optional.ofNullable(user.getMainPhoto()).map(Photo::getUrl).orElse(null));
     }
 }

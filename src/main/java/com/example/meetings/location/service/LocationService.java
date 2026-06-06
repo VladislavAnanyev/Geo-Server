@@ -5,8 +5,11 @@ import com.example.meetings.location.model.Location;
 import com.example.meetings.location.model.dto.LocationRequest;
 import com.example.meetings.location.repository.LocationRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Service
 public class LocationService {
@@ -19,6 +22,11 @@ public class LocationService {
 
     public List<Location> findAll() {
         return locationRepository.findAll();
+    }
+
+    public Location findById(Long locationId) {
+        return locationRepository.findById(locationId)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "location not found"));
     }
 
     public Location save(LocationRequest request, Dialog dialog) {

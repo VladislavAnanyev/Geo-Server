@@ -100,6 +100,24 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorResponse, FORBIDDEN);
     }
 
+    @ExceptionHandler(SubscriptionRequiredException.class)
+    public ResponseEntity<ErrorResponse> handleSubscriptionRequired(SubscriptionRequiredException e, Locale locale) {
+        String message;
+        try {
+            message = messageSource.getMessage(e.getMessage(), null, locale);
+        } catch (NoSuchMessageException ex) {
+            message = e.getMessage();
+        }
+
+        ErrorResponse errorResponse = new ErrorResponse();
+        ApiError apiError = new ApiError();
+        apiError.setMessage(message);
+        apiError.setCode(e.getCode());
+        errorResponse.setError(apiError);
+
+        return new ResponseEntity<>(errorResponse, PAYMENT_REQUIRED);
+    }
+
     @ExceptionHandler(LogicException.class)
     public ResponseEntity<ErrorResponse> handleException(LogicException e, Locale locale) {
         String message;

@@ -13,7 +13,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.List;
 import java.util.Optional;
 
 import static com.example.meetings.util.Constants.DEFAULT_FIRST_NAME;
@@ -33,20 +32,9 @@ public class UserService {
         return userRepository.findAllByUserId(userId);
     }
 
-    public List<UserCommonView> findMyFriends(Long userId) {
-        return userRepository.findUsersByFriendsUserId(userId);
-    }
-
     @Transactional
     public ProfileView getUserProfileById(Long userId) {
         return userRepository.findUserByUserIdOrderByUsernameAscPhotosAsc(userId);
-    }
-
-    @Transactional
-    public void deleteFriend(Long userId, Long authUserId) {
-        User user = loadUserByUserId(authUserId);
-        User friend = loadUserByUserId(userId);
-        user.removeFriend(friend);
     }
 
     @Transactional

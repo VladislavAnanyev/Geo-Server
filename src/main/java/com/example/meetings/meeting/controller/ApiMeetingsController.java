@@ -2,6 +2,7 @@ package com.example.meetings.meeting.controller;
 
 import com.example.meetings.auth.security.model.AuthUserDetails;
 import com.example.meetings.meeting.facade.MeetingsFacade;
+import com.example.meetings.meeting.model.GetMeetingTimesResponse;
 import com.example.meetings.meeting.model.GetMeetingsResponse;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,14 @@ public class ApiMeetingsController {
                                            @RequestParam(required = false) @DateTimeFormat(iso = DATE) LocalDate startAt,
                                            @RequestParam(required = false) @DateTimeFormat(iso = DATE) LocalDate endAt) {
         return new GetMeetingsResponse(meetingsFacade.getMeetings(authUser.getUserId(), startAt, endAt));
+    }
+
+    @ApiOperation(value = "Получить обезличенную историю встреч за диапазон дат (только дата/время)")
+    @GetMapping(path = "/meetings/history")
+    public GetMeetingTimesResponse getMeetingHistory(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser,
+                                                   @RequestParam(required = false) @DateTimeFormat(iso = DATE) LocalDate startAt,
+                                                   @RequestParam(required = false) @DateTimeFormat(iso = DATE) LocalDate endAt) {
+        return new GetMeetingTimesResponse(meetingsFacade.getMeetingTimes(authUser.getUserId(), startAt, endAt));
     }
 
 }

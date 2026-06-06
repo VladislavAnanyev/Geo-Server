@@ -4,12 +4,14 @@ package com.example.meetings.chat.mapper;
 import com.example.meetings.chat.model.DialogDTO;
 import com.example.meetings.chat.model.UserDto;
 import com.example.meetings.chat.model.domain.*;
+import com.example.meetings.photo.model.domain.Photo;
 import com.example.meetings.user.model.domain.User;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.meetings.chat.mapper.DtoMapper.getMessages;
+import static java.util.Optional.ofNullable;
 
 
 public class DialogDTOMapper {
@@ -30,7 +32,7 @@ public class DialogDTOMapper {
 
     private static Set<UserDto> getUsers(Dialog dialog) {
         return dialog.getUsers().stream().map(user -> new UserDto()
-                .setAvatar(user.getMainPhoto().getUrl())
+                .setAvatar(ofNullable(user.getMainPhoto()).map(Photo::getUrl).orElse(null))
                 .setFirstName(user.getFirstName())
                 .setOnline(user.isOnline())
                 .setLogin(user.getUsername())
@@ -54,8 +56,7 @@ public class DialogDTOMapper {
             return userSet
                     .stream()
                     .filter(user -> !user.getUserId().equals(userId))
-                    .findFirst().orElseThrow()
-                    .getMainPhoto().getUrl();
+                    .findFirst().map(User::getMainPhoto).map(Photo::getUrl).orElse(null);
         }
 
         throw new UnsupportedOperationException("Не поддерживаемый тип диалога");
