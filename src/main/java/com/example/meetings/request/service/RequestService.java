@@ -1,14 +1,14 @@
 package com.example.meetings.request.service;
 
 import com.example.meetings.chat.repository.MessageRepository;
-import com.example.meetings.common.exception.GlobalErrorCode;
 import com.example.meetings.common.exception.SubscriptionRequiredException;
-import com.example.meetings.request.model.domain.Request;
 import com.example.meetings.request.model.domain.RequestStatus;
+import com.example.meetings.request.model.domain.Request;
 import com.example.meetings.request.model.dto.output.RequestView;
 import com.example.meetings.request.repository.RequestRepository;
 import com.example.meetings.subscription.service.SubscriptionService;
 import com.example.meetings.user.service.UserService;
+import com.example.meetings.util.Constants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.example.meetings.request.model.domain.RequestStatus.*;
-import static java.util.List.of;
+import static com.example.meetings.util.Constants.OUTGOING_FRIEND_REQUEST_STATUSES;
 import static java.util.Objects.isNull;
 
 /**
@@ -31,8 +31,6 @@ import static java.util.Objects.isNull;
 @Service
 @RequiredArgsConstructor
 public class RequestService {
-
-    private static final List<RequestStatus> OUTGOING_FRIEND_REQUEST_STATUSES = of(PENDING, ACCEPTED);
 
     private final RequestRepository requestRepository;
     private final UserService userService;
@@ -60,7 +58,7 @@ public class RequestService {
         if (sentToday >= dailyFriendRequestsLimit) {
             throw new SubscriptionRequiredException(
                     "exception.subscription.friend.requests.daily.limit",
-                    GlobalErrorCode.ERROR_SUBSCRIPTION_FRIEND_REQUESTS_DAILY_LIMIT
+                    Constants.ERROR_SUBSCRIPTION_FRIEND_REQUESTS_DAILY_LIMIT
             );
         }
     }
@@ -84,7 +82,7 @@ public class RequestService {
         );
 
         if (activeRequestExist) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You already send request to this user");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "exception.request.already.sent");
         }
 
         Request request = new Request()
@@ -141,12 +139,12 @@ public class RequestService {
     public Request changeRequestStatus(Long requestId, Long userId, RequestStatus requestStatus) {
         Optional<Request> optionalRequest = requestRepository.findById(requestId);
         if (optionalRequest.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "exception.request.not.found");
         }
 
         Request request = optionalRequest.get();
         if (!request.getTo().getUserId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "exception.request.forbidden");
         }
         request.setStatus(requestStatus);
 

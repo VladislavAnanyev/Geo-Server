@@ -13,6 +13,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import static com.example.meetings.util.Constants.SIGMA_SMS_AWS_TATYANA;
+import static com.example.meetings.util.Constants.SIGMA_SMS_SENDER_NUMBER;
 import static com.example.meetings.integration.sigmasms.dto.SigmaSmsMessageType.TELEGRAM;
 import static com.example.meetings.integration.sigmasms.dto.SigmaSmsMessageType.VOICE;
 import static org.springframework.http.HttpMethod.POST;
@@ -21,8 +23,6 @@ import static org.springframework.http.HttpMethod.POST;
 @RequiredArgsConstructor
 public class SigmaSmsClient {
 
-    public static final String AWS_TATYANA = "aws:tatyana";
-    public static final String NUMBER = "74956665610";
     private final RestTemplate restTemplate;
     @Value("${sigmasms.code}")
     private String authCode;
@@ -32,7 +32,7 @@ public class SigmaSmsClient {
         params.add("Authorization", authCode);
         params.add("Content-Type", MediaType.APPLICATION_JSON_VALUE);
 
-        Payload payload = Payload.builder().tts(AWS_TATYANA).sender(NUMBER).text("Код авторизации: " + String.join(" ", text.split(""))).build();
+        Payload payload = Payload.builder().tts(SIGMA_SMS_AWS_TATYANA).sender(SIGMA_SMS_SENDER_NUMBER).text("Код авторизации: " + String.join(" ", text.split(""))).build();
         MessageRequest messageRequest = MessageRequest.builder().type(VOICE.getValue()).payload(payload).recipient(phone).build();
 
         restTemplate.exchange(

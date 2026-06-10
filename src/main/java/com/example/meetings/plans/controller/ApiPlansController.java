@@ -108,7 +108,7 @@ public class ApiPlansController {
         try {
             return new PlanResponse(planFacade.patchStatus(authUser.getUserId(), planId, PlanStatus.valueOf(request.getStatus().toUpperCase())));
         } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "status must be CLOSED or CANCELLED");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "exception.plan.status.invalid");
         }
     }
 

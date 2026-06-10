@@ -49,7 +49,7 @@ public class SubscriptionFacadeImpl implements SubscriptionFacade {
 
     private void validateAdmin(Long userId) {
         if (userId == null || userId != ADMIN_ID) {
-            throw new ResponseStatusException(FORBIDDEN, "only support can grant subscriptions");
+            throw new ResponseStatusException(FORBIDDEN, "exception.subscription.grant.forbidden");
         }
     }
 }

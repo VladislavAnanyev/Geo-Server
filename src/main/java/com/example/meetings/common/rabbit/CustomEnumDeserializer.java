@@ -58,6 +58,6 @@ public class CustomEnumDeserializer extends StdDeserializer<Type> {
         } catch (IllegalArgumentException ignored) {
         }
 
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "exception.enum.invalid");
     }
 }

@@ -140,14 +140,14 @@ public class PlanResponseService {
 
     private Plan loadPlan(Long planId) {
         return planRepository.findByIdAndDeletedFalse(planId)
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "plan not found"));
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "exception.plan.not.found"));
     }
 
     private PlanResponse loadResponse(Long responseId, Long planId) {
         PlanResponse response = planResponseRepository.findById(responseId)
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "plan response not found"));
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "exception.plan.response.not.found"));
         if (!response.getPlan().getId().equals(planId)) {
-            throw new ResponseStatusException(BAD_REQUEST, "plan response does not belong to plan");
+            throw new ResponseStatusException(BAD_REQUEST, "exception.plan.response.plan.mismatch");
         }
         validateGroupPlan(response.getPlan());
         return response;
@@ -155,29 +155,29 @@ public class PlanResponseService {
 
     private void validateGroupPlan(Plan plan) {
         if (!GROUP.equals(plan.getMode())) {
-            throw new ResponseStatusException(BAD_REQUEST, "responses available only for group plans");
+            throw new ResponseStatusException(BAD_REQUEST, "exception.plan.response.group.only");
         }
         if (plan.getDialog() == null) {
-            throw new ResponseStatusException(CONFLICT, "group plan has no dialog");
+            throw new ResponseStatusException(CONFLICT, "exception.plan.group.no.dialog");
         }
     }
 
     private void validateActiveAndNotExpired(Plan plan) {
         if (!com.example.meetings.plans.model.domain.PlanStatus.ACTIVE.equals(plan.getStatus())
                 || !plan.getExpiresAt().isAfter(LocalDateTime.now())) {
-            throw new ResponseStatusException(CONFLICT, "plan is not active");
+            throw new ResponseStatusException(CONFLICT, "exception.plan.not.active");
         }
     }
 
     private void validateNotOwn(Plan plan, Long authUserId) {
         if (plan.getOwner().getUserId().equals(authUserId)) {
-            throw new ResponseStatusException(FORBIDDEN, "can't respond to own plan");
+            throw new ResponseStatusException(FORBIDDEN, "exception.plan.respond.own.forbidden");
         }
     }
 
     private void validateOwner(Plan plan, Long authUserId) {
         if (!plan.getOwner().getUserId().equals(authUserId)) {
-            throw new ResponseStatusException(FORBIDDEN, "only owner can manage responses");
+            throw new ResponseStatusException(FORBIDDEN, "exception.plan.response.manage.forbidden");
         }
     }
 

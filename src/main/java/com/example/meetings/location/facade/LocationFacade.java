@@ -5,7 +5,8 @@ import com.example.meetings.chat.model.CreateGroupModel;
 import com.example.meetings.chat.model.SendMessageModel;
 import com.example.meetings.chat.model.domain.Dialog;
 import com.example.meetings.chat.service.MessageService;
-import com.example.meetings.common.exception.GlobalErrorCode;
+import com.example.meetings.util.Constants;
+import com.example.meetings.common.exception.LogicException;
 import com.example.meetings.common.exception.SubscriptionRequiredException;
 import com.example.meetings.common.utils.ProjectionUtil;
 import com.example.meetings.geolocation.model.Geolocation;
@@ -65,7 +66,7 @@ public class LocationFacade {
     @Transactional
     public LocationDTO createLocation(LocationRequest request, AuthUserDetails principal) {
         if (principal.getUserId() != ADMIN_ID) {
-            throw new UnsupportedOperationException("You are not allowed to create location");
+            throw new LogicException("exception.location.create.forbidden");
         }
 
         Dialog dialog = messageService.createGroup(
@@ -114,7 +115,7 @@ public class LocationFacade {
         if (!subscriptionService.isPremium(authUserId)) {
             throw new SubscriptionRequiredException(
                     "exception.subscription.location.people.premium.required",
-                    GlobalErrorCode.ERROR_SUBSCRIPTION_LOCATION_PEOPLE);
+                    Constants.ERROR_SUBSCRIPTION_LOCATION_PEOPLE);
         }
 
         Location location = locationService.findById(locationId);

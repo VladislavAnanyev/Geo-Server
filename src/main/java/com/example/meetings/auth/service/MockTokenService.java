@@ -29,7 +29,7 @@ public class MockTokenService implements TokenService {
     public UserToken updateRefreshToken(String oldRefreshToken) {
         UserToken userToken = tokens.get(oldRefreshToken);
         if (userToken == null) {
-            throw new EntityNotFoundException("Токен не найден");
+            throw new EntityNotFoundException("exception.token.not.found");
         }
 
         tokens.remove(oldRefreshToken);

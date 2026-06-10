@@ -42,7 +42,7 @@ public class PhotoService {
     public Photo findPhotoById(Long id) {
         Optional<Photo> optionalPhoto = photoRepository.findById(id);
         if (optionalPhoto.isEmpty()) {
-            throw new EntityNotFoundException("Photo with given photoId not found");
+            throw new EntityNotFoundException("exception.photo.not.found");
         }
 
         return optionalPhoto.get();
@@ -60,7 +60,7 @@ public class PhotoService {
         Photo photo = findPhotoById(photoId);
 
         if (!photo.getUser().getUserId().equals(userId)) {
-            throw new SecurityException("You are not loader of this photo");
+            throw new SecurityException("exception.photo.not.owner");
         }
 
         List<Photo> photos = photoRepository.findPhotosByUserId(userId);
@@ -113,7 +113,7 @@ public class PhotoService {
     public void deletePhoto(Long photoId, Long authUserId) {
         Photo photo = findPhotoById(photoId);
         if (!photo.getUser().getUserId().equals(authUserId)) {
-            throw new SecurityException("You are not loader of this photo");
+            throw new SecurityException("exception.photo.not.owner");
         }
 
         if (photoRepository.getPhotoCountByUserId(authUserId) <= 1) {

@@ -18,8 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Set;
 
-import static com.example.meetings.common.utils.Const.LOCATION_SHARING;
-import static com.example.meetings.common.utils.Const.LOCATION_SHARING_DESCRIPTION;
+import static com.example.meetings.util.Constants.NOTIFICATION_LOCATION_SHARING_DESCRIPTION;
+import static com.example.meetings.util.Constants.NOTIFICATION_LOCATION_SHARING_TITLE;
 import static com.example.meetings.geolocation.sharing.model.domain.LocationSharingStatus.ACTIVE;
 import static com.example.meetings.geolocation.sharing.model.domain.LocationSharingStatus.PENDING;
 import static java.util.stream.Collectors.toList;
@@ -49,7 +49,7 @@ public class LocationSharingFacadeImpl implements LocationSharingFacade {
         if (PENDING.equals(sharing.getStatus())) {
             LocationSharingView view = projectionUtil.parse(sharing, LocationSharingView.class);
             eventService.send(view, sharing.getUsers(), LocationSharingType.LOCATION_SHARING_REQUEST);
-            notificationService.send(LOCATION_SHARING, LOCATION_SHARING_DESCRIPTION, sharing);
+            notificationService.send(NOTIFICATION_LOCATION_SHARING_TITLE, NOTIFICATION_LOCATION_SHARING_DESCRIPTION, sharing);
         } else if (ACTIVE.equals(sharing.getStatus())) {
             notifyAccepted(sharing);
         }
@@ -144,6 +144,6 @@ public class LocationSharingFacadeImpl implements LocationSharingFacade {
         UserCommonView targetView = projectionUtil.parse(sharing.getTarget(), UserCommonView.class);
         eventService.send(initiatorView, Set.of(sharing.getTarget()), LocationSharingType.LOCATION_SHARING_ACCEPTED);
         eventService.send(targetView, Set.of(sharing.getInitiator()), LocationSharingType.LOCATION_SHARING_ACCEPTED);
-        notificationService.send(LOCATION_SHARING, LOCATION_SHARING_DESCRIPTION, sharing);
+        notificationService.send(NOTIFICATION_LOCATION_SHARING_TITLE, NOTIFICATION_LOCATION_SHARING_DESCRIPTION, sharing);
     }
 }

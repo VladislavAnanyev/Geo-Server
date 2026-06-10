@@ -22,11 +22,11 @@ import java.util.Optional;
 
 import static org.springframework.http.HttpMethod.POST;
 
+import static com.example.meetings.util.Constants.EARTH_RADIUS_METERS;
+
 @Service
 @Slf4j
 public class OverpassClient {
-
-    private static final int EARTH_RADIUS_METERS = 6_371_210;
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;

@@ -1,7 +1,6 @@
 package com.example.meetings.geolocation.facade;
 
 import com.example.meetings.common.rabbit.eventtype.MeetingType;
-import static com.example.meetings.config.GeolocationMeetingAsyncConfig.GEOLOCATION_MEETING_EXECUTOR;
 import com.example.meetings.common.service.EventService;
 import com.example.meetings.common.service.NotificationService;
 import com.example.meetings.common.utils.ProjectionUtil;
@@ -19,8 +18,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
-import static com.example.meetings.common.utils.Const.MEETING;
-import static com.example.meetings.common.utils.Const.MEETING_DESCRIPTION;
+import static com.example.meetings.util.Constants.GEOLOCATION_MEETING_EXECUTOR;
+import static com.example.meetings.util.Constants.NOTIFICATION_MEETING_DESCRIPTION;
+import static com.example.meetings.util.Constants.NOTIFICATION_MEETING_TITLE;
 
 /**
  * Асинхронный запуск поиска встреч после сохранения геолокации.
@@ -60,7 +60,7 @@ public class GeolocationMeetingAsyncService {
                     Set.of(meeting.getFirstUser(), meeting.getSecondUser()),
                     MeetingType.MEETING
             );
-            notificationService.send(MEETING, MEETING_DESCRIPTION, meeting);
+            notificationService.send(NOTIFICATION_MEETING_TITLE, NOTIFICATION_MEETING_DESCRIPTION, meeting);
         });
     }
 }

@@ -2,7 +2,7 @@ package com.example.meetings.meeting.service;
 
 import com.example.meetings.geolocation.model.Geolocation;
 import com.example.meetings.geolocation.service.GeolocationService;
-import com.example.meetings.common.exception.GlobalErrorCode;
+import com.example.meetings.util.Constants;
 import com.example.meetings.common.exception.SubscriptionRequiredException;
 import com.example.meetings.meeting.model.domain.Meeting;
 import com.example.meetings.meeting.model.dto.output.MeetingView;
@@ -74,7 +74,7 @@ public class MeetingService {
         if (startAt.isBefore(freeStart) || endAt.isAfter(today)) {
             throw new SubscriptionRequiredException(
                     "exception.subscription.meetings.history.limit",
-                    GlobalErrorCode.ERROR_SUBSCRIPTION_MEETINGS_HISTORY_LIMIT
+                    Constants.ERROR_SUBSCRIPTION_MEETINGS_HISTORY_LIMIT
             );
         }
     }

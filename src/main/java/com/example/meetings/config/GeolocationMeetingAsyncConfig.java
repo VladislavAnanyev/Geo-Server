@@ -7,10 +7,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.ThreadPoolExecutor;
 
+import static com.example.meetings.util.Constants.GEOLOCATION_MEETING_EXECUTOR;
+
 @Configuration
 public class GeolocationMeetingAsyncConfig {
-
-    public static final String GEOLOCATION_MEETING_EXECUTOR = "geolocationMeetingExecutor";
 
     @Bean(name = GEOLOCATION_MEETING_EXECUTOR)
     public ThreadPoolTaskExecutor geolocationMeetingExecutor(

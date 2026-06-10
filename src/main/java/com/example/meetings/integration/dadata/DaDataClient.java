@@ -11,6 +11,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
+import static com.example.meetings.util.Constants.DADATA_HEADER_TOKEN_PREFIX;
+import static com.example.meetings.util.Constants.DADATA_HEADER_X_SECRET;
 import static java.util.Objects.requireNonNull;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
@@ -21,8 +23,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Slf4j
 public class DaDataClient {
 
-    public static final String X_SECRET = "X-Secret";
-    public static final String TOKEN = "Token ";
     private final RestTemplate restTemplate;
 
     @Value("${dadata.key}")
@@ -84,8 +84,8 @@ public class DaDataClient {
     private HttpHeaders getHeaders() {
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.add(CONTENT_TYPE, APPLICATION_JSON_VALUE);
-        requestHeaders.add(AUTHORIZATION, TOKEN + apiKey);
-        requestHeaders.add(X_SECRET, apiSecret);
+        requestHeaders.add(AUTHORIZATION, DADATA_HEADER_TOKEN_PREFIX + apiKey);
+        requestHeaders.add(DADATA_HEADER_X_SECRET, apiSecret);
 
         return requestHeaders;
     }

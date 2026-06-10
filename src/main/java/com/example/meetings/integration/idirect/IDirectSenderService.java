@@ -6,11 +6,12 @@ import com.example.meetings.integration.idirect.dto.IDirectMessageRequest.Conten
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
+import static com.example.meetings.util.Constants.IDIRECT_VOICE_CODE;
+
 @Service
 @ConditionalOnProperty(value = "codesender.type", havingValue = "idirect")
 public class IDirectSenderService implements CodeSenderService {
 
-    public static final String VOICECODE = "VOICECODE";
     private final IDirectClient iDirectClient;
 
     public IDirectSenderService(IDirectClient iDirectClient) {
@@ -21,8 +22,8 @@ public class IDirectSenderService implements CodeSenderService {
     public void sendCodeToPhone(String code, String phone) {
         iDirectClient.send(
                 IDirectMessageRequest.builder()
-                        .channelType(VOICECODE)
-                        .senderName(VOICECODE)
+                        .channelType(IDIRECT_VOICE_CODE)
+                        .senderName(IDIRECT_VOICE_CODE)
                         .destination(phone)
                         .content(
                                 Content.builder()

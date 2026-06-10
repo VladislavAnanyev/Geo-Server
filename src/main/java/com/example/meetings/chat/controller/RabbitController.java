@@ -2,7 +2,8 @@ package com.example.meetings.chat.controller;
 
 import com.example.meetings.auth.security.model.AuthUserDetails;
 import com.example.meetings.common.exception.AuthorizationException;
-import com.example.meetings.common.exception.GlobalErrorCode;
+import com.example.meetings.util.Constants;
+import com.example.meetings.common.exception.LogicException;
 import com.example.meetings.common.rabbit.EventProcessor;
 import com.example.meetings.common.rabbit.RealTimeEvent;
 import com.example.meetings.common.rabbit.eventtype.Type;
@@ -34,11 +35,11 @@ public class RabbitController {
     private final JWTUtil jwtUtil;
     private final Map<Type, EventProcessor> events;
 
-    @RabbitListener(queues = "incoming-messages")
+    @RabbitListener(queues = Constants.INCOMING_MESSAGES_QUEUE)
     public void sendMessageFromAMQPClient(org.springframework.amqp.core.Message messageFromRabbit) throws IOException {
         String authorizationToken = (String) messageFromRabbit.getMessageProperties().getHeaders().get("Authorization");
         if (!isAuthenticate(authorizationToken)) {
-            throw new AuthorizationException("Unauthorized", GlobalErrorCode.UNAUTHORIZED);
+            throw new AuthorizationException("exception.unauthorized", Constants.UNAUTHORIZED);
         }
 
         RealTimeEvent<?> realTimeEvent = objectMapper.readValue(messageFromRabbit.getBody(), RealTimeEvent.class);
@@ -53,7 +54,7 @@ public class RabbitController {
 
     private boolean isAuthenticate(String token) {
         if (token == null) {
-            throw new IllegalArgumentException("Jwt токен не передан");
+            throw new LogicException("exception.jwt.not.provided");
         }
 
         Long userId = jwtUtil.extractUserId(token);

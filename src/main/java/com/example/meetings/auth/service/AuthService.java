@@ -5,7 +5,7 @@ import com.example.meetings.auth.model.dto.input.AuthRequest;
 import com.example.meetings.auth.security.model.AuthUserDetails;
 import com.example.meetings.common.exception.AuthorizationException;
 import com.example.meetings.common.exception.CodeExpiredException;
-import com.example.meetings.common.exception.GlobalErrorCode;
+import com.example.meetings.util.Constants;
 import com.example.meetings.common.exception.UserNotFoundException;
 import com.example.meetings.user.model.domain.User;
 import com.example.meetings.user.repository.UserRepository;
@@ -49,7 +49,7 @@ public class AuthService implements UserDetailsService {
         if (optionalUser.isEmpty()) {
             throw new UserNotFoundException(
                     "exception.user.not.found",
-                    GlobalErrorCode.ERROR_USER_NOT_FOUND
+                    Constants.ERROR_USER_NOT_FOUND
             );
         }
 
@@ -68,7 +68,7 @@ public class AuthService implements UserDetailsService {
     public User findUserByUsername(String username) throws UserNotFoundException {
         Optional<User> user = userRepository.findUserByUsername(username);
         if (user.isEmpty()) {
-            throw new UserNotFoundException("exception.user.not.found", GlobalErrorCode.ERROR_USER_NOT_FOUND);
+            throw new UserNotFoundException("exception.user.not.found", Constants.ERROR_USER_NOT_FOUND);
         }
 
         return user.get();
@@ -84,7 +84,7 @@ public class AuthService implements UserDetailsService {
         try {
             User user = findUserByUsername(authRequest.getUsername());
             if (LocalDateTime.now().isAfter(user.getSignInViaPhoneCodeExpiration())) {
-                throw new CodeExpiredException("exception.code.expired", GlobalErrorCode.ERROR_CODE_EXPIRED);
+                throw new CodeExpiredException("exception.code.expired", Constants.ERROR_CODE_EXPIRED);
             }
 
             authenticationManager.authenticate(
@@ -96,7 +96,7 @@ public class AuthService implements UserDetailsService {
         } catch (Exception e) {
             throw new AuthorizationException(
                     "exception.authorization",
-                    GlobalErrorCode.ERROR_WRONG_USERNAME_OR_PASSWORD
+                    Constants.ERROR_WRONG_USERNAME_OR_PASSWORD
             );
         }
 

@@ -45,7 +45,7 @@ public class LocationService {
      */
     public Location findById(Long locationId) {
         return locationRepository.findById(locationId)
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "location not found"));
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "exception.location.not.found"));
     }
 
     /**

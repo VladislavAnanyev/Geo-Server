@@ -3,6 +3,9 @@ package com.example.meetings.geolocation.frequentplace;
 import com.example.meetings.geolocation.model.GeolocationHistory;
 import org.springframework.stereotype.Component;
 
+import static com.example.meetings.util.Constants.EARTH_RADIUS_METERS;
+import static com.example.meetings.util.Constants.METERS_PER_DEGREE_LAT;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -11,9 +14,6 @@ import java.util.Map;
 
 @Component
 public class FrequentPlaceGridClusterer {
-
-    private static final double METERS_PER_DEGREE_LAT = 111_320d;
-    private static final int EARTH_RADIUS_METERS = 6_371_210;
 
     public List<FrequentPlaceCluster> cluster(
             List<GeolocationHistory> history,

@@ -20,7 +20,7 @@ public class ApiLogoutHandler implements LogoutHandler {
         try {
             httpServletRequest.logout();
         } catch (ServletException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "exception.logout.failed");
         }
 
 

@@ -40,7 +40,7 @@ public class RealTokenService implements TokenService {
     public UserToken updateRefreshToken(String oldRefreshToken) {
         Optional<UserToken> optionalUserToken = tokenRepository.findById(oldRefreshToken);
         if (optionalUserToken.isEmpty()) {
-            throw new EntityNotFoundException("Токен не найден");
+            throw new EntityNotFoundException("exception.token.not.found");
         }
 
         UserToken userToken = optionalUserToken.get();

@@ -73,7 +73,7 @@ public class LocationSharingService {
     public LocationSharing accept(Long sharingId, Long targetUserId) {
         LocationSharing sharing = loadSharing(sharingId);
         if (!sharing.getTarget().getUserId().equals(targetUserId)) {
-            throw new ResponseStatusException(FORBIDDEN, "access denied");
+            throw new ResponseStatusException(FORBIDDEN, "exception.access.denied");
         }
         if (!PENDING.equals(sharing.getStatus())) {
             throw new LogicException("exception.location.sharing.not.pending");
@@ -92,7 +92,7 @@ public class LocationSharingService {
     public LocationSharing reject(Long sharingId, Long targetUserId) {
         LocationSharing sharing = loadSharing(sharingId);
         if (!sharing.getTarget().getUserId().equals(targetUserId)) {
-            throw new ResponseStatusException(FORBIDDEN, "access denied");
+            throw new ResponseStatusException(FORBIDDEN, "exception.access.denied");
         }
         if (!PENDING.equals(sharing.getStatus())) {
             throw new LogicException("exception.location.sharing.not.pending");
@@ -192,7 +192,7 @@ public class LocationSharingService {
      */
     private LocationSharing loadSharing(Long sharingId) {
         return locationSharingRepository.findById(sharingId)
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "sharing not found"));
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "exception.location.sharing.not.found"));
     }
 
     /**

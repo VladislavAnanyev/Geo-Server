@@ -17,15 +17,15 @@ import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.handler.annotation.support.DefaultMessageHandlerMethodFactory;
 import org.springframework.messaging.handler.annotation.support.MessageHandlerMethodFactory;
 
+import static com.example.meetings.util.Constants.INCOMING_MESSAGES_QUEUE;
+
 
 @Configuration
 public class RabbitMqConfiguration implements RabbitListenerConfigurer {
 
-    public static final String INCOMING_MESSAGES = "incoming-messages";
-
     @Bean
     Queue QueueInMessages() {
-        return QueueBuilder.durable(INCOMING_MESSAGES).build();
+        return QueueBuilder.durable(INCOMING_MESSAGES_QUEUE).build();
     }
 
     @Bean

@@ -3,6 +3,7 @@ package com.example.meetings.request.facade;
 import com.example.meetings.chat.model.SendMessageModel;
 import com.example.meetings.chat.model.domain.Message;
 import com.example.meetings.chat.service.MessageService;
+import com.example.meetings.common.exception.LogicException;
 import com.example.meetings.common.rabbit.eventtype.FriendType;
 import com.example.meetings.common.rabbit.eventtype.RequestType;
 import com.example.meetings.common.service.EventService;
@@ -26,8 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.example.meetings.common.utils.Const.REQUEST;
-import static com.example.meetings.common.utils.Const.REQUEST_DESCRIPTION;
+import static com.example.meetings.util.Constants.NOTIFICATION_REQUEST_DESCRIPTION;
+import static com.example.meetings.util.Constants.NOTIFICATION_REQUEST_TITLE;
 import static com.example.meetings.request.model.domain.RequestStatus.PENDING;
 import static com.example.meetings.request.model.domain.RequestStatus.REJECTED;
 import static java.util.Optional.ofNullable;
@@ -58,7 +59,7 @@ public class RequestFacadeImpl implements RequestFacade {
     @Transactional
     public void sendRequest(Long fromUserId, Long toUserId, String messageContent) {
         if (friendService.isFriends(fromUserId, toUserId)) {
-            throw new RuntimeException("Пользователь уже в друзьях");
+            throw new LogicException("exception.friends.already");
         }
 
         Optional<Request> optionalRequest = requestService.findMutualRequest(fromUserId, toUserId);
@@ -77,7 +78,7 @@ public class RequestFacadeImpl implements RequestFacade {
                     Request request = requestService.createRequest(fromUserId, toUserId, messageId, PENDING);
                     RequestView requestView = projectionUtil.parse(request, RequestView.class);
                     eventService.send(requestView, request.getUsers(), RequestType.REQUEST);
-                    notificationService.send(REQUEST, REQUEST_DESCRIPTION, request);
+                    notificationService.send(NOTIFICATION_REQUEST_TITLE, NOTIFICATION_REQUEST_DESCRIPTION, request);
                 }
         );
     }

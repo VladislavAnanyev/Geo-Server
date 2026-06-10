@@ -12,6 +12,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import static com.example.meetings.util.Constants.RABBIT_EXCHANGE_SALT;
+
 /**
  * Класс для получения обмена пользователя
  * Он генерируется на основе идентификатора пользователя при помощи соли (всегда одинаковый)
@@ -22,8 +24,6 @@ public class RabbitUtil {
 
     @Autowired
     private RabbitAdmin rabbitAdmin;
-
-    private static final String salt = "$1$Zyi$3";
 
     public String createExchange(Long userId) {
         String exchangeName = RabbitUtil.getExchangeName(userId);
@@ -42,10 +42,10 @@ public class RabbitUtil {
         try {
             messageDigest = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "exception.rabbit.internal");
         }
         messageDigest.update(userId.toString().getBytes(StandardCharsets.UTF_8));
-        messageDigest.update(salt.getBytes());
+        messageDigest.update(RABBIT_EXCHANGE_SALT.getBytes());
 
         byte[] digest = messageDigest.digest();
 

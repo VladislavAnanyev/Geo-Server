@@ -9,7 +9,9 @@ import com.example.meetings.chat.model.dto.output.LastDialog;
 import com.example.meetings.chat.repository.DialogRepository;
 import com.example.meetings.chat.repository.MessageHistoryRepository;
 import com.example.meetings.chat.repository.MessageRepository;
+import com.example.meetings.common.exception.LogicException;
 import com.example.meetings.user.model.domain.User;
+import com.example.meetings.util.Constants;
 import com.example.meetings.user.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
@@ -23,6 +25,7 @@ import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static com.example.meetings.chat.mapper.DialogDTOMapper.getImage;
 import static com.example.meetings.chat.mapper.DialogDTOMapper.getName;
@@ -63,7 +66,7 @@ public class MessageService {
      */
     public Long createDialog(Long firstUserId, Long secondUserId) {
         if (secondUserId.equals(firstUserId)) {
-            throw new IllegalArgumentException("You can not create dialog with yourself");
+            throw new LogicException("exception.dialog.create.self");
         }
 
         Long dialogId = dialogRepository.findDialogBetweenUsers(firstUserId, secondUserId);
@@ -103,7 +106,7 @@ public class MessageService {
     public Message setDeletedStatus(Long messageId, Long userId) {
         Message message = findMessageById(messageId);
         if (!isCanModifyMessage(message.getSender().getUserId(), userId)) {
-            throw new SecurityException("Вы не можете удалить это сообщение");
+            throw new SecurityException("exception.message.delete.forbidden");
         }
 
         message.setStatus(MessageStatus.DELETED);
@@ -126,7 +129,7 @@ public class MessageService {
         Dialog dialog = findDialogById(dialogId);
 
         if (!isUserContainsInDialog(dialog, userId)) {
-            throw new SecurityException("Вы не состоите в этом диалоге");
+            throw new SecurityException("exception.dialog.not.member");
         }
 
         Pageable paging = PageRequest.of(page, pageSize, Sort.by(sortBy).descending());
@@ -155,7 +158,7 @@ public class MessageService {
     public Message editMessage(Long messageId, String content, Long authUserId) {
         Message message = findMessageById(messageId);
         if (!isCanModifyMessage(message.getSender().getUserId(), authUserId)) {
-            throw new SecurityException("Вы не можете изменить это сообщение");
+            throw new SecurityException("exception.message.edit.forbidden");
         }
 
         message.setStatus(MessageStatus.EDITED);
@@ -178,7 +181,7 @@ public class MessageService {
 
         Dialog dialog = findDialogById(request.getDialogId());
         if (!isUserContainsInDialog(dialog, request.getSenderId())) {
-            throw new SecurityException("Вы не состоите в этом диалоге");
+            throw new SecurityException("exception.dialog.not.member");
         }
         Message message = create(request, dialog);
         message.setStatus(DELIVERED);
@@ -197,11 +200,11 @@ public class MessageService {
     public Dialog createGroup(CreateGroupModel model) {
         Dialog dialog = new Dialog();
         dialog.setType(DialogType.GROUP);
-        dialog.setImage(model.getImage() == null ? "https://storage.yandexcloud.net/meetings-file-storage/free-icon-dog-17617815.png" : model.getImage());
+        dialog.setImage(getUrl(model));
         model.getUsers().forEach(userId -> dialog.addUser(userService.loadUserByUserId(userId)));
 
         if (!isUserContainsInDialog(dialog, model.getAuthUserId())) {
-            throw new SecurityException("Вы не состоите в этом диалоге");
+            throw new SecurityException("exception.dialog.not.member");
         }
 
         if (model.getName() == null || model.getName().isEmpty()) {
@@ -262,7 +265,7 @@ public class MessageService {
         User authUser = userService.loadUserByUserId(userId);
 
         if (!isUserContainsInDialog(dialog, userId)) {
-            throw new SecurityException("Вы не состоите в этом диалоге");
+            throw new SecurityException("exception.dialog.not.member");
         }
 
         Typing typing = new Typing();
@@ -312,7 +315,7 @@ public class MessageService {
      */
     public Message findMessageByDialogIdAndMessageId(Long dialogId, Long messageId) {
         return messageRepository.findMessageByDialogDialogIdAndMessageId(dialogId, messageId)
-                .orElseThrow(() -> new EntityNotFoundException("Сообщение не найдено"));
+                .orElseThrow(() -> new EntityNotFoundException("exception.message.not.found"));
     }
 
     /**
@@ -326,7 +329,7 @@ public class MessageService {
         if (dialog.isPresent()) {
             return dialog.get();
         } else {
-            throw new EntityNotFoundException("Dialog not found");
+            throw new EntityNotFoundException("exception.dialog.not.found");
         }
     }
 
@@ -339,7 +342,7 @@ public class MessageService {
     public List<FileResponse> getAttachments(Long dialogId) {
         Optional<Dialog> optionalDialog = dialogRepository.findById(dialogId);
         if (optionalDialog.isEmpty()) {
-            throw new EntityNotFoundException("dialog not found");
+            throw new EntityNotFoundException("exception.dialog.not.found");
         }
 
         Dialog dialog = optionalDialog.get();
@@ -396,7 +399,7 @@ public class MessageService {
         if (message.isPresent()) {
             return message.get();
         } else {
-            throw new EntityNotFoundException("Message not found");
+            throw new EntityNotFoundException("exception.message.not.found");
         }
     }
 
@@ -480,7 +483,7 @@ public class MessageService {
         if (dialog.getUsers().stream().noneMatch(user -> user.getUserId().equals(userId))) {
             throw new ResponseStatusException(
                     FORBIDDEN,
-                    "You are not contains in forwarded messages dialog"
+                    "exception.forwarded.dialog.not.member"
             );
         }
 
@@ -495,5 +498,16 @@ public class MessageService {
         }
 
         return forwardedMessages;
+    }
+
+    private String getUrl(CreateGroupModel model) {
+        if (model.getImage() != null) {
+            return model.getImage();
+        }
+
+        int imageIndex = ThreadLocalRandom.current().nextInt(1, 6);
+        return String.format(
+                Constants.PLAN_DEFAULT_IMAGE_URL_TEMPLATE,
+                imageIndex);
     }
 }

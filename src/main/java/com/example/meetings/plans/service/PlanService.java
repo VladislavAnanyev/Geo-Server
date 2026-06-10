@@ -1,7 +1,7 @@
 package com.example.meetings.plans.service;
 
 import com.example.meetings.chat.model.domain.Dialog;
-import com.example.meetings.common.exception.GlobalErrorCode;
+import com.example.meetings.util.Constants;
 import com.example.meetings.common.exception.SubscriptionRequiredException;
 import com.example.meetings.plans.model.domain.Plan;
 import com.example.meetings.plans.model.domain.PlanLookupMode;
@@ -103,7 +103,7 @@ public class PlanService {
         LocalDateTime expires = validateAndResolveScheduledExpiresAt(request);
         PlanMode mode = request.getMode();
         if (GROUP.equals(mode) && groupDialog == null) {
-            throw new ResponseStatusException(BAD_REQUEST, "group plan requires dialog");
+            throw new ResponseStatusException(BAD_REQUEST, "exception.plan.group.requires.dialog");
         }
         Plan plan = buildScheduledPlan(userService.loadUserByUserId(authUserId), request, expires, mode, groupDialog);
 
@@ -132,7 +132,7 @@ public class PlanService {
         if (activeScheduledPlans >= 1) {
             throw new SubscriptionRequiredException(
                     "exception.subscription.scheduled.plans.active.limit",
-                    GlobalErrorCode.ERROR_SUBSCRIPTION_SCHEDULED_PLANS_ACTIVE_LIMIT
+                    Constants.ERROR_SUBSCRIPTION_SCHEDULED_PLANS_ACTIVE_LIMIT
             );
         }
     }
@@ -226,7 +226,7 @@ public class PlanService {
         validatePlanOwner(plan, authUserId);
         validatePlanIsActiveForEdit(plan);
         if (!SCHEDULED.equals(plan.getType())) {
-            throw new ResponseStatusException(BAD_REQUEST, "only scheduled plans can be updated");
+            throw new ResponseStatusException(BAD_REQUEST, "exception.plan.only.scheduled.updatable");
         }
         plan.setTitle(request.getTitle().trim())
                 .setDescription(trimToNull(request.getDescription()))
@@ -251,7 +251,6 @@ public class PlanService {
     public Plan deletePlan(Long authUserId, Long planId) {
         Plan plan = loadPlan(planId);
         validatePlanOwner(plan, authUserId);
-        validatePlanIsActiveForEdit(plan);
         LocalDateTime now = LocalDateTime.now();
         plan.setDeleted(true).setUpdatedAt(now);
         if (LIVE.equals(plan.getType()) && ACTIVE.equals(plan.getStatus())) {
@@ -280,7 +279,7 @@ public class PlanService {
 
     private Plan loadPlan(Long planId) {
         return planRepository.findByIdAndDeletedFalse(planId)
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "plan not found"));
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "exception.plan.not.found"));
     }
 
     private Plan findActiveLivePlan(Long authUserId) {
@@ -417,7 +416,7 @@ public class PlanService {
 
     private void validateToggleLiveRequest(ToggleLivePlanRequest request) {
         if (!TRUE.equals(request.getEnabled()) && !FALSE.equals(request.getEnabled())) {
-            throw new ResponseStatusException(BAD_REQUEST, "enabled is required");
+            throw new ResponseStatusException(BAD_REQUEST, "exception.plan.enabled.required");
         }
         if (isEnableLiveRequest(request)) {
             validateCoordinates(request.getLat(), request.getLon());
@@ -450,20 +449,20 @@ public class PlanService {
                                                                Double lat,
                                                                Double lon) {
         if (title == null || title.trim().isEmpty()) {
-            throw new ResponseStatusException(BAD_REQUEST, "title is required");
+            throw new ResponseStatusException(BAD_REQUEST, "exception.plan.title.required");
         }
         if (startAt == null) {
-            throw new ResponseStatusException(BAD_REQUEST, "startAt is required");
+            throw new ResponseStatusException(BAD_REQUEST, "exception.plan.start_at.required");
         }
         if ((lat == null) != (lon == null)) {
-            throw new ResponseStatusException(BAD_REQUEST, "lat and lon must be provided together");
+            throw new ResponseStatusException(BAD_REQUEST, "exception.plan.lat_lon.together");
         }
         if (lat != null) {
             validateCoordinates(lat, lon);
         }
         LocalDateTime resolvedExpiresAt = expiresAt == null ? startAt.plusHours(6) : expiresAt;
         if (!startAt.isBefore(resolvedExpiresAt)) {
-            throw new ResponseStatusException(UNPROCESSABLE_ENTITY, "startAt must be before expiresAt");
+            throw new ResponseStatusException(UNPROCESSABLE_ENTITY, "exception.plan.start_before.expires");
         }
         return resolvedExpiresAt;
     }
@@ -471,7 +470,7 @@ public class PlanService {
     private void validateNearbyRequest(NearbyPlansRequest request) {
         validateCoordinates(request.getLat(), request.getLon());
         if (request.getRadiusM() == null || request.getRadiusM() <= 0) {
-            throw new ResponseStatusException(BAD_REQUEST, "radiusM must be > 0");
+            throw new ResponseStatusException(BAD_REQUEST, "exception.plan.radius.positive");
         }
     }
 
@@ -485,37 +484,37 @@ public class PlanService {
 
     private void validatePlanIsActive(Plan plan) {
         if (plan.isDeleted()) {
-            throw new ResponseStatusException(NOT_FOUND, "plan not found");
+            throw new ResponseStatusException(NOT_FOUND, "exception.plan.not.found");
         }
         if (!ACTIVE.equals(plan.getStatus()) || !plan.getExpiresAt().isAfter(LocalDateTime.now())) {
-            throw new ResponseStatusException(CONFLICT, "plan is not active");
+            throw new ResponseStatusException(CONFLICT, "exception.plan.not.active");
         }
     }
 
     private void validateNotOwnPlan(Plan plan, Long authUserId) {
         if (Objects.equals(plan.getOwner().getUserId(), authUserId)) {
-            throw new ResponseStatusException(FORBIDDEN, "can't respond to own plan");
+            throw new ResponseStatusException(FORBIDDEN, "exception.plan.respond.own.forbidden");
         }
     }
 
     private void validatePatchStatus(PlanStatus status) {
         if (!of(CLOSED, CANCELLED).contains(status)) {
-            throw new ResponseStatusException(BAD_REQUEST, "status must be CLOSED or CANCELLED");
+            throw new ResponseStatusException(BAD_REQUEST, "exception.plan.status.invalid");
         }
     }
 
     private void validatePlanOwner(Plan plan, Long authUserId) {
         if (!Objects.equals(plan.getOwner().getUserId(), authUserId)) {
-            throw new ResponseStatusException(FORBIDDEN, "only owner can change plan status");
+            throw new ResponseStatusException(FORBIDDEN, "exception.plan.status.change.forbidden");
         }
     }
 
     private void validateCoordinates(Double lat, Double lon) {
         if (lat == null || lon == null) {
-            throw new ResponseStatusException(BAD_REQUEST, "lat and lon are required");
+            throw new ResponseStatusException(BAD_REQUEST, "exception.plan.lat_lon.required");
         }
         if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
-            throw new ResponseStatusException(BAD_REQUEST, "invalid coordinates");
+            throw new ResponseStatusException(BAD_REQUEST, "exception.plan.coordinates.invalid");
         }
     }
 
@@ -526,7 +525,7 @@ public class PlanService {
         try {
             return PlanType.valueOf(type.toUpperCase()).name();
         } catch (Exception e) {
-            throw new ResponseStatusException(BAD_REQUEST, "type must be LIVE|SCHEDULED|ALL");
+            throw new ResponseStatusException(BAD_REQUEST, "exception.plan.type.invalid");
         }
     }
 

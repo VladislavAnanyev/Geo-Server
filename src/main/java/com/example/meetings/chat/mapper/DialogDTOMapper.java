@@ -3,6 +3,7 @@ package com.example.meetings.chat.mapper;
 import com.example.meetings.chat.model.DialogDTO;
 import com.example.meetings.chat.model.UserDto;
 import com.example.meetings.chat.model.domain.*;
+import com.example.meetings.common.exception.LogicException;
 import com.example.meetings.photo.model.domain.Photo;
 import com.example.meetings.user.model.domain.User;
 import java.util.*;
@@ -60,7 +61,7 @@ public class DialogDTOMapper {
                     .findFirst().map(User::getMainPhoto).map(Photo::getUrl).orElse(null);
         }
 
-        throw new UnsupportedOperationException("Не поддерживаемый тип диалога");
+        throw new LogicException("exception.dialog.type.unsupported");
     }
 
     /**
@@ -84,6 +85,6 @@ public class DialogDTOMapper {
             return companion.getFirstName();
         }
 
-        throw new UnsupportedOperationException("Не поддерживаемый тип диалога");
+        throw new LogicException("exception.dialog.type.unsupported");
     }
 }

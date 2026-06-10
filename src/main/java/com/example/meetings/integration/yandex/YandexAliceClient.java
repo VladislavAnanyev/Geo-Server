@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Map;
 
+import static com.example.meetings.util.Constants.YANDEX_FINISH_REASON_CONTENT_FILTER;
 import static com.example.meetings.util.Constants.MODERATION_LLM_MAX_TOKENS;
 import static com.example.meetings.util.Constants.MODERATION_TEMPERATURE;
 import static com.example.meetings.util.Constants.YANDEX_CHAT_COMPLETIONS_PATH;
@@ -25,8 +26,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 @ConditionalOnExpression("${text.moderation.enabled:false} && '${text.moderation.provider:}'.equals('yandex')")
 @Slf4j
 public class YandexAliceClient implements ModerationLlmClient {
-
-    private static final String FINISH_REASON_CONTENT_FILTER = "content_filter";
 
     private final RestTemplate restTemplate;
 
@@ -81,7 +80,7 @@ public class YandexAliceClient implements ModerationLlmClient {
             return null;
         }
         YandexChatCompletionResponse.Choice choice = body.getChoices().get(0);
-        if (FINISH_REASON_CONTENT_FILTER.equals(choice.getFinishReason())) {
+        if (YANDEX_FINISH_REASON_CONTENT_FILTER.equals(choice.getFinishReason())) {
             log.debug("Yandex guardrails content_filter");
             return YANDEX_CONTENT_FILTER_REJECTED_JSON;
         }

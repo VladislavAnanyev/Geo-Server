@@ -2,7 +2,7 @@ package com.example.meetings.user.service;
 
 import com.example.meetings.auth.model.dto.input.RegistrationModel;
 import com.example.meetings.common.exception.AlreadyRegisterException;
-import com.example.meetings.common.exception.GlobalErrorCode;
+import com.example.meetings.util.Constants;
 import com.example.meetings.common.exception.UserNotFoundException;
 import com.example.meetings.user.model.ChangeUserRequest;
 import com.example.meetings.user.model.domain.User;
@@ -76,7 +76,7 @@ public class UserService {
     public User loadUserByUserId(Long userId) {
         Optional<User> user = userRepository.findById(userId);
         if (user.isEmpty()) {
-            throw new UserNotFoundException("exception.user.not.found", GlobalErrorCode.ERROR_USER_NOT_FOUND);
+            throw new UserNotFoundException("exception.user.not.found", Constants.ERROR_USER_NOT_FOUND);
         }
 
         return user.get();
@@ -105,7 +105,7 @@ public class UserService {
         if (optionalUser.isPresent()) {
             throw new AlreadyRegisterException(
                     "exception.already.register",
-                    GlobalErrorCode.ERROR_USER_ALREADY_REGISTERED
+                    Constants.ERROR_USER_ALREADY_REGISTERED
             );
         }
 

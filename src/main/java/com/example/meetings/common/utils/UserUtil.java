@@ -21,7 +21,7 @@ public class UserUtil {
         } else if (authName.equals(secondUserId)) {
             user = MeetingsApplication.ctx.getBean(UserService.class).loadUserByUserId(firstUserId);
         } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "exception.bad.request");
         }
 
         ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
