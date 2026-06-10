@@ -2,7 +2,6 @@ package com.example.meetings.auth.service;
 
 import com.example.meetings.auth.model.UserToken;
 import com.example.meetings.auth.model.dto.input.AuthRequest;
-import com.example.meetings.auth.repository.TokenRepository;
 import com.example.meetings.auth.security.model.AuthUserDetails;
 import com.example.meetings.common.exception.AuthorizationException;
 import com.example.meetings.common.exception.CodeExpiredException;
@@ -17,11 +16,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.UUID;
 
 import static java.time.LocalDateTime.now;
 
@@ -38,7 +35,7 @@ public class AuthService implements UserDetailsService {
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
-    private TokenRepository tokenRepository;
+    private TokenService tokenService;
 
     /**
      * Загружает данные пользователя для Spring Security по имени (номеру телефона).
@@ -127,14 +124,6 @@ public class AuthService implements UserDetailsService {
      * @return обновлённая запись токена
      */
     public UserToken updateRefreshToken(String oldRefreshToken) {
-        Optional<UserToken> optionalUserToken = tokenRepository.findById(oldRefreshToken);
-        if (optionalUserToken.isEmpty()) {
-            throw new EntityNotFoundException("Токен не найден");
-        }
-
-        UserToken userToken = optionalUserToken.get();
-        userToken.setRefreshToken(UUID.randomUUID().toString());
-
-        return tokenRepository.save(userToken);
+        return tokenService.updateRefreshToken(oldRefreshToken);
     }
 }

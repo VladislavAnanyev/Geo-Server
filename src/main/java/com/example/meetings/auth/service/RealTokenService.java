@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
+import java.util.Optional;
+
 import static java.util.UUID.randomUUID;
 
 @Service
@@ -31,6 +34,19 @@ public class RealTokenService implements TokenService {
         );
 
         return refreshToken;
+    }
+
+    @Override
+    public UserToken updateRefreshToken(String oldRefreshToken) {
+        Optional<UserToken> optionalUserToken = tokenRepository.findById(oldRefreshToken);
+        if (optionalUserToken.isEmpty()) {
+            throw new EntityNotFoundException("Токен не найден");
+        }
+
+        UserToken userToken = optionalUserToken.get();
+        userToken.setRefreshToken(randomUUID().toString());
+
+        return tokenRepository.save(userToken);
     }
 
 }

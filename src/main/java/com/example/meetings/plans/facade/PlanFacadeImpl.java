@@ -226,7 +226,9 @@ public class PlanFacadeImpl implements PlanFacade {
     @Transactional
     public void deletePlan(Long authUserId, Long planId) {
         Plan plan = planService.deletePlan(authUserId, planId);
-        messageService.hideDialog(plan.getDialog().getDialogId());
+        if (plan.getDialog() != null) {
+            messageService.hideDialog(plan.getDialog().getDialogId());
+        }
     }
 
     /**

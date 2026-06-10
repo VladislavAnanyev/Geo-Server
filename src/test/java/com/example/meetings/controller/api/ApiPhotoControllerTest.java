@@ -6,6 +6,7 @@ import com.example.meetings.photo.model.domain.Photo;
 import com.example.meetings.photo.repository.PhotoRepository;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.jdbc.Sql;
@@ -17,6 +18,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -97,5 +99,22 @@ public class ApiPhotoControllerTest extends AbstractControllerIntegrationTest {
     public void testNotFoundSwap() throws Exception {
         mockMvc.perform(post("/api/v1/user/photo/swap?photoId=6896&position=4").secure(true))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithUserDetails(value = "user2", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void testUploadPhoto() throws Exception {
+        Integer photoCountBefore = photoRepository.getPhotoCountByUserId(1002L);
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "profile.jpg",
+                "image/jpeg",
+                new byte[]{1, 2, 3, 4});
+
+        mockMvc.perform(multipart("/api/v1/user/photo").file(file).secure(true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.url").isString());
+
+        assertEquals((int) photoCountBefore + 1, (int) photoRepository.getPhotoCountByUserId(1002L));
     }
 }

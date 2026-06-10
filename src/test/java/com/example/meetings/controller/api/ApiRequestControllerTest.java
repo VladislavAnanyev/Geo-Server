@@ -170,4 +170,26 @@ public class ApiRequestControllerTest extends AbstractControllerIntegrationTest 
                 .andExpect(jsonPath("$.result.requests[0].status").value("PENDING"))
                 .andExpect(jsonPath("$.result.requests[0].to.userId").value(1002));
     }
+
+    @Test
+    @Sql(scripts = {
+            SqlScripts.CLEANUP,
+            SqlScripts.USERS,
+            SqlScripts.MEETINGS
+    }, executionPhase = BEFORE_TEST_METHOD)
+    @WithUserDetails(value = "user2", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void testDoNotShowMeetingInRecommendation() throws Exception {
+        long rejectedBefore = requestRepository.findAll().stream()
+                .filter(r -> r.getStatus() == RequestStatus.REJECTED)
+                .count();
+
+        mockMvc.perform(post("/api/v1/requests/meeting/991").secure(true)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("SUCCESS"));
+
+        assertEquals(rejectedBefore + 1, requestRepository.findAll().stream()
+                .filter(r -> r.getStatus() == RequestStatus.REJECTED)
+                .count());
+    }
 }

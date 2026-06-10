@@ -3,10 +3,14 @@ package com.example.meetings.controller.api;
 import com.example.meetings.controller.config.AbstractControllerIntegrationTest;
 import com.example.meetings.controller.config.SqlScripts;
 import com.example.meetings.geolocation.repository.GeolocationRepository;
+import com.example.meetings.integration.dadata.DaDataClient;
+import com.example.meetings.integration.dadata.DaDataSuggestions;
 import com.example.meetings.meeting.model.dto.output.MeetingView;
 import com.example.meetings.meeting.repository.MeetingRepository;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithUserDetails;
@@ -17,7 +21,10 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,11 +39,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 }, executionPhase = BEFORE_TEST_METHOD)
 public class ApiGeoControllerTest extends AbstractControllerIntegrationTest {
 
+    @MockBean
+    private DaDataClient daDataClient;
+
     @Autowired
     private MeetingRepository meetingRepository;
 
     @Autowired
     private GeolocationRepository geolocationRepository;
+
+    @Before
+    public void stubDaData() {
+        DaDataSuggestions suggestions = new DaDataSuggestions();
+        suggestions.setSuggestions(List.of());
+        when(daDataClient.findSuggestions(anyString())).thenReturn(suggestions);
+    }
 
     @Test
     @WithUserDetails(value = "user5", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
@@ -74,5 +91,38 @@ public class ApiGeoControllerTest extends AbstractControllerIntegrationTest {
                         .content("{\"lat\": 55.75, \"lng\": 37.61}")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void testGetRecentGeolocation() throws Exception {
+        mockMvc.perform(get("/api/v1/geolocation/recent").secure(true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lastGeolocation.lat").exists());
+    }
+
+    @Test
+    @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void testGetPeopleNearby() throws Exception {
+        mockMvc.perform(get("/api/v1/geolocation/people-nearby").secure(true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.items").isArray());
+    }
+
+    @Test
+    @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void testGetFriendsGeolocations() throws Exception {
+        mockMvc.perform(get("/api/v1/geolocations").secure(true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.items").isArray());
+    }
+
+    @Test
+    @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void testGetGeolocationSuggestions() throws Exception {
+        mockMvc.perform(get("/api/v1/geolocation/suggestions").secure(true)
+                        .param("address", "Москва"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.suggestions").isArray());
     }
 }

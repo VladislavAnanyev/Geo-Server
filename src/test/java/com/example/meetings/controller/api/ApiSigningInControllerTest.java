@@ -4,6 +4,7 @@ import com.example.meetings.controller.config.AbstractControllerIntegrationTest;
 import com.example.meetings.controller.config.SqlScripts;
 import com.example.meetings.user.repository.DeviceRepository;
 import com.example.meetings.user.repository.UserRepository;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
@@ -93,5 +94,49 @@ public class ApiSigningInControllerTest extends AbstractControllerIntegrationTes
                 .andExpect(jsonPath("$.status").value("SUCCESS"))
                 .andExpect(jsonPath("$.result.jwtToken").isString())
                 .andExpect(jsonPath("$.result.userId").exists());
+    }
+
+    @Test
+    public void testSignInViaEmail() throws Exception {
+        String email = "test-signin@example.com";
+
+        mockMvc.perform(post("/api/v1/signin/email")
+                        .secure(true)
+                        .contentType(APPLICATION_JSON)
+                        .content("{\"email\": \"" + email + "\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("SUCCESS"));
+
+        assertNotNull(userRepository.findUserByUsername(email).orElse(null));
+    }
+
+    @Test
+    public void testRefreshToken() throws Exception {
+        String signInJson = """
+                {
+                    "username": "user1",
+                    "password": "user1"
+                }
+                """;
+
+        String response = mockMvc.perform(post("/api/v1/signin").secure(true)
+                        .content(signInJson)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        String jwtToken = JsonPath.read(response, "$.result.jwtToken");
+        String refreshToken = JsonPath.read(response, "$.result.refreshToken");
+
+        mockMvc.perform(post("/api/v1/refresh")
+                        .secure(true)
+                        .header("Authorization", "Bearer " + jwtToken)
+                        .contentType(APPLICATION_JSON)
+                        .content("{\"refreshToken\": \"" + refreshToken + "\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.jwtToken").isString())
+                .andExpect(jsonPath("$.result.refreshToken").isString());
     }
 }

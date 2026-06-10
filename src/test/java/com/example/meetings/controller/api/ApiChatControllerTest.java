@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithUserDetails;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.ArrayList;
@@ -272,6 +273,41 @@ public class ApiChatControllerTest extends AbstractControllerIntegrationTest {
     public void testDeleteMessageForbidden() throws Exception {
         mockMvc.perform(delete("/api/v1/message/1198").secure(true))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @Sql(scripts = {
+            SqlScripts.CLEANUP,
+            SqlScripts.USERS,
+            SqlScripts.SUPPORT_USER
+    }, executionPhase = BEFORE_TEST_METHOD)
+    @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void testGetSupportDialog() throws Exception {
+        mockMvc.perform(get("/api/v1/dialog/support").secure(true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.dialogId").isNumber());
+    }
+
+    @Test
+    @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void testGetDialogAttachments() throws Exception {
+        mockMvc.perform(get("/api/v1/dialog/1196/attachments").secure(true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.attachments").isArray());
+    }
+
+    @Test
+    @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void testUploadDialogPhoto() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "chat.jpg",
+                "image/jpeg",
+                new byte[]{1, 2, 3, 4});
+
+        mockMvc.perform(multipart("/api/v1/dialog/photo").file(file).secure(true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.uri").isString());
     }
 
 

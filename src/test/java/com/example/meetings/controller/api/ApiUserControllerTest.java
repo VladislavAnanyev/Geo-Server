@@ -3,12 +3,14 @@ package com.example.meetings.controller.api;
 import com.example.meetings.controller.config.AbstractControllerIntegrationTest;
 import com.example.meetings.controller.config.SqlScripts;
 import org.junit.Test;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.jdbc.Sql;
 
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -47,5 +49,19 @@ public class ApiUserControllerTest extends AbstractControllerIntegrationTest {
                 .andExpect(jsonPath("$.result.username").value("user2"))
                 .andExpect(jsonPath("$.result.firstName").value("user2"))
                 .andExpect(jsonPath("$.result.photos").isArray());
+    }
+
+    @Test
+    @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void testChangeUser() throws Exception {
+        mockMvc.perform(post("/api/v1/user/change").secure(true)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"firstName":"Updated user1","description":"new bio"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("SUCCESS"))
+                .andExpect(jsonPath("$.result.firstName").value("Updated user1"))
+                .andExpect(jsonPath("$.result.description").value("new bio"));
     }
 }

@@ -187,4 +187,22 @@ public class ApiLocationSharingControllerTest extends AbstractControllerIntegrat
         assertTrue(locationSharingRepository.findActiveBetween(USER1_ID, USER2_ID).isEmpty());
         assertTrue(geolocationService.getFriendsGeolocations(USER1_ID).isEmpty());
     }
+
+    @Test
+    @WithUserDetails(value = "user2", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void rejectInviteViaHttp() throws Exception {
+        locationSharingFacade.sendInvite(USER1_ID, new LocationSharingFriendRequest().setFriendUserId(USER2_ID));
+        Long sharingId = locationSharingRepository
+                .findAllByTarget_UserIdAndStatus(USER2_ID, LocationSharingStatus.PENDING)
+                .get(0)
+                .getSharingId();
+
+        mockMvc.perform(post("/api/v1/geolocation-sharing/request/" + sharingId + "/reject").secure(true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("SUCCESS"));
+
+        assertTrue(locationSharingRepository.findActiveBetween(USER1_ID, USER2_ID).isEmpty());
+        assertEquals(0, locationSharingRepository
+                .findAllByTarget_UserIdAndStatus(USER2_ID, LocationSharingStatus.PENDING).size());
+    }
 }

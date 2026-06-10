@@ -258,5 +258,177 @@ public class ApiPlansControllerTest extends AbstractControllerIntegrationTest {
         assertTrue(dialogRepository.findById(1224L).orElseThrow().getUsers().stream()
                 .anyMatch(u -> u.getUserId().equals(1003L)));
     }
+
+    @Test
+    @WithUserDetails(value = "user2", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void testDeletePersonalPlan() throws Exception {
+        Plan plan = planRepository.save(new Plan()
+                .setOwner(userRepository.findById(1002L).orElseThrow())
+                .setMode(PlanMode.PERSONAL)
+                .setType(com.example.meetings.plans.model.domain.PlanType.SCHEDULED)
+                .setStatus(PlanStatus.ACTIVE)
+                .setTitle("To delete")
+                .setStartAt(LocalDateTime.now().plusHours(1))
+                .setExpiresAt(LocalDateTime.now().plusHours(2))
+                .setVisibilityRadiusM(3000)
+                .setCreatedAt(LocalDateTime.now())
+                .setUpdatedAt(LocalDateTime.now()));
+
+        mockMvc.perform(delete("/api/v1/plans/" + plan.getId()).secure(true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("SUCCESS"));
+
+        Plan deleted = planRepository.findById(plan.getId()).orElseThrow();
+        assertTrue(deleted.isDeleted());
+    }
+
+    @Test
+    @WithUserDetails(value = "user2", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void testDeleteGroupPlanHidesDialog() throws Exception {
+        Plan plan = planRepository.save(new Plan()
+                .setOwner(userRepository.findById(1002L).orElseThrow())
+                .setMode(PlanMode.GROUP)
+                .setType(com.example.meetings.plans.model.domain.PlanType.SCHEDULED)
+                .setStatus(PlanStatus.ACTIVE)
+                .setTitle("Group to delete")
+                .setStartAt(LocalDateTime.now().plusHours(1))
+                .setExpiresAt(LocalDateTime.now().plusHours(2))
+                .setVisibilityRadiusM(3000)
+                .setDialog(dialogRepository.getById(1224L))
+                .setCreatedAt(LocalDateTime.now())
+                .setUpdatedAt(LocalDateTime.now()));
+
+        mockMvc.perform(delete("/api/v1/plans/" + plan.getId()).secure(true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("SUCCESS"));
+
+        assertTrue(planRepository.findById(plan.getId()).orElseThrow().isDeleted());
+        assertFalse(dialogRepository.findById(1224L).orElseThrow().isVisible());
+    }
+
+    @Test
+    @WithUserDetails(value = "user2", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void testGetPlanById() throws Exception {
+        Plan plan = planRepository.save(new Plan()
+                .setOwner(userRepository.findById(1002L).orElseThrow())
+                .setMode(PlanMode.PERSONAL)
+                .setType(com.example.meetings.plans.model.domain.PlanType.SCHEDULED)
+                .setStatus(PlanStatus.ACTIVE)
+                .setTitle("My plan")
+                .setStartAt(LocalDateTime.now().plusHours(1))
+                .setExpiresAt(LocalDateTime.now().plusHours(2))
+                .setVisibilityRadiusM(3000)
+                .setCreatedAt(LocalDateTime.now())
+                .setUpdatedAt(LocalDateTime.now()));
+
+        mockMvc.perform(get("/api/v1/plans/" + plan.getId()).secure(true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.planId").value(plan.getId()))
+                .andExpect(jsonPath("$.result.title").value("My plan"));
+    }
+
+    @Test
+    @WithUserDetails(value = "user2", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void testGetMyPlans() throws Exception {
+        planRepository.save(new Plan()
+                .setOwner(userRepository.findById(1002L).orElseThrow())
+                .setMode(PlanMode.PERSONAL)
+                .setType(com.example.meetings.plans.model.domain.PlanType.SCHEDULED)
+                .setStatus(PlanStatus.ACTIVE)
+                .setTitle("Active plan")
+                .setStartAt(LocalDateTime.now().plusHours(1))
+                .setExpiresAt(LocalDateTime.now().plusHours(2))
+                .setVisibilityRadiusM(3000)
+                .setCreatedAt(LocalDateTime.now())
+                .setUpdatedAt(LocalDateTime.now()));
+
+        mockMvc.perform(get("/api/v1/plans/me").secure(true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.items[?(@.title == 'Active plan')]").exists());
+    }
+
+    @Test
+    @WithUserDetails(value = "user2", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void testUpdateScheduledPlan() throws Exception {
+        Plan plan = planRepository.save(new Plan()
+                .setOwner(userRepository.findById(1002L).orElseThrow())
+                .setMode(PlanMode.PERSONAL)
+                .setType(com.example.meetings.plans.model.domain.PlanType.SCHEDULED)
+                .setStatus(PlanStatus.ACTIVE)
+                .setTitle("Old title")
+                .setStartAt(LocalDateTime.now().plusHours(1))
+                .setExpiresAt(LocalDateTime.now().plusHours(2))
+                .setVisibilityRadiusM(3000)
+                .setCreatedAt(LocalDateTime.now())
+                .setUpdatedAt(LocalDateTime.now()));
+
+        mockMvc.perform(put("/api/v1/plans/" + plan.getId()).secure(true)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"title":"Updated title","description":"New desc","startAt":"2030-02-01T15:00:00","expiresAt":"2030-02-01T17:00:00"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.title").value("Updated title"));
+
+        assertEquals("Updated title", planRepository.findById(plan.getId()).orElseThrow().getTitle());
+    }
+
+    @Test
+    @WithUserDetails(value = "user2", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void testGetPlanResponses() throws Exception {
+        Plan plan = planRepository.save(new Plan()
+                .setOwner(userRepository.findById(1002L).orElseThrow())
+                .setMode(PlanMode.GROUP)
+                .setType(com.example.meetings.plans.model.domain.PlanType.SCHEDULED)
+                .setStatus(PlanStatus.ACTIVE)
+                .setTitle("Group")
+                .setStartAt(LocalDateTime.now().plusHours(1))
+                .setExpiresAt(LocalDateTime.now().plusHours(2))
+                .setVisibilityRadiusM(3000)
+                .setDialog(dialogRepository.getById(1224L))
+                .setCreatedAt(LocalDateTime.now())
+                .setUpdatedAt(LocalDateTime.now()));
+        planResponseRepository.save(new PlanResponse()
+                .setPlan(plan)
+                .setUser(userRepository.findById(1003L).orElseThrow())
+                .setStatus(PlanResponseStatus.PENDING)
+                .setCreatedAt(LocalDateTime.now())
+                .setUpdatedAt(LocalDateTime.now()));
+
+        mockMvc.perform(get("/api/v1/plans/" + plan.getId() + "/responses").secure(true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.items[0].status").value("PENDING"))
+                .andExpect(jsonPath("$.result.items[0].userId").value(1003));
+    }
+
+    @Test
+    @WithUserDetails(value = "user2", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void testRejectPlanResponse() throws Exception {
+        Plan plan = planRepository.save(new Plan()
+                .setOwner(userRepository.findById(1002L).orElseThrow())
+                .setMode(PlanMode.GROUP)
+                .setType(com.example.meetings.plans.model.domain.PlanType.SCHEDULED)
+                .setStatus(PlanStatus.ACTIVE)
+                .setTitle("Group")
+                .setStartAt(LocalDateTime.now().plusHours(1))
+                .setExpiresAt(LocalDateTime.now().plusHours(2))
+                .setVisibilityRadiusM(3000)
+                .setDialog(dialogRepository.getById(1224L))
+                .setCreatedAt(LocalDateTime.now())
+                .setUpdatedAt(LocalDateTime.now()));
+        PlanResponse response = planResponseRepository.save(new PlanResponse()
+                .setPlan(plan)
+                .setUser(userRepository.findById(1003L).orElseThrow())
+                .setStatus(PlanResponseStatus.PENDING)
+                .setCreatedAt(LocalDateTime.now())
+                .setUpdatedAt(LocalDateTime.now()));
+
+        mockMvc.perform(post("/api/v1/plans/" + plan.getId() + "/responses/" + response.getId() + "/reject").secure(true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.status").value("REJECTED"));
+
+        assertEquals(PlanResponseStatus.REJECTED,
+                planResponseRepository.findById(response.getId()).orElseThrow().getStatus());
+    }
 }
 
