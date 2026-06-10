@@ -1,49 +1,56 @@
 package com.example.meetings.controller.api;
 
+import com.example.meetings.chat.model.LastDialogDTO;
 import com.example.meetings.chat.model.domain.Dialog;
 import com.example.meetings.chat.model.domain.MessageStatus;
 import com.example.meetings.chat.model.dto.input.EditMessageRequest;
 import com.example.meetings.chat.model.dto.output.CreateDialogResponse;
+import com.example.meetings.chat.model.dto.output.GetDialogsResponse;
 import com.example.meetings.chat.repository.DialogRepository;
 import com.example.meetings.chat.repository.MessageRepository;
+import com.example.meetings.controller.config.AbstractControllerIntegrationTest;
+import com.example.meetings.controller.config.SqlScripts;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.firebase.FirebaseApp;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithUserDetails;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.jdbc.Sql;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
-import static java.lang.Long.valueOf;
+import static java.util.Collections.reverse;
 import static java.util.Collections.sort;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles({"test"})
-public class ApiChatControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
+@Sql(scripts = {
+        SqlScripts.CLEANUP,
+        SqlScripts.USERS,
+        SqlScripts.FRIENDS,
+        SqlScripts.DIALOGS,
+        SqlScripts.MESSAGES_1196,
+        SqlScripts.MESSAGES_GROUP_1202,
+        SqlScripts.MESSAGES_1224,
+        SqlScripts.MESSAGES_1277,
+        SqlScripts.DIALOG_UPDATE_1196,
+        SqlScripts.DIALOG_UPDATE_1202,
+        SqlScripts.DIALOG_UPDATE_1224,
+        SqlScripts.DIALOG_UPDATE_1277
+}, executionPhase = BEFORE_TEST_METHOD)
+public class ApiChatControllerTest extends AbstractControllerIntegrationTest {
 
     @Autowired
     private DialogRepository dialogRepository;
-
-    @MockBean
-    private FirebaseApp firebaseApp;
 
     @Autowired
     private MessageRepository messageRepository;
@@ -52,14 +59,14 @@ public class ApiChatControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    @WithUserDetails(value = "user1")
+    @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void getMessagesInNotExistDialog() throws Exception {
         mockMvc.perform(get("/api/v1/dialog/" + 5555).secure(true))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @WithUserDetails(value = "user5")
+    @WithUserDetails(value = "user5", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testGetEmptyDialogList() throws Exception {
         mockMvc.perform(get("/api/v1/dialogs").secure(true))
                 .andExpect(status().isOk())
@@ -74,7 +81,7 @@ public class ApiChatControllerTest {
 
 
     @Test
-    @WithUserDetails(value = "user1")
+    @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testGetDialogList() throws Exception {
 
         mockMvc.perform(get("/api/v1/dialogs").secure(true))
@@ -82,7 +89,7 @@ public class ApiChatControllerTest {
                 .andExpect(jsonPath("$.result.dialogs", hasSize(3)))
                 .andExpect(jsonPath("$.result.dialogs[0].dialogId", instanceOf(Number.class)))
                 .andExpect(jsonPath("$.result.dialogs[0].dialogId").value("1277"))
-                .andExpect(jsonPath("$.result.dialogs[0].name").value("user4 user4"))
+                .andExpect(jsonPath("$.result.dialogs[0].name").value("user4"))
                 .andExpect(jsonPath("$.result.dialogs[0].content").value("f"))
                 .andExpect(jsonPath("$.result.dialogs[*].dialogId", notNullValue()))
                 .andExpect(jsonPath("$.result.dialogs[*].name", notNullValue()))
@@ -92,7 +99,7 @@ public class ApiChatControllerTest {
     }
 
     @Test
-    @WithUserDetails(value = "user1")
+    @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testCreateDialog() throws Exception {
         String json = mockMvc.perform(post("/api/v1/dialog/create?userId=1004")
                 .secure(true))
@@ -106,7 +113,7 @@ public class ApiChatControllerTest {
     }
 
     @Test
-    @WithUserDetails(value = "user1")
+    @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testCreateExistDialog() throws Exception {
         String json1 = mockMvc.perform(post("/api/v1/dialog/create?userId=1004")
                 .secure(true))
@@ -128,7 +135,7 @@ public class ApiChatControllerTest {
 
 
     @Test
-    @WithUserDetails(value = "user1")
+    @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void getMessagesInEmptyDialog() throws Exception {
         String json = mockMvc.perform(post("/api/v1/dialog/create?userId=1005")
                 .secure(true))
@@ -149,7 +156,7 @@ public class ApiChatControllerTest {
 
 
     @Test
-    @WithUserDetails(value = "user4")
+    @WithUserDetails(value = "user4", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testGetMessagesInBigDialog() throws Exception {
         mockMvc.perform(get("/api/v1/dialog/1277").secure(true))
                 .andExpect(status().isOk())
@@ -161,7 +168,7 @@ public class ApiChatControllerTest {
     }
 
     @Test
-    @WithUserDetails(value = "user4")
+    @WithUserDetails(value = "user4", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testGetMessagesOnSecondPageInDialog() throws Exception {
         mockMvc.perform(get("/api/v1/dialog/1277?page=1").secure(true))
                 .andExpect(status().isOk())
@@ -173,15 +180,14 @@ public class ApiChatControllerTest {
     }
 
     @Test
-    @WithUserDetails(value = "user2")
+    @WithUserDetails(value = "user2", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testGetMessagesOnSecondPageInDialogForbidden() throws Exception {
         mockMvc.perform(get("/api/v1/dialog/1277?page=1").secure(true))
                 .andExpect(status().isForbidden());
     }
 
-    //todo включить тест когда будет осуществлен переход от интерфейс-проекций к классам
-/*    @Test
-    @WithUserDetails(value = "user1")
+    @Test
+    @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testGetDialogsReturnDialogsSortedByTimestamp() throws Exception {
         String json = mockMvc.perform(get("/api/v1/dialogs").secure(true))
                 .andExpect(status().isOk())
@@ -190,7 +196,7 @@ public class ApiChatControllerTest {
         GetDialogsResponse getDialogsResponse = objectMapper.readValue(json, GetDialogsResponse.class);
 
         List<Date> datesFromRequest = new ArrayList<>();
-        for (LastDialog lastDialog : getDialogsResponse.getGetDialogsResult().getDialogs()) {
+        for (LastDialogDTO lastDialog : getDialogsResponse.getGetDialogsResult().getDialogs()) {
             datesFromRequest.add(lastDialog.getTimestamp());
         }
 
@@ -199,11 +205,11 @@ public class ApiChatControllerTest {
         reverse(manualDates);
 
         assertEquals(datesFromRequest, manualDates);
-    }*/
+    }
 
 
     @Test
-    @WithUserDetails(value = "user1")
+    @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testEditMessage() throws Exception {
         EditMessageRequest message = new EditMessageRequest();
         message.setContent("1234");
@@ -211,13 +217,14 @@ public class ApiChatControllerTest {
         mockMvc.perform(put("/api/v1/message/1197").secure(true)
                 .content(objectMapper.writeValueAsString(message))
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("SUCCESS"));
 
         assertEquals(message.getContent(), messageRepository.findById(1197L).get().getContent());
     }
 
     @Test
-    @WithUserDetails(value = "user2")
+    @WithUserDetails(value = "user2", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testEditMessageForbidden() throws Exception {
         EditMessageRequest message = new EditMessageRequest();
         message.setContent("1234");
@@ -229,7 +236,7 @@ public class ApiChatControllerTest {
     }
 
     @Test
-    @WithUserDetails(value = "user2")
+    @WithUserDetails(value = "user2", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testEditMessageNotFound() throws Exception {
         EditMessageRequest message = new EditMessageRequest();
         message.setContent("1234");
@@ -243,24 +250,25 @@ public class ApiChatControllerTest {
 
 
     @Test
-    @WithUserDetails(value = "user1")
+    @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testDeleteMessage() throws Exception {
         mockMvc.perform(delete("/api/v1/message/1199").secure(true))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("SUCCESS"));
 
         assertEquals(MessageStatus.DELETED, messageRepository.findById(1199L).get().getStatus());
 
     }
 
     @Test
-    @WithUserDetails(value = "user1")
+    @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testDeleteMessageNotFound() throws Exception {
         mockMvc.perform(delete("/api/v1/message/54321").secure(true))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @WithUserDetails(value = "user1")
+    @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testDeleteMessageForbidden() throws Exception {
         mockMvc.perform(delete("/api/v1/message/1198").secure(true))
                 .andExpect(status().isForbidden());

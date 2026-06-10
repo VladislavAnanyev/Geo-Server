@@ -14,6 +14,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Сохранение и поиск геолокаций пользователей, в том числе друзей с активным обменом.
+ */
 @Service
 public class GeolocationService {
 
@@ -44,7 +47,11 @@ public class GeolocationService {
     }
 
     /**
-     * Последняя геолокация пользователя, если она не старше заданного окна (включительно по нижней границе времени).
+     * Возвращает последнюю геолокацию пользователя, если она не старше заданного окна.
+     *
+     * @param userId         идентификатор пользователя
+     * @param windowMinutes максимальный возраст координат в минутах
+     * @return актуальная геолокация или пустой результат
      */
     public Optional<Geolocation> getRecentGeolocation(Long userId, int windowMinutes) {
         LocalDateTime threshold = LocalDateTime.now().minusMinutes(windowMinutes);
@@ -52,6 +59,13 @@ public class GeolocationService {
                 .filter(g -> g.getUpdatedAt() != null && !g.getUpdatedAt().isBefore(threshold));
     }
 
+    /**
+     * Сохраняет текущую геолокацию пользователя и запись в историю.
+     *
+     * @param userId            идентификатор пользователя
+     * @param geolocationModel  координаты
+     * @return сохранённая геолокация
+     */
     public Geolocation saveGeolocation(Long userId, GeolocationModel geolocationModel) {
         LocalDateTime now = LocalDateTime.now();
 
@@ -72,10 +86,27 @@ public class GeolocationService {
         );
     }
 
+    /**
+     * Ищет геолокации в квадратной области вокруг точки с интервалом ±30 минут.
+     *
+     * @param geolocation опорная точка
+     * @param size        половина стороны квадрата в метрах
+     * @param time        центральное время поиска
+     * @return список найденных геолокаций
+     */
     public List<Geolocation> findInSquare(Geolocation geolocation, Integer size, LocalDateTime time) {
         return findInSquare(geolocation, size, time, 30L);
     }
 
+    /**
+     * Ищет геолокации в квадратной области вокруг точки в заданном временном окне.
+     *
+     * @param geolocation опорная точка
+     * @param size        половина стороны квадрата в метрах
+     * @param time        центральное время поиска
+     * @param interval    полуширина временного окна в минутах
+     * @return список найденных геолокаций
+     */
     public List<Geolocation> findInSquare(Geolocation geolocation, Integer size, LocalDateTime time, Long interval) {
         double myLatitude = geolocation.getLat(); //Интересующие нас координаты широты
         double myLongitude = geolocation.getLng();  //Интересующие нас координаты долготы

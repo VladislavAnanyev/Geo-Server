@@ -22,6 +22,8 @@ public interface MessageRepository extends
 
     Optional<Message> findMessageByDialogDialogIdAndMessageId(Long dialogId, Long messageId);
 
+    boolean existsBySender_UserIdAndUniqueCode(Long senderUserId, String uniqueCode);
+
     @Query(value = """
             SELECT MESSAGES.MESSAGE_ID AS messageId, content, DIALOGS.dialog_id AS dialogId,
                    MESSAGES.SENDER_USER_ID AS userId, U.USERNAME AS username,
@@ -37,13 +39,13 @@ public interface MessageRepository extends
                 FROM USERS_DIALOGS WHERE USERS_DIALOGS.USER_ID = :userId
                 )
               AND MESSAGES.DIALOG_ID IN (
-                SELECT * FROM (SELECT D.DIALOG_ID FROM USERS_DIALOGS JOIN DIALOGS D ON D.DIALOG_ID = USERS_DIALOGS.DIALOG_ID
+                SELECT * FROM (                SELECT D.DIALOG_ID FROM USERS_DIALOGS JOIN DIALOGS D ON D.DIALOG_ID = USERS_DIALOGS.DIALOG_ID
                 JOIN USERS_FRIENDS
                      ON USERS_FRIENDS.FRIEND_ID = USERS_DIALOGS.USER_ID
-                WHERE USERS_FRIENDS.USER_ID = :userId AND name IS NULL) AS friends
+                WHERE USERS_FRIENDS.USER_ID = :userId AND name IS NULL AND D.visible = true) AS friends
                 UNION
                 (SELECT D.DIALOG_ID FROM USERS_DIALOGS JOIN DIALOGS D ON D.DIALOG_ID = USERS_DIALOGS.DIALOG_ID
-                WHERE USER_ID = :userId AND name IS NOT NULL)
+                WHERE USER_ID = :userId AND name IS NOT NULL AND D.visible = true)
                 )
             ORDER BY MESSAGES.TIMESTAMP DESC;
             """, nativeQuery = true)

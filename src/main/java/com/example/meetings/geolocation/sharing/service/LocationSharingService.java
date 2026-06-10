@@ -34,6 +34,10 @@ public class LocationSharingService {
     /**
      * Отправляет приглашение на обмен геолокацией от инициатора к другу.
      * При встречном ожидающем приглашении выполняет авто-принятие.
+     *
+     * @param initiatorUserId идентификатор отправителя приглашения
+     * @param friendUserId    идентификатор друга-получателя
+     * @return созданная или активированная запись обмена
      */
     @Transactional
     public LocationSharing sendInvite(Long initiatorUserId, Long friendUserId) {
@@ -60,6 +64,10 @@ public class LocationSharingService {
 
     /**
      * Принимает ожидающее приглашение (только получатель).
+     *
+     * @param sharingId    идентификатор записи обмена
+     * @param targetUserId идентификатор получателя приглашения
+     * @return активированная запись обмена
      */
     @Transactional
     public LocationSharing accept(Long sharingId, Long targetUserId) {
@@ -75,6 +83,10 @@ public class LocationSharingService {
 
     /**
      * Отклоняет ожидающее приглашение (только получатель).
+     *
+     * @param sharingId    идентификатор записи обмена
+     * @param targetUserId идентификатор получателя приглашения
+     * @return запись обмена в статусе REJECTED
      */
     @Transactional
     public LocationSharing reject(Long sharingId, Long targetUserId) {
@@ -91,6 +103,9 @@ public class LocationSharingService {
 
     /**
      * Отзывает активный обмен геолокацией между двумя пользователями.
+     *
+     * @param userId       идентификатор одного из участников
+     * @param friendUserId идентификатор второго участника
      */
     @Transactional
     public void revoke(Long userId, Long friendUserId) {
@@ -102,6 +117,9 @@ public class LocationSharingService {
 
     /**
      * Отзывает все записи обмена между пользователями (в обоих направлениях).
+     *
+     * @param userId       идентификатор одного из участников
+     * @param friendUserId идентификатор второго участника
      */
     @Transactional
     public void revokeAllBetween(Long userId, Long friendUserId) {
@@ -111,7 +129,9 @@ public class LocationSharingService {
     /**
      * Возвращает входящие приглашения в статусе PENDING.
      *
-     * @param fromUserId опциональный фильтр по идентификатору отправителя
+     * @param userId       идентификатор получателя приглашений
+     * @param fromUserId   опциональный фильтр по идентификатору отправителя
+     * @return список входящих приглашений
      */
     @Transactional(readOnly = true)
     public List<LocationSharingView> getIncomingPending(Long userId, Long fromUserId) {
@@ -124,7 +144,9 @@ public class LocationSharingService {
     /**
      * Возвращает исходящие приглашения в статусе PENDING.
      *
-     * @param toUserId опциональный фильтр по идентификатору получателя
+     * @param userId     идентификатор отправителя приглашений
+     * @param toUserId   опциональный фильтр по идентификатору получателя
+     * @return список исходящих приглашений
      */
     @Transactional(readOnly = true)
     public List<LocationSharingView> getOutgoingPending(Long userId, Long toUserId) {
@@ -136,6 +158,9 @@ public class LocationSharingService {
 
     /**
      * Возвращает идентификаторы пользователей с активным обменом геолокацией.
+     *
+     * @param userId идентификатор пользователя
+     * @return идентификаторы партнёров с активным обменом
      */
     @Transactional(readOnly = true)
     public List<Long> findActivePartnerIds(Long userId) {
@@ -144,6 +169,9 @@ public class LocationSharingService {
 
     /**
      * Возвращает все активные записи обмена, где участвует указанный пользователь.
+     *
+     * @param userId идентификатор пользователя
+     * @return список активных записей обмена
      */
     @Transactional(readOnly = true)
     public List<LocationSharing> findAllActiveForUser(Long userId) {

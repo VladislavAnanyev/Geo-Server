@@ -24,6 +24,9 @@ import static com.example.meetings.util.Constants.ADMIN_ID;
 import static com.example.meetings.util.Constants.CONTENT;
 import static com.example.meetings.util.Constants.SIGNIN_EMAIL_SUBJECT;
 
+/**
+ * Оркестрация аутентификации: вход, одноразовые коды, регистрация и выдача токенов.
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthFacadeImpl implements AuthFacade {
@@ -41,6 +44,12 @@ public class AuthFacadeImpl implements AuthFacade {
     private final MessageService messageService;
     private final FriendService friendService;
 
+    /**
+     * Выполняет вход по учётным данным и возвращает токены доступа.
+     *
+     * @param authRequest логин, пароль и FCM-токен устройства
+     * @return идентификатор пользователя, JWT, refresh-токен, очередь RabbitMQ и роли
+     */
     @Override
     public AuthResult signIn(AuthRequest authRequest) {
         User user = authService.authenticate(authRequest);
@@ -56,6 +65,11 @@ public class AuthFacadeImpl implements AuthFacade {
         );
     }
 
+    /**
+     * Запускает вход по номеру телефона: регистрация нового пользователя или отправка одноразового кода.
+     *
+     * @param phone номер телефона пользователя
+     */
     @Override
     public void signInViaPhone(String phone) {
         if (!userService.isUserExist(phone)) {
@@ -68,6 +82,11 @@ public class AuthFacadeImpl implements AuthFacade {
         codeSenderService.sendCodeToPhone(code, phone);
     }
 
+    /**
+     * Запускает вход по email: регистрация нового пользователя или отправка одноразового кода.
+     *
+     * @param email адрес электронной почты пользователя
+     */
     @Override
     public void signInViaEmail(String email) {
         String normalized = email.trim().toLowerCase(Locale.ROOT);
@@ -81,6 +100,12 @@ public class AuthFacadeImpl implements AuthFacade {
         mailSender.send(normalized, SIGNIN_EMAIL_SUBJECT, signInEmailBody(code));
     }
 
+    /**
+     * Обновляет JWT по действующему refresh-токену.
+     *
+     * @param refreshToken текущий refresh-токен пользователя
+     * @return новый JWT, обновлённый refresh-токен, идентификатор пользователя и роли
+     */
     @Override
     public AuthResult getNewAccessToken(String refreshToken) {
         UserToken userToken = authService.updateRefreshToken(refreshToken);

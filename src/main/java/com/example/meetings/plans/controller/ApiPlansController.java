@@ -118,4 +118,3 @@ public class ApiPlansController {
         return new PlanListResponse(planFacade.getMyPlans(authUser.getUserId()));
     }
 }
-

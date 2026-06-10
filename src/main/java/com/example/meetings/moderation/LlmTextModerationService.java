@@ -27,6 +27,9 @@ import static com.example.meetings.util.Constants.PROMPT_QUOTE_LEFT;
 import static com.example.meetings.util.Constants.PROMPT_QUOTE_REPLACEMENT;
 import static com.example.meetings.util.Constants.PROMPT_QUOTE_RIGHT;
 
+/**
+ * Реализация модерации пользовательского текста через LLM.
+ */
 @Service
 @ConditionalOnProperty(name = "text.moderation.enabled", havingValue = "true")
 @RequiredArgsConstructor
@@ -39,11 +42,23 @@ public class LlmTextModerationService implements TextModerationService {
     @Value("${text.moderation.max-text-length:1000}")
     private int maxTextLength;
 
+    /**
+     * Проверяет текст поля профиля пользователя через LLM.
+     *
+     * @param fieldLabel название поля для сообщения об ошибке
+     * @param text       проверяемый текст
+     */
     @Override
     public void validateUserProfileText(String fieldLabel, String text) {
         validateText(fieldLabel, text);
     }
 
+    /**
+     * Проверяет заголовок и описание плана через LLM.
+     *
+     * @param title       заголовок плана
+     * @param description описание плана
+     */
     @Override
     public void validatePlanText(String title, String description) {
         validateText(MODERATION_FIELD_PLAN, joinPlanText(title, description));

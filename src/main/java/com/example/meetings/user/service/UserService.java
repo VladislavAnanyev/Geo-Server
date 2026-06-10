@@ -19,6 +19,9 @@ import static com.example.meetings.util.Constants.DEFAULT_FIRST_NAME;
 import static com.example.meetings.util.Constants.DEFAULT_LAST_NAME;
 
 
+/**
+ * Сервис управления пользователями: профиль, регистрация и загрузка.
+ */
 @Service
 public class UserService {
 
@@ -28,15 +31,33 @@ public class UserService {
     @Autowired
     private UserFactory userFactory;
 
+    /**
+     * Возвращает данные пользователя для аутентификации.
+     *
+     * @param userId идентификатор пользователя
+     * @return представление пользователя для авторизации
+     */
     public AuthUserView getAuthUserInfo(Long userId) {
         return userRepository.findAllByUserId(userId);
     }
 
+    /**
+     * Возвращает профиль пользователя с фотографиями.
+     *
+     * @param userId идентификатор пользователя
+     * @return профиль пользователя
+     */
     @Transactional
     public ProfileView getUserProfileById(Long userId) {
         return userRepository.findUserByUserIdOrderByUsernameAscPhotosAsc(userId);
     }
 
+    /**
+     * Обновляет данные профиля пользователя.
+     *
+     * @param userId  идентификатор пользователя
+     * @param request параметры изменения профиля
+     */
     @Transactional
     public void changeUser(Long userId, ChangeUserRequest request) {
         User user = loadUserByUserId(userId);
@@ -46,6 +67,12 @@ public class UserService {
         user.setBirthDate(request.getBirthDate());
     }
 
+    /**
+     * Загружает пользователя по идентификатору с проверкой существования.
+     *
+     * @param userId идентификатор пользователя
+     * @return найденный пользователь
+     */
     public User loadUserByUserId(Long userId) {
         Optional<User> user = userRepository.findById(userId);
         if (user.isEmpty()) {
@@ -55,6 +82,12 @@ public class UserService {
         return user.get();
     }
 
+    /**
+     * Загружает пользователя по идентификатору через JPA-прокси без немедленного обращения к БД.
+     *
+     * @param userId идентификатор пользователя
+     * @return прокси-сущность пользователя
+     */
     public User loadUserByUserIdProxy(Long userId) throws UsernameNotFoundException {
         return userRepository.getOne(userId);
     }
@@ -63,7 +96,8 @@ public class UserService {
      * Регистрация в системе. Пользователь сохраняется в БД, ему отправляется приветственное сообщение на почту,
      * а также создается обмен в rabbitmq для отправления уведомлений
      *
-     * @param registrationModel - модель для регистрации
+     * @param registrationModel модель для регистрации
+     * @return сохранённый пользователь
      */
     @Transactional
     public User saveUser(RegistrationModel registrationModel) {

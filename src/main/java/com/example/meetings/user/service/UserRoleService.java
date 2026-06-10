@@ -10,12 +10,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Сервис управления ролями пользователей.
+ */
 @Service
 @RequiredArgsConstructor
 public class UserRoleService {
 
     private final UserRoleRepository userRoleRepository;
 
+    /**
+     * Возвращает список ролей пользователя.
+     *
+     * @param userId идентификатор пользователя
+     * @return уникальный список ролей пользователя
+     */
     public List<Role> getRoles(Long userId) {
         return userRoleRepository.findRolesByUserId(userId).stream()
                 .map(r -> {
@@ -30,6 +39,11 @@ public class UserRoleService {
                 .toList();
     }
 
+    /**
+     * Назначает роль пользователя по умолчанию, если у него ещё нет ролей.
+     *
+     * @param user пользователь
+     */
     @Transactional
     public void ensureDefaultRole(User user) {
         List<String> roles = userRoleRepository.findRolesByUserId(user.getUserId());
@@ -38,6 +52,12 @@ public class UserRoleService {
         }
     }
 
+    /**
+     * Синхронизирует премиум-роль пользователя с активностью подписки.
+     *
+     * @param user    пользователь
+     * @param premium {@code true}, если у пользователя активна премиум-подписка
+     */
     @Transactional
     public void syncPremiumRole(User user, boolean premium) {
         Long userId = user.getUserId();

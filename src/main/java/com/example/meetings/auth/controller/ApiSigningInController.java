@@ -15,9 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
-/**
- * Контроллер для входа в систему
- */
 @RestController
 @RequestMapping(path = "/api/v1")
 @RequiredArgsConstructor

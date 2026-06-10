@@ -19,6 +19,9 @@ import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
+/**
+ * Реализация фасада геолокации.
+ */
 @Service
 public class GeolocationFacadeImpl implements GeolocationFacade {
 
@@ -34,6 +37,12 @@ public class GeolocationFacadeImpl implements GeolocationFacade {
     @Autowired
     private GeolocationMeetingAsyncService geolocationMeetingAsyncService;
 
+    /**
+     * Сохраняет геолокацию пользователя и асинхронно ищет встречи поблизости.
+     *
+     * @param userId           идентификатор пользователя
+     * @param geolocationModel координаты и время обновления геолокации
+     */
     @Override
     @Transactional
     public void addGeolocation(Long userId, GeolocationModel geolocationModel) {
@@ -46,6 +55,12 @@ public class GeolocationFacadeImpl implements GeolocationFacade {
         );
     }
 
+    /**
+     * Возвращает актуальные геолокации друзей пользователя.
+     *
+     * @param userId идентификатор пользователя
+     * @return результат со списком геолокаций друзей
+     */
     @Override
     public GetGeolocationsResult getFriendsGeolocations(Long userId) {
         List<Geolocation> geolocations = geolocationService.getFriendsGeolocations(userId);
@@ -58,11 +73,23 @@ public class GeolocationFacadeImpl implements GeolocationFacade {
                 );
     }
 
+    /**
+     * Возвращает последнюю геолокацию пользователя, если она обновлялась в заданном временном окне.
+     *
+     * @param userId идентификатор пользователя
+     * @return последняя геолокация пользователя или пустой результат, если актуальной геолокации нет
+     */
     @Override
     public Optional<GeolocationDto> getRecentOwnGeolocation(Long userId) {
         return geolocationService.getRecentGeolocation(userId, recentWindowMinutes).map(this::toGeolocationDto);
     }
 
+    /**
+     * Возвращает пользователей в квадрате вокруг последней геолокации текущего пользователя.
+     *
+     * @param userId идентификатор пользователя
+     * @return список геолокаций людей поблизости; пустой список, если у пользователя нет актуальной геолокации
+     */
     @Override
     public List<GeolocationDto> getPeopleInSquare(Long userId) {
         Optional<GeolocationDto> recent = geolocationService.getRecentGeolocation(userId, recentWindowMinutes).map(this::toGeolocationDto);

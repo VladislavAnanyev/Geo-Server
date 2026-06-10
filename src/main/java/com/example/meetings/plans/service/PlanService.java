@@ -23,6 +23,7 @@ import com.example.meetings.subscription.service.SubscriptionService;
 import com.example.meetings.user.model.domain.User;
 import com.example.meetings.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -49,6 +50,9 @@ import static java.lang.Boolean.TRUE;
 import static java.util.List.of;
 import static org.springframework.http.HttpStatus.*;
 
+/**
+ * Бизнес-логика планов: live, запланированные, поиск рядом и изменение владельцем.
+ */
 @Service
 @RequiredArgsConstructor
 public class PlanService {
@@ -67,6 +71,13 @@ public class PlanService {
     @Value("${plans.radius}")
     private int planRadius;
 
+    /**
+     * Включает live-план с координатами или закрывает активный live-план.
+     *
+     * @param authUserId идентификатор владельца live-плана
+     * @param request    флаг включения и координаты
+     * @return представление live-плана или {@code null}, если активного плана не было при выключении
+     */
     @Transactional
     public PlanViewDto toggleLive(Long authUserId, ToggleLivePlanRequest request) {
         validateToggleLiveRequest(request);
@@ -79,6 +90,14 @@ public class PlanService {
         return toView(saveLivePlan(active, authUserId, request), authUserId);
     }
 
+    /**
+     * Сохраняет новый запланированный план.
+     *
+     * @param authUserId  идентификатор владельца плана
+     * @param request     параметры запланированного плана
+     * @param groupDialog диалог группового плана или {@code null} для личного плана
+     * @return сохранённый план
+     */
     @Transactional
     public PlanViewDto createScheduled(Long authUserId, CreateScheduledPlanRequest request, Dialog groupDialog) {
         LocalDateTime expires = validateAndResolveScheduledExpiresAt(request);
@@ -87,11 +106,15 @@ public class PlanService {
             throw new ResponseStatusException(BAD_REQUEST, "group plan requires dialog");
         }
         Plan plan = buildScheduledPlan(userService.loadUserByUserId(authUserId), request, expires, mode, groupDialog);
+
         return toView(planRepository.save(plan), authUserId);
     }
 
     /**
-     * Для бесплатной подписки доступен только один активный запланированный план.
+     * Проверяет право пользователя создавать ещё один запланированный план.
+     * <p>Для бесплатной подписки доступен только один активный запланированный план.</p>
+     *
+     * @param authUserId идентификатор пользователя
      */
     @Transactional(readOnly = true)
     public void validateScheduledPlanCreationAccess(Long authUserId) {
@@ -114,6 +137,13 @@ public class PlanService {
         }
     }
 
+    /**
+     * Возвращает активные планы в радиусе с фильтрами типа и времени.
+     *
+     * @param authUserId идентификатор текущего пользователя
+     * @param request    координаты, радиус, тип и временной диапазон
+     * @return страница планов поблизости
+     */
     @Transactional(readOnly = true)
     public PlanListResult getNearby(Long authUserId, NearbyPlansRequest request) {
         validateNearbyRequest(request);
@@ -122,22 +152,38 @@ public class PlanService {
                 request.getLat(),
                 request.getLon(),
                 planRadius,
-                typeFilter,
-                request.getFromTime(),
-                request.getFromTime().plusMonths(3),
+                typeFilter == null ? "" : typeFilter,
+                getFromTime(request),
+                getToTime(request),
                 isExcludeOwn(request),
                 authUserId,
                 LocalDateTime.now(),
                 PageRequest.of(resolvePage(request), resolveSize(request))
         );
+
         return toListResult(plans, authUserId);
     }
 
+    /**
+     * Возвращает план для просмотра.
+     *
+     * @param authUserId идентификатор текущего пользователя
+     * @param planId     идентификатор плана
+     * @return представление плана
+     */
     @Transactional(readOnly = true)
     public PlanViewDto getPlan(Long authUserId, Long planId) {
         return getPlan(authUserId, planId, VIEW);
     }
 
+    /**
+     * Возвращает план с учётом режима доступа.
+     *
+     * @param authUserId  идентификатор текущего пользователя
+     * @param planId      идентификатор плана
+     * @param lookupMode  режим: просмотр или отклик (с проверкой активности и запрета на свой план)
+     * @return представление плана
+     */
     @Transactional(readOnly = true)
     public PlanViewDto getPlan(Long authUserId, Long planId, PlanLookupMode lookupMode) {
         Plan plan = loadPlan(planId);
@@ -145,17 +191,35 @@ public class PlanService {
             validatePlanIsActiveForRespond(plan);
             validateNotOwnPlan(plan, authUserId);
         }
+
         return toView(plan, authUserId);
     }
 
+    /**
+     * Меняет статус плана на {@code CLOSED} или {@code CANCELLED}.
+     *
+     * @param authUserId идентификатор владельца плана
+     * @param planId     идентификатор плана
+     * @param status     новый статус
+     * @return обновлённый план
+     */
     @Transactional
     public PlanViewDto patchStatus(Long authUserId, Long planId, PlanStatus status) {
         validatePatchStatus(status);
         Plan plan = loadPlan(planId);
         validatePlanOwner(plan, authUserId);
+
         return toView(closePlan(plan, status), authUserId);
     }
 
+    /**
+     * Обновляет поля активного запланированного плана.
+     *
+     * @param authUserId идентификатор владельца плана
+     * @param planId     идентификатор плана
+     * @param request    новые поля плана
+     * @return обновлённый план
+     */
     @Transactional
     public PlanViewDto updateScheduled(Long authUserId, Long planId, UpdateScheduledPlanRequest request) {
         Plan plan = loadPlan(planId);
@@ -176,8 +240,15 @@ public class PlanService {
         return toView(planRepository.save(plan), authUserId);
     }
 
+    /**
+     * Помечает план удалённым; активный live-план дополнительно закрывается.
+     *
+     * @param authUserId идентификатор владельца плана
+     * @param planId     идентификатор плана
+     * @return удалённый план
+     */
     @Transactional
-    public void deletePlan(Long authUserId, Long planId) {
+    public Plan deletePlan(Long authUserId, Long planId) {
         Plan plan = loadPlan(planId);
         validatePlanOwner(plan, authUserId);
         validatePlanIsActiveForEdit(plan);
@@ -187,9 +258,15 @@ public class PlanService {
             plan.setStatus(CLOSED).setClosedAt(now);
         }
 
-        planRepository.save(plan);
+        return planRepository.save(plan);
     }
 
+    /**
+     * Возвращает активные планы пользователя, исключая просроченный live.
+     *
+     * @param authUserId идентификатор пользователя
+     * @return список активных планов пользователя
+     */
     @Transactional(readOnly = true)
     public PlanListResult getMyPlans(Long authUserId) {
         LocalDateTime now = LocalDateTime.now();
@@ -494,6 +571,20 @@ public class PlanService {
             return null;
         }
         return planResponseRepository.countByPlanIdAndStatus(plan.getId(), PENDING);
+    }
+
+    @NotNull
+    private LocalDateTime getToTime(NearbyPlansRequest request) {
+        return request.getToTime() != null
+                ? request.getToTime()
+                : (request.getFromTime() != null ? request.getFromTime().plusMonths(3) : LocalDateTime.now().plusYears(10));
+    }
+
+    @NotNull
+    private LocalDateTime getFromTime(NearbyPlansRequest request) {
+        return request.getFromTime() != null
+                ? request.getFromTime()
+                : LocalDateTime.now().minusYears(10);
     }
 }
 

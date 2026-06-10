@@ -26,7 +26,7 @@ import java.util.UUID;
 import static java.time.LocalDateTime.now;
 
 /**
- * Сервис для регистрации/входа/смены пароля
+ * Бизнес-логика аутентификации: загрузка пользователя, вход и обновление refresh-токена.
  */
 @Service
 public class AuthService implements UserDetailsService {
@@ -40,6 +40,12 @@ public class AuthService implements UserDetailsService {
     @Autowired
     private TokenRepository tokenRepository;
 
+    /**
+     * Загружает данные пользователя для Spring Security по имени (номеру телефона).
+     *
+     * @param username логин пользователя
+     * @return учётные данные для аутентификации
+     */
     @Override
     public AuthUserDetails loadUserByUsername(String username) throws UserNotFoundException {
         Optional<User> optionalUser = userRepository.findUserByUsername(username);
@@ -56,6 +62,12 @@ public class AuthService implements UserDetailsService {
                 .setPassword(user.getPassword());
     }
 
+    /**
+     * Находит пользователя по имени (номеру телефона).
+     *
+     * @param username логин пользователя
+     * @return найденный пользователь
+     */
     public User findUserByUsername(String username) throws UserNotFoundException {
         Optional<User> user = userRepository.findUserByUsername(username);
         if (user.isEmpty()) {
@@ -66,10 +78,10 @@ public class AuthService implements UserDetailsService {
     }
 
     /**
-     * Аутентификация происходит средствами spring
+     * Аутентифицирует пользователя по логину и паролю через Spring Security.
      *
-     * @param authRequest - модель содержащая логин и пароль
-     * @return - модель содержащая имя обмена, jwt и идентификатор пользователя
+     * @param authRequest логин и пароль
+     * @return аутентифицированный пользователь
      */
     public User authenticate(AuthRequest authRequest) {
         try {
@@ -95,11 +107,11 @@ public class AuthService implements UserDetailsService {
     }
 
     /**
-     * Установить код для входа в систему с телефона
-     * Используется, когда, например, пользователь не успел ввести код за отведенное время при входе
-     * Или для входа, после выхода из аккаунта
+     * Сохраняет одноразовый код входа по телефону и срок его действия.
+     * <p>Используется при повторной отправке кода или после выхода из аккаунта.</p>
      *
-     * @param phone - номер телефона
+     * @param phone номер телефона
+     * @param code  одноразовый код
      */
     @Transactional
     public void setOneTimePasswordCode(String phone, String code) {
@@ -108,6 +120,12 @@ public class AuthService implements UserDetailsService {
         user.setSignInViaPhoneCodeExpiration(now().plusMinutes(3));
     }
 
+    /**
+     * Обновляет refresh-токен: выдаёт новый идентификатор для существующей записи.
+     *
+     * @param oldRefreshToken текущий refresh-токен
+     * @return обновлённая запись токена
+     */
     public UserToken updateRefreshToken(String oldRefreshToken) {
         Optional<UserToken> optionalUserToken = tokenRepository.findById(oldRefreshToken);
         if (optionalUserToken.isEmpty()) {

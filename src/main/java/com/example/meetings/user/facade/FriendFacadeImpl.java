@@ -23,6 +23,9 @@ public class FriendFacadeImpl implements FriendFacade {
 
     /**
      * Возвращает друзей пользователя без служебного аккаунта администратора.
+     *
+     * @param authUserId идентификатор текущего пользователя
+     * @return список друзей без администратора
      */
     @Override
     @Transactional(readOnly = true)
@@ -34,6 +37,9 @@ public class FriendFacadeImpl implements FriendFacade {
 
     /**
      * Отзывает обмен геолокацией и удаляет пользователя из друзей.
+     *
+     * @param friendUserId идентификатор удаляемого друга
+     * @param authUserId   идентификатор текущего пользователя
      */
     @Override
     @Transactional

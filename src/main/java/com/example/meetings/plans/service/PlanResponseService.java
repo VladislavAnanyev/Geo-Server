@@ -24,6 +24,9 @@ import static com.example.meetings.plans.model.domain.PlanResponseStatus.PENDING
 import static com.example.meetings.plans.model.domain.PlanMode.GROUP;
 import static org.springframework.http.HttpStatus.*;
 
+/**
+ * Бизнес-логика откликов на групповые планы.
+ */
 @Service
 @RequiredArgsConstructor
 public class PlanResponseService {
@@ -32,6 +35,13 @@ public class PlanResponseService {
     private final PlanResponseRepository planResponseRepository;
     private final UserService userService;
 
+    /**
+     * Создаёт отклик пользователя на групповой план или возвращает существующий.
+     *
+     * @param authUserId идентификатор откликающегося пользователя
+     * @param planId     идентификатор группового плана
+     * @return результат отклика с идентификаторами плана и отклика
+     */
     @Transactional
     public PlanRespondResult respond(Long authUserId, Long planId) {
         Plan plan = loadPlan(planId);
@@ -55,6 +65,16 @@ public class PlanResponseService {
         return toResult(planId, saved);
     }
 
+    /**
+     * Возвращает страницу откликов на групповой план.
+     *
+     * @param authUserId идентификатор владельца плана
+     * @param planId     идентификатор группового плана
+     * @param status     фильтр по статусу отклика или {@code null} для всех
+     * @param page       номер страницы
+     * @param size       размер страницы
+     * @return страница откликов на план
+     */
     @Transactional(readOnly = true)
     public PlanResponseListResult getResponses(Long authUserId, Long planId, PlanResponseStatus status, Integer page, Integer size) {
         Plan plan = loadPlan(planId);
@@ -75,6 +95,14 @@ public class PlanResponseService {
                 .setTotal(resultPage.getTotalElements());
     }
 
+    /**
+     * Одобряет отклик на групповой план.
+     *
+     * @param authUserId  идентификатор владельца плана
+     * @param planId      идентификатор группового плана
+     * @param responseId  идентификатор отклика
+     * @return одобренный отклик
+     */
     @Transactional
     public PlanResponseViewDto approve(Long authUserId, Long planId, Long responseId) {
         PlanResponse response = loadResponse(responseId, planId);
@@ -91,6 +119,14 @@ public class PlanResponseService {
         return toView(saved);
     }
 
+    /**
+     * Отклоняет отклик на групповой план.
+     *
+     * @param authUserId  идентификатор владельца плана
+     * @param planId      идентификатор группового плана
+     * @param responseId  идентификатор отклика
+     * @return отклонённый отклик
+     */
     @Transactional
     public PlanResponseViewDto reject(Long authUserId, Long planId, Long responseId) {
         PlanResponse response = loadResponse(responseId, planId);

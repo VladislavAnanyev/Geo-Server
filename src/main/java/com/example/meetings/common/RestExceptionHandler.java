@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -175,6 +176,15 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         errorResponse.setError(apiError);
 
         return new ResponseEntity<>(errorResponse, INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException e) {
+        ApiError apiError = new ApiError(e.getReason());
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setError(apiError);
+
+        return new ResponseEntity<>(errorResponse, e.getStatus());
     }
 
     @ExceptionHandler(Exception.class)

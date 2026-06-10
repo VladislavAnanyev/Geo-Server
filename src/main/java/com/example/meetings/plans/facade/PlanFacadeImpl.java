@@ -5,6 +5,7 @@ import com.example.meetings.chat.model.CreateGroupModel;
 import com.example.meetings.chat.model.SendMessageModel;
 import com.example.meetings.chat.model.domain.Dialog;
 import com.example.meetings.chat.service.MessageService;
+import com.example.meetings.plans.model.domain.Plan;
 import com.example.meetings.plans.model.domain.PlanMode;
 import com.example.meetings.plans.model.domain.PlanResponseStatus;
 import com.example.meetings.plans.model.domain.PlanStatus;
@@ -28,6 +29,9 @@ import static com.example.meetings.plans.model.domain.PlanMode.GROUP;
 import static com.example.meetings.util.Constants.ADMIN_ID;
 import static java.util.List.of;
 
+/**
+ * Оркестрация планов: модерация текста, чаты групповых планов, заявки в друзья.
+ */
 @Service
 @RequiredArgsConstructor
 public class PlanFacadeImpl implements PlanFacade {
@@ -44,12 +48,26 @@ public class PlanFacadeImpl implements PlanFacade {
     private final MessageService messageService;
     private final TextModerationService textModerationService;
 
+    /**
+     * Включает или выключает live-план пользователя.
+     *
+     * @param authUserId идентификатор текущего пользователя
+     * @param request    флаг включения и координаты для live-плана
+     * @return представление live-плана или {@code null}, если активного плана не было при выключении
+     */
     @Override
     @Transactional
     public PlanViewDto toggleLive(Long authUserId, ToggleLivePlanRequest request) {
         return planService.toggleLive(authUserId, request);
     }
 
+    /**
+     * Создаёт запланированный план; для группового — также чат плана.
+     *
+     * @param authUserId идентификатор владельца плана
+     * @param request    параметры запланированного плана
+     * @return созданный план
+     */
     @Override
     @Transactional
     public PlanViewDto createScheduled(Long authUserId, CreateScheduledPlanRequest request) {
@@ -75,18 +93,39 @@ public class PlanFacadeImpl implements PlanFacade {
         return planService.createScheduled(authUserId, request, groupDialog);
     }
 
+    /**
+     * Возвращает планы рядом с точкой с учётом фильтров запроса.
+     *
+     * @param authUserId идентификатор текущего пользователя
+     * @param request    координаты, радиус, тип и временной диапазон
+     * @return страница планов поблизости
+     */
     @Override
     @Transactional(readOnly = true)
     public PlanListResult getNearby(Long authUserId, NearbyPlansRequest request) {
         return planService.getNearby(authUserId, request);
     }
 
+    /**
+     * Возвращает план по идентификатору.
+     *
+     * @param authUserId идентификатор текущего пользователя
+     * @param planId     идентификатор плана
+     * @return представление плана для просмотра
+     */
     @Override
     @Transactional(readOnly = true)
     public PlanViewDto getPlan(Long authUserId, Long planId) {
         return planService.getPlan(authUserId, planId);
     }
 
+    /**
+     * Откликается на план: заявка в друзья или отклик в групповой план.
+     *
+     * @param authUserId идентификатор откликающегося пользователя
+     * @param planId     идентификатор плана
+     * @return результат отклика с идентификатором плана
+     */
     @Override
     @Transactional
     public PlanRespondResult respond(Long authUserId, Long planId) {
@@ -99,12 +138,30 @@ public class PlanFacadeImpl implements PlanFacade {
         return new PlanRespondResult().setPlanId(planId);
     }
 
+    /**
+     * Возвращает отклики на групповой план (только для владельца).
+     *
+     * @param authUserId идентификатор владельца плана
+     * @param planId     идентификатор группового плана
+     * @param status     фильтр по статусу отклика или {@code null} для всех
+     * @param page       номер страницы
+     * @param size       размер страницы
+     * @return страница откликов на план
+     */
     @Override
     @Transactional(readOnly = true)
     public PlanResponseListResult getResponses(Long authUserId, Long planId, PlanResponseStatus status, Integer page, Integer size) {
         return planResponseService.getResponses(authUserId, planId, status, page, size);
     }
 
+    /**
+     * Одобряет отклик и добавляет пользователя в чат группового плана.
+     *
+     * @param authUserId  идентификатор владельца плана
+     * @param planId      идентификатор группового плана
+     * @param responseId  идентификатор отклика
+     * @return одобренный отклик
+     */
     @Override
     @Transactional
     public PlanResponseViewDto approveResponse(Long authUserId, Long planId, Long responseId) {
@@ -116,18 +173,42 @@ public class PlanFacadeImpl implements PlanFacade {
         return approved;
     }
 
+    /**
+     * Отклоняет отклик на групповой план.
+     *
+     * @param authUserId  идентификатор владельца плана
+     * @param planId      идентификатор группового плана
+     * @param responseId  идентификатор отклика
+     * @return отклонённый отклик
+     */
     @Override
     @Transactional
     public PlanResponseViewDto rejectResponse(Long authUserId, Long planId, Long responseId) {
         return planResponseService.reject(authUserId, planId, responseId);
     }
 
+    /**
+     * Меняет статус плана (закрыть или отменить); только владелец.
+     *
+     * @param authUserId идентификатор владельца плана
+     * @param planId     идентификатор плана
+     * @param status     новый статус ({@code CLOSED} или {@code CANCELLED})
+     * @return обновлённый план
+     */
     @Override
     @Transactional
     public PlanViewDto patchStatus(Long authUserId, Long planId, PlanStatus status) {
         return planService.patchStatus(authUserId, planId, status);
     }
 
+    /**
+     * Обновляет поля запланированного плана; только владелец.
+     *
+     * @param authUserId идентификатор владельца плана
+     * @param planId     идентификатор плана
+     * @param request    новые поля запланированного плана
+     * @return обновлённый план
+     */
     @Override
     @Transactional
     public PlanViewDto updateScheduled(Long authUserId, Long planId, UpdateScheduledPlanRequest request) {
@@ -135,12 +216,25 @@ public class PlanFacadeImpl implements PlanFacade {
         return planService.updateScheduled(authUserId, planId, request);
     }
 
+    /**
+     * Помечает план удалённым; только владелец.
+     *
+     * @param authUserId идентификатор владельца плана
+     * @param planId     идентификатор плана
+     */
     @Override
     @Transactional
     public void deletePlan(Long authUserId, Long planId) {
-        planService.deletePlan(authUserId, planId);
+        Plan plan = planService.deletePlan(authUserId, planId);
+        messageService.hideDialog(plan.getDialog().getDialogId());
     }
 
+    /**
+     * Возвращает активные планы текущего пользователя.
+     *
+     * @param authUserId идентификатор пользователя
+     * @return список активных планов пользователя
+     */
     @Override
     @Transactional(readOnly = true)
     public PlanListResult getMyPlans(Long authUserId) {
@@ -148,4 +242,3 @@ public class PlanFacadeImpl implements PlanFacade {
     }
 
 }
-

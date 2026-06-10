@@ -1,56 +1,45 @@
 package com.example.meetings.controller.api;
 
+import com.example.meetings.controller.config.AbstractControllerIntegrationTest;
+import com.example.meetings.controller.config.SqlScripts;
 import com.example.meetings.chat.repository.DialogRepository;
 import com.example.meetings.chat.repository.MessageRepository;
-import com.example.meetings.auth.service.TokenService;
 import com.example.meetings.plans.model.domain.*;
 import com.example.meetings.plans.repository.PlanRepository;
 import com.example.meetings.plans.repository.PlanResponseRepository;
 import com.example.meetings.request.model.domain.Request;
+import com.example.meetings.request.model.domain.RequestStatus;
 import com.example.meetings.request.repository.RequestRepository;
-import com.example.meetings.user.model.domain.User;
 import com.example.meetings.user.repository.UserRepository;
-import com.example.meetings.user.service.BusinessEmailSender;
-import com.google.firebase.FirebaseApp;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithUserDetails;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
 
-import static com.example.meetings.util.Constants.ADMIN_ID;
+import static com.example.meetings.plans.model.domain.PlanType.LIVE;
 import static org.junit.Assert.*;
+import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles({"test"})
-public class ApiPlansControllerTest {
+@Sql(scripts = {
+        SqlScripts.CLEANUP,
+        SqlScripts.USERS,
+        SqlScripts.FRIENDS,
+        SqlScripts.SUBSCRIPTIONS_PREMIUM,
+        SqlScripts.SUPPORT_USER,
+        SqlScripts.DIALOGS,
+        SqlScripts.MESSAGES_1224,
+        SqlScripts.DIALOG_UPDATE_1224
+}, executionPhase = BEFORE_TEST_METHOD)
+public class ApiPlansControllerTest extends AbstractControllerIntegrationTest {
 
-    @MockBean
-    private FirebaseApp firebaseApp;
-    @MockBean
-    private RabbitAdmin rabbitAdmin;
-    @MockBean
-    private BusinessEmailSender businessEmailSender;
-    @MockBean
-    private TokenService tokenService;
-
-    @Autowired
-    private MockMvc mockMvc;
     @Autowired
     private PlanRepository planRepository;
     @Autowired
@@ -65,24 +54,38 @@ public class ApiPlansControllerTest {
     private UserRepository userRepository;
 
     @Test
-    @WithUserDetails("user2")
+    @WithUserDetails(value = "user2", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testLiveToggleOnOff() throws Exception {
+        long activeLiveBefore = planRepository.findAll().stream()
+                .filter(p -> p.getType() == LIVE
+                        && p.getStatus() == PlanStatus.ACTIVE)
+                .count();
+
         mockMvc.perform(post("/api/v1/plans/live/toggle").secure(true)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"enabled\":true,\"lat\":55.75,\"lon\":37.61}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result.type").value("LIVE"));
+                .andExpect(jsonPath("$.result.type").value("LIVE"))
+                .andExpect(jsonPath("$.result.user.userId").value(1002))
+                .andExpect(jsonPath("$.result.ownPlan").value(true));
+
+        assertEquals(activeLiveBefore + 1, planRepository.findAll().stream()
+                .filter(p -> p.getType() == LIVE
+                        && p.getStatus() == PlanStatus.ACTIVE)
+                .count());
 
         mockMvc.perform(post("/api/v1/plans/live/toggle").secure(true)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"enabled\":false}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result").doesNotExist());
+                .andExpect(jsonPath("$.result.type").value("LIVE"));
     }
 
     @Test
-    @WithUserDetails("user2")
+    @WithUserDetails(value = "user2", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testCreateScheduled() throws Exception {
+        long countBefore = planRepository.count();
+
         mockMvc.perform(post("/api/v1/plans").secure(true)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -90,16 +93,22 @@ public class ApiPlansControllerTest {
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result.type").value("SCHEDULED"))
-                .andExpect(jsonPath("$.result.title").value("Coffee"));
+                .andExpect(jsonPath("$.result.title").value("Coffee"))
+                .andExpect(jsonPath("$.result.user.userId").value(1002))
+                .andExpect(jsonPath("$.result.ownPlan").value(true));
+
+        assertEquals(countBefore + 1, planRepository.count());
+        assertTrue(planRepository.findAll().stream()
+                .anyMatch(p -> "Coffee".equals(p.getTitle()) && p.getOwner().getUserId().equals(1002L)));
     }
 
     @Test
-    @WithUserDetails("user3")
+    @WithUserDetails(value = "user3", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testNearbyFiltersByType() throws Exception {
         planRepository.save(new Plan()
                 .setOwner(userRepository.findById(1002L).orElseThrow())
                 .setMode(PlanMode.PERSONAL)
-                .setType(com.example.meetings.plans.model.domain.PlanType.LIVE)
+                .setType(LIVE)
                 .setStatus(PlanStatus.ACTIVE)
                 .setExpiresAt(LocalDateTime.now().plusHours(2))
                 .setVisibilityRadiusM(3000)
@@ -132,7 +141,7 @@ public class ApiPlansControllerTest {
     }
 
     @Test
-    @WithUserDetails("user3")
+    @WithUserDetails(value = "user3", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testRespondCreatesFriendRequestWithMarker() throws Exception {
         Plan plan = planRepository.save(new Plan()
                 .setOwner(userRepository.findById(1002L).orElseThrow())
@@ -154,15 +163,17 @@ public class ApiPlansControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result.planId").value(plan.getId()));
 
-        Request created = requestRepository.findAll().stream().max(Comparator.comparing(Request::getRequestId)).orElseThrow();
+        Request created = requestRepository
+                .findBySenderUserIdAndToUserIdAndStatus(1003L, 1002L, RequestStatus.PENDING)
+                .orElseThrow();
         assertNotNull(created.getMessage());
         String content = messageRepository.findById(created.getMessage().getMessageId()).orElseThrow().getContent();
-        assertTrue(content.contains("[PLAN_RESPONSE]"));
-        assertTrue(content.contains("planId=" + plan.getId()));
+        assertTrue(content.contains("Отклик на план"));
+        assertTrue(content.contains("Test"));
     }
 
     @Test
-    @WithUserDetails("user3")
+    @WithUserDetails(value = "user3", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testPatchStatusForbiddenForNonOwner() throws Exception {
         Plan plan = planRepository.save(new Plan()
                 .setOwner(userRepository.findById(1002L).orElseThrow())
@@ -183,9 +194,8 @@ public class ApiPlansControllerTest {
     }
 
     @Test
-    @WithUserDetails("user3")
+    @WithUserDetails(value = "user3", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testGroupPlanRespondCreatesPlanResponse() throws Exception {
-        ensureSupportUserExists();
         Plan plan = planRepository.save(new Plan()
                 .setOwner(userRepository.findById(1002L).orElseThrow())
                 .setType(com.example.meetings.plans.model.domain.PlanType.SCHEDULED)
@@ -207,12 +217,17 @@ public class ApiPlansControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result.planId").value(plan.getId()))
                 .andExpect(jsonPath("$.result.status").value("PENDING"));
+
+        assertTrue(planResponseRepository.findAll().stream()
+                .anyMatch(r -> r.getPlan().getId().equals(plan.getId())
+                        && r.getUser().getUserId().equals(1003L)
+                        && r.getStatus() == PlanResponseStatus.PENDING));
     }
 
     @Test
-    @WithUserDetails("user2")
+    @Transactional
+    @WithUserDetails(value = "user2", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testGroupPlanApproveAddsUserToDialog() throws Exception {
-        ensureSupportUserExists();
         Plan plan = planRepository.save(new Plan()
                 .setOwner(userRepository.findById(1002L).orElseThrow())
                 .setType(com.example.meetings.plans.model.domain.PlanType.SCHEDULED)
@@ -238,20 +253,10 @@ public class ApiPlansControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result.status").value("APPROVED"));
 
-        assertTrue(dialogRepository.findById(1224L).orElseThrow().getUsers().stream().anyMatch(u -> u.getUserId().equals(1003L)));
-    }
-
-    private void ensureSupportUserExists() {
-        if (userRepository.findById(ADMIN_ID).isPresent()) {
-            return;
-        }
-        User user = new User();
-        user.setUserId(ADMIN_ID);
-        user.setUsername("support");
-        user.setFirstName("Support");
-        user.setPassword("support");
-        user.setDescription("support");
-        userRepository.save(user);
+        assertEquals(PlanResponseStatus.APPROVED,
+                planResponseRepository.findById(response.getId()).orElseThrow().getStatus());
+        assertTrue(dialogRepository.findById(1224L).orElseThrow().getUsers().stream()
+                .anyMatch(u -> u.getUserId().equals(1003L)));
     }
 }
 

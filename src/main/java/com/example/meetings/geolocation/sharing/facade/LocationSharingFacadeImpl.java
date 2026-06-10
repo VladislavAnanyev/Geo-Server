@@ -25,7 +25,7 @@ import static com.example.meetings.geolocation.sharing.model.domain.LocationShar
 import static java.util.stream.Collectors.toList;
 
 /**
- * Реализация фасада: сервис обмена геолокацией, события Rabbit и push-уведомления.
+ * Оркестрация обмена геолокацией: сервис, события Rabbit и push-уведомления.
  */
 @Service
 @RequiredArgsConstructor
@@ -37,7 +37,10 @@ public class LocationSharingFacadeImpl implements LocationSharingFacade {
     private final NotificationService notificationService;
 
     /**
-     * Отправляет приглашение; при PENDING или авто-принятии рассылает событие и уведомление.
+     * Отправляет приглашение на обмен геолокацией другу.
+     *
+     * @param authUserId идентификатор текущего пользователя
+     * @param request    идентификатор друга для приглашения
      */
     @Override
     @Transactional
@@ -54,6 +57,10 @@ public class LocationSharingFacadeImpl implements LocationSharingFacade {
 
     /**
      * Возвращает входящие приглашения в статусе PENDING.
+     *
+     * @param authUserId   идентификатор текущего пользователя
+     * @param userIdFilter опциональный идентификатор отправителя для фильтрации
+     * @return список входящих приглашений
      */
     @Override
     @Transactional(readOnly = true)
@@ -63,7 +70,11 @@ public class LocationSharingFacadeImpl implements LocationSharingFacade {
     }
 
     /**
-     * Возвращает исходящие приглашения, созданные текущим пользователем.
+     * Возвращает исходящие приглашения в статусе PENDING.
+     *
+     * @param authUserId   идентификатор текущего пользователя
+     * @param userIdFilter опциональный идентификатор получателя для фильтрации
+     * @return список исходящих приглашений
      */
     @Override
     @Transactional(readOnly = true)
@@ -73,7 +84,10 @@ public class LocationSharingFacadeImpl implements LocationSharingFacade {
     }
 
     /**
-     * Возвращает активные отношения обмена для текущего пользователя.
+     * Возвращает активные записи обмена для текущего пользователя.
+     *
+     * @param authUserId идентификатор текущего пользователя
+     * @return список активных обменов геолокацией
      */
     @Override
     @Transactional(readOnly = true)
@@ -85,7 +99,10 @@ public class LocationSharingFacadeImpl implements LocationSharingFacade {
     }
 
     /**
-     * Принимает приглашение и уведомляет обоих участников.
+     * Принимает приглашение по идентификатору записи.
+     *
+     * @param authUserId идентификатор получателя приглашения
+     * @param sharingId  идентификатор записи обмена
      */
     @Override
     @Transactional
@@ -96,6 +113,9 @@ public class LocationSharingFacadeImpl implements LocationSharingFacade {
 
     /**
      * Отклоняет приглашение по идентификатору записи.
+     *
+     * @param authUserId идентификатор получателя приглашения
+     * @param sharingId  идентификатор записи обмена
      */
     @Override
     @Transactional
@@ -104,7 +124,10 @@ public class LocationSharingFacadeImpl implements LocationSharingFacade {
     }
 
     /**
-     * Отзывает активный обмен с другом.
+     * Отзывает активный обмен с выбранным другом.
+     *
+     * @param authUserId идентификатор текущего пользователя
+     * @param request    идентификатор друга, с которым прекращается обмен
      */
     @Override
     @Transactional

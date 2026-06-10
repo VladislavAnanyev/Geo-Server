@@ -16,6 +16,9 @@ import java.time.LocalDateTime;
 
 import static com.example.meetings.subscription.model.domain.SubscriptionStatus.ACTIVE;
 
+/**
+ * Сервис управления премиум-подписками пользователей.
+ */
 @Service
 @RequiredArgsConstructor
 public class SubscriptionService {
@@ -24,6 +27,14 @@ public class SubscriptionService {
     private final UserService userService;
     private final UserRoleService userRoleService;
 
+    /**
+     * Выдаёт или продлевает премиум-подписку пользователю вручную.
+     *
+     * @param targetUserId    идентификатор пользователя, которому выдаётся подписка
+     * @param grantedByUserId идентификатор администратора, выдавшего подписку
+     * @param request         параметры подписки: план, срок и дополнительные данные
+     * @return представление активной подписки
+     */
     @Transactional
     public SubscriptionViewDto grantSubscription(Long targetUserId, Long grantedByUserId, GrantSubscriptionRequest request) {
         User user = userService.loadUserByUserId(targetUserId);
@@ -65,6 +76,12 @@ public class SubscriptionService {
         return toView(saved, true);
     }
 
+    /**
+     * Проверяет, есть ли у пользователя активная премиум-подписка.
+     *
+     * @param userId идентификатор пользователя
+     * @return {@code true}, если активная подписка существует
+     */
     @Transactional(readOnly = true)
     public boolean isPremium(Long userId) {
         return userSubscriptionRepository
@@ -73,6 +90,12 @@ public class SubscriptionService {
                 .isPresent();
     }
 
+    /**
+     * Возвращает текущую подписку пользователя.
+     *
+     * @param userId идентификатор пользователя
+     * @return представление активной подписки или неактивное представление без подписки
+     */
     @Transactional(readOnly = true)
     public SubscriptionViewDto getMySubscription(Long userId) {
         return userSubscriptionRepository

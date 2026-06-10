@@ -6,11 +6,15 @@ import com.example.meetings.chat.model.*;
 import com.example.meetings.chat.model.domain.*;
 import com.example.meetings.chat.model.dto.input.Typing;
 import com.example.meetings.chat.model.dto.output.LastDialog;
-import com.example.meetings.chat.repository.*;
+import com.example.meetings.chat.repository.DialogRepository;
+import com.example.meetings.chat.repository.MessageHistoryRepository;
+import com.example.meetings.chat.repository.MessageRepository;
 import com.example.meetings.user.model.domain.User;
 import com.example.meetings.user.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.server.ResponseStatusException;
@@ -28,6 +32,9 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 
+/**
+ * Бизнес-логика чата: диалоги, сообщения, статусы доставки и групповые беседы.
+ */
 @Service
 @Validated
 public class MessageService {
@@ -47,6 +54,13 @@ public class MessageService {
         this.messageHistoryRepository = messageHistoryRepository;
     }
 
+    /**
+     * Создаёт личный диалог между двумя пользователями или возвращает существующий.
+     *
+     * @param firstUserId  идентификатор первого участника
+     * @param secondUserId идентификатор второго участника
+     * @return идентификатор диалога
+     */
     public Long createDialog(Long firstUserId, Long secondUserId) {
         if (secondUserId.equals(firstUserId)) {
             throw new IllegalArgumentException("You can not create dialog with yourself");
@@ -66,12 +80,25 @@ public class MessageService {
         return dialog.getDialogId();
     }
 
+    /**
+     * Возвращает список диалогов пользователя с последним сообщением и счётчиком непрочитанных.
+     *
+     * @param userId идентификатор пользователя
+     * @return список диалогов для отображения в списке чатов
+     */
     public List<LastDialogDTO> getDialogs(Long userId) {
         List<LastDialog> dialogs = messageRepository.getLastDialogs(userId);
 
         return mapToLastDialogsDTO(userId, dialogs);
     }
 
+    /**
+     * Помечает сообщение удалённым от имени отправителя.
+     *
+     * @param messageId идентификатор сообщения
+     * @param userId    идентификатор текущего пользователя
+     * @return обновлённое сообщение
+     */
     @Transactional
     public Message setDeletedStatus(Long messageId, Long userId) {
         Message message = findMessageById(messageId);
@@ -84,6 +111,16 @@ public class MessageService {
         return message;
     }
 
+    /**
+     * Загружает диалог с постраничным списком сообщений для участника.
+     *
+     * @param dialogId идентификатор диалога
+     * @param page     номер страницы
+     * @param pageSize размер страницы
+     * @param sortBy   поле сортировки сообщений
+     * @param userId   идентификатор текущего пользователя
+     * @return диалог с сообщениями
+     */
     @Transactional
     public Dialog getDialog(Long dialogId, Integer page, Integer pageSize, String sortBy, Long userId) {
         Dialog dialog = findDialogById(dialogId);
@@ -106,6 +143,14 @@ public class MessageService {
         return dialog;
     }
 
+    /**
+     * Редактирует текст сообщения отправителем.
+     *
+     * @param messageId  идентификатор сообщения
+     * @param content    новый текст
+     * @param authUserId идентификатор текущего пользователя
+     * @return обновлённое сообщение
+     */
     @Transactional
     public Message editMessage(Long messageId, String content, Long authUserId) {
         Message message = findMessageById(messageId);
@@ -119,20 +164,36 @@ public class MessageService {
         return message;
     }
 
+    /**
+     * Сохраняет новое сообщение в диалоге и обновляет последнее сообщение диалога.
+     *
+     * @param request данные отправляемого сообщения
+     * @return сохранённое сообщение или {@code null}, если сообщение с таким uniqueCode уже есть
+     */
     @Transactional
-    public Message saveMessage(@Valid SendMessageModel sendMessageModel) {
-        Dialog dialog = findDialogById(sendMessageModel.getDialogId());
-        if (!isUserContainsInDialog(dialog, sendMessageModel.getSenderId())) {
+    public Message saveMessage(@Valid SendMessageModel request) {
+        if (messageRepository.existsBySender_UserIdAndUniqueCode(request.getSenderId(), request.getUniqueCode())) {
+            return null;
+        }
+
+        Dialog dialog = findDialogById(request.getDialogId());
+        if (!isUserContainsInDialog(dialog, request.getSenderId())) {
             throw new SecurityException("Вы не состоите в этом диалоге");
         }
-        Message message = create(sendMessageModel, dialog);
+        Message message = create(request, dialog);
         message.setStatus(DELIVERED);
-        updateMessageStatusHistory(sendMessageModel.getSenderId(), message, DELIVERED);
+        updateMessageStatusHistory(request.getSenderId(), message, DELIVERED);
         dialog.setLastMessage(message);
 
         return messageRepository.save(message);
     }
 
+    /**
+     * Создаёт групповой диалог с указанными участниками.
+     *
+     * @param model параметры группы: участники, название и изображение
+     * @return сохранённый групповой диалог
+     */
     public Dialog createGroup(CreateGroupModel model) {
         Dialog dialog = new Dialog();
         dialog.setType(DialogType.GROUP);
@@ -152,18 +213,49 @@ public class MessageService {
         return dialogRepository.save(dialog);
     }
 
+    /**
+     * Добавляет пользователя в групповой диалог.
+     *
+     * @param userId   идентификатор добавляемого пользователя
+     * @param dialogId идентификатор группового диалога
+     */
     @Transactional
     public void addUserToGroupDialog(Long userId, Long dialogId) {
         Dialog dialog = dialogRepository.findById(dialogId).orElseThrow();
         dialog.addUser(userService.loadUserByUserId(userId));
     }
 
+    /**
+     * Удаляет пользователя из группового диалога.
+     *
+     * @param userId   идентификатор удаляемого пользователя
+     * @param dialogId идентификатор группового диалога
+     */
     @Transactional
     public void deleteUserFromGroupDialog(Long userId, Long dialogId) {
         Dialog dialog = dialogRepository.findById(dialogId).orElseThrow();
         dialog.removeUser(userService.loadUserByUserId(userId));
     }
 
+    /**
+     * Скрывает диалог из списка чатов пользователя.
+     *
+     * @param dialogId идентификатор диалога
+     */
+    @Transactional
+    public void hideDialog(Long dialogId) {
+        Dialog dialog = findDialogById(dialogId);
+        dialog.setVisible(false);
+        dialogRepository.save(dialog);
+    }
+
+    /**
+     * Формирует событие «пользователь печатает» для диалога.
+     *
+     * @param dialogId идентификатор диалога
+     * @param userId   идентификатор текущего пользователя
+     * @return данные события набора текста
+     */
     @Transactional
     public Typing typingMessage(Long dialogId, Long userId) {
         Dialog dialog = findDialogById(dialogId);
@@ -179,6 +271,13 @@ public class MessageService {
         return typing;
     }
 
+    /**
+     * Помечает сообщения как прочитанные для указанного пользователя.
+     *
+     * @param messages список сообщений
+     * @param userId   идентификатор читателя
+     * @return сообщения, впервые получившие статус {@code READ}
+     */
     @Transactional
     public List<Message> readMessages(List<Message> messages, Long userId) {
         return addMessagesStatus(
@@ -188,6 +287,13 @@ public class MessageService {
         );
     }
 
+    /**
+     * Помечает сообщения как доставленные получателю.
+     *
+     * @param messages список сообщений
+     * @param userId   идентификатор получателя
+     * @return сообщения, впервые получившие статус {@code RECEIVED}
+     */
     @Transactional
     public List<Message> receiveMessages(List<Message> messages, Long userId) {
         return addMessagesStatus(
@@ -197,11 +303,24 @@ public class MessageService {
         );
     }
 
+    /**
+     * Находит сообщение в конкретном диалоге.
+     *
+     * @param dialogId  идентификатор диалога
+     * @param messageId идентификатор сообщения
+     * @return найденное сообщение
+     */
     public Message findMessageByDialogIdAndMessageId(Long dialogId, Long messageId) {
         return messageRepository.findMessageByDialogDialogIdAndMessageId(dialogId, messageId)
                 .orElseThrow(() -> new EntityNotFoundException("Сообщение не найдено"));
     }
 
+    /**
+     * Загружает диалог по идентификатору.
+     *
+     * @param dialogId идентификатор диалога
+     * @return найденный диалог
+     */
     public Dialog findDialogById(Long dialogId) {
         Optional<Dialog> dialog = dialogRepository.findById(dialogId);
         if (dialog.isPresent()) {
@@ -211,6 +330,12 @@ public class MessageService {
         }
     }
 
+    /**
+     * Возвращает вложения всех сообщений диалога.
+     *
+     * @param dialogId идентификатор диалога
+     * @return список файловых вложений
+     */
     public List<FileResponse> getAttachments(Long dialogId) {
         Optional<Dialog> optionalDialog = dialogRepository.findById(dialogId);
         if (optionalDialog.isEmpty()) {
@@ -314,6 +439,13 @@ public class MessageService {
         return lastDialogs;
     }
 
+    /**
+     * Собирает сущность сообщения без сохранения в базу.
+     *
+     * @param request данные отправляемого сообщения
+     * @param dialog  диалог назначения
+     * @return подготовленное сообщение
+     */
     public Message create(SendMessageModel request, Dialog dialog) {
         User sender = userService.loadUserByUserIdProxy(request.getSenderId());
         Message message = new Message();

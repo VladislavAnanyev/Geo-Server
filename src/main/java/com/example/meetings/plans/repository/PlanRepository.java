@@ -46,18 +46,12 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
             FROM PLANS P
             WHERE P.deleted = FALSE
               AND P.status = 'ACTIVE'
-              AND P.expires_at > CAST(:now AS TIMESTAMP)
-              AND ((CAST(:excludeOwn AS BOOLEAN) IS FALSE) OR P.owner_user_id <> CAST(:authUserId AS BIGINT))
-              AND (CAST(:typeFilter AS VARCHAR) IS NULL OR P.type = CAST(:typeFilter AS VARCHAR))
+              AND P.expires_at > :now
+              AND ((:excludeOwn IS FALSE) OR P.owner_user_id <> :authUserId)
+              AND (:typeFilter = '' OR P.type = :typeFilter)
               AND (
-                  CAST(:fromTime AS TIMESTAMP) IS NULL
-                  OR P.type = 'LIVE'
-                  OR P.start_at >= CAST(:fromTime AS TIMESTAMP)
-              )
-              AND (
-                  CAST(:toTime AS TIMESTAMP) IS NULL
-                  OR P.type = 'LIVE'
-                  OR P.start_at <= CAST(:toTime AS TIMESTAMP)
+                  P.type = 'LIVE'
+                  OR (P.start_at >= :fromTime AND P.start_at <= :toTime)
               )
               AND P.lat IS NOT NULL
               AND P.lon IS NOT NULL
@@ -75,18 +69,12 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
             FROM PLANS P
             WHERE P.deleted = FALSE
               AND P.status = 'ACTIVE'
-              AND P.expires_at > CAST(:now AS TIMESTAMP)
-              AND ((CAST(:excludeOwn AS BOOLEAN) IS FALSE) OR P.owner_user_id <> CAST(:authUserId AS BIGINT))
-              AND (CAST(:typeFilter AS VARCHAR) IS NULL OR P.type = CAST(:typeFilter AS VARCHAR))
+              AND P.expires_at > :now
+              AND ((:excludeOwn IS FALSE) OR P.owner_user_id <> :authUserId)
+              AND (:typeFilter = '' OR P.type = :typeFilter)
               AND (
-                  CAST(:fromTime AS TIMESTAMP) IS NULL
-                  OR P.type = 'LIVE'
-                  OR P.start_at >= CAST(:fromTime AS TIMESTAMP)
-              )
-              AND (
-                  CAST(:toTime AS TIMESTAMP) IS NULL
-                  OR P.type = 'LIVE'
-                  OR P.start_at <= CAST(:toTime AS TIMESTAMP)
+                  P.type = 'LIVE'
+                  OR (P.start_at >= :fromTime AND P.start_at <= :toTime)
               )
               AND P.lat IS NOT NULL
               AND P.lon IS NOT NULL

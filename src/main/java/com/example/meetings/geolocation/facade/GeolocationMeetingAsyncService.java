@@ -36,6 +36,14 @@ public class GeolocationMeetingAsyncService {
     private final NotificationService notificationService;
     private final ProjectionUtil projectionUtil;
 
+    /**
+     * Ищет текущие встречи по координатам и отправляет события и push-уведомления участникам.
+     *
+     * @param userId    идентификатор пользователя, обновившего геолокацию
+     * @param lat       широта
+     * @param lng       долгота
+     * @param updatedAt время обновления геолокации
+     */
     @Async(GEOLOCATION_MEETING_EXECUTOR)
     @Transactional
     public void searchMeetings(Long userId, Double lat, Double lng, LocalDateTime updatedAt) {

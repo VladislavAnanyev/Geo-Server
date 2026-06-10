@@ -8,6 +8,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+/**
+ * Отправка простых текстовых писем через Spring JavaMailSender.
+ */
 @Service
 public class MailSender {
 
@@ -17,6 +20,13 @@ public class MailSender {
     @Value("${spring.mail.username}")
     private String username;
 
+    /**
+     * Отправляет письмо на указанный адрес.
+     *
+     * @param emailTo адрес получателя
+     * @param subject тема письма
+     * @param message текст письма
+     */
     public void send(String emailTo, String subject, String message) {
             SimpleMailMessage mailMessage = new SimpleMailMessage();
             mailMessage.setFrom(username);

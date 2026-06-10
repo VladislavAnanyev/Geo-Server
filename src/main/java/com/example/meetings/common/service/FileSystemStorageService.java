@@ -13,12 +13,24 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.UUID.randomUUID;
 import static org.springframework.util.StringUtils.cleanPath;
 
+/**
+ * Хранение файлов на локальной файловой системе.
+ */
 @Service
 public class FileSystemStorageService implements FileStorageService {
 
     @Value("${files.store}")
     private Path rootLocation;
 
+    /**
+     * Сохраняет файл на локальную файловую систему.
+     *
+     * @param inputStream      поток содержимого файла
+     * @param originalFilename исходное имя файла
+     * @param contentType      MIME-тип файла
+     * @return имя сохранённого файла
+     */
+    @Override
     public String store(InputStream inputStream, String originalFilename, String contentType) {
         String filename = randomUUID().toString().substring(0, 8) + originalFilename.substring(originalFilename.lastIndexOf("."));
 

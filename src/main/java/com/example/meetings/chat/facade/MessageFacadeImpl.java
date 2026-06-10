@@ -21,6 +21,9 @@ import static com.example.meetings.common.rabbit.eventtype.MessageType.*;
 import static com.example.meetings.util.Constants.ADMIN_ID;
 import static java.util.stream.Collectors.toSet;
 
+/**
+ * Реализация фасада чата: события RabbitMQ, push-уведомления и хранение вложений.
+ */
 @Component
 public class MessageFacadeImpl implements MessageFacade {
 
@@ -36,10 +39,18 @@ public class MessageFacadeImpl implements MessageFacade {
         this.notificationService = notificationService;
     }
 
+    /**
+     * Сохраняет сообщение, рассылает событие участникам диалога и push-уведомление.
+     *
+     * @param sendMessageModel параметры отправляемого сообщения
+     */
     @Override
     @Transactional
     public void sendMessage(SendMessageModel model) {
         Message message = messageService.saveMessage(model);
+        if (message == null) {
+            return;
+        }
         eventService.send(DtoMapper.map(message), message.getDialog().getUsers(), MESSAGE);
         notificationService.send(
                 message.getSender().getFirstName(),
@@ -48,12 +59,24 @@ public class MessageFacadeImpl implements MessageFacade {
         );
     }
 
+    /**
+     * Уведомляет участников диалога о наборе текста пользователем.
+     *
+     * @param dialogId идентификатор диалога
+     * @param userId   идентификатор пользователя, который набирает сообщение
+     */
     @Override
     public void typingMessage(Long dialogId, Long userId) {
         Typing typing = messageService.typingMessage(dialogId, userId);
         eventService.send(DtoMapper.map(typing), typing.getUsersToSendNotification(), TYPING);
     }
 
+    /**
+     * Помечает сообщение удалённым и рассылает событие участникам диалога.
+     *
+     * @param messageId идентификатор сообщения
+     * @param userId    идентификатор пользователя, выполняющего удаление
+     */
     @Override
     public void deleteMessage(Long messageId, Long userId) {
         // todo добавить изменение ссылки на последнее сообщение если удаляется последнее
@@ -61,12 +84,29 @@ public class MessageFacadeImpl implements MessageFacade {
         eventService.send(DtoMapper.map(message), message.getUsersToSendNotification(), DELETE_MESSAGE);
     }
 
+    /**
+     * Изменяет текст сообщения и рассылает событие участникам диалога.
+     *
+     * @param messageId идентификатор сообщения
+     * @param content   новый текст сообщения
+     * @param userId    идентификатор пользователя, выполняющего редактирование
+     */
     @Override
     public void editMessage(Long messageId, String content, Long userId) {
         Message message = messageService.editMessage(messageId, content, userId);
         eventService.send(DtoMapper.map(message), message.getUsersToSendNotification(), EDIT_MESSAGE);
     }
 
+    /**
+     * Возвращает диалог с постраничным списком сообщений и помечает их прочитанными.
+     *
+     * @param dialogId идентификатор диалога
+     * @param page     номер страницы сообщений
+     * @param pageSize размер страницы
+     * @param sortBy   поле и направление сортировки сообщений
+     * @param userId   идентификатор текущего пользователя
+     * @return представление диалога с сообщениями
+     */
     @Override
     public DialogDTO getChatRoom(Long dialogId, Integer page, Integer pageSize, String sortBy, Long userId) {
         Dialog dialog = messageService.getDialog(dialogId, page, pageSize, sortBy, userId);
@@ -75,6 +115,12 @@ public class MessageFacadeImpl implements MessageFacade {
         return map(dialog, dialog.getMessages(), userId);
     }
 
+    /**
+     * Возвращает список последних диалогов пользователя.
+     *
+     * @param userId идентификатор текущего пользователя
+     * @return результат со списком диалогов
+     */
     @Override
     public GetDialogsResult getLastDialogs(Long userId) {
         return new GetDialogsResult(
@@ -82,6 +128,13 @@ public class MessageFacadeImpl implements MessageFacade {
         );
     }
 
+    /**
+     * Создаёт личный диалог между двумя пользователями.
+     *
+     * @param firstUserId  идентификатор первого участника
+     * @param secondUserId идентификатор второго участника
+     * @return результат с данными созданного или существующего диалога
+     */
     @Override
     public CreateDialogResult createDialog(Long firstUserId, Long secondUserId) {
         return new CreateDialogResult(
@@ -89,6 +142,12 @@ public class MessageFacadeImpl implements MessageFacade {
         );
     }
 
+    /**
+     * Возвращает или создаёт диалог поддержки между пользователем и администратором.
+     *
+     * @param authUserId идентификатор текущего пользователя
+     * @return результат с данными диалога поддержки
+     */
     @Override
     public CreateDialogResult getSupportDialog(Long authUserId) {
         return new CreateDialogResult(
@@ -96,6 +155,12 @@ public class MessageFacadeImpl implements MessageFacade {
         );
     }
 
+    /**
+     * Помечает входящие сообщения диалога доставленными и уведомляет отправителей.
+     *
+     * @param userId   идентификатор текущего пользователя
+     * @param dialogId идентификатор диалога
+     */
     @Override
     public void receiveMessages(Long userId, Long dialogId) {
         Dialog dialog = messageService.findDialogById(dialogId);
@@ -110,6 +175,12 @@ public class MessageFacadeImpl implements MessageFacade {
         }
     }
 
+    /**
+     * Помечает сообщения диалога прочитанными и уведомляет других участников.
+     *
+     * @param userId   идентификатор текущего пользователя
+     * @param dialogId идентификатор диалога
+     */
     @Override
     public void readMessages(Long userId, Long dialogId) {
         Dialog dialog = messageService.findDialogById(dialogId);
@@ -126,6 +197,12 @@ public class MessageFacadeImpl implements MessageFacade {
         }
     }
 
+    /**
+     * Возвращает вложения диалога.
+     *
+     * @param id идентификатор диалога
+     * @return результат со списком вложений
+     */
     @Override
     public GetDialogAttachmentsResult getAttachments(Long dialogId) {
         return new GetDialogAttachmentsResult(
@@ -133,6 +210,14 @@ public class MessageFacadeImpl implements MessageFacade {
         );
     }
 
+    /**
+     * Сохраняет файл вложения во внешнем хранилище.
+     *
+     * @param inputStream      поток данных файла
+     * @param originalFilename исходное имя файла
+     * @param contentType      MIME-тип содержимого
+     * @return результат с URI сохранённого файла
+     */
     @Override
     public UploadAttachmentResult store(InputStream inputStream, String originalFilename, String contentType) {
         return new UploadAttachmentResult()

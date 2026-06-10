@@ -21,6 +21,9 @@ import java.util.*;
 
 import static java.util.Objects.isNull;
 
+/**
+ * Сервис встреч пользователей на основе геолокации.
+ */
 @Service
 @Slf4j
 @AllArgsConstructor
@@ -35,6 +38,14 @@ public class MeetingService {
     @Autowired
     private SubscriptionService subscriptionService;
 
+    /**
+     * Возвращает встречи пользователя за указанный период.
+     *
+     * @param userId  идентификатор пользователя
+     * @param startAt начальная дата периода или {@code null} для текущего дня
+     * @param endAt   конечная дата периода или {@code null} для текущего дня
+     * @return список встреч пользователя
+     */
     public List<MeetingView> getMyMeetings(Long userId, LocalDate startAt, LocalDate endAt) {
         startAt = isNull(startAt) ? LocalDate.now() : startAt;
         endAt = isNull(endAt) ? LocalDate.now() : endAt;
@@ -44,6 +55,10 @@ public class MeetingService {
 
     /**
      * Для бесплатной подписки доступны встречи только за сегодня и вчера.
+     *
+     * @param userId  идентификатор пользователя
+     * @param startAt начальная дата запрашиваемого периода или {@code null} для текущего дня
+     * @param endAt   конечная дата запрашиваемого периода или {@code null} для текущего дня
      */
     public void validateMeetingHistoryAccess(Long userId, LocalDate startAt, LocalDate endAt) {
         startAt = isNull(startAt) ? LocalDate.now() : startAt;
@@ -64,6 +79,12 @@ public class MeetingService {
         }
     }
 
+    /**
+     * Находит и создаёт новые встречи с пользователями, находящимися рядом в момент обновления геолокации.
+     *
+     * @param geolocation геолокация пользователя с координатами и временем обновления
+     * @return список только что созданных встреч
+     */
     public List<Meeting> findNowMeetings(Geolocation geolocation) {
         LocalDateTime time = geolocation.getUpdatedAt();
         User geolocationSender = geolocation.getUser();
@@ -102,6 +123,12 @@ public class MeetingService {
         return newMeetings;
     }
 
+    /**
+     * Загружает встречу по идентификатору.
+     *
+     * @param meetingId идентификатор встречи
+     * @return найденная встреча
+     */
     public Meeting findMeetingById(Long meetingId) {
         return meetingRepository.findById(meetingId).orElseThrow();
     }

@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+/**
+ * Отправка push-уведомлений на FCM-токены устройств получателей.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -16,6 +19,13 @@ public class NotificationService {
 
     private final FirebaseMessaging fcm;
 
+    /**
+     * Отправляет push-уведомление с заголовком и текстом.
+     *
+     * @param title      заголовок уведомления
+     * @param body       текст уведомления
+     * @param notifiable объект с получателями и их устройствами
+     */
     public void send(String title, String body, Notifiable notifiable) {
         send(
                 Notification.builder()
@@ -26,6 +36,14 @@ public class NotificationService {
         );
     }
 
+    /**
+     * Отправляет push-уведомление с заголовком, текстом и изображением.
+     *
+     * @param title      заголовок уведомления
+     * @param body       текст уведомления
+     * @param image      URL изображения
+     * @param notifiable объект с получателями и их устройствами
+     */
     public void send(String title, String body, String image, Notifiable notifiable) {
         send(
                 Notification.builder()

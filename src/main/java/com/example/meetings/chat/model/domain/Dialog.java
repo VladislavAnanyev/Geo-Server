@@ -29,6 +29,9 @@ public class Dialog {
     @Column(name = "type")
     private DialogType type;
 
+    @Column(name = "visible", nullable = false)
+    private boolean visible = true;
+
     @OneToOne
     @JoinColumn(name = "last_message_id")
     private Message lastMessage;

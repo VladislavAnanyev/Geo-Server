@@ -68,3 +68,4 @@ src/test/java/com/example/mywebquizengine/service/
 src/test/java/resources/
 !/rabbitmq/
 !/rabbitmq/
+/bin/

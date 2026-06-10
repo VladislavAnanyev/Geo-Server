@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="schema-init" author="meetings">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="users"/>
+            </not>
+        </preConditions>
+        <comment>Full schema from dev DB snapshot; skipped if users table already exists</comment>
+        <sqlFile path="changes/001-schema-init.sql"
+                 relativeToChangelogFile="true"
+                 splitStatements="true"
+                 stripComments="false"/>
+    </changeSet>
+
+    <changeSet id="messages-unique-code" author="meetings">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="messages" columnName="unique_code"/>
+            </not>
+        </preConditions>
+        <comment>messages.unique_code backfill and idempotency index (prod migration)</comment>
+        <sqlFile path="changes/002-messages-unique-code.sql"
+                 relativeToChangelogFile="true"
+                 splitStatements="true"
+                 stripComments="true"/>
+    </changeSet>
+
+    <changeSet id="dialog-visible" author="meetings">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="dialogs" columnName="visible"/>
+            </not>
+        </preConditions>
+        <comment>dialogs.visible flag for hiding group plan chats</comment>
+        <sqlFile path="changes/003-dialog-visible.sql"
+                 relativeToChangelogFile="true"
+                 splitStatements="true"
+                 stripComments="true"/>
+    </changeSet>
+
+</databaseChangeLog>

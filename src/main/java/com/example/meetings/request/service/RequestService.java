@@ -25,6 +25,9 @@ import static com.example.meetings.request.model.domain.RequestStatus.*;
 import static java.util.List.of;
 import static java.util.Objects.isNull;
 
+/**
+ * Сервис операций с заявками в друзья между пользователями.
+ */
 @Service
 @RequiredArgsConstructor
 public class RequestService {
@@ -41,6 +44,8 @@ public class RequestService {
 
     /**
      * Проверяет дневной лимит исходящих заявок в друзья для пользователя без премиум-подписки.
+     *
+     * @param fromUserId идентификатор отправителя заявки
      */
     public void validateOutgoingFriendRequestLimit(Long fromUserId) {
         if (subscriptionService.isPremium(fromUserId)) {
@@ -60,6 +65,15 @@ public class RequestService {
         }
     }
 
+    /**
+     * Создаёт заявку в друзья от одного пользователя к другому.
+     *
+     * @param fromUserId идентификатор отправителя заявки
+     * @param toUserId   идентификатор получателя заявки
+     * @param messageId  идентификатор связанного сообщения или {@code null}
+     * @param status     начальный статус заявки
+     * @return сохранённая заявка
+     */
     @Transactional
     public Request createRequest(Long fromUserId, Long toUserId, Long messageId, RequestStatus status) {
 
@@ -83,20 +97,47 @@ public class RequestService {
         return requestRepository.save(request);
     }
 
+    /**
+     * Проверяет, можно ли отправить заявку между двумя пользователями.
+     *
+     * @param firstUserId  идентификатор первого пользователя
+     * @param secondUserId идентификатор второго пользователя
+     * @return {@code true}, если отправка заявки разрешена
+     */
     public boolean isPossibleToSendRequest(Long firstUserId, Long secondUserId) {
         return true;
     }
 
+    /**
+     * Возвращает исходящие заявки пользователя в статусе ожидания.
+     *
+     * @param userId идентификатор отправителя
+     * @return список отправленных заявок
+     */
     public List<RequestView> getSentRequests(Long userId) {
         return requestRepository.findAllBySenderUserIdAndStatus(userId, PENDING);
     }
 
+    /**
+     * Возвращает входящие и исходящие заявки пользователя в статусе ожидания.
+     *
+     * @param userId идентификатор пользователя
+     * @return список заявок, где пользователь является отправителем или получателем
+     */
     public List<RequestView> getRequestsByUser(Long userId) {
         return requestRepository.findByStatusAndToUserIdOrStatusAndSenderUserId(
                 PENDING, userId, PENDING, userId
         );
     }
 
+    /**
+     * Изменяет статус входящей заявки (принятие или отклонение).
+     *
+     * @param requestId     идентификатор заявки
+     * @param userId        идентификатор получателя заявки
+     * @param requestStatus новый статус заявки
+     * @return обновлённая заявка
+     */
     public Request changeRequestStatus(Long requestId, Long userId, RequestStatus requestStatus) {
         Optional<Request> optionalRequest = requestRepository.findById(requestId);
         if (optionalRequest.isEmpty()) {
@@ -112,6 +153,13 @@ public class RequestService {
         return requestRepository.save(request);
     }
 
+    /**
+     * Ищет встречную заявку в друзья в статусе ожидания.
+     *
+     * @param fromUserId идентификатор пользователя, отправившего исходную заявку
+     * @param toUserId   идентификатор пользователя, получившего исходную заявку
+     * @return встречная заявка, если она существует
+     */
     public Optional<Request> findMutualRequest(Long fromUserId, Long toUserId) {
         return requestRepository.findBySenderUserIdAndToUserIdAndStatus(toUserId, fromUserId, PENDING);
     }

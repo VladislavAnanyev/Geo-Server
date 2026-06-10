@@ -13,6 +13,9 @@ import java.time.LocalDateTime;
 
 import static com.example.meetings.report.model.domain.ContentReportStatus.PENDING;
 
+/**
+ * Сервис создания жалоб на контент.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -21,6 +24,13 @@ public class ContentReportService {
     private final ContentReportRepository contentReportRepository;
     private final UserService userService;
 
+    /**
+     * Создаёт жалобу на контент, если аналогичная жалоба от этого пользователя ещё не существует.
+     *
+     * @param reporterUserId идентификатор пользователя, отправившего жалобу
+     * @param targetType     тип объекта жалобы
+     * @param targetId       идентификатор объекта жалобы
+     */
     @Transactional
     public void createReport(Long reporterUserId, ContentReportTargetType targetType, Long targetId) {
         if (contentReportRepository.existsByReporter_UserIdAndTargetTypeAndTargetId(

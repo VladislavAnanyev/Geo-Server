@@ -8,6 +8,10 @@ import javax.persistence.*;
 import java.util.*;
 
 @Entity(name = "MESSAGES")
+@Table(name = "MESSAGES", uniqueConstraints = @UniqueConstraint(
+        name = "uk_messages_sender_unique_code",
+        columnNames = {"sender_user_id", "unique_code"}
+))
 @Data
 @Accessors(chain = true)
 public class Message implements Notifiable {
@@ -52,7 +56,7 @@ public class Message implements Notifiable {
     @OneToMany(mappedBy = "message", cascade = CascadeType.ALL)
     private List<MessageStatusHistory> messageStatusHistoryList = new ArrayList<>();
 
-    @Transient
+    @Column(name = "unique_code", nullable = false, length = 64)
     private String uniqueCode;
 
     @Transient
