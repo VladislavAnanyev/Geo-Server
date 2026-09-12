@@ -108,6 +108,7 @@ public class MessageFacadeImpl implements MessageFacade {
      * @return представление диалога с сообщениями
      */
     @Override
+    @Transactional
     public DialogDTO getChatRoom(Long dialogId, Integer page, Integer pageSize, String sortBy, Long userId) {
         Dialog dialog = messageService.getDialog(dialogId, page, pageSize, sortBy, userId);
         readMessages(userId, dialogId);
@@ -118,14 +119,14 @@ public class MessageFacadeImpl implements MessageFacade {
     /**
      * Возвращает список последних диалогов пользователя.
      *
-     * @param userId идентификатор текущего пользователя
+     * @param userId   идентификатор текущего пользователя
+     * @param page     номер страницы
+     * @param pageSize размер страницы
      * @return результат со списком диалогов
      */
     @Override
-    public GetDialogsResult getLastDialogs(Long userId) {
-        return new GetDialogsResult(
-                messageService.getDialogs(userId)
-        );
+    public GetDialogsResult getLastDialogs(Long userId, Integer page, Integer pageSize) {
+        return new GetDialogsResult(messageService.getDialogs(userId, page, pageSize));
     }
 
     /**
@@ -162,6 +163,7 @@ public class MessageFacadeImpl implements MessageFacade {
      * @param dialogId идентификатор диалога
      */
     @Override
+    @Transactional
     public void receiveMessages(Long userId, Long dialogId) {
         Dialog dialog = messageService.findDialogById(dialogId);
         List<Message> justNowReceivedMessages = messageService.receiveMessages(dialog.getMessages(), userId);
@@ -182,6 +184,7 @@ public class MessageFacadeImpl implements MessageFacade {
      * @param dialogId идентификатор диалога
      */
     @Override
+    @Transactional
     public void readMessages(Long userId, Long dialogId) {
         Dialog dialog = messageService.findDialogById(dialogId);
         if (!messageService.readMessages(dialog.getMessages(), userId).isEmpty()) {

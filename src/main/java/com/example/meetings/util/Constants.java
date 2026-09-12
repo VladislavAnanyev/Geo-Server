@@ -5,6 +5,7 @@ import com.example.meetings.request.model.domain.RequestStatus;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import static com.example.meetings.request.model.domain.RequestStatus.ACCEPTED;
 import static com.example.meetings.request.model.domain.RequestStatus.PENDING;
@@ -70,6 +71,17 @@ public final class Constants {
 
     public static final int MODERATION_LLM_MAX_TOKENS = 32;
     public static final double MODERATION_TEMPERATURE = 0;
+
+    public static final int MAX_USER_FAVORITE_PLACES = 20;
+
+    public static final Set<String> ALLOWED_PHOTO_CONTENT_TYPES = Set.of(
+            "image/jpeg",
+            "image/jpg",
+            "image/png",
+            "image/heic",
+            "image/heif",
+            "image/webp"
+    );
 
     public static final String YANDEX_CHAT_COMPLETIONS_PATH = "/chat/completions";
     public static final String YANDEX_CONTENT_FILTER_REJECTED_JSON = "{\"result\":false}";
@@ -144,6 +156,7 @@ public final class Constants {
     public static final Long ERROR_SUBSCRIPTION_MEETINGS_HISTORY_LIMIT = 1101L;
     public static final Long ERROR_SUBSCRIPTION_SCHEDULED_PLANS_ACTIVE_LIMIT = 1102L;
     public static final Long ERROR_SUBSCRIPTION_LOCATION_PEOPLE = 1103L;
+    public static final Long ERROR_SUBSCRIPTION_PEOPLE_NEARBY_RADIUS = 1104L;
 
     public static final List<RequestStatus> OUTGOING_FRIEND_REQUEST_STATUSES = of(PENDING, ACCEPTED);
 }

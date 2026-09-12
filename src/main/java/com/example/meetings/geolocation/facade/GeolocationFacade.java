@@ -39,8 +39,9 @@ public interface GeolocationFacade {
     /**
      * Возвращает пользователей в квадрате вокруг последней геолокации текущего пользователя.
      *
-     * @param userId идентификатор пользователя
+     * @param userId       идентификатор пользователя
+     * @param radiusMeters радиус поиска в метрах; {@code null} — значение по умолчанию
      * @return список геолокаций людей поблизости; пустой список, если у пользователя нет актуальной геолокации
      */
-    List<GeolocationDto> getPeopleInSquare(Long userId);
+    List<GeolocationDto> getPeopleInSquare(Long userId, Integer radiusMeters);
 }

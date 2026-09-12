@@ -116,7 +116,7 @@ public class ApiRequestControllerTest extends AbstractControllerIntegrationTest 
         mockMvc.perform(post("/api/v1/request").secure(true)
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isBadRequest());
 
         assertEquals(countBefore, requestRepository.count());
     }

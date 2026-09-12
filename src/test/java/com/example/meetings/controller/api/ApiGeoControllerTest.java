@@ -111,6 +111,23 @@ public class ApiGeoControllerTest extends AbstractControllerIntegrationTest {
 
     @Test
     @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void testGetPeopleNearbyWithRadiusBeyondFreeLimitRequiresPremium() throws Exception {
+        mockMvc.perform(get("/api/v1/geolocation/people-nearby").secure(true)
+                        .param("radiusMeters", "2000"))
+                .andExpect(status().isPaymentRequired());
+    }
+
+    @Test
+    @WithUserDetails(value = "user5", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void testGetPeopleNearbyPremiumAllowsLargeRadius() throws Exception {
+        mockMvc.perform(get("/api/v1/geolocation/people-nearby").secure(true)
+                        .param("radiusMeters", "5000"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.items").isArray());
+    }
+
+    @Test
+    @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testGetFriendsGeolocations() throws Exception {
         mockMvc.perform(get("/api/v1/geolocations").secure(true))
                 .andExpect(status().isOk())

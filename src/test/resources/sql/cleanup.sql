@@ -15,6 +15,7 @@ TRUNCATE TABLE
     geolocations,
     geolocation_exclude_zones,
     locations,
+    user_favorite_places,
     user_subscriptions,
     user_roles,
     users_photos,

@@ -48,7 +48,9 @@ public class ApiUserControllerTest extends AbstractControllerIntegrationTest {
                 .andExpect(jsonPath("$.result.userId").value(1002))
                 .andExpect(jsonPath("$.result.username").value("user2"))
                 .andExpect(jsonPath("$.result.firstName").value("user2"))
-                .andExpect(jsonPath("$.result.photos").isArray());
+                .andExpect(jsonPath("$.result.photos").isArray())
+                .andExpect(jsonPath("$.result.favoritePlaces").isArray())
+                .andExpect(jsonPath("$.result.favoritePlaces").isEmpty());
     }
 
     @Test

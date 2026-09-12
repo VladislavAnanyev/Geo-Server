@@ -55,12 +55,14 @@ public interface MessageFacade {
     DialogDTO getChatRoom(Long dialogId, Integer page, Integer pageSize, String sortBy, Long userId);
 
     /**
-     * Возвращает список последних диалогов пользователя.
+     * Возвращает страницу последних диалогов пользователя.
      *
-     * @param userId идентификатор текущего пользователя
+     * @param userId   идентификатор текущего пользователя
+     * @param page     номер страницы
+     * @param pageSize размер страницы
      * @return результат со списком диалогов
      */
-    GetDialogsResult getLastDialogs(Long userId);
+    GetDialogsResult getLastDialogs(Long userId, Integer page, Integer pageSize);
 
     /**
      * Создаёт личный диалог между двумя пользователями.

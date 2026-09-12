@@ -9,12 +9,12 @@ import com.example.meetings.meeting.model.dto.output.MeetingView;
 import com.example.meetings.meeting.repository.MeetingRepository;
 import com.example.meetings.subscription.service.SubscriptionService;
 import com.example.meetings.user.model.domain.User;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -26,8 +26,10 @@ import static java.util.Objects.isNull;
  */
 @Service
 @Slf4j
-@AllArgsConstructor
 public class MeetingService {
+
+    @Value("${geolocation.meetingsdistance}")
+    private Integer meetingDistance;
 
     @Autowired
     private MeetingRepository meetingRepository;
@@ -86,41 +88,66 @@ public class MeetingService {
      * @return список только что созданных встреч
      */
     public List<Meeting> findNowMeetings(Geolocation geolocation) {
-        LocalDateTime time = geolocation.getUpdatedAt();
-        User geolocationSender = geolocation.getUser();
-
-        List<Geolocation> peopleNearMe = geolocationService.findInSquare(geolocation, 50, time)
+        List<Geolocation> peopleNearMe = geolocationService.findInSquare(geolocation, meetingDistance, geolocation.getUpdatedAt())
                 .stream()
-                .filter(geo -> !geo.getUser().getUserId().equals(geolocationSender.getUserId()))
+                .filter(geo -> !geo.getUser().getUserId().equals(geolocation.getUser().getUserId()))
                 .toList();
 
         List<Meeting> newMeetings = new ArrayList<>();
-        if (peopleNearMe.isEmpty()) {
-            return newMeetings;
-        }
-
         for (Geolocation peopleGeolocation : peopleNearMe) {
-            List<Meeting> meetings = meetingRepository.getMeetings(
-                    geolocationSender.getUserId(),
-                    peopleGeolocation.getUser().getUserId(),
-                    time.toLocalDate().atStartOfDay(), time.toLocalDate().plusDays(1).atStartOfDay()
-            );
-
-            if (meetings.isEmpty()) {
-                if (!geolocationSender.getUserId().equals(peopleGeolocation.getUser().getUserId())) {
-                    Meeting meeting = new Meeting().setFirstUser(geolocationSender)
-                            .setSecondUser(peopleGeolocation.getUser())
-                            .setLat(geolocation.getLat())
-                            .setLng(geolocation.getLng())
-                            .setTime(geolocation.getUpdatedAt());
-
-                    meetingRepository.save(meeting);
-                    newMeetings.add(meeting);
-                }
+            Meeting meeting = createMeeting(geolocation, peopleGeolocation);
+            if (meeting != null) {
+                newMeetings.add(meeting);
             }
         }
 
         return newMeetings;
+    }
+
+    /**
+     * Создаёт встречу, если для пары пользователей в текущем окне её ещё нет.
+     * В first/second всегда меньший и больший user id, чтобы unique (first, second, bucket) не зависел от порядка гео.
+     *
+     * @param firstGeolocation  геолокация первого пользователя
+     * @param secondGeolocation геолокация второго пользователя
+     * @return новая встреча или {@code null}, если она уже существовала
+     */
+    @Transactional
+    public Meeting createMeeting(Geolocation firstGeolocation, Geolocation secondGeolocation) {
+        User sender = firstGeolocation.getUser();
+        User other = secondGeolocation.getUser();
+        if (sender.getUserId().equals(other.getUserId())) {
+            return null;
+        }
+
+        User firstUser = sender.getUserId() < other.getUserId() ? sender : other;
+        User secondUser = sender.getUserId() < other.getUserId() ? other : sender;
+        LocalDateTime updatedAt = firstGeolocation.getUpdatedAt();
+        String bucket = meetingBucket(updatedAt);
+
+        return meetingRepository.insertIfAbsent(
+                firstGeolocation.getLat(),
+                firstGeolocation.getLng(),
+                updatedAt,
+                firstUser.getUserId(),
+                secondUser.getUserId(),
+                bucket
+        ).map(meetingId -> new Meeting()
+                .setMeetingId(meetingId)
+                .setFirstUser(firstUser)
+                .setSecondUser(secondUser)
+                .setLat(firstGeolocation.getLat())
+                .setLng(firstGeolocation.getLng())
+                .setTime(updatedAt)
+                .setBucket(bucket)
+        ).orElse(null);
+    }
+
+    /**
+     * Ключ окна встречи. Сейчас — календарный день; смена механики меняет только эту формулу.
+     */
+    private String meetingBucket(LocalDateTime time) {
+        return time.toLocalDate().toString();
     }
 
     /**

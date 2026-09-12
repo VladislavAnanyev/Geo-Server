@@ -22,6 +22,7 @@ public final class SqlScripts {
     public static final String DIALOG_UPDATE_1277 = "/sql/common/dialog-update-1277.sql";
     public static final String SUPPORT_USER = "/sql/common/support-user.sql";
     public static final String LOCATIONS = "/sql/common/locations.sql";
+    public static final String FAVORITE_PLACES = "/sql/common/favorite-places.sql";
     public static final String SUBSCRIPTIONS_PREMIUM = "/sql/common/subscriptions-premium.sql";
 
     private SqlScripts() {

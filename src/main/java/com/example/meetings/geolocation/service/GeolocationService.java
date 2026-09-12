@@ -1,24 +1,39 @@
 package com.example.meetings.geolocation.service;
 
+import com.example.meetings.common.exception.LogicException;
+import com.example.meetings.common.exception.SubscriptionRequiredException;
 import com.example.meetings.geolocation.model.Geolocation;
 import com.example.meetings.geolocation.model.GeolocationHistory;
 import com.example.meetings.geolocation.repository.GeolocationHistoryRepository;
+import com.example.meetings.geolocation.repository.GeolocationRepository;
 import com.example.meetings.geolocation.sharing.service.LocationSharingService;
 import com.example.meetings.meeting.model.GeolocationModel;
-import com.example.meetings.geolocation.repository.GeolocationRepository;
 import com.example.meetings.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+
+import static com.example.meetings.util.Constants.ERROR_SUBSCRIPTION_PEOPLE_NEARBY_RADIUS;
 
 /**
  * Сохранение и поиск геолокаций пользователей, в том числе друзей с активным обменом.
  */
 @Service
 public class GeolocationService {
+
+    @Value("${geolocation.recent-window-minutes:30}")
+    private int recentWindowMinutes;
+
+    @Value("${geolocation.people-nearby-radius-meters:1000}")
+    private int peopleNearbyRadiusMeters;
+
+    @Value("${geolocation.people-nearby-premium-max-radius-meters:10000}")
+    private int peopleNearbyPremiumMaxRadiusMeters;
 
     @Autowired
     private GeolocationRepository geolocationRepository;
@@ -84,6 +99,54 @@ public class GeolocationService {
                         .setLng(geolocationModel.getLng())
                         .setUpdatedAt(now)
         );
+    }
+
+    /**
+     * Возвращает пользователей в квадрате вокруг последней геолокации текущего пользователя.
+     *
+     * @param userId       идентификатор пользователя
+     * @param radiusMeters радиус поиска в метрах; {@code null} — значение по умолчанию
+     * @param premium      есть ли у пользователя премиум-подписка
+     * @return список геолокаций людей поблизости без текущего пользователя
+     */
+    public List<Geolocation> getPeopleInSquare(Long userId, Integer radiusMeters, boolean premium) {
+        int searchRadiusMeters = resolvePeopleNearbyRadiusMeters(radiusMeters, premium);
+
+        Optional<Geolocation> recent = getRecentGeolocation(userId, recentWindowMinutes);
+        if (recent.isEmpty()) {
+            return List.of();
+        }
+        Geolocation center = recent.get();
+        if (center.getLat() == null || center.getLng() == null) {
+            return List.of();
+        }
+
+        return findInSquare(center, searchRadiusMeters, LocalDateTime.now()).stream()
+                .filter(g -> g.getUser() != null && !Objects.equals(g.getUser().getUserId(), userId))
+                .toList();
+    }
+
+    private int resolvePeopleNearbyRadiusMeters(Integer radiusMeters, boolean premium) {
+        if (radiusMeters != null && radiusMeters < 1) {
+            throw new LogicException("exception.plan.radius.positive");
+        }
+
+        if (radiusMeters == null) {
+            return peopleNearbyRadiusMeters;
+        }
+
+        if (premium) {
+            return Math.min(radiusMeters, peopleNearbyPremiumMaxRadiusMeters);
+        }
+
+        if (radiusMeters > peopleNearbyRadiusMeters) {
+            throw new SubscriptionRequiredException(
+                    "exception.subscription.people-nearby.radius.premium.required",
+                    ERROR_SUBSCRIPTION_PEOPLE_NEARBY_RADIUS
+            );
+        }
+
+        return radiusMeters;
     }
 
     /**

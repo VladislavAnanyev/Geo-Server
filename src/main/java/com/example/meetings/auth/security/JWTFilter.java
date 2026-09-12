@@ -46,7 +46,7 @@ public class JWTFilter extends OncePerRequestFilter {
             authUser.setUserId(userId);
             AuthenticationUtil.setAuthentication(authUser, authorities);
 
-            if (!request.getRequestURI().contains("sendGeolocation")) {
+            if (!request.getRequestURI().contains("geolocation")) {
                 HttpSession session = request.getSession(false);
                 if (session != null) {
                     LoggedUser user = new LoggedUser(userId, activeUserStore);

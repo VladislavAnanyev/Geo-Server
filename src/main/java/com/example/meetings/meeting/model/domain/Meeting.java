@@ -1,7 +1,6 @@
 package com.example.meetings.meeting.model.domain;
 
 import com.example.meetings.chat.model.domain.Notifiable;
-import com.example.meetings.request.model.domain.Request;
 import com.example.meetings.user.model.domain.User;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,6 +12,10 @@ import java.util.List;
 import java.util.Set;
 
 @Entity(name = "MEETINGS")
+@Table(name = "MEETINGS", uniqueConstraints = @UniqueConstraint(
+        name = "uk_meetings_pair_bucket",
+        columnNames = {"first_user_id", "second_user_id", "bucket"}
+))
 @Getter
 @Setter
 @Accessors(chain = true)
@@ -34,6 +37,9 @@ public class Meeting implements Notifiable {
     private Double lng;
 
     private LocalDateTime time;
+
+    @Column(length = 64)
+    private String bucket;
 
     public List<User> getUsers() {
         return List.of(firstUser, secondUser);

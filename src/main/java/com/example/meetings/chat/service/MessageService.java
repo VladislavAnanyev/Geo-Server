@@ -49,6 +49,9 @@ public class MessageService {
     @Value("${hostname}")
     private String hostname;
 
+    @Value("${chat.dialogs.default-page-size:15}")
+    private int defaultDialogsPageSize;
+
     public MessageService(MessageRepository messageRepository, DialogRepository dialogRepository,
                           UserService userService, MessageHistoryRepository messageHistoryRepository) {
         this.messageRepository = messageRepository;
@@ -84,13 +87,19 @@ public class MessageService {
     }
 
     /**
-     * Возвращает список диалогов пользователя с последним сообщением и счётчиком непрочитанных.
+     * Возвращает страницу диалогов пользователя с последним сообщением и счётчиком непрочитанных.
      *
-     * @param userId идентификатор пользователя
-     * @return список диалогов для отображения в списке чатов
+     * @param userId   идентификатор пользователя
+     * @param page     номер страницы (с нуля)
+     * @param pageSize размер страницы; если {@code null}, берётся из {@code chat.dialogs.default-page-size}
+     * @return страница диалогов для списка чатов
      */
-    public List<LastDialogDTO> getDialogs(Long userId) {
-        List<LastDialog> dialogs = messageRepository.getLastDialogs(userId);
+    public List<LastDialogDTO> getDialogs(Long userId, Integer page, Integer pageSize) {
+        int resolvedPage = page == null ? 0 : Math.max(0, page);
+        int resolvedSize = pageSize == null ? defaultDialogsPageSize : Math.max(1, pageSize);
+        long offset = (long) resolvedPage * resolvedSize;
+
+        List<LastDialog> dialogs = messageRepository.getLastDialogs(userId, resolvedSize, offset);
 
         return mapToLastDialogsDTO(userId, dialogs);
     }
@@ -339,6 +348,7 @@ public class MessageService {
      * @param dialogId идентификатор диалога
      * @return список файловых вложений
      */
+    @Transactional
     public List<FileResponse> getAttachments(Long dialogId) {
         Optional<Dialog> optionalDialog = dialogRepository.findById(dialogId);
         if (optionalDialog.isEmpty()) {

@@ -6,15 +6,14 @@ import com.example.meetings.meeting.model.GeolocationDto;
 import com.example.meetings.meeting.model.GeolocationModel;
 import com.example.meetings.meeting.model.GetGeolocationsResult;
 import com.example.meetings.photo.model.domain.Photo;
+import com.example.meetings.subscription.service.SubscriptionService;
 import com.example.meetings.user.model.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
@@ -28,14 +27,14 @@ public class GeolocationFacadeImpl implements GeolocationFacade {
     @Value("${geolocation.recent-window-minutes:30}")
     private int recentWindowMinutes;
 
-    @Value("${geolocation.people-nearby-radius-meters:1000}")
-    private int peopleNearbyRadiusMeters;
-
     @Autowired
     private GeolocationService geolocationService;
 
     @Autowired
     private GeolocationMeetingAsyncService geolocationMeetingAsyncService;
+
+    @Autowired
+    private SubscriptionService subscriptionService;
 
     /**
      * Сохраняет геолокацию пользователя и асинхронно ищет встречи поблизости.
@@ -87,23 +86,14 @@ public class GeolocationFacadeImpl implements GeolocationFacade {
     /**
      * Возвращает пользователей в квадрате вокруг последней геолокации текущего пользователя.
      *
-     * @param userId идентификатор пользователя
+     * @param userId       идентификатор пользователя
+     * @param radiusMeters радиус поиска в метрах; {@code null} — значение по умолчанию
      * @return список геолокаций людей поблизости; пустой список, если у пользователя нет актуальной геолокации
      */
     @Override
-    public List<GeolocationDto> getPeopleInSquare(Long userId) {
-        Optional<GeolocationDto> recent = geolocationService.getRecentGeolocation(userId, recentWindowMinutes).map(this::toGeolocationDto);
-        if (recent.isEmpty()) {
-            return List.of();
-        }
-        GeolocationDto centerDto = recent.get();
-        if (centerDto.getLat() == null || centerDto.getLng() == null) {
-            return List.of();
-        }
-        Geolocation center = new Geolocation().setLat(centerDto.getLat()).setLng(centerDto.getLng());
-        return geolocationService.findInSquare(center, peopleNearbyRadiusMeters, LocalDateTime.now())
-                .stream()
-                .filter(g -> g.getUser() != null && !Objects.equals(g.getUser().getUserId(), userId))
+    public List<GeolocationDto> getPeopleInSquare(Long userId, Integer radiusMeters) {
+        boolean premium = subscriptionService.isPremium(userId);
+        return geolocationService.getPeopleInSquare(userId, radiusMeters, premium).stream()
                 .map(this::toGeolocationDto)
                 .collect(toList());
     }

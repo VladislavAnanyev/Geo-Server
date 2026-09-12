@@ -54,9 +54,11 @@ public class ApiChatController {
 
     @ApiOperation(value = "Получить диалоги пользователя")
     @GetMapping(path = "/dialogs")
-    public GetDialogsResponse getDialogs(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser) {
+    public GetDialogsResponse getDialogs(@ApiIgnore @AuthenticationPrincipal AuthUserDetails authUser,
+                                         @RequestParam(required = false, defaultValue = "0") Integer page,
+                                         @RequestParam(required = false) Integer pageSize) {
         return new GetDialogsResponse(
-                messageFacade.getLastDialogs(authUser.getUserId())
+                messageFacade.getLastDialogs(authUser.getUserId(), page, pageSize)
         );
     }
 

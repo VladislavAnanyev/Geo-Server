@@ -117,4 +117,18 @@ public class ApiPhotoControllerTest extends AbstractControllerIntegrationTest {
 
         assertEquals((int) photoCountBefore + 1, (int) photoRepository.getPhotoCountByUserId(1002L));
     }
+
+    @Test
+    @WithUserDetails(value = "user2", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void testUploadHeicPhoto() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "1000021717.heic",
+                "image/heic",
+                new byte[]{1, 2, 3, 4});
+
+        mockMvc.perform(multipart("/api/v1/user/photo").file(file).secure(true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.url").isString());
+    }
 }

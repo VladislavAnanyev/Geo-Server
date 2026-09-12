@@ -101,6 +101,18 @@ public class ApiChatControllerTest extends AbstractControllerIntegrationTest {
 
     @Test
     @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void testGetDialogListPagination() throws Exception {
+        mockMvc.perform(get("/api/v1/dialogs?page=0&pageSize=2").secure(true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.dialogs", hasSize(2)));
+
+        mockMvc.perform(get("/api/v1/dialogs?page=1&pageSize=2").secure(true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.dialogs", hasSize(1)));
+    }
+
+    @Test
+    @WithUserDetails(value = "user1", userDetailsServiceBeanName = "authService", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void testCreateDialog() throws Exception {
         String json = mockMvc.perform(post("/api/v1/dialog/create?userId=1004")
                 .secure(true))

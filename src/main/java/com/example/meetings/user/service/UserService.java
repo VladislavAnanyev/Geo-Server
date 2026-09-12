@@ -61,10 +61,10 @@ public class UserService {
     @Transactional
     public void changeUser(Long userId, ChangeUserRequest request) {
         User user = loadUserByUserId(userId);
-        user.setDescription(request.getDescription());
-        user.setFirstName(request.getFirstName());
-        user.setGender(request.getGender());
-        user.setBirthDate(request.getBirthDate());
+        Optional.ofNullable(request.getFirstName()).ifPresent(user::setFirstName);
+        Optional.ofNullable(request.getDescription()).ifPresent(user::setDescription);
+        Optional.ofNullable(request.getGender()).ifPresent(user::setGender);
+        Optional.ofNullable(request.getBirthDate()).ifPresent(user::setBirthDate);
     }
 
     /**

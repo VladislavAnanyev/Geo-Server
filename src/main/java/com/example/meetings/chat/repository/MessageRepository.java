@@ -47,8 +47,9 @@ public interface MessageRepository extends
                 (SELECT D.DIALOG_ID FROM USERS_DIALOGS JOIN DIALOGS D ON D.DIALOG_ID = USERS_DIALOGS.DIALOG_ID
                 WHERE USER_ID = :userId AND name IS NOT NULL AND D.visible = true)
                 )
-            ORDER BY MESSAGES.TIMESTAMP DESC;
+            ORDER BY MESSAGES.TIMESTAMP DESC
+            LIMIT :limit OFFSET :offset
             """, nativeQuery = true)
-    List<LastDialog> getLastDialogs(Long userId);
+    List<LastDialog> getLastDialogs(Long userId, long limit, long offset);
 
 }

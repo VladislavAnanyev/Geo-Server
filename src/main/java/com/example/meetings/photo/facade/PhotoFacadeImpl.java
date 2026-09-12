@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
 
-import static org.apache.http.entity.ContentType.IMAGE_JPEG;
+import static com.example.meetings.util.Constants.ALLOWED_PHOTO_CONTENT_TYPES;
 
 /**
  * Реализация фасада фотографий профиля.
@@ -39,7 +39,7 @@ public class PhotoFacadeImpl implements PhotoFacade {
     }
 
     /**
-     * Загружает JPEG-фотографию в хранилище и сохраняет запись в профиле пользователя.
+     * Загружает фотографию в хранилище и сохраняет запись в профиле пользователя.
      *
      * @param inputStream      поток данных загружаемого файла
      * @param originalFilename исходное имя файла
@@ -49,7 +49,7 @@ public class PhotoFacadeImpl implements PhotoFacade {
      */
     @Override
     public PhotoDto uploadPhoto(InputStream inputStream, String originalFilename, String contentType, Long userId) {
-        if (!IMAGE_JPEG.getMimeType().equals(contentType)) {
+        if (contentType == null || !ALLOWED_PHOTO_CONTENT_TYPES.contains(contentType.toLowerCase())) {
             throw new LogicException("exception.wrong.content-type");
         }
 
@@ -64,8 +64,8 @@ public class PhotoFacadeImpl implements PhotoFacade {
     /**
      * Удаляет фотографию из профиля пользователя.
      *
-     * @param id     идентификатор фотографии
-     * @param userId идентификатор владельца фотографии
+     * @param photoId идентификатор фотографии
+     * @param userId  идентификатор владельца фотографии
      */
     @Override
     public void deletePhoto(Long photoId, Long userId) {

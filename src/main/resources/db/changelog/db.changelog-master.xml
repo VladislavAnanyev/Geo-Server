@@ -44,4 +44,25 @@
                  stripComments="true"/>
     </changeSet>
 
+    <changeSet id="user-favorite-places" author="meetings">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="user_favorite_places"/>
+            </not>
+        </preConditions>
+        <comment>User favorite places in profile</comment>
+        <sqlFile path="changes/004-user-favorite-places.sql"
+                 relativeToChangelogFile="true"
+                 splitStatements="true"
+                 stripComments="true"/>
+    </changeSet>
+
+    <changeSet id="meetings-pair-bucket" author="meetings">
+        <comment>Idempotent meeting key (canonical user pair + app-defined bucket)</comment>
+        <sqlFile path="changes/005-meetings-pair-bucket.sql"
+                 relativeToChangelogFile="true"
+                 splitStatements="true"
+                 stripComments="true"/>
+    </changeSet>
+
 </databaseChangeLog>

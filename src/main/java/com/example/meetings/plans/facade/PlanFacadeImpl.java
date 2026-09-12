@@ -21,6 +21,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 import static com.example.meetings.plans.model.domain.PlanLookupMode.RESPOND;
 import static com.example.meetings.plans.model.domain.PlanMode.GROUP;
 import static com.example.meetings.util.Constants.ADMIN_ID;
@@ -127,7 +129,7 @@ public class PlanFacadeImpl implements PlanFacade {
         if (PlanMode.GROUP.equals(plan.getMode())) {
             return planResponseService.respond(authUserId, planId);
         }
-        String message = PLAN_RESPONSE_MARKER + plan.getTitle();
+        String message = PLAN_RESPONSE_MARKER + Optional.ofNullable(plan.getTitle()).orElse("");
         requestFacade.sendRequest(authUserId, plan.getUser().getUserId(), message);
         return new PlanRespondResult().setPlanId(planId);
     }

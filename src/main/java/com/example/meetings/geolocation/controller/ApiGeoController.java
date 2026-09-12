@@ -36,9 +36,12 @@ public class ApiGeoController {
 
     @ApiOperation(value = "Пользователи в радиусе от последней геолокации текущего пользователя")
     @GetMapping(path = "/geolocation/people-nearby")
-    public GetGeolocationsResponse getPeopleNearby(@AuthenticationPrincipal AuthUserDetails authUser) {
+    public GetGeolocationsResponse getPeopleNearby(@AuthenticationPrincipal AuthUserDetails authUser,
+                                                   @RequestParam(required = false) Integer radiusMeters) {
         return new GetGeolocationsResponse(
-                new GetGeolocationsResult().setItems(geolocationFacade.getPeopleInSquare(authUser.getUserId()))
+                new GetGeolocationsResult().setItems(
+                        geolocationFacade.getPeopleInSquare(authUser.getUserId(), radiusMeters)
+                )
         );
     }
 
