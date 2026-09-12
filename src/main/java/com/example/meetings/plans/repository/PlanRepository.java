@@ -1,0 +1,109 @@
+package com.example.meetings.plans.repository;
+
+import com.example.meetings.plans.model.domain.Plan;
+import com.example.meetings.plans.model.domain.PlanStatus;
+import com.example.meetings.plans.model.domain.PlanType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+public interface PlanRepository extends JpaRepository<Plan, Long> {
+
+    Optional<Plan> findByIdAndDeletedFalse(Long id);
+
+    Optional<Plan> findFirstByOwnerUserIdAndTypeAndStatusAndDeletedFalse(Long ownerUserId, PlanType type, PlanStatus status);
+
+    long countByOwnerUserIdAndTypeAndStatusAndDeletedFalseAndExpiresAtAfter(
+            Long ownerUserId,
+            PlanType type,
+            PlanStatus status,
+            LocalDateTime now
+    );
+
+    @Query("""
+            SELECT p FROM PLANS p
+            WHERE p.owner.userId = :ownerUserId
+              AND p.deleted = false
+              AND (
+                   p.type <> com.example.meetings.plans.model.domain.PlanType.LIVE
+                   OR (p.type = com.example.meetings.plans.model.domain.PlanType.LIVE
+                       AND p.status = com.example.meetings.plans.model.domain.PlanStatus.ACTIVE
+                       AND p.expiresAt > :now)
+              )
+            ORDER BY p.startAt DESC
+            """)
+    List<Plan> findMyPlansExcludingStaleLive(@Param("ownerUserId") Long ownerUserId, @Param("now") LocalDateTime now);
+
+    @Query(value = """
+            SELECT *
+            FROM PLANS P
+            WHERE P.deleted = FALSE
+              AND P.status = 'ACTIVE'
+              AND P.expires_at > :now
+              AND ((:excludeOwn IS FALSE) OR P.owner_user_id <> :authUserId)
+              AND (:typeFilter = '' OR P.type = :typeFilter)
+              AND (
+                  P.type = 'LIVE'
+                  OR (P.start_at >= :fromTime AND P.start_at <= :toTime)
+              )
+              AND P.lat IS NOT NULL
+              AND P.lon IS NOT NULL
+              AND (
+                   6371000 * acos(
+                       cos(radians(CAST(:lat AS DOUBLE PRECISION))) * cos(radians(P.lat))
+                           * cos(radians(P.lon) - radians(CAST(:lon AS DOUBLE PRECISION)))
+                       + sin(radians(CAST(:lat AS DOUBLE PRECISION))) * sin(radians(P.lat))
+                   )
+              ) <= CAST(:radiusM AS INTEGER)
+            ORDER BY P.start_at DESC
+            """,
+            countQuery = """
+            SELECT COUNT(*)
+            FROM PLANS P
+            WHERE P.deleted = FALSE
+              AND P.status = 'ACTIVE'
+              AND P.expires_at > :now
+              AND ((:excludeOwn IS FALSE) OR P.owner_user_id <> :authUserId)
+              AND (:typeFilter = '' OR P.type = :typeFilter)
+              AND (
+                  P.type = 'LIVE'
+                  OR (P.start_at >= :fromTime AND P.start_at <= :toTime)
+              )
+              AND P.lat IS NOT NULL
+              AND P.lon IS NOT NULL
+              AND (
+                   6371000 * acos(
+                       cos(radians(CAST(:lat AS DOUBLE PRECISION))) * cos(radians(P.lat))
+                           * cos(radians(P.lon) - radians(CAST(:lon AS DOUBLE PRECISION)))
+                       + sin(radians(CAST(:lat AS DOUBLE PRECISION))) * sin(radians(P.lat))
+                   )
+              ) <= CAST(:radiusM AS INTEGER)
+            """,
+            nativeQuery = true)
+    Page<Plan> findNearby(@Param("lat") Double lat,
+                          @Param("lon") Double lon,
+                          @Param("radiusM") Integer radiusM,
+                          @Param("typeFilter") String typeFilter,
+                          @Param("fromTime") LocalDateTime fromTime,
+                          @Param("toTime") LocalDateTime toTime,
+                          @Param("excludeOwn") boolean excludeOwn,
+                          @Param("authUserId") Long authUserId,
+                          @Param("now") LocalDateTime now,
+                          Pageable pageable);
+
+    @Modifying
+    @Query(value = """
+            UPDATE PLANS
+            SET status = 'EXPIRED', updated_at = :now, closed_at = :now
+            WHERE deleted = FALSE AND status = 'ACTIVE' AND expires_at <= :now
+            """, nativeQuery = true)
+    int expireActivePlans(@Param("now") LocalDateTime now);
+}
+

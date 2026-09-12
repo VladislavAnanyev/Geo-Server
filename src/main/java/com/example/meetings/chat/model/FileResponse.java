@@ -1,0 +1,13 @@
+package com.example.meetings.chat.model;
+
+import lombok.Data;
+import lombok.experimental.Accessors;
+
+@Data
+@Accessors(chain = true)
+public class FileResponse {
+    private String originalName;
+    private String filename;
+    private String contentType;
+    private String uri;
+}

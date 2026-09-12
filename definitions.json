@@ -1,0 +1,67 @@
+{
+  "users": [
+    {
+      "name": "admin",
+      "password": "admin",
+      "tags": "administrator"
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "policies": [
+    {
+      "vhost": "/",
+      "name": "ha",
+      "pattern": "",
+      "apply-to": "all",
+      "definition": {
+        "ha-mode": "all",
+        "ha-sync-batch-size": 256,
+        "ha-sync-mode": "automatic"
+      },
+      "priority": 0
+    }
+  ],
+  "permissions": [
+    {
+      "user": "admin",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "queues": [
+    {
+      "name": "job-import.triggered.queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "lob-proj-dx",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "lob-proj-dx",
+      "vhost": "/",
+      "destination": "job-import.triggered.queue",
+      "destination_type": "queue",
+      "routing_key": "job-import.event.triggered",
+      "arguments": {}
+    }
+  ]
+}
